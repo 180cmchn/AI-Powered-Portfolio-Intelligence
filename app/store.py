@@ -10,6 +10,9 @@ import uuid
 
 from .config import defaults
 from .domain import TZ, now
+from .materials import MaterialStore, SCHEMA as MATERIAL_SCHEMA
+from .recommendations import RecommendationStore, SCHEMA as RECOMMENDATION_SCHEMA
+from .scheduling import SchedulingStore, SCHEMA as SCHEDULING_SCHEMA
 
 
 def uid() -> str:
@@ -28,12 +31,25 @@ class Conflict(Exception):
     pass
 
 
-class Store:
+class Store(MaterialStore, RecommendationStore, SchedulingStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
         self.path, self.mode = Path(path), mode
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # Before any upgrade, retain an online SQLite snapshot (including WAL).
+        if self.path.exists():
+            with sqlite3.connect(self.path) as prior:
+                table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
+                version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
+                if version and int(loads(version[0])) > 2:
+                    raise ValueError("数据库版本比程序更新，请升级程序")
+                if version and int(loads(version[0])) == 1:
+                    backup = self.path.with_name(self.path.name + ".before-v2.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
         with self.connect() as db:
             db.executescript("""
                 PRAGMA journal_mode=WAL;
@@ -51,12 +67,15 @@ class Store:
                   attempts INTEGER NOT NULL DEFAULT 0, error TEXT, result TEXT, data_as_of TEXT,
                   created_at TEXT NOT NULL, updated_at TEXT NOT NULL, event_key TEXT UNIQUE);
                 CREATE INDEX IF NOT EXISTS jobs_due ON jobs(state,due_at);
+                CREATE INDEX IF NOT EXISTS jobs_account_created ON jobs(account_id,created_at);
                 CREATE TABLE IF NOT EXISTS events(
                   seq INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT NOT NULL, body TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS events_job_seq ON events(job_id,seq);
                 CREATE TABLE IF NOT EXISTS analyses(
                   id TEXT PRIMARY KEY, job_id TEXT NOT NULL UNIQUE, account_id TEXT NOT NULL,
                   input_version INTEGER NOT NULL, status TEXT NOT NULL, mode TEXT NOT NULL,
                   report TEXT NOT NULL, result TEXT NOT NULL, data_as_of TEXT, created_at TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS analyses_account_created ON analyses(account_id,created_at);
                 CREATE TABLE IF NOT EXISTS quotes(symbol TEXT PRIMARY KEY, body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS securities(symbol TEXT PRIMARY KEY, body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS materials(
@@ -71,6 +90,10 @@ class Store:
                 raise ValueError("演示与真实运行必须使用不同数据库")
             db.execute("INSERT OR IGNORE INTO meta VALUES('mode',?)", (dumps(mode),))
             db.execute("INSERT OR IGNORE INTO meta VALUES('schema_version','1')")
+            db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA)
+            db.execute("BEGIN IMMEDIATE")
+            self.migrate_material_catalog(db)
+            db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -133,6 +156,8 @@ class Store:
                        (account_id, data["name"], data.get("cash"), dumps(data.get("preferences", {})),
                         dumps(data.get("holdings", [])), version, stamp, stamp))
             db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account_id,))
+            self._invalidate_recommendations(db, account_id, "账户持仓或偏好版本已变更")
+            db.execute("DELETE FROM condition_latches WHERE account_id=?", (account_id,))
             account = self.account(account_id, db)
             db.execute("INSERT INTO snapshots VALUES(?,?,?,?)", (account_id, version, dumps(account), stamp))
             self._enqueue(db, account, reason, delay=delay)
@@ -145,11 +170,14 @@ class Store:
                 return dict(exists)
         job_id, stamp = uid(), now()
         db.execute("UPDATE jobs SET state='superseded',updated_at=? WHERE account_id=? AND state IN ('queued','running','waiting_config')", (stamp, account["id"]))
+        # A replaced execution cannot erase the business work it was assigned.
+        db.execute("UPDATE research_demands SET state='pending',job_id=NULL,input_version=?,detail='moved to latest account input',updated_at=? WHERE account_id=? AND state IN ('assigned','pending')", (account["version"], stamp, account["id"]))
         db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account["id"],))
         due = (datetime.now(TZ) + timedelta(seconds=delay)).isoformat()
         db.execute("INSERT INTO jobs(id,account_id,input_version,reason,state,mode,due_at,created_at,updated_at,event_key) VALUES(?,?,?,?,'queued',?,?,?,?,?)",
                    (job_id, account["id"], account["version"], reason, self.mode, due, stamp, stamp, event_key))
         db.execute("UPDATE accounts SET latest_job_id=?,analysis_state='pending' WHERE id=?", (job_id, account["id"]))
+        db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='included in latest account execution',updated_at=? WHERE account_id=? AND state='pending'", (job_id, stamp, account["id"]))
         return dict(db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone())
 
     def enqueue(self, account_id, reason="manual", event_key=None, delay=0):
@@ -164,7 +192,8 @@ class Store:
             ids = [r[0] for r in db.execute("SELECT id FROM jobs WHERE account_id=?", (account_id,))]
             for j in ids:
                 db.execute("DELETE FROM events WHERE job_id=?", (j,))
-            for table in ("accounts", "snapshots", "jobs", "analyses", "material_uses"):
+            db.execute("DELETE FROM recommendation_events WHERE recommendation_id IN (SELECT id FROM recommendations WHERE account_id=?)", (account_id,))
+            for table in ("accounts", "snapshots", "jobs", "analyses", "material_uses", "recommendations", "research_records", "research_demands", "condition_latches"):
                 col = "id" if table == "accounts" else "account_id"
                 db.execute(f"DELETE FROM {table} WHERE {col}=?", (account_id,))
 
@@ -179,10 +208,29 @@ class Store:
                 r["events"] = [loads(e[0]) for e in db.execute("SELECT body FROM events WHERE job_id=? ORDER BY seq", (job_id,))]
             return r
 
-    def jobs(self, account_id):
+    def jobs(self, account_id, limit=60, offset=0, events=False, summary=False):
         with self.connect() as db:
-            ids = [r[0] for r in db.execute("SELECT id FROM jobs WHERE account_id=? ORDER BY created_at DESC LIMIT 60", (account_id,))]
-        return [self.job(j, events=True) for j in ids]
+            rows = db.execute("""SELECT j.*, (SELECT count(*) FROM events e WHERE e.job_id=j.id) AS event_count,
+                 (SELECT max(seq) FROM events e WHERE e.job_id=j.id) AS last_event_seq
+                 FROM jobs j WHERE account_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?""", (account_id, min(max(limit, 1), 200), max(offset, 0))).fetchall()
+        result = []
+        for r in rows:
+            item = dict(r)
+            if summary:
+                item.pop("result", None)
+            else:
+                item["result"] = loads(item["result"])
+            if events:
+                item["events"] = self.events_since(item["id"])["events"]
+            result.append(item)
+        return result
+
+    def events_since(self, job_id, after=0, limit=100):
+        limit = min(max(limit, 1), 500)
+        with self.connect() as db:
+            rows = db.execute("SELECT seq,body FROM events WHERE job_id=? AND seq>? ORDER BY seq LIMIT ?", (job_id, max(0, after), limit + 1)).fetchall()
+        events = [{**loads(r["body"]), "seq": r["seq"]} for r in rows[:limit]]
+        return {"events": events, "next_after": events[-1]["seq"] if events else after, "has_more": len(rows) > limit}
 
     def snapshot(self, account_id, version):
         with self.connect() as db:
@@ -205,7 +253,7 @@ class Store:
         msg = event.get("message") or (next((payload.get(k) for k in ("message", "summary", "error", "task", "tool") if payload.get(k)), None) if isinstance(payload, dict) else None) or event.get("type", "progress")
         body = {**event, "at": event.get("timestamp") or now(), "agent": event.get("agent_id", "system"), "message": msg}
         with self.connect() as db:
-            if db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
+            if db.execute("SELECT 1 FROM jobs WHERE id=? UNION SELECT 1 FROM global_runs WHERE id=?", (job_id, job_id)).fetchone():
                 db.execute("INSERT INTO events(job_id,body) VALUES(?,?)", (job_id, dumps(body)))
 
     def set_job_state(self, job_id, state, error=None):
@@ -216,6 +264,8 @@ class Store:
                 return
             db.execute("UPDATE jobs SET state=?,error=?,updated_at=? WHERE id=?", (state, error, now(), job_id))
             db.execute("UPDATE accounts SET analysis_state=? WHERE id=? AND latest_job_id=?", (state, row["account_id"], job_id))
+            if state in ("failed", "cancelled"):
+                db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'", (state, error or state, now(), job_id))
 
     def publish(self, job_id, result, data_as_of):
         with self.connect() as db:
@@ -235,24 +285,38 @@ class Store:
             terminal = "completed" if valid else ("cancelled" if job["state"] == "cancelled" else "superseded")
             db.execute("UPDATE jobs SET state=?,result=?,data_as_of=?,updated_at=? WHERE id=?", (terminal, dumps(result), data_as_of, now(), job_id))
             if valid:
+                db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND job_id<>? AND status='current'", (job["account_id"], job_id))
                 db.execute("UPDATE accounts SET analysis_state='current' WHERE id=?", (job["account_id"],))
+                self._save_suggestions(db, job, result)
+                self.save_research_records(result.get("research_records", []), job_id, job["account_id"], db)
+                db.execute("UPDATE research_demands SET state='completed',detail='account research completed',updated_at=? WHERE job_id=? AND state='assigned'", (now(), job_id))
             return valid
 
-    def analyses(self, account_id):
+    def analyses(self, account_id, limit=100, offset=0, summary=False):
         with self.connect() as db:
-            rows = db.execute("SELECT * FROM analyses WHERE account_id=? ORDER BY created_at DESC LIMIT 100", (account_id,)).fetchall()
+            rows = db.execute("SELECT * FROM analyses WHERE account_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?", (account_id, min(max(limit, 1), 200), max(offset, 0))).fetchall()
+        if summary:
+            return [{k: v for k, v in dict(r).items() if k not in ("result", "report")} for r in rows]
         return [{**dict(r), "result": loads(r["result"])} for r in rows]
+
+    def analysis(self, analysis_id):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM analyses WHERE id=?", (analysis_id,)).fetchone()
+        if not row:
+            raise KeyError("分析不存在")
+        return {**dict(row), "result": loads(row["result"])}
 
     def previous_analysis(self, account_id):
         with self.connect() as db:
             row = db.execute("SELECT a.* FROM analyses a JOIN jobs j ON j.id=a.job_id WHERE a.account_id=? AND j.state='completed' ORDER BY a.input_version DESC,a.created_at DESC LIMIT 1", (account_id,)).fetchone()
         return {**dict(row), "result": loads(row["result"])} if row else None
 
-    def recover(self):
+    def recover(self, config_ready=False):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            db.execute("UPDATE jobs SET state='superseded' WHERE state IN ('running','queued') AND id NOT IN (SELECT latest_job_id FROM accounts WHERE latest_job_id IS NOT NULL)")
+            db.execute("UPDATE jobs SET state='superseded' WHERE state IN ('running','queued','waiting_config') AND NOT EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)")
             db.execute("UPDATE jobs SET state='queued',due_at=?,error='服务恢复：按当前输入重新运行',updated_at=? WHERE state='running'", (now(), now()))
+            self.recover_demands(db, config_ready)
             db.execute("UPDATE accounts SET analysis_state='pending' WHERE latest_job_id IN (SELECT id FROM jobs WHERE state='queued')")
 
     def cache(self, table):
@@ -274,35 +338,8 @@ class Store:
         with self.connect() as db:
             for r in db.execute("SELECT s.body FROM snapshots s JOIN jobs j ON s.account_id=j.account_id AND s.version=j.input_version WHERE j.state IN ('queued','running')"):
                 symbols.update(h["symbol"] for h in loads(r[0])["holdings"])
+            symbols.update(r[0] for r in db.execute("SELECT DISTINCT security_id FROM recommendations WHERE state IN ('watching','triggered','needs_review')"))
         return sorted(symbols)
-
-    def save_material(self, material, job_id=None, account_id=None):
-        # No source admission policy. Unknown fields and mixed material survive intact.
-        body = dict(material)
-        if "classification" not in body and "category" in body:
-            body["classification"] = body["category"]
-        if "content" not in body and "claim" in body:
-            body["content"] = body["claim"]
-        if "source_title" not in body and "title" in body:
-            body["source_title"] = body["title"]
-        body.setdefault("classification", "uncertain")
-        body.setdefault("fetched_at", now())
-        body.setdefault("published_at", None)
-        identity = {k: body.get(k) for k in ("url", "content", "text", "excerpt", "classification", "event_period", "scope")}
-        if body.get("scope") != "public":
-            identity["account_id"] = account_id
-        fingerprint = hashlib.sha256(dumps(identity).encode()).hexdigest()
-        with self.connect() as db:
-            old = db.execute("SELECT id,body FROM materials WHERE fingerprint=?", (fingerprint,)).fetchone()
-            if old:
-                body = loads(old["body"])
-            else:
-                body["id"] = uid()
-                body["mode"] = self.mode
-                db.execute("INSERT INTO materials VALUES(?,?,?,?)", (body["id"], fingerprint, dumps(body), now()))
-            if job_id and account_id:
-                db.execute("INSERT OR IGNORE INTO material_uses VALUES(?,?,?)", (body["id"], job_id, account_id))
-        return body
 
     def materials(self, account_id=None, query=""):
         with self.connect() as db:

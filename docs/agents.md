@@ -10,7 +10,7 @@
 
 等待采用 `asyncio.Condition` 的事件通知；材料保存、阶段发现、完成和失败会唤醒主 Agent。没有定时轮询子 Agent 的后台循环。主 Agent 在下一轮模型请求前收到未送达的子任务事件。所有显式保存的材料都能到达主 Agent，缺元数据或分类不确定不会被拒收。工具运行明细仍记录到界面，但工具开始/结束本身不强制额外模型调用。
 
-主 Agent 和子 Agent 均可使用 `search`、`read`、`save_material`、`list_materials`、`calculate`。工具不提供账户修改、密钥读取、交易、文件系统或 shell 权限。网页和公告只作为数据进入工具结果。材料保留来源及访问范围；模型负责分类和采用，代码不做“可信度评分/来源白名单/双来源准入”。网络读取的私网地址阻止属于工具网络边界，与材料可信度无关。
+主 Agent 和子 Agent 均可使用 `search`、`read`、`save_material`、`list_materials`、`search_materials`、`get_material`、`read_material_range`、`recall_context`、`calculate`，以及 PDF 定位、历史行情、板块、基准和基本面工具。工具不提供账户修改、密钥读取、交易、文件系统或 shell 权限。网页和公告只作为数据进入工具结果。材料保留来源及访问范围；模型负责分类和采用，代码不做“可信度评分/来源白名单/双来源准入”。网络读取的私网地址阻止属于工具网络边界，与材料可信度无关。
 
 提示词源文件是 `app/prompts/manager.txt` 和 `app/prompts/researcher.txt`。提示词要求区分事实、主体声明或预测、外部观点、传闻/冲突和自身推论；允许未知类别和空元数据。外部荐股观点可以用于研究线索，不能改写成已证实的客观依据。代码计算数值，模型解释及综合。公开材料不要包含账户私有信息；账户上下文与结论不放入公共材料缓存。
 
@@ -50,13 +50,14 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 | `model_request_timeout_seconds` | 90 | 单个模型 HTTP 请求超时 |
 | `model_retries` | 1 | 网络错误、429 或暂时服务错误的有限重试，最多支持 3 次 |
 | `max_output_tokens` | 4000 | 每轮模型输出上限 |
-| `max_context_chars` | 240000 | 每个会话序列化上下文上限；超限明确失败，避免静默丢失来源和工具续接项 |
+| `max_context_chars` | 240000 | 每个会话序列化历史预算；约 78% 时在完整工具轮次后归档可见历史并生成引用检查点 |
+| `max_tool_result_chars` | 16000 | 单次结果进入模型的字符预算；超长内容可按归档记录分段取回 |
 
-报告、材料与来源索引保留在持久层。首版没有模型自动上下文压缩；上下文超限时建议缩小候选范围、复用材料索引或调整上限，不能把未读材料假装读过。模型/工具错误返回给 Agent，局部来源打不开不自动让整个账户研究失败。全局预算或主任务时限到达则明确失败，不用固定文本冒充模型完成的投资分析。
+报告、材料与来源索引保留在持久层。材料索引默认每页 20 条，不携带长正文；`get_material` 和 `read_material_range` 返回可继续读取的范围。超长工具结果存入当前 Agent 的可见归档，模型收到片段、材料引用和 `record_id`；`recall_context` 可搜索摘要与来源，再按字符范围取回。会话接近预算时整组归档已完成的调用与结果，避免孤立的函数输出破坏协议；历史事实、计算、待查问题、材料 ID、URL、页码保留在可检索归档，检查点只陈述可见摘要，不生成替代事实。原始 opaque reasoning 不进入可见归档或事件。该归档仅存内存，重启后的任务依赖持久材料重新研究。仍过大的账户初始输入会明确报错，不能把未读片段假装读过。模型/工具错误返回给 Agent，局部来源打不开不自动让整个账户研究失败。全局预算或主任务时限到达则明确失败，不用固定文本冒充模型完成的投资分析。
 
 ## 验证与限制
 
-执行 `./.venv/bin/pytest -q tests/test_agents.py` 可重复验证协议和编排。测试使用明确命名的 scripted HTTP fixtures，仅存在于测试目录，不是生产模型实现。覆盖：
+执行 `./.venv/bin/pytest -q tests/test_agents.py tests/test_context_runtime.py tests/test_evaluation_inputs.py` 可重复验证协议和编排。测试使用明确命名的 scripted HTTP fixtures，仅存在于测试目录，不是生产模型实现。覆盖：
 
 - Responses 不透明项重放及两轮真实协议形状、Chat Completions 工具消息续接。
 - 两个独立子任务、不同任务上下文、阶段发现、混合事实/观点材料回传，以及对原子任务的一轮追问。
@@ -74,14 +75,21 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 # 仅测试当前配置的模型工具协议（会产生模型调用费用）
 ./.venv/bin/python scripts/evaluate_model.py --probe-only
 
-# 真实模型 + 明确标识的合成输入材料；不是硬编码模型答复
+# 只检查配置是否存在或列出输入，不输出密钥、不调用模型
+./.venv/bin/python scripts/evaluate_model.py --check-config
+./.venv/bin/python scripts/evaluate_model.py --list-cases
+
+# 真实模型 + 十类明确合成输入；最多 40 次请求/账户案例，会产生 API 费用
 ./.venv/bin/python scripts/evaluate_model.py
+
+# 单独运行有代表性的案例（可重复 --case）
+./.venv/bin/python scripts/evaluate_model.py --case mixed_fact_opinion --case corrected_disclosure
 
 # 真实模型 + 指定公开来源 + 真实行情适配器；不会包含合成材料
 ./.venv/bin/python scripts/evaluate_model.py --live-url 'https://公开来源的实际网址' --symbol SH:600000 --query '研究指定披露及当前组合风险'
 ```
 
-缺少真实模型配置时退出码为 `78`，明确打印 `SKIPPED`，不生成“验收通过”报告。运行失败退出 `1`；模型未完成要求的两个独立子任务、追问或材料保存时退出 `2` 并保留实际记录供检查。结构性检查通过退出 `0`，**仍需人工审阅材料分类和结论质量**。结果保存在 `data/evaluations/eval-.../evaluation.json` 和 `report.md`，包含模型名、协议、实际工具事件和输出。默认合成样例只检验缺失元数据、观点/事实区分及原文失败场景；`--live-url` 模式实际读原文，可以在搜索服务未配置时工作。没有任何模式用预设文本伪造模型响应。
+缺少真实模型配置时退出码为 `78`，明确打印 `SKIPPED`，不生成“验收通过”报告。运行失败退出 `1`；模型未完成要求的两个独立子任务、追问或材料保存时退出 `2` 并保留实际记录供检查。结构性检查通过退出 `0`，**仍需人工审阅材料分类和结论质量**。结果保存在 `data/evaluations/eval-.../manifest.json` 及各案例/账户目录的 `evaluation.json` 和 `report.md`，包括模型、协议、服务商主机、输入与提示词 SHA-256、实际工具事件、请求用量、失败和输出；每完成一个案例写入 manifest，便于中断后保留结果。`human_review=pending`、`quality_passed=null` 不会因结构检查通过而改成研究质量通过。默认执行十类合成输入（同证券两账户场景运行两个独立账户，因此共 11 次研究）：混合事实与观点、业绩预告与正式报告、转载、公告更正、冲突数字、摘要与访问失败、不同账户敞口、60 页财报与 180 条历史资料、新信息推翻旧结论、信息不足。每类都有独立人工审阅 rubric。长财报案例必须实际请求第 28 页才通过对应结构检查；它使用合成文档工具，不替代真实 PDF 网络读取测试。`--live-url` 模式实际读原文，可以在搜索服务未配置时工作。没有任何模式用预设文本伪造模型响应。
 
 ## 实施时核对的官方资料
 
@@ -91,3 +99,13 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 - [Agents SDK: Orchestration and handoffs](https://developers.openai.com/api/docs/guides/agents/orchestration)：manager / agents-as-tools 协作思想。
 - [Responses API: Multi-agent](https://developers.openai.com/api/docs/guides/responses-multi-agent)：托管多 Agent 与本地工具执行边界的参考。
 - [Reasoning models](https://developers.openai.com/api/docs/guides/reasoning)：手动管理会话时保留 reasoning / function call / function output 项。
+
+## 第二轮运行时补充
+
+`finish_analysis.suggestions` 将建议和自然语言报告分开。建议包含证券、动作（watch / buy_candidate / add_candidate / hold / reduce_candidate / exit_candidate）、依据、材料 ID、可选有效期、明确价格条件和需要 Agent 判断的条件；服务端绑定账户及持仓版本并维护状态。没有可靠定量依据时保留自然语言条件，不强造目标价。`suggestions` 可省略；纯文字报告不会隐含撤销全部旧建议，新建议仅替换其对应证券。需要明确撤销时提交当前账户已有的 `revoked_suggestion_ids`，并说明依据；单证券研究仅复核目标证券，全局任务不能撤销账户建议。
+
+`finish_analysis.research_records` 分别表示 market / sector / candidate 研究，保留入围原因、事实、关键变化、引用与账户适配。`scope=global` 且 `account=null` 的任务可输出公共研究；运行时拒绝它提交账户建议。账户研究仍保有独立上下文，持久层决定哪些结果可作为公共内容。
+
+`model_usage` 事件及最终结果记录实际 HTTP 请求次数（含重试）、每次耗时、状态与安全错误类型。token 只记录服务商实际返回的数值计数，未提供时为 null；嵌套 cached/reasoning token 细节保留在每次请求记录，汇总只相加顶层计数。错误消息不含密钥、认证头或原始服务响应。`context_compacted` 记录整理次数和可检索记录数。
+
+第二轮实测：模型名称、模型密钥和搜索配置均未设置；`evaluate_model.py --case mixed_fact_opinion` 实际退出 78（SKIPPED）。因此十类真实模型研究质量、真实搜索能力仍未验证。确定性上下文/协议/输入测试不代替上述验证。

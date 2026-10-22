@@ -1541,3 +1541,12 @@ dialog::backdrop {
     display: none;
   }
 }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 0; flex-wrap: wrap; }
+.material-reference { color: var(--accent, #246b63); background: transparent; border: 0; padding: 2px 0; font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; overflow-wrap: anywhere; text-align: left; }
+.material-reference:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.material-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; font-size: 13px; background: #f5f7f6; border-radius: 8px; padding: 18px; max-height: 55vh; overflow-y: auto; }
+.job-event-details > summary { padding: 0 20px 15px; font-size: 12px; cursor: pointer; }
+.source-content { white-space: pre-wrap; }
+.source-meta { overflow-wrap: anywhere; }
+.button:disabled { cursor: default; opacity: .45; }

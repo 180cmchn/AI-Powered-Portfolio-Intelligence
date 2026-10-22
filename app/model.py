@@ -1,21 +1,26 @@
 """Small, explicit adapters for public tool-calling model protocols.
 
 No provider/model is silently chosen and no fallback fabricates a completion.
-Responses output items are replayed verbatim, including opaque reasoning items;
-these are kept in memory only and are never included in application events.
+Retained Responses turns replay output items verbatim, including opaque reasoning.
+Complete old turns may be retired into a visible-only checkpoint at a resolved
+tool boundary; opaque reasoning is never included in application events/archive.
 """
 from __future__ import annotations
 
 import asyncio
 import copy
 import json
+import math
 import os
 import secrets
+import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable
 from urllib.parse import urlsplit
 
 import httpx
+
+from .context import bounded_result, compact
 
 
 class ModelError(RuntimeError):
@@ -53,6 +58,9 @@ class ModelSession:
     system: str
     history: list[dict[str, Any]] = field(default_factory=list)
     pending_calls: list[ToolCall] = field(default_factory=list)
+    archive: list[dict[str, Any]] = field(default_factory=list)
+    compactions: int = 0
+    requests: list[dict[str, Any]] = field(default_factory=list)
 
 
 def encode(value: Any) -> str:
@@ -93,15 +101,29 @@ class ModelClient:
             transport=transport, follow_redirects=False,
         )
         self.before_request = before_request
+        self.requests: list[dict[str, Any]] = []
 
     def session(self, system: str, context: Any) -> ModelSession:
-        return ModelSession(system=system, history=[{"role": "user", "content": encode(context)}])
+        session = ModelSession(system=system)
+        budget = int(self.config.get("max_context_chars", 240_000))
+        initial = bounded_result(session, context, max(1000, budget // 3))
+        if initial is not context and isinstance(context, dict):
+            # Keep account identity/version and the assigned problem immediately
+            # available even if a caller supplies a large legacy material list.
+            for key in ("task_id", "task", "account", "input_version", "scope", "reason"):
+                if key in context:
+                    initial[key] = copy.deepcopy(context[key])
+        session.history.append({"role": "user", "content": encode(initial)})
+        return session
 
     def add_user(self, session: ModelSession, message: Any) -> None:
-        session.history.append({"role": "user", "content": encode(message)})
+        limit = min(int(self.config.get("max_tool_result_chars", 16000)), int(self.config.get("max_context_chars", 240_000)) // 4)
+        session.history.append({"role": "user", "content": encode(bounded_result(session, message, max(500, limit)))})
 
     def add_results(self, session: ModelSession, results: list[tuple[ToolCall, Any]]) -> None:
         for call, result in results:
+            limit = min(int(self.config.get("max_tool_result_chars", 16000)), int(self.config.get("max_context_chars", 240_000)) // 4)
+            result = bounded_result(session, result, max(500, limit))
             if self.protocol == "responses":
                 session.history.append({"type": "function_call_output", "call_id": call.id, "output": encode(result)})
             else:
@@ -116,12 +138,14 @@ class ModelClient:
         await self.http.aclose()
 
     async def complete(self, session: ModelSession, tools: list[dict]) -> ModelTurn:
+        compact(session, int(self.config.get("max_context_chars", 240_000)))
         if len(encode(session.history)) > int(self.config.get("max_context_chars", 240_000)):
-            raise ModelProtocolError("研究上下文超过配置上限；原材料已保留，可减少候选范围或增大 max_context_chars 后重试")
+            raise ModelProtocolError("初始账户或任务输入超过上下文上限；历史材料已有按需归档，请减少单次账户输入或检查 max_context_chars")
+        history = [{key: copy.deepcopy(value) for key, value in item.items() if not key.startswith("_context_")} for item in session.history]
         if self.protocol == "responses":
             payload = {
                 "model": self.model, "instructions": session.system,
-                "input": copy.deepcopy(session.history), "store": False,
+                "input": history, "store": False,
                 "max_output_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", **tool, "strict": False} for tool in tools],
                 "include": ["reasoning.encrypted_content"],
@@ -130,7 +154,7 @@ class ModelClient:
         else:
             payload = {
                 "model": self.model,
-                "messages": [{"role": "system", "content": session.system}, *copy.deepcopy(session.history)],
+                "messages": [{"role": "system", "content": session.system}, *history],
                 "max_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", "function": {**tool, "strict": False}} for tool in tools],
             }
@@ -138,7 +162,7 @@ class ModelClient:
             if self.config.get("chat_use_max_completion_tokens", False):
                 payload["max_completion_tokens"] = payload.pop("max_tokens")
             endpoint = "chat/completions"
-        data = await self._post(endpoint, payload)
+        data = await self._post(endpoint, payload, session)
         if self.protocol == "responses":
             if data.get("status") in {"failed", "incomplete", "cancelled"}:
                 raise ModelProtocolError(f"模型响应未完成（{data.get('status')}）；请检查输出预算或服务状态")
@@ -203,18 +227,42 @@ class ModelClient:
             return ToolCall(call_id, name, {}, "工具参数需要有效的 JSON 对象")
         return ToolCall(call_id, name, args)
 
-    async def _post(self, endpoint: str, payload: dict) -> dict:
+    @staticmethod
+    def usage_summary(requests: list[dict]) -> dict:
+        usage = {}
+        for request in requests:
+            for key, value in (request.get("usage") or {}).items():
+                if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value):
+                    usage[key] = usage.get(key, 0) + value
+        return {"requests": len(requests), "duration_ms": round(sum(r.get("duration_ms", 0) for r in requests), 2),
+                "failed_requests": sum(bool(r.get("error")) for r in requests),
+                "usage": usage or None, "usage_reported_requests": sum(r.get("usage") is not None for r in requests)}
+
+    async def _post(self, endpoint: str, payload: dict, session: ModelSession | None = None) -> dict:
         retries = max(0, min(int(self.config.get("model_retries", 1)), 3))
         for attempt in range(retries + 1):
             if self.before_request:
                 await self.before_request()
+            started = time.perf_counter()
+            observation = {"attempt": attempt + 1, "endpoint": endpoint, "model": self.model,
+                           "status_code": None, "usage": None, "error": None}
+            self.requests.append(observation)
+            if session is not None:
+                session.requests.append(observation)
             try:
                 response = await self.http.post(endpoint, json=payload)
             except httpx.RequestError as exc:
+                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error=type(exc).__name__)
                 if attempt < retries:
                     await asyncio.sleep(min(2 ** attempt, 4))
                     continue
                 raise ModelError(f"模型网络请求失败（{type(exc).__name__}）；账户保存不受影响") from exc
+            except asyncio.CancelledError:
+                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="cancelled")
+                raise
+            observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code)
+            if response.status_code >= 400:
+                observation["error"] = f"HTTP {response.status_code}"
             if response.status_code in {429, 500, 502, 503, 504} and attempt < retries:
                 await asyncio.sleep(min(2 ** attempt, 4))
                 continue
@@ -223,9 +271,17 @@ class ModelClient:
             try:
                 data = response.json()
             except ValueError as exc:
+                observation["error"] = "invalid_json"
                 raise ModelProtocolError("模型服务未返回 JSON") from exc
             if not isinstance(data, dict):
+                observation["error"] = "invalid_response_type"
                 raise ModelProtocolError("模型服务返回的 JSON 顶层必须为对象")
+            if isinstance(data.get("usage"), dict):
+                # Preserve only numeric usage counters, never raw provider fields.
+                def counters(value):
+                    return {k: counters(v) if isinstance(v, dict) else v for k, v in value.items()
+                            if isinstance(v, dict) or (isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v))}
+                observation["usage"] = counters(data["usage"])
             return data
         raise ModelError("模型重试失败")
 
@@ -252,6 +308,8 @@ async def probe_model(config: dict[str, Any], *, transport: httpx.AsyncBaseTrans
             raise ModelProtocolError("能力检查失败：模型未正确续接函数返回值")
         return {"ok": True, "protocol": client.protocol, "model": client.model,
                 "checks": ["function_call", "function_result_continuation"],
+                "model_usage": client.usage_summary(client.requests),
+                "requests": copy.deepcopy(client.requests),
                 "note": "已实测此端点和模型的两轮工具协议；不等于研究质量验收。"}
     finally:
         await client.aclose()

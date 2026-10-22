@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -57,8 +57,20 @@ class Settings(BaseModel):
     read_max_pdf_pages: int = Field(default=20, ge=1, le=100)
     debounce_seconds: float = Field(default=1.5, ge=0, le=30)
     max_job_attempts: int = Field(default=2, ge=1, le=5)
+    news_interval_minutes: int = Field(default=30, ge=1, le=1440)
+    news_start_hour: int = Field(default=8, ge=0, le=24)
+    news_end_hour: int = Field(default=23, ge=0, le=24)
+    news_read_sources: bool = True
+    quote_cache_seconds: int = Field(default=30, ge=0, le=3600)
+    quote_refresh_timeout_seconds: int = Field(default=45, ge=5, le=300)
+    read_cache_seconds: int = Field(default=300, ge=0, le=3600)
+    read_cache_max_bytes: int = Field(default=32000000, ge=1000000, le=100000000)
+    read_search_max_pages: int = Field(default=100, ge=1, le=300)
+    research_cache_seconds: int = Field(default=300, ge=0, le=3600)
+    research_provider: str = "eastmoney"
+    tushare_token_env: str = "TUSHARE_TOKEN"
 
-    @field_validator("model_key_env", "search_key_env")
+    @field_validator("model_key_env", "search_key_env", "tushare_token_env")
     @classmethod
     def env_name(cls, v):
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,79}", v):
@@ -84,6 +96,13 @@ class Settings(BaseModel):
     def quote(cls, v):
         if v not in ("manual", "eastmoney"):
             raise ValueError("行情服务应为 eastmoney 或 manual")
+        return v
+
+    @field_validator("research_provider")
+    @classmethod
+    def research_provider_name(cls, v):
+        if v not in ("eastmoney", "tushare"):
+            raise ValueError("研究数据服务应为 eastmoney 或 tushare")
         return v
 
     @field_validator("model_base_url")
@@ -224,14 +243,57 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return store.enqueue(account_id, f"manual_security:{target}" if target else "manual")
 
     @app.get("/api/accounts/{account_id}/analyses")
-    async def analyses(account_id: str):
+    async def analyses(account_id: str, limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), summary: bool = False):
         store.account(account_id)
-        return store.analyses(account_id)
+        return store.analyses(account_id, limit=limit, offset=offset, summary=summary)
+
+    @app.get("/api/analyses/{analysis_id}")
+    async def analysis_detail(analysis_id: str):
+        return store.analysis(analysis_id)
 
     @app.get("/api/accounts/{account_id}/jobs")
-    async def jobs(account_id: str):
+    async def jobs(account_id: str, limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), events: bool = False):
         store.account(account_id)
-        return store.jobs(account_id)
+        return store.jobs(account_id, limit=limit, offset=offset, events=events, summary=not events)
+
+    @app.get("/api/accounts/{account_id}/recommendations")
+    async def recommendations(account_id: str):
+        store.account(account_id)
+        return store.recommendations(account_id)
+
+    @app.get("/api/research")
+    async def research_records(account_id: str | None = None, limit: int = Query(30, ge=1, le=100), offset: int = Query(0, ge=0)):
+        if account_id:
+            store.account(account_id)
+        return store.research_records(account_id=account_id, limit=limit, offset=offset)
+
+    @app.get("/api/demands")
+    async def demands(account_id: str | None = None, limit: int = Query(100, ge=1, le=200), offset: int = Query(0, ge=0)):
+        if account_id:
+            store.account(account_id)
+        return store.demands(account_id=account_id, limit=limit, offset=offset)
+
+    @app.get("/api/global-research")
+    async def global_research(limit: int = Query(20, ge=1, le=100)):
+        return [{k: v for k, v in run.items() if k != "result"} for run in store.global_runs(limit=limit)]
+
+    @app.get("/api/global-research/{run_id}")
+    async def global_research_detail(run_id: str):
+        return store.global_run(run_id)
+
+    @app.get("/api/global-research/{run_id}/events")
+    async def global_research_events(run_id: str, after: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=200)):
+        store.global_run(run_id)
+        return store.events_since(run_id, after=after, limit=limit)
+
+    @app.get("/api/jobs/{job_id}")
+    async def job_detail(job_id: str):
+        return store.job(job_id)
+
+    @app.get("/api/jobs/{job_id}/events")
+    async def job_events(job_id: str, after: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=200)):
+        store.job(job_id)
+        return store.events_since(job_id, after=after, limit=limit)
 
     @app.post("/api/jobs/{job_id}/cancel")
     async def cancel(job_id: str):
@@ -280,14 +342,21 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return await service.refresh_quotes()
 
     @app.get("/api/materials")
-    async def materials(account_id: str | None = None, query: str = ""):
+    async def materials(account_id: str | None = None, query: str = Query("", max_length=500), limit: int = Query(30, ge=1, le=100), offset: int = Query(0, ge=0), index: bool = True):
         if account_id:
             store.account(account_id)
-        return store.materials(account_id, query)
+        if index:
+            return store.material_index(account_id, query, limit=limit, offset=offset)
+        # Keep the legacy body-bearing response available for existing callers.
+        return store.materials(account_id, query)[offset:offset + limit]
 
     @app.get("/api/materials/{material_id}")
     async def material(material_id: str):
         return store.material(material_id)
+
+    @app.get("/api/materials/{material_id}/range")
+    async def material_range(material_id: str, start: int = Query(0, ge=0), length: int = Query(6000, ge=1, le=12000)):
+        return store.material_range(material_id, start=start, length=length)
 
     @app.get("/api/settings")
     async def settings():
@@ -297,8 +366,9 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     async def update_settings(data: Settings):
         store.set_meta("settings", data.model_dump())
         store.set_meta("model_probe", None)
+        service.resume_waiting_config()
         for a in store.accounts():
-            store.enqueue(a["id"], "configuration_changed", delay=1)
+            store.request_analysis(a["id"], "configuration_changed")
         return store.settings()
 
     @app.post("/api/settings/probe")

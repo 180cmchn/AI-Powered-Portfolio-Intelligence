@@ -26,6 +26,11 @@ def defaults() -> dict:
         "network_timeout_seconds": 12, "news_queries": [],
         "search_max_results": 6, "debounce_seconds": 1.5,
         "max_job_attempts": 2,
+        "news_interval_minutes": 30, "news_start_hour": 8, "news_end_hour": 23,
+        "news_read_sources": True, "quote_cache_seconds": 30,
+        "quote_refresh_timeout_seconds": 45, "read_cache_seconds": 300,
+        "research_provider": os.getenv("RESEARCH_PROVIDER", "eastmoney"),
+        "tushare_token_env": "TUSHARE_TOKEN",
     }
 
 

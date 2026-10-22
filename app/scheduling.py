@@ -1,0 +1,139 @@
+"""Durable business demands, separate from replaceable account execution jobs."""
+from __future__ import annotations
+
+from .domain import now
+
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS research_demands(
+ id INTEGER PRIMARY KEY AUTOINCREMENT, event_key TEXT UNIQUE NOT NULL,
+ account_id TEXT NOT NULL, input_version INTEGER, kind TEXT NOT NULL, reason TEXT NOT NULL,
+ state TEXT NOT NULL, job_id TEXT, detail TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS demands_pending ON research_demands(state,account_id,id);
+CREATE TABLE IF NOT EXISTS global_runs(
+ id TEXT PRIMARY KEY, kind TEXT NOT NULL, state TEXT NOT NULL, reason TEXT NOT NULL,
+ result TEXT, error TEXT, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+"""
+
+
+class SchedulingStore:
+    def request_analysis(self, account_id, kind, event_key=None, reason=None, delay=0):
+        """Never interrupts running work. Only unstarted work can absorb new demands."""
+        from .store import uid
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            account = self.account(account_id, db) if account_id else None
+            stamp = now()
+            key = event_key or f"{kind}:{account_id}:{uid()}"
+            db.execute("""INSERT OR IGNORE INTO research_demands
+                (event_key,account_id,input_version,kind,reason,state,created_at,updated_at)
+                VALUES(?,?,?,?,?,'pending',?,?)""",
+                (key, account_id or "", account["version"] if account else None, kind, reason or kind, stamp, stamp))
+            if account:
+                self._dispatch_account(db, account, delay)
+            return dict(db.execute("SELECT * FROM research_demands WHERE event_key=?", (key,)).fetchone())
+
+    def _dispatch_account(self, db, account, delay=0):
+        rows = db.execute("SELECT * FROM research_demands WHERE account_id=? AND state='pending' ORDER BY id", (account["id"],)).fetchall()
+        if not rows:
+            return
+        job = db.execute("SELECT * FROM jobs WHERE id=?", (account["latest_job_id"],)).fetchone()
+        if job and job["state"] == "running":
+            db.execute("UPDATE research_demands SET detail='deferred: current research running' WHERE account_id=? AND state='pending'", (account["id"],))
+            return
+        reasons = list(dict.fromkeys(r["reason"] for r in rows))
+        # The authoritative reasons remain in demands; job labels are bounded.
+        label = "; ".join(reasons)[:1500]
+        if job and job["state"] in ("queued", "waiting_config") and job["input_version"] == account["version"]:
+            job_id = job["id"]
+            if label not in job["reason"]:
+                combined = label if job["reason"] == "account_saved" else job["reason"] + "; " + label
+                db.execute("UPDATE jobs SET reason=?,updated_at=? WHERE id=?", (combined[:2000], now(), job_id))
+            detail = "merged before execution" if job["state"] == "queued" else "merged: waiting for model configuration"
+        else:
+            job_id = self._enqueue(db, account, label, delay=delay)["id"]
+            detail = "scheduled after current research"
+        db.execute("""UPDATE research_demands SET state='assigned',job_id=?,input_version=?,detail=?,updated_at=?
+                    WHERE account_id=? AND state='pending'""", (job_id, account["version"], detail, now(), account["id"]))
+
+    def dispatch_demands(self):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            ids = [r[0] for r in db.execute("SELECT account_id FROM research_demands WHERE state='pending' AND account_id<>'' GROUP BY account_id ORDER BY min(id)")]
+            for account_id in ids:
+                self._dispatch_account(db, self.account(account_id, db))
+
+    def demands(self, account_id=None, limit=100, offset=0):
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM research_demands WHERE (? IS NULL OR account_id=?) ORDER BY id DESC LIMIT ? OFFSET ?",
+                              (account_id, account_id, min(max(limit, 1), 1000), max(offset, 0))).fetchall()
+        return [dict(r) for r in rows]
+
+    def claim_global(self):
+        from .store import uid
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT 1 FROM global_runs WHERE state IN ('running','waiting_config')").fetchone():
+                # A missing configuration must not create a new failed job every scan.
+                waiting = db.execute("SELECT id FROM global_runs WHERE state='waiting_config' ORDER BY created_at LIMIT 1").fetchone()
+                if waiting:
+                    db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='merged: waiting for configuration' WHERE account_id='' AND state='pending'", (waiting[0],))
+                return None
+            pending = db.execute("SELECT * FROM research_demands WHERE account_id='' AND state='pending' ORDER BY id").fetchall()
+            if not pending:
+                return None
+            run_id, stamp = uid(), now()
+            reasons = "; ".join(dict.fromkeys(r["reason"] for r in pending))[:2000]
+            prior_attempts = [db.execute("SELECT attempts FROM global_runs WHERE id=?", (r["job_id"],)).fetchone() for r in pending if r["job_id"]]
+            attempts = 1 + max((r[0] for r in prior_attempts if r), default=0)
+            exhausted = attempts > self.settings()["max_job_attempts"]
+            db.execute("INSERT INTO global_runs VALUES(?,?,?,?,NULL,?,?,?,?)", (run_id, "candidate_scan", "failed" if exhausted else "running", reasons,
+                       "中断后重试次数已达上限；等待新的研究窗口" if exhausted else None, attempts, stamp, stamp))
+            db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='shared global research; coalesced pending windows',updated_at=? WHERE account_id='' AND state='pending'", (run_id, stamp))
+            if exhausted:
+                db.execute("UPDATE research_demands SET state='failed',detail='interrupted global retry limit reached' WHERE job_id=?", (run_id,))
+                return None
+            return dict(db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone())
+
+    def finish_global(self, run_id, state, result=None, error=None):
+        from .store import dumps
+        if state == "completed" and result and result.get("report") and not result.get("demo"):
+            report = self.save_material({"content": result["report"], "scope": "public", "classification": "agent_analysis",
+                                        "access": "generated_report", "source_title": "公共研究主 Agent 综合报告",
+                                        "material_ids": result.get("material_ids", []), "global_run_id": run_id})
+            result = {**result, "report_material_id": report["id"]}
+            if not result.get("research_records"):
+                result["research_records"] = [{"kind": "market", "title": "公共市场研究", "reason": "公共主 Agent 研究报告",
+                   "findings": [{"classification": "agent_analysis", "summary": result["report"][:4000], "material_id": report["id"]}],
+                   "material_ids": [report["id"], *(result.get("material_ids") or [])], "status": "reviewed"}]
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("UPDATE global_runs SET state=?,result=?,error=?,updated_at=? WHERE id=?", (state, dumps(result) if result else None, error, now(), run_id))
+            if state == "completed" and result:
+                self.save_research_records(result.get("research_records", []), run_id, db=db)
+            if state != "waiting_config":
+                db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
+                           ("completed" if state == "completed" else "failed", error or "global research completed", now(), run_id))
+
+    def global_runs(self, limit=20):
+        from .store import loads
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM global_runs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+        return [{**dict(r), "result": loads(r["result"])} for r in rows]
+
+    def global_run(self, run_id):
+        from .store import loads
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone()
+        if not row:
+            raise KeyError("公共研究不存在")
+        return {**dict(row), "result": loads(row["result"])}
+
+    def recover_demands(self, db, config_ready=False):
+        db.execute("UPDATE research_demands SET state='pending',detail='recovered interrupted global work' WHERE job_id IN (SELECT id FROM global_runs WHERE state='running')")
+        db.execute("UPDATE global_runs SET state='interrupted',updated_at=? WHERE state='running'", (now(),))
+        if config_ready:
+            db.execute("UPDATE research_demands SET state='pending',job_id=NULL,detail='configuration restored' WHERE job_id IN (SELECT id FROM global_runs WHERE state='waiting_config')")
+            db.execute("UPDATE global_runs SET state='superseded',updated_at=? WHERE state='waiting_config'", (now(),))
+            db.execute("""UPDATE jobs SET state='queued',error=NULL,due_at=?,updated_at=? WHERE state='waiting_config'
+                       AND EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)""", (now(), now()))

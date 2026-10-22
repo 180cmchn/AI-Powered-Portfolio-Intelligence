@@ -51,9 +51,18 @@
 
 ## 公开网页和公告
 
-`read_url(url, config)` 支持公开 HTML、文本和可提取文字的 PDF。保留原 URL、重定向后的 URL、标题、抓取时间、内容类型、可见出版日期及正文。PDF 返回页号；无法提取扫描件文字时明确失败，本版本没有 OCR。动态网页、登录页、反爬、网络失败可能导致无法取得正文；调用方可保留已获得的搜索摘录并注明访问失败。
+`read_url(url, config, *, start_page=None, end_page=None, page=None, offset=0, limit=None, refresh=False)` 支持公开 HTML、文本和可提取文字的 PDF。保留原 URL、重定向 URL、标题、内容类型、可见出版日期、原始抓取时间及正文。HTML 额外返回 `links`（最多 200 条）与 `attachments`（最多 100 条，各列表链接及标题合计最多 32,000 字符，并各自标明截断），根据最终页面 URL 和合法的 HTML `base` 解析相对链接；附件识别包括 PDF/Office 扩展名、下载属性与附件文字。发现链接不等于已读取附件，访问时仍单独执行 SSRF 检查。
 
-返回 `full_text` 表示在本次 HTTP 响应内提取到的文字没有被本工具截断，不代表付费/动态页面之外的所有内容均已获取。`excerpt` 表示受字符或页数限制截断，`failed` 表示未读到原文。默认 5 MB、40,000 字符、20 页、总读取 30 秒。网页脚本不执行。
+PDF 工具共用下载缓存：
+
+- `pdf_metadata(url, config, refresh=False)`：标题、元数据、总页数，`access=metadata`，没有读取正文。
+- `search_pdf(url, query, config, start_page=1, end_page=None, max_results=20)`：按字面关键词（忽略大小写）定位，返回物理页码、字符位置、短上下文、`#page=N` 原文链接、实际 `searched_range` 和 `next_page`。默认每次最多检查 100 页，达到范围/命中上限或出现无文字页时，`search_complete=false`。达到命中上限后应读取最后命中页，再从下一页继续搜索；搜索结果本身始终是 `access=excerpt`。
+- `read_url(..., page=29)` 或 `start_page=25,end_page=30`：读取第 20 页之后任意指定范围。默认每次最多 20 页，并非只能访问前 20 页。返回 `requested_range`、`extracted_range`、实际 `returned_range`、各页的正文与字符偏移、`next_page`。一页过长时用 `offset` / `limit` / `next_offset` 分段续读。
+- HTML/文本也支持 `offset` / `limit`，字符偏移相对于所选正文；PDF 字符偏移相对于所选页范围拼接后的文字（包含页码标记）。继续字符读取时应保持同一页范围。
+
+页码均从 1 开始，指 PDF 物理页，可能不同于报告印刷页码。返回 `full_text` 只表示本 HTTP 响应的全部可提取文字未被工具截断；选页、字符切片、页数限制或已检查页存在空文字时均为 `excerpt`。不能提取任何文字时返回 `failed`，保留原因。本版不执行网页脚本、不做 OCR；图片型表格或动态加载的内容可能仍未取得。
+
+缓存采用进程内 LRU，默认 300 秒、32 个文档、32 MB 总容量；单文档默认 5 MB，上限 20 MB。相同 URL 的并行读取共用一次有总超时的下载。`document_id` 是**完整响应字节**的 SHA-256，能发现第 20 页之后的更正；`fetched_at` 始终是该版本首次下载时间，`retrieved_at` 是本次取用时间，`cache_hit` 区分缓存。`refresh=True` 强制重新下载，资讯更新扫描应使用它检测新版本。缓存不会在重新下载失败时静默返回旧内容，也不跨服务重启保存；持久材料正文与版本由 Store 管理。默认输出 40,000 字符，单次文档工具总超时 30 秒。
 
 网页与公告是研究数据，不能写账户或更改工具权限。读取工具只支持公开 HTTP(S) 和标准端口；拒绝本机、私网、保留地址、URL 登录凭据；每次重定向重新解析检查，并将连接固定到检查过的公共 IP，通过原 Host 与 TLS SNI 访问。该边界防止研究材料触达本地服务，不判定材料可信度。适配层**不按平台、观点、评分或来源数量拒收研究内容**；混合材料原样送给 Agent 提取与分类。
 
@@ -76,12 +85,64 @@
 | read_timeout_seconds | 30 | 原文读取总时限 |
 | read_max_bytes | 5000000 | 响应字节上限 |
 | read_max_chars | 40000 | 可见正文字符上限 |
-| read_max_pdf_pages | 20 | PDF 页数上限 |
+| read_max_pdf_pages | 20 | 每次 PDF 读取最多页数，指定起始页可访问后续内容 |
+| read_search_max_pages | 100 | 每次 PDF 检索最多页数，1–300 |
+| read_cache_seconds | 300 | 文档缓存 TTL，0 禁用，最大 3600 秒 |
+| read_cache_max_bytes | 32000000 | 全部文档缓存总字节预算，1–100 MB |
+| research_provider | eastmoney | 历史/板块/财务：eastmoney、tushare；manual/disabled 返回未启用 |
+| tushare_token_env | TUSHARE_TOKEN | Tushare 密钥所在环境变量名 |
+| research_cache_seconds | 300 | 结构化研究数据缓存 TTL，0–3600 秒 |
 
 ## 可重复验证
 
 ```sh
-.venv/bin/python -m pytest tests/test_providers.py -q
+.venv/bin/python -m pytest tests/test_providers.py tests/test_provider_documents.py tests/test_provider_market.py -q
 ```
 
 测试覆盖 ETF 精度、行情原始时间、身份不一致、未知精度、网络超时、HTTP 认证失败、密钥不回显、缺搜索密钥、混合材料保留、缺发布时间、读取失败、私网/重定向边界、截断标识及节假日/未知年份。确定性测试不代表 Agent 已正确理解材料；分类质量由运行时模型样例评估单独验证。
+
+
+## 第二轮：历史、板块与基本面工具
+
+`MarketProvider` 将研究行情与即时 `quote()` 分开；`research_provider` 可与 `quote_provider` 不同。默认公开源仍是东方财富，认证替代源为 Tushare。所有接口返回 `status`、`error`、实际 `source`、`source_url`、`fetched_at`、实际数据日期 `as_of`、`truncated` 与范围说明。`status=ok` 表示本次返回记录可解析，并不宣称数据完整、实时或业务上正确。没有记录为 `empty`；拒绝请求、缺权限和格式异常为 `unavailable`，不制造数据。
+
+| 方法 | 数据及边界 |
+| --- | --- |
+| `history(symbol,start,end,interval="daily",adjust="none",limit=250)` | OHLC、成交量、成交额、涨跌幅；日期范围至多十年，每次输出至多 1000 根，长区间须分段。东方财富支持日/周/月和 `1m/5m/15m/30m/60m`，复权 `none/qfq/hfq`；1 分钟只允许不复权。分钟历史覆盖、复权样例尚未实测，不保证供应商返回完整窗口。Tushare 当前适配器只接 A 股未复权日线。 |
+| `sectors(kind="industry",limit=100,offset=0)` | 东方财富行业或概念分类及返回的涨跌家数；Tushare 为申万 2021 一级行业。`offset` 是 `limit` 的非负整数倍，按返回 `next_offset` 续取。 |
+| `sector_members(sector_id,limit=100,offset=0)` | 当前成分身份；公开源可返回行情及源时间。`breadth` 只计算当前返回页且有涨跌幅的成分，明确 `scope=returned_members_only`。不冒充历史成分或全市场广度。 |
+| `sector_history(sector_id,start,end,limit=250)` | 板块日线及量额口径；公开源使用 `BK...`，Tushare 申万行业使用 `...SI`，身份不得混用。 |
+| `benchmark_history(benchmark="CSI300",start,end,limit=250)` | 沪深 300、上证 50、中证 500 的指数日线；Agent 可按共同日期与板块数据比较。输出指数点位，与持仓证券行情分别查询。 |
+| `fundamentals(symbol,periods=8)` | 股票利润表（最多 20 条）、累计收入、归母净利润、营业利润、利润总额、报告期、公告日期与原始供应商字段。Tushare 使用合并利润表。相同报告类型、相隔一年且同月日的记录可计算同比差额；基期大于零才输出同比百分比。没有把累计半年报减季度报后直接当成可比环比。 |
+
+东方财富公开路由分别为 `push2his.eastmoney.com/api/qt/stock/kline/get`、`push2.eastmoney.com/api/qt/clist/get` 和 `datacenter-web.eastmoney.com/api/data/v1/get` 的 `RPT_DMSK_FN_INCOME`。这些是已探测的公开网页实现，**没有正式开放 API 合同、配额保证、全市场权限或实时推送承诺**，其服务协议限制与前文相同。原始 K 线量额使用“手 / 人民币元”；列表通过 `fltt=2` 请求小数格式，不能再次将涨跌幅除以 100。每条量额都明确单位，不混用 Tushare 的“手 / 人民币千元”与申万行业的“万股 / 人民币万元”。
+
+Tushare 按官方 [HTTP JSON 协议](https://tushare.pro/document/1?doc_id=40)实现 `api_name/token/params/fields`，本项目只通过 HTTPS 发送 token，不降级到明文 HTTP。已核对 [daily](https://tushare.pro/document/2?doc_id=27)、[申万分类](https://tushare.pro/document/2?doc_id=181)、[分级成分](https://tushare.pro/document/2?doc_id=335)、[申万日线](https://tushare.pro/document/2?doc_id=327)、[利润表](https://tushare.pro/document/2?doc_id=33)及[权限说明](https://tushare.pro/document/2?doc_id=290)。行业分类/成分与利润表文档要求至少 2000 积分，申万日线要求 5000 积分；频率与权限以账号实际开通情况为准。分钟和公告是另行授权能力，本轮未把它们冒充日线权限附带服务。当前没有 Tushare token，**仅完成官方协议核对和 MockTransport 测试，尚未验证真实认证、账号配额及权限**。
+
+结构化查询使用与文档分开的有界 LRU（128 项、16 MB），相同请求并发时只发起一次下载。缓存原始时间保留，返回缓存年龄、TTL 与 `cache_stale=false`（仅表示缓存未过期，**不表示数据源实时**）；超时、连接中断、非成功返回不会生成替代行情。过期后请求失败时直接报告失败。请求最大 5 MB、总超时默认 30 秒；不无限重试，不自动扩大到全市场下载。不同 token 的缓存键不同且仅保存哈希，错误不回显 token、供应商原始错误正文或请求头。
+
+基础财务接口目前不等于完整三大报表库，也不替代 Agent 查阅正式财报；资产负债表、现金流量表、统一季度重述/追溯调整、历史板块成分、ETF 穿透及经认证的分钟数据仍是功能扩展范围。原报告与公告可由搜索、HTML 附件发现、PDF 定位工具读取。
+
+## 第二轮真实联网验收（2026-10-23，Asia/Shanghai）
+
+下列测试直接运行最终 Python 适配代码，无模型、搜索、行情或文档替身，没有读写账户数据库。
+
+- **00:08:09**：行业、概念、`BK0420` 成分分别成功返回 5 条，供应商总数分别为 496、516、14；这些是该次供应商返回的分类数量，不等于全市场覆盖证明。利润表成功返回 `SH:600519` 最近 8 条，最新报告期 `2026-06-30`、披露日 `2026-08-15`。同轮股票 K 线、板块 K 线和基准 K 线遇到 `RemoteProtocolError`，均返回空记录及 `unavailable`。
+- **00:11:08**：将三种历史查询缩小为 `2026-10-19`–`2026-10-22`，最终 `history()`、`sector_history()`、`benchmark_history()` 都成功返回 4 根日 K，实际最新日期为 `2026-10-22`。这证明最终解析可用，**也保留了前次真实断连证据，不能据此宣称公开接口稳定可靠**。
+- **00:08:09 起**：实际读取[巨潮披露的贵州茅台 2026 半年度报告](https://static.cninfo.com.cn/finalpage/2026-08-15/1225475868.PDF)，832,321 字节、110 页，完整字节 SHA-256 为 `0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6`。`pdf_metadata()` 返回 `access=metadata`；对第 21–80 页搜索“归属于母公司”命中物理页 28、31、32、37、38、73；`read_url(page=28)` 成功取得 1,136 字符且包含该关键词。检索和页读取均 `cache_hit=true`，文档 hash 相同，页读取 `access=excerpt`、`returned_range={start_page:28,end_page:28}`，没有把局部读取标成全文。
+- 认证搜索与真实模型仍需各自凭据；这次联网材料/行情验证**不能替代真实模型研究评估**。本适配器未发送 Tushare 认证请求。
+
+可重复联网探测（显式执行才联网，公共服务当时不可用会原样报告失败）：
+
+```sh
+PYTHONPATH=. .venv/bin/python tests/provider_smoke.py
+```
+
+第二轮 provider 确定性测试执行：
+
+```sh
+.venv/bin/python -m pytest tests/test_providers.py tests/test_provider_documents.py tests/test_provider_market.py -q
+# 55 passed
+```
+
+其中长 PDF 回归由真实 pypdf 解析 35 页测试文档，HTTP 是可控替身；它验证附件 → 元数据 → 第 29 页检索/读取、单次字符和页数边界、空页/OCR 状态、缓存/刷新/并发下载、完整字节版本标识。市场回归验证真实请求协议、字段与单位、身份校验、财报累计期同比、分页广度、不支持口径、缺凭据、权限拒绝、总超时及密钥不回显。原有 24 条 provider 测试全部保留通过。

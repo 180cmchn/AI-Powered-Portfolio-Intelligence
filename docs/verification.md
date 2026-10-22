@@ -1,5 +1,54 @@
 # 交付验证记录
 
+## 第二轮最终验证（2026-10-23，Asia/Shanghai）
+
+基线：`e62ee5e`、原有 **57 passed**。最终执行：
+
+```sh
+.venv/bin/python -m pytest -q
+# 131 passed, 1 warning in 3.69s
+node --check app/static/app.js
+.venv/bin/python -m compileall -q app scripts
+git diff --check
+```
+
+**0 项失败，原有测试全部保留通过。** 唯一 warning 是现有 Starlette 测试客户端关于 httpx 的弃用提示。没有将协议替身结果视为模型质量验证。
+
+| 验证类别 | 实际执行与结果 | 能证明的范围 |
+| --- | --- | --- |
+| 确定性单元 / 持久化 / 本地集成 | pytest 合计 131 项通过；其中原 provider 24 项及新增 31 项共 55 项通过 | 值计算、版本保护、状态迁移、数据解析与网络失败边界 |
+| 调度集成 | 模拟完整上午/下午交易时段并重复 tick | 48 次全局扫描，4 个账户各 16 个综合研究需求均完成；公共研究只执行一份 |
+| 生命周期 / 更新集成 | `test_iteration.py`、`test_iteration_edge_review.py` | 忙碌需求补跑、重启幂等、waiting_config 恢复、资讯更正与通知恢复、建议监控/触发/过期/持仓变更、旧结果迟到、语义相同价格条件与失效日期防重跑 |
+| 材料 / 文档集成 | 大量长正文索引、字符分页；pypdf 实际解析 35 页 fixture | 列表有界、跨账户访问隔离、同源多条提取不会误判更正、HTML 附件、PDF 第 29 页、错误/部分读取状态、范围/来源字段保留 |
+| 模型协议替身 | `test_agents.py`、`test_context_runtime.py` | 独立主/子会话、工具调用/续接/追问、可取回上下文、两种协议、请求用量和撤销元数据传递；不证明真实模型推理正确 |
+| API 与浏览器 | 新增 API 8 项；真实 Chrome 执行 `frontend_iteration.mjs` | 市场报价自动更新且保持草稿/焦点/选区；持仓草稿保留原 expected_version；材料 ID/PDF 范围；过期展示；报告缓存；事件游标；公共报告详情 |
+| 真实本机进程 | `.venv/bin/python scripts/check_local_lifecycle.py` 输出 PASS | 随机回环端口、临时 demo 数据库；HTTP 创建账户、后台摘要、优雅停止、重启输入不变、v2 在线备份与实际 restore 脚本恢复。无外部模型或数据调用 |
+| 真实联网数据 | `PYTHONPATH=. .venv/bin/python tests/provider_smoke.py`，另执行缩小区间的最终适配器探测 | 公共股票/板块/基准日 K、行业/概念目录、成分、利润表有成功结果；也出现真实 RemoteProtocolError。详情见 providers.md |
+| 真实长 PDF | 最终适配器直接读取巨潮 110 页财报，检索后读取物理页 28 | 1,136 字符、关键词存在、同 document_id、缓存复用、access=excerpt；不是 OCR 或全文财务理解验收 |
+| 真实模型评估 | 下列命令实际执行，退出 78 / SKIPPED | 缺模型名/密钥；没有模型输出可评估，十类输入的真实研究质量均待验证 |
+
+```sh
+.venv/bin/python scripts/evaluate_model.py --check-config
+# model_name_present=false, model_key_present=false,
+# search_provider_configured=false, search_key_present=false
+.venv/bin/python scripts/evaluate_model.py --case mixed_fact_opinion
+# SKIPPED (缺少真实模型配置；所有未运行案例仍未验证), exit 78
+```
+
+浏览器回归需要开发时的 Playwright 与 Chrome；运行正式应用不需要它们。本次使用：
+
+```sh
+NODE_PATH=/Users/chn/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules \
+BROWSER_EXECUTABLE='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' \
+node tests/frontend_iteration.mjs
+```
+
+浏览器使用明确的 HTTP fixture，真实联网测试使用真实外部端点；两者没有混为一类。本机生命周期脚本首次因 Uvicorn 在优雅关闭后转发 SIGTERM（退出 -15）的检查假设失败；修正测试为校验退出码及“Finished server process”后完整通过，没有隐去该过程。
+
+尚未覆盖：真实模型与搜索认证、Tushare 认证/权限、真实分钟/复权样例、完整财务口径、实际系统睡眠、长期连续运行压力和投资收益。自动化验证不代替投资研究效果。实现、迁移和运行说明见 [第二轮交付](iteration-2.md)。下面保留第一轮历史记录，数量与状态不代表本轮最终结果。
+
+## 第一轮历史验证记录
+
 验证日期：2026-10-22，Asia/Shanghai。环境：macOS / arm64、Python 3.14.4、项目 `.venv`。依赖版本已锁定于 `uv.lock` 和 `requirements.txt`。
 
 ## 已通过的确定性验证
