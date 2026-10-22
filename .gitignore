@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+data/*.db*
+data/*.sqlite*
+data/*.pid
+data/*.log
+data/*.lock
+data/model-evaluation*.json
+data/evaluations/
+data/backups/
+*.pyc
+.DS_Store

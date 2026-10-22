@@ -1,0 +1,18 @@
+[project]
+name = "guanlan-local"
+version = "0.1.0"
+description = "本地虚拟账户与多 Agent 投资研究工作台"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn>=0.34,<1", "httpx>=0.28,<1",
+  "pydantic>=2.10,<3", "beautifulsoup4>=4.13,<5", "pypdf>=5,<7",
+  "python-dotenv>=1,<2"
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.25,<2"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

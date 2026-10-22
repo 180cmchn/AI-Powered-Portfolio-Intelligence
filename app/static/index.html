@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#172b33" />
+    <meta
+      name="description"
+      content="观澜：运行在本机的虚拟投资账户与多 Agent 股票研究工作台"
+    />
+    <title>观澜 · 本地投资研究台</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳转到主要内容</a>
+    <div id="app">
+      <main class="boot-state">
+        <span class="brand-mark">观</span>
+        <h1>观澜</h1>
+        <p>正在连接本地研究服务…</p>
+      </main>
+    </div>
+    <div
+      id="toast-region"
+      class="toast-region"
+      role="status"
+      aria-live="polite"
+    ></div>
+    <dialog id="dialog"></dialog>
+    <noscript
+      >观澜需要启用 JavaScript 才能管理虚拟账户。请启用 JavaScript
+      后刷新页面。</noscript
+    >
+  </body>
+</html>
