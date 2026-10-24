@@ -35,15 +35,17 @@ def test_material_index_is_bounded_and_text_ranges_preserve_access(api):
     assert 'text' not in index[0] and 'content' not in index[0]
     assert len(json.dumps(index, ensure_ascii=False)) < 2500
     assert client.get('/api/materials', params={'account_id': account['id'], 'offset': 1}).json() == []
-    found = client.get('/api/materials', params={'query': '末尾关键数据'}).json()
+    found = client.get('/api/materials', params={'query': '末尾关键数据', 'account_id': account['id']}).json()
     assert found[0]['id'] == material['id']
-    fragment = client.get(f"/api/materials/{material['id']}/range", params={'start': 40000, 'length': 100}).json()
+    fragment = client.get(f"/api/materials/{material['id']}/range", params={'start': 40000, 'length': 100, 'account_id': account['id']}).json()
     assert fragment['text'] == '末尾关键数据'
     assert fragment['start'] == 40000 and fragment['next_start'] is None
     assert fragment['access'] == 'excerpt' and fragment['truncated'] is True
     assert fragment['returned_range'] == {'start_page': 25, 'end_page': 26}
-    assert client.get(f"/api/materials/{material['id']}").json()['text'] == body
-    assert client.get('/api/materials', params={'index': False, 'limit': 1}).json()[0]['text'] == body
+    assert client.get(f"/api/materials/{material['id']}", params={'account_id': account['id']}).json()['text'] == body
+    assert client.get('/api/materials', params={'index': False, 'limit': 1, 'account_id': account['id']}).json()[0]['text'] == body
+    assert client.get(f"/api/materials/{material['id']}").status_code == 404
+    assert client.get('/api/materials', params={'query': '末尾关键数据'}).json() == []
 
 
 def test_job_events_increment_and_report_body_is_on_demand(api):

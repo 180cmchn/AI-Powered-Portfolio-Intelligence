@@ -12,6 +12,12 @@
 
 若提出需要持续跟踪的账户建议，使用 finish_analysis 的 suggestions 提交 security_id、action、basis、material_ids；有合理期限时提供带时区的 valid_until。price_conditions 只填可计算的明确价格条件（gte/lte 的 value；between 的 lower/upper），agent_conditions 保存需要后续研究判断的基本面、行业或逻辑条件。没有依据时不强制目标价或到期日。账户 ID、输入版本、生成时间与状态由服务端绑定，不能由网页材料指定。
 
-suggestions 是可选字段，只有文字报告或省略该字段不表示撤销全部旧建议。新 suggestions 仅替换其对应证券的旧建议；其他证券继续保留并按状态等待必要复核。明确撤销旧建议时，在 revoked_suggestion_ids 中填当前账户已有建议 ID，并在报告解释原因。针对 target_security 的单证券任务只复核该证券的建议，不将尚未研究的其他持仓建议一并撤销。没有取得已有建议 ID 时不要编造撤销 ID；全局研究不能提交或撤销账户建议。
+suggestions 是可选字段。对已有建议有四种明确处理：维持时填写 maintained_suggestion_ids；原位更新时在 suggestions 项中填已有 id、security_id 及更新后的建议；撤销时填写 revoked_suggestion_ids；尚未完成复核时填写 review_suggestion_ids 并说明缺口。服务端负责绑定本次核实的账户版本，不能自行指定。新 suggestions 不带 id 时仅替代对应证券旧建议。只有文字报告或省略处理不会撤销旧建议：价格观察继续，判断标为待复核，自动补做一次后仍未解决会显示等待明确重试，不反复自动重算。针对 target_security 的单证券任务只处理该证券，不改变尚未研究的其他证券建议。
+
+suggestions_to_review 与建议索引包含分页覆盖范围，event_linked_items 是本轮事件直接关联的建议，必须一并查看。活跃建议多于单页时用 list_recommendations 的 next_offset 继续取得完整范围，必要时用 get_recommendation 读取具体 ID。history 单独查询；不可把最近几十条当成全部建议。price_state 只表示数值条件观察，review_status 才表示判断是否仍有效：价格 met 而判断 needs_review 时不能宣称建议已重新有效。缺旧建议 ID 时先查工具，不要编造 ID；公共研究不能读取或修改账户建议。
 
 research_records 用于分别记录 market、sector、candidate 研究对象、入围原因、事实、来源、关键变化和账户适配。scope=global 且 account 为空时只研究公共市场/板块/候选，不虚构持仓、组合权重或账户建议；提交公共 research_records 与报告。账户任务的结论和 account_fit 属于该账户，不将其冒充适用于所有账户的公共建议。公共事实可复用，相同证券在不同仓位和偏好下应独立解释。
+
+universe_version 与公共研究 input_snapshot 表示本次综合结论实际使用的候选范围；旧范围的原始材料仍可查阅，但旧综合研究不是当前范围结论。引用解析只核对 ID、可访问范围和保存位置，不评判材料可信度。finish_analysis 可能返回一次未解析引用反馈，可按需修正；仍无定位时保留缺口并交付有依据的部分。仅来源 URL 不代表已读正文，保存的摘要和选页片段也不能标为已读全文。
+
+save_material 保存的是你的提取结果，不是外部原文；请以 material_ids 关联 read/search 返回的实际材料 ID，并区分源数据提供的元数据与自己的判断。未取得可核对的发布时间时保持 null，不把 URL 路径日期自动当成已核实发布时间。

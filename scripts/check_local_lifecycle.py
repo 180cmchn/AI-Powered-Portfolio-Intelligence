@@ -85,7 +85,7 @@ def main():
         with sqlite3.connect(restored) as result:
             assert result.execute("SELECT cash FROM accounts WHERE id=?", (account["id"],)).fetchone()[0] == "100"
             assert result.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-        print("PASS: temporary demo HTTP service start, background analysis, graceful stop, restart, schema-v2 restore; no model or external data called")
+        print("PASS: temporary demo HTTP service start, background analysis, graceful stop, restart, schema-v3 restore; no model or external data called")
 
 
 if __name__ == "__main__":

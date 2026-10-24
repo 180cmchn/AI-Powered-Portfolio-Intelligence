@@ -235,7 +235,7 @@ def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
         db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
         db.execute('DROP TABLE material_catalog')
     upgraded=Store(store.path)
-    assert upgraded.meta('schema_version')==2
+    assert upgraded.meta('schema_version')==3
     assert upgraded.account(a['id'])['version']==1
     assert upgraded.material(m['id'])['content']=='old text'
     assert store.path.with_name(store.path.name+'.before-v2.bak').exists()

@@ -17,9 +17,57 @@ CREATE TABLE IF NOT EXISTS global_runs(
 
 
 class SchedulingStore:
+    def migrate_research_versions(self, db):
+        # Historical scope was never saved: NULL means unknown, not current v1.
+        additions = {
+            'global_runs': {'universe_version': 'INTEGER', 'input_snapshot': 'TEXT',
+                            'applicability': "TEXT NOT NULL DEFAULT 'legacy_unknown'"},
+            'research_records': {'universe_version': 'INTEGER', 'logical_identity': 'TEXT',
+                                 'applicability': "TEXT NOT NULL DEFAULT 'legacy_unknown'"},
+        }
+        for table, fields in additions.items():
+            existing = {r[1] for r in db.execute(f'PRAGMA table_info({table})')}
+            for field, declaration in fields.items():
+                if field not in existing:
+                    db.execute(f'ALTER TABLE {table} ADD COLUMN {field} {declaration}')
+        db.execute("INSERT OR IGNORE INTO meta VALUES('universe_version','1')")
+
+    def universe_snapshot(self, db=None):
+        from .store import loads
+        if db is None:
+            with self.connect() as conn:
+                return self.universe_snapshot(conn)
+        rows = {r['key']: loads(r['value']) for r in db.execute("SELECT * FROM meta WHERE key IN ('universe','universe_version')")}
+        return {'universe': rows.get('universe', {'watchlist': [], 'candidates': []}),
+                'universe_version': rows.get('universe_version', 1)}
+
+    def save_universe(self, universe):
+        from .store import dumps
+        universe = universe.model_dump() if hasattr(universe, 'model_dump') else universe
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            prior = self.universe_snapshot(db)
+            if prior['universe'] == universe:
+                return prior
+            version, stamp = prior['universe_version'] + 1, now()
+            for key, value in [('universe', universe), ('universe_version', version)]:
+                db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)', (key, dumps(value)))
+            db.execute("UPDATE research_records SET applicability='stale' WHERE account_id='' AND applicability='current'")
+            db.execute("UPDATE global_runs SET applicability='stale' WHERE applicability='current'")
+            # Old waiting work cannot absorb the new scope's demands indefinitely.
+            db.execute("UPDATE global_runs SET state='superseded' WHERE state='waiting_config'")
+            db.execute("UPDATE research_demands SET state='pending',job_id=NULL WHERE account_id='' AND state='assigned' AND job_id IN (SELECT id FROM global_runs WHERE state='superseded')")
+            for row in db.execute('SELECT id FROM accounts').fetchall():
+                self.save_account(self.account(row['id'], db), row['id'], 'universe_changed', db)
+            db.execute("""INSERT OR IGNORE INTO research_demands
+                (event_key,account_id,input_version,kind,reason,state,created_at,updated_at)
+                VALUES(?,'',?,'universe_changed',?,'pending',?,?)""",
+                (f'universe:{version}', version, f'universe_changed:v{version}', stamp, stamp))
+            return self.universe_snapshot(db)
+
     def request_analysis(self, account_id, kind, event_key=None, reason=None, delay=0):
         """Never interrupts running work. Only unstarted work can absorb new demands."""
-        from .store import uid
+        from .store import uid, dumps
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             account = self.account(account_id, db) if account_id else None
@@ -70,12 +118,14 @@ class SchedulingStore:
         return [dict(r) for r in rows]
 
     def claim_global(self):
-        from .store import uid
+        from .store import uid, dumps
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            if db.execute("SELECT 1 FROM global_runs WHERE state IN ('running','waiting_config')").fetchone():
+            snapshot = {**self.universe_snapshot(db), 'config': self.settings()}
+            version = snapshot['universe_version']
+            if db.execute("SELECT 1 FROM global_runs WHERE state IN ('running','waiting_config') AND universe_version=?", (version,)).fetchone():
                 # A missing configuration must not create a new failed job every scan.
-                waiting = db.execute("SELECT id FROM global_runs WHERE state='waiting_config' ORDER BY created_at LIMIT 1").fetchone()
+                waiting = db.execute("SELECT id FROM global_runs WHERE state='waiting_config' AND universe_version=? ORDER BY created_at LIMIT 1", (version,)).fetchone()
                 if waiting:
                     db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='merged: waiting for configuration' WHERE account_id='' AND state='pending'", (waiting[0],))
                 return None
@@ -84,19 +134,27 @@ class SchedulingStore:
                 return None
             run_id, stamp = uid(), now()
             reasons = "; ".join(dict.fromkeys(r["reason"] for r in pending))[:2000]
-            prior_attempts = [db.execute("SELECT attempts FROM global_runs WHERE id=?", (r["job_id"],)).fetchone() for r in pending if r["job_id"]]
+            prior_attempts = [db.execute("SELECT attempts FROM global_runs WHERE id=? AND universe_version=?", (r["job_id"], version)).fetchone() for r in pending if r["job_id"]]
             attempts = 1 + max((r[0] for r in prior_attempts if r), default=0)
             exhausted = attempts > self.settings()["max_job_attempts"]
-            db.execute("INSERT INTO global_runs VALUES(?,?,?,?,NULL,?,?,?,?)", (run_id, "candidate_scan", "failed" if exhausted else "running", reasons,
-                       "中断后重试次数已达上限；等待新的研究窗口" if exhausted else None, attempts, stamp, stamp))
+            db.execute("""INSERT INTO global_runs
+                (id,kind,state,reason,result,error,attempts,created_at,updated_at,universe_version,input_snapshot,applicability)
+                VALUES(?,?,?,?,NULL,?,?,?,?,?,?,'current')""", (run_id, "candidate_scan", "failed" if exhausted else "running", reasons,
+                       "中断后重试次数已达上限；等待新的研究窗口" if exhausted else None, attempts, stamp, stamp, version, dumps(snapshot)))
             db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='shared global research; coalesced pending windows',updated_at=? WHERE account_id='' AND state='pending'", (run_id, stamp))
             if exhausted:
                 db.execute("UPDATE research_demands SET state='failed',detail='interrupted global retry limit reached' WHERE job_id=?", (run_id,))
                 return None
-            return dict(db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone())
+            return self._global_body(db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone())
 
     def finish_global(self, run_id, state, result=None, error=None):
         from .store import dumps
+        prior = self.global_run(run_id)
+        if prior['state'] not in ('running', 'waiting_config'):
+            return False
+        if result:
+            result = self.resolve_result_references(result)
+            result.update(universe_version=prior['universe_version'], input_snapshot=prior['input_snapshot'])
         if state == "completed" and result and result.get("report") and not result.get("demo"):
             report = self.save_material({"content": result["report"], "scope": "public", "classification": "agent_analysis",
                                         "access": "generated_report", "source_title": "公共研究主 Agent 综合报告",
@@ -108,18 +166,32 @@ class SchedulingStore:
                    "material_ids": [report["id"], *(result.get("material_ids") or [])], "status": "reviewed"}]
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            db.execute("UPDATE global_runs SET state=?,result=?,error=?,updated_at=? WHERE id=?", (state, dumps(result) if result else None, error, now(), run_id))
+            run = db.execute('SELECT * FROM global_runs WHERE id=?', (run_id,)).fetchone()
+            if run['state'] not in ('running', 'waiting_config'):
+                return False
+            applicable = run['universe_version'] == self.universe_snapshot(db)['universe_version']
+            applicability = 'current' if applicable else 'stale'
+            terminal = state if applicable or state != 'completed' else 'superseded'
+            if result:
+                result['applicability'] = applicability
+            db.execute("UPDATE global_runs SET state=?,result=?,error=?,updated_at=?,applicability=? WHERE id=?", (terminal, dumps(result) if result else None, error, now(), applicability, run_id))
             if state == "completed" and result:
                 self.save_research_records(result.get("research_records", []), run_id, db=db)
             if state != "waiting_config":
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
                            ("completed" if state == "completed" else "failed", error or "global research completed", now(), run_id))
+            return applicable
+
+    @staticmethod
+    def _global_body(row):
+        from .store import loads
+        return {**dict(row), 'result': loads(row['result']), 'input_snapshot': loads(row['input_snapshot'])}
 
     def global_runs(self, limit=20):
         from .store import loads
         with self.connect() as db:
             rows = db.execute("SELECT * FROM global_runs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
-        return [{**dict(r), "result": loads(r["result"])} for r in rows]
+        return [self._global_body(r) for r in rows]
 
     def global_run(self, run_id):
         from .store import loads
@@ -127,7 +199,7 @@ class SchedulingStore:
             row = db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone()
         if not row:
             raise KeyError("公共研究不存在")
-        return {**dict(row), "result": loads(row["result"])}
+        return self._global_body(row)
 
     def recover_demands(self, db, config_ready=False):
         db.execute("UPDATE research_demands SET state='pending',detail='recovered interrupted global work' WHERE job_id IN (SELECT id FROM global_runs WHERE state='running')")

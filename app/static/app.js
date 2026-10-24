@@ -21,13 +21,17 @@ const state = {
   settings: {},
   accountId: localStorage.getItem("guanlan.account"),
   busy: false,
+  pendingAccountId: null,
   error: null,
   loaded: false,
   materialFilter: "all",
   materialQuery: "",
-  pages: { analyses: 0, jobs: 0, materials: 0 },
+  pages: { analyses: 0, jobs: 0, materials: 0, recommendations: 0, recommendationHistory: 0 },
   pageSize: 10,
   recommendations: [],
+  recommendationHistory: [],
+  recommendationCoverage: {},
+  showRecommendationHistory: false,
   publicResearch: [],
   demands: [],
   globalRuns: [],
@@ -193,6 +197,7 @@ const classificationNames = {
   conflict: "冲突材料",
   inference: "系统计算 / 推论",
   calculation: "系统计算 / 推论",
+  agent_analysis: "系统生成研究 / 推论",
   unknown: "暂不确定",
 };
 function inlineMarkdown(text) {
@@ -297,6 +302,10 @@ async function operation(callback) {
     state.busy = false;
     if (active?.isConnected) active.disabled = false;
     line.remove();
+    const pendingAccountId = state.pendingAccountId;
+    state.pendingAccountId = null;
+    if (pendingAccountId && pendingAccountId !== state.accountId)
+      requestAccountSwitch(pendingAccountId);
   }
 }
 async function loadJobEvents(jobId) {
@@ -315,6 +324,8 @@ async function loadAccount() {
     state.jobs = [];
     state.materials = [];
     state.recommendations = [];
+    state.recommendationHistory = [];
+    state.recommendationCoverage = {};
     return;
   }
   const id = encodeURIComponent(state.accountId), size = state.pageSize;
@@ -323,10 +334,11 @@ async function loadAccount() {
     api(`/api/accounts/${id}/analyses?summary=true&limit=${size}&offset=${state.pages.analyses * size}`),
     api(`/api/accounts/${id}/jobs?events=false&limit=${size}&offset=${state.pages.jobs * size}`),
     state.route === "research" ? api(`/api/materials?account_id=${id}&index=true&limit=${size}&offset=${state.pages.materials * size}&query=${encodeURIComponent(state.materialQuery)}`) : Promise.resolve(null),
-    api(`/api/accounts/${id}/recommendations`),
+    api(`/api/accounts/${id}/recommendations?view=active&envelope=true&limit=${size}&offset=${state.pages.recommendations * size}`),
     state.route === "market" ? api(`/api/research?account_id=${id}&limit=30`) : Promise.resolve(null),
     state.route === "agents" ? api(`/api/demands?account_id=${id}&limit=50`) : Promise.resolve(null),
     state.route === "market" ? api("/api/global-research?limit=10") : Promise.resolve(null),
+    state.route === "research" && state.showRecommendationHistory ? api(`/api/accounts/${id}/recommendations?view=history&envelope=true&limit=${size}&offset=${state.pages.recommendationHistory * size}`) : Promise.resolve(null),
   ]);
   if (results[0].status === "rejected") throw results[0].reason;
   if (id !== encodeURIComponent(state.accountId)) return;
@@ -349,10 +361,17 @@ async function loadAccount() {
   }
   if (results[2].status === "fulfilled") state.jobs = array(results[2].value, "jobs");
   if (results[3].status === "fulfilled" && results[3].value) state.materials = array(results[3].value, "materials");
-  if (results[4].status === "fulfilled") state.recommendations = array(results[4].value, "recommendations");
+  if (results[4].status === "fulfilled") {
+    state.recommendations = array(results[4].value, "items");
+    state.recommendationCoverage.recommendations = results[4].value;
+  }
   if (results[5].status === "fulfilled" && results[5].value) state.publicResearch = array(results[5].value, "records");
   if (results[6].status === "fulfilled" && results[6].value) state.demands = array(results[6].value, "demands");
   if (results[7].status === "fulfilled" && results[7].value) state.globalRuns = array(results[7].value, "runs");
+  if (results[8].status === "fulfilled" && results[8].value) {
+    state.recommendationHistory = array(results[8].value, "items");
+    state.recommendationCoverage.recommendationHistory = results[8].value;
+  }
   if (state.route === "agents") {
     const active = state.jobs.find((job) => job.state === "running");
     if (active && !state.events[active.id]) state.openedJobs.add(active.id);
@@ -379,7 +398,10 @@ async function refresh(full = false) {
   state.accounts = array(results[1].value, "accounts");
   if (!state.accounts.some((a) => a.id === state.accountId)) {
     state.accountId = state.accounts[0]?.id || null;
-    state.pages = { analyses: 0, jobs: 0, materials: 0 };
+    state.pages = { analyses: 0, jobs: 0, materials: 0, recommendations: 0, recommendationHistory: 0 };
+    state.showRecommendationHistory = false;
+    state.recommendationHistory = [];
+    state.recommendationCoverage = {};
   }
   if (state.accountId) localStorage.setItem("guanlan.account", state.accountId);
   if (results[2].status === "fulfilled" && results[2].value) state.universe = results[2].value;
@@ -390,7 +412,11 @@ async function refresh(full = false) {
 }
 function pager(kind, rows) {
   const page = state.pages[kind];
-  return `<div class="pagination"><button class="button compact" data-action="page" data-kind="${kind}" data-page="${page - 1}" ${page === 0 ? "disabled" : ""}>上一页</button><span class="small muted">第 ${page + 1} 页 · 每页最多 ${state.pageSize} 条</span><button class="button compact" data-action="page" data-kind="${kind}" data-page="${page + 1}" ${rows.length < state.pageSize ? "disabled" : ""}>下一页</button></div>`;
+  const coverage = state.recommendationCoverage[kind];
+  const hasMore = coverage?.has_more ?? rows.length >= state.pageSize;
+  const range = rows.length ? `${page * state.pageSize + 1}–${page * state.pageSize + rows.length}` : "0";
+  const label = Number.isInteger(coverage?.total) ? `当前 ${range} / 共 ${coverage.total} 条` : `每页最多 ${state.pageSize} 条`;
+  return `<div class="pagination" data-pagination="${kind}"><button class="button compact" data-action="page" data-kind="${kind}" data-page="${page - 1}" ${page === 0 ? "disabled" : ""}>上一页</button><span class="small muted">第 ${page + 1} 页 · ${label}</span><button class="button compact" data-action="page" data-kind="${kind}" data-page="${page + 1}" ${hasMore ? "" : "disabled"}>下一页</button></div>`;
 }
 function notice() {
   let html = "";
@@ -585,58 +611,135 @@ function market() {
   }</div></section></div><section class="card"><div class="card-header"><h2>行情快照</h2><span class="small muted">数据源 ${e(state.settings.quote_provider || state.status.settings?.quote_provider || "待配置")}</span></div>${quotes.length ? `<div class="table-wrap"><table><thead><tr><th>证券</th><th class="align-right">最新价</th><th>行情时间（上海）</th><th>来源</th><th>状态</th><th></th></tr></thead><tbody>${quotes.map((q) => `<tr><td><div class="security-name">${e(q.name || q.symbol)}</div><div class="security-code">${e(q.symbol)}</div></td><td class="align-right numeric">${number(q.price ?? q.last_price)}</td><td>${date(q.as_of)}</td><td>${e(q.source || "未知")}</td><td>${stateBadge(q.status || "missing")}${q.error || q.last_error ? `<span class="cell-secondary negative">${e(q.error || q.last_error)}</span>` : ""}</td><td><button class="button compact" data-action="analyze-symbol" data-symbol="${e(q.symbol)}">研究此证券</button></td></tr>`).join("")}</tbody></table></div>` : empty("暂无行情快照", "点击“刷新行情”获取配置数据源的实际结果。失败时会保留原因，不使用随机价格填补。", "refresh-quotes", "刷新行情", "market")}<div class="card-note">行情刷新与深度研究独立运行。非交易时段、数据源延迟与停牌需结合实际状态解释；界面不承诺实时行情。</div></section>${publicResearch()}`;
 }
 function publicResearch() {
-  return `<section class="card"><div class="card-header"><h2>公共市场、板块与候选研究</h2><a class="small" href="#research">查看账户建议 ↗</a></div><div class="card-body"><p class="small muted">公共发现可供多个账户复用；账户适配结论分别保存。不提供固定评分或未经验证的上涨概率。</p>${state.globalRuns.length ? `<details class="section-gap" data-key="global-runs"><summary>最近 ${state.globalRuns.length} 次全局研究任务</summary>${state.globalRuns.map((run) => `<div class="source-item"><div class="split-heading"><span>${e(reasonLabel(run.kind || run.reason || "candidate_scan"))}</span>${stateBadge(run.state)}</div><p class="small muted">${date(run.created_at)}${run.error ? " · " + e(run.error) : ""}</p><button class="button compact" data-action="global-result" data-id="${e(run.id)}">报告与调用统计</button></div>`).join("")}</details>` : ""}${state.publicResearch.length ? state.publicResearch.map((record) => `<article class="source-item"><div class="split-heading"><h3>${e(record.title || record.symbol || record.security_id || record.sector || "公共研究")}</h3>${stateBadge(record.state || record.status)}</div><div class="source-meta"><span>${e({ market: "市场研究", sector: "板块研究", candidate: "候选证券" }[record.kind] || record.kind || "研究记录")}</span><span>首次 ${date(record.first_seen_at || record.created_at)}</span><span>复核 ${date(record.reviewed_at || record.updated_at)}</span></div>${markdown(record.reason || record.summary || record.rationale || record.findings || record.body || "研究摘要未提供")}${record.findings ? `<details><summary>研究发现</summary>${objectView(record.findings)}</details>` : ""}${record.key_changes || record.changes ? `<h4>关键变化</h4>${objectView(record.key_changes || record.changes)}` : ""}${record.account_fit ? `<h4>当前账户适配</h4>${objectView(record.account_fit)}` : ""}${array(record.material_ids).map(materialReference).join(" ")}</article>`).join("") : '<p class="small muted section-gap">尚无公共研究记录。全局扫描完成后在此展示；账户报告仍在研究页面单独保留。</p>'}</div></section>`;
+  return `<section class="card"><div class="card-header"><h2>公共市场、板块与候选研究</h2><a class="small" href="#research">查看账户建议 ↗</a></div><div class="card-body"><p class="small muted">公共发现可供多个账户复用；账户适配结论分别保存。不提供固定评分或未经验证的上涨概率。</p>${state.globalRuns.length ? `<details class="section-gap" data-key="global-runs"><summary>最近 ${state.globalRuns.length} 次全局研究任务</summary>${state.globalRuns.map((run) => `<div class="source-item"><div class="split-heading"><span>${e(reasonLabel(run.kind || run.reason || "candidate_scan"))}</span>${stateBadge(run.state)}</div>${researchVersion(run)}<p class="small muted">${date(run.created_at)}${run.error ? " · " + e(run.error) : ""}</p><button class="button compact" data-action="global-result" data-id="${e(run.id)}">报告与调用统计</button></div>`).join("")}</details>` : ""}${state.publicResearch.length ? state.publicResearch.map((record) => `<article class="source-item"><div class="split-heading"><h3>${e(record.title || record.symbol || record.security_id || record.sector || "公共研究")}</h3>${stateBadge(record.state || record.status)}</div>${researchVersion(record)}<div class="source-meta"><span>${e({ market: "市场研究", sector: "板块研究", candidate: "候选证券" }[record.kind] || record.kind || "研究记录")}</span><span>首次 ${date(record.first_seen_at || record.created_at)}</span><span>复核 ${date(record.reviewed_at || record.updated_at)}</span></div>${markdown(record.reason || record.summary || record.rationale || record.findings || record.body || "研究摘要未提供")}${record.findings ? `<details><summary>研究发现</summary>${objectView(record.findings)}</details>` : ""}${record.key_changes || record.changes ? `<h4>关键变化</h4>${objectView(record.key_changes || record.changes)}` : ""}${record.account_fit ? `<h4>当前账户适配</h4>${objectView(record.account_fit)}` : ""}${evidenceReferences(record)}</article>`).join("") : '<p class="small muted section-gap">尚无公共研究记录。全局扫描完成后在此展示；账户报告仍在研究页面单独保留。</p>'}</div></section>`;
 }
 function materialReference(id) {
   return `<button class="material-reference" type="button" data-action="open-material" data-id="${e(id)}">${e(id)}</button>`;
 }
-function reportReferences(report) {
-  const ids = new Set(String(report.report || report.result?.report || "").match(/\b[a-f0-9]{32}\b/g) || []);
+function evidenceReferences(record) {
+  const resolvedReferences = new Map();
+  let hasResolution = false;
+  const collect = (value) => {
+    if (Array.isArray(value)) value.forEach(collect);
+    else if (value && typeof value === "object") {
+      if (Array.isArray(value.references)) {
+        hasResolution = true;
+        value.references.forEach((ref) => {
+          if (ref && typeof ref === "object") resolvedReferences.set(`${ref.status}:${ref.material_id || ""}:${ref.url || ""}`, ref);
+        });
+      }
+      Object.entries(value).filter(([key]) => key !== "references").forEach(([, child]) => collect(child));
+    }
+  };
+  collect(record.result || record);
+  const references = [...resolvedReferences.values()];
+  if (hasResolution) {
+    return references.length ? `<div class="evidence-references"><h4>引用定位</h4>${references.map((ref) => referenceCard(ref)).join("")}</div>` : "";
+  }
+  const ids = new Set(String(record.report || record.result?.report || "").match(/\b[a-f0-9]{32}\b/g) || []);
   const visit = (value, key = "") => {
     if (typeof value === "string" && /^(material_id|material_ids|evidence_ids)$/.test(key)) ids.add(value);
     else if (Array.isArray(value)) value.forEach((item) => visit(item, key));
     else if (value && typeof value === "object") Object.entries(value).forEach(([name, item]) => visit(item, name));
   };
-  visit(report.result);
+  visit(record.result || record);
   const refs = [...ids];
-  return refs.length ? `<div class="source-meta">材料引用（按 ID 打开）：${refs.map(materialReference).join(" ")}</div>` : "";
+  return refs.length ? `<div class="evidence-references" data-reference-status="legacy_unknown">${badge("旧格式引用 · 尚未解析", "warning")}<p class="small muted">这些 ID 尚未确认可访问范围与原文位置。</p><div class="source-meta">${refs.map((id) => `<span class="mono">${e(id)}</span>`).join(" ")}</div></div>` : "";
+}
+function generatedMaterial(material) {
+  return ["agent_extraction", "generated_analysis"].includes(material.representation_kind);
+}
+function originReferences(material, depth = 0) {
+  if (!generatedMaterial(material)) return "";
+  const origins = array(material.origin_references);
+  if (material.origin_status !== "linked_materials" || !origins.length) {
+    const unknown = material.origin_status === "linked_materials" || (!material.origin_status && (array(material.material_ids).length || array(material.source_material_ids).length));
+    return `<p class="small muted origin-gap">${unknown ? "原文材料 ID 关联尚未解析，来源与页码为提取者提供。" : "未关联原文材料ID，来源与页码为提取者提供。"}</p>`;
+  }
+  return `<details class="origin-references"><summary class="small">关联来源材料（${origins.length} 条）</summary>${depth < 8 ? origins.map((origin) => referenceCard(origin, depth + 1)).join("") : '<p class="small muted">更深关联请按材料 ID 继续查看。</p>'}</details>`;
+}
+function referenceCard(ref, depth = 0) {
+  const resolved = ref.status === "resolved" && ref.material_id;
+  const sourceOnly = ref.status === "source_link";
+  const generated = generatedMaterial(ref);
+  const location = generated ? ref.claimed_source_range || ref.range : ref.range;
+  const range = location?.returned_range;
+  const requested = location?.requested_range;
+  const pages = range?.start_page ? `${generated ? "提取者标注页码" : "已保存页码"} ${range.start_page}–${range.end_page || range.start_page}` : requested?.start_page ? `${generated ? "提取者请求页码" : "请求页码"} ${requested.start_page}–${requested.end_page || requested.start_page} · 实际返回范围未知` : "";
+  const chars = ref.range?.char_count !== undefined ? `已保存${generated ? "生成文本" : ""} ${ref.range.char_count} 字符` : "";
+  const access = resolved ? generated ? "已保存生成内容，不代表已保存外部原文" : accessLabel({ access: ref.access, truncated: ref.range?.truncated, read_completeness: ref.range?.read_completeness }) : "";
+  const label = !resolved ? sourceOnly ? "仅来源链接 · 未定位本地原文" : "未解析引用" : ref.representation_kind === "agent_extraction" ? "已定位 Agent 提取 · 不是外部原文" : ref.representation_kind === "generated_analysis" ? "已定位生成报告 · 不是外部原文" : "已解析 · 可定位材料";
+  return `<div class="evidence-reference" data-reference-status="${e(resolved ? "resolved" : sourceOnly ? "source_link" : "unresolved")}" data-reference-kind="${e(ref.representation_kind || "unknown")}"><div class="source-meta">${badge(label, resolved && !generated ? "neutral" : "warning")}${resolved ? materialReference(ref.material_id) : `<span class="mono">${e(ref.material_id || "")}</span>`}${ref.url ? link(ref.url, ref.title || "来源链接") : ""}</div>${resolved ? `<div class="source-meta"><span>${e(access)}</span>${ref.scope ? `<span>范围：${e(ref.scope === "public" ? "公开共享材料" : "当前账户材料")}</span>` : ""}${pages ? `<span>${e(pages)}</span>` : ""}${chars ? `<span>${e(chars)}</span>` : ""}${ref.document_version ? `<span>${generated ? "生成内容" : "文档"} v${e(ref.document_version)}</span>` : ""}</div>${originReferences(ref, depth)}` : ""}${ref.reason ? `<p class="small muted">${e({ unknown_or_inaccessible: "材料不存在或不在当前可访问范围", not_located_in_saved_material: "此来源链接尚未定位到已保存原文", saved_retrieval_failed: "原文获取失败，仅保留来源链接", reference_chain_not_resolved: "来源材料关联尚未解析" }[ref.reason] || ref.reason)}</p>` : ""}</div>`;
+}
+function researchVersion(record) {
+  const version = record.universe_version;
+  const current = record.applicability === "current";
+  const label = current ? "当前研究范围" : record.applicability === "stale" ? "历史研究范围 · 不作为当前公共结论" : "旧格式 · 研究范围版本未知";
+  return `<div class="source-meta research-version" data-applicability="${e(record.applicability || "legacy_unknown")}">${badge(label, current ? "neutral" : "warning")}${version !== null && version !== undefined ? `<span>候选范围 v${e(version)}</span>` : ""}</div>`;
+}
+function reportResearchScope(report) {
+  const result = report.result || {};
+  const shared = array(result.shared_research_used).filter((record) => record.scope === "public");
+  return `<div class="report-research-scope"><div class="source-meta">${result.universe_version !== null && result.universe_version !== undefined ? badge(`本次报告研究范围 v${result.universe_version}`, "neutral") : badge("旧格式报告 · 研究范围版本未知", "warning")}</div>${shared.length ? `<details class="section-gap"><summary class="small">复用的公共研究（${shared.length} 条）</summary>${shared.map((record) => `<div class="source-meta"><span class="mono">${e(record.id)}</span><span>范围 ${record.universe_version !== null && record.universe_version !== undefined ? `v${e(record.universe_version)}` : "版本未知"}</span><span>使用时：${e({ current: "适用于当时范围", stale: "历史范围结论", legacy_unknown: "范围未知" }[record.applicability] || "范围未知")}</span></div>`).join("")}</details>` : ""}</div>`;
 }
 function accessLabel(material) {
   if (material.error || ["failed", "unavailable"].includes(material.access)) return "原文访问失败 / 不可访问";
-  if ((material.source_truncated ?? material.truncated) || material.access === "excerpt") return "部分内容 · 未读取全文";
-  return { full: "已读取可提取正文", full_text: "已读取可提取正文", snippet: "仅检索摘要 · 未读取全文", summary: "仅摘要 · 未读取全文", metadata: "仅文档元数据", reprint: "转载内容" }[material.access] || material.access || "访问范围未说明";
+  const limited = { snippet: "仅检索摘要 · 未读取全文", search_excerpt: "仅检索摘要 · 未读取全文", pdf_search: "PDF 检索摘要 · 未读取全文", summary: "仅摘要 · 未读取全文", metadata: "仅文档元数据", generated_report: "系统生成报告 · 不是外部原文" }[material.access];
+  if (limited) return limited;
+  if ((material.source_truncated ?? material.truncated) || material.access === "excerpt" || material.read_completeness === "partial") return "部分内容 · 未读取全文";
+  if (material.read_completeness === "unknown") return "读取完整性未知";
+  if (["full", "full_text"].includes(material.access)) return material.read_completeness === "complete_extracted_text" ? "已保存完整可提取正文" : "已保存可提取正文 · 完整性未说明";
+  return { reprint: "转载内容" }[material.access] || material.access || "访问范围未说明";
+}
+function materialVersion(material) {
+  const kind = { original_document: "原始文档的读取片段", summary: "摘要表示", text_representation: "文本表示 · 原始字节未知", agent_extraction: "Agent 提取结果", generated_analysis: "系统生成研究" }[material.representation_kind] || "历史材料 · 表示类型未知";
+  const version = material.document_version ?? material.version;
+  const identity = material.document_identity_kind === "raw_bytes_sha256" ? "已记录原始字节身份" : material.document_identity_kind === "representation_sha256" ? "仅表示内容身份 · 不代表原文哈希" : "原始内容身份未知";
+  return `<div class="source-meta material-version"><span>${e(kind)}</span>${version ? `<span>版本 v${e(version)}</span>` : ""}<span>${e(identity)}</span>${material.document_version_id ? `<span class="mono">文档版本 ${e(material.document_version_id)}</span>` : ""}</div>`;
 }
 function sourceCard(material) {
   const category = material.classification || material.category || "unknown";
+  const generated = generatedMaterial(material);
   const sources = material.source || {};
   const url = material.url || sources.url;
   const title = material.source_title || sources.title || material.title || "未提供来源标题";
   const summary = material.summary || material.claim || material.text || material.content || material.excerpt;
-  const range = material.returned_range || material.extracted_range;
+  const range = material.returned_range;
+  const requested = material.requested_range || material.extracted_range;
+  const savedContentLabel = material.access === "pdf_search" ? "检索结果" : material.access === "metadata" ? "结构化数据" : generated ? "生成内容" : "正文";
   const pages = Array.isArray(material.pages) ? material.pages : [];
-  return `<article class="source-item" id="material-${e(material.id)}"><div class="split-heading">${badge(classificationNames[category] || category, category.includes("opinion") ? "warning" : "neutral")}${material.id ? materialReference(material.id) : ""}</div><div class="source-title">${link(url, title)}</div><p class="source-content">${e(summary ? String(summary).slice(0, 900) : "索引暂无摘要，可按需打开已保存原文。")}${String(summary || "").length > 900 ? "…" : ""}</p><div class="source-meta"><span>发布者：${e(material.publisher || sources.publisher || "未知")}</span><span>发布时间：${material.published_at ? date(material.published_at) : "未知"}</span><span>事件 / 报告期：${e(material.event_period || "未知")}</span><span>采集：${material.fetched_at ? date(material.fetched_at) : "未知"}</span></div><div class="source-meta"><span>访问范围：${e(accessLabel(material))}</span>${material.page_count ? `<span>PDF 共 ${e(material.page_count)} 页（物理页码）</span>` : ""}${range ? `<span>已保存页码 ${e(range.start_page)}–${e(range.end_page)}；${link(`${url?.split("#")[0]}#page=${range.start_page}`, "定位原 PDF")}</span>` : ""}${array(material.symbols || material.security_ids).length ? `<span>关联：${e((material.symbols || material.security_ids).join("、"))}</span>` : ""}${material.version ? `<span>材料版本 v${e(material.version)}</span>` : ""}</div>${pages.length ? `<div class="source-meta">${pages.map((page) => link(page.source_url || `${url?.split("#")[0]}#page=${page.page}`, `第 ${page.page} 页${page.truncated ? "（部分）" : ""}`)).join(" · ")}</div>` : ""}${material.error || material.uncertainties || material.conflicts ? `<p class="error-detail">${e(material.error || material.uncertainties || material.conflicts)}</p>` : ""}${material.id ? `<button class="button compact section-gap" data-action="open-material" data-id="${e(material.id)}">按段查看已保存正文</button>` : ""}</article>`;
+  return `<article class="source-item" id="material-${e(material.id)}"><div class="split-heading">${badge(`${generated ? "提取者分类 · " : ""}${classificationNames[category] || category}`, generated || category.includes("opinion") ? "warning" : "neutral")}${material.id ? materialReference(material.id) : ""}</div><div class="source-title">${link(url, title)}</div>${generated ? `<p class="small muted">${material.representation_kind === "agent_extraction" ? "已定位 Agent 提取 · 不是外部原文" : "已定位生成报告 · 不是外部原文"}</p>${originReferences(material)}` : ""}<p class="source-content">${e(summary ? String(summary).slice(0, 900) : "索引暂无摘要，可按需打开已保存原文。")}${String(summary || "").length > 900 ? "…" : ""}</p><div class="source-meta"><span>发布者：${e(material.publisher || sources.publisher || "未知")}</span><span>发布时间：${material.published_at ? date(material.published_at) : "未知"}</span><span>事件 / 报告期：${e(material.event_period || "未知")}</span><span>采集：${material.fetched_at ? date(material.fetched_at) : "未知"}</span></div><div class="source-meta"><span>访问范围：${e(generated ? "已保存生成内容，不代表已保存外部原文" : accessLabel(material))}</span>${material.page_count ? `<span>${generated ? "提取者标注文档" : "PDF 共"} ${e(material.page_count)} 页${generated ? "" : "（物理页码）"}</span>` : ""}${range?.start_page ? `<span>${generated ? "提取者标注页码" : "已保存页码"} ${e(range.start_page)}–${e(range.end_page || range.start_page)}；${link(`${url?.split("#")[0]}#page=${range.start_page}`, generated ? "查看提取者提供的来源位置" : "定位原 PDF")}</span>` : requested?.start_page ? `<span>请求 / 提取页码 ${e(requested.start_page)}–${e(requested.end_page || requested.start_page)} · 实际保存页码未知</span>` : ""}${array(material.symbols || material.security_ids).length ? `<span>关联：${e((material.symbols || material.security_ids).join("、"))}</span>` : ""}</div>${pages.length ? `<div class="source-meta">${pages.map((page) => link(page.source_url || `${url?.split("#")[0]}#page=${page.page}`, `${generated ? "提取者标注第" : "第"} ${page.page} 页${page.truncated ? "（部分）" : ""}`)).join(" · ")}</div>` : ""}${materialVersion(material)}${material.error || material.uncertainties || material.conflicts ? `<p class="error-detail">${e(material.error || material.uncertainties || material.conflicts)}</p>` : ""}${material.id ? `<button class="button compact section-gap" data-action="open-material" data-id="${e(material.id)}">按段查看已保存${savedContentLabel}</button>` : ""}</article>`;
 }
 async function openMaterial(id, start = 0) {
-  const material = await api(`/api/materials/${encodeURIComponent(id)}/range?start=${start}&length=6000`);
+  const material = await api(`/api/materials/${encodeURIComponent(id)}/range?start=${start}&length=6000${state.accountId ? `&account_id=${encodeURIComponent(state.accountId)}` : ""}`);
   const text = material.text || material.content || material.claim || "此材料没有可读取的正文；请查看访问状态。";
   const total = material.total_chars ?? material.total_length ?? text.length;
   const end = material.end ?? start + text.length;
   dialog("研究证据 · 已保存材料", `${sourceCard(material)}<div class="source-meta">已保存文本字符 ${start + 1}–${end} / ${total}。此范围不代表已获取完整来源文档。</div><pre class="material-text">${e(text)}</pre>`, `<button class="button compact" data-action="material-range" data-id="${e(id)}" data-start="${Math.max(0, start - 6000)}" ${start === 0 ? "disabled" : ""}>上一段</button><button class="button compact" data-action="material-range" data-id="${e(id)}" data-start="${material.next_start ?? end}" ${material.next_start === null || end >= total ? "disabled" : ""}>下一段</button>${button("关闭", "close-dialog", "primary")}`);
 }
 function recommendationState(rec) {
-  const saved = rec.state || rec.status || "watching";
+  const saved = rec.review_status || rec.state || rec.status || "watching";
   if (["revoked", "expired"].includes(saved)) return saved;
   if (rec.valid_until && new Date(rec.valid_until).getTime() <= Date.now()) return "expired";
   if (rec.input_version !== undefined && rec.input_version !== state.account?.version) return "needs_review";
   return saved;
 }
-function recommendations() {
+function recommendationCard(rec) {
   const actions = { watch: "观察", observe: "观察", buy_candidate: "买入候选", add_candidate: "增持候选", hold: "持有", reduce_candidate: "减仓候选", exit_candidate: "退出候选" };
-  return `<section class="card"><div class="card-header"><h2>建议持续跟踪</h2><span class="small muted">条件触发后进入研究，不执行交易</span></div><div class="card-body">${state.recommendations.length ? state.recommendations.map((rec) => `<article class="source-item"><div class="split-heading"><h3>${e(rec.symbol || rec.security_id || "账户")} · ${e(actions[rec.action] || rec.action || "观察")}</h3>${stateBadge(recommendationState(rec))}</div><div class="source-meta"><span>持仓 v${e(rec.input_version)}</span><span>生成 ${date(rec.generated_at || rec.created_at)}</span><span>${rec.valid_until ? `有效期至 ${date(rec.valid_until)}` : "未设固定有效期"}</span></div>${rec.basis ? markdown(rec.basis) : ""}${array(rec.price_conditions).length ? `<div class="section-gap"><h4>可计算条件</h4>${objectView(rec.price_conditions)}</div>` : ""}${rec.agent_conditions ? `<div class="section-gap"><h4>仍需 Agent 判断</h4>${objectView(rec.agent_conditions)}</div>` : ""}${rec.review_reason ? `<p class="error-detail">${e(rec.review_reason)}</p>` : ""}${array(rec.material_ids).length ? `<div class="source-meta">依据 ${rec.material_ids.map(materialReference).join(" ")}</div>` : ""}</article>`).join("") : '<p class="small muted">尚无结构化建议。报告可继续自由论证；提交带条件或有效期的建议后在此跟踪。</p>'}</div></section>`;
+  const review = recommendationState(rec);
+  const priceLabels = { met: "价格条件已满足", not_met: "价格条件未满足", stale: "报价过期 · 条件待更新", uncomputable: "价格条件暂不可计算", no_conditions: "未设价格条件", unknown: "价格条件尚未检查" };
+  const reviewLabels = { valid: "判断已复核", watching: "判断仍在跟踪", triggered: "判断仍在跟踪", needs_review: "判断待复核", expired: "已过期", revoked: "已撤销" };
+  const followup = rec.review_followup;
+  return `<article class="source-item recommendation" data-recommendation-id="${e(rec.id)}"><div class="split-heading"><h3>${e(rec.symbol || rec.security_id || "账户")} · ${e(actions[rec.action] || rec.action || "观察")}</h3>${badge(reviewLabels[review] || review, review === "needs_review" ? "warning" : "neutral")}</div><div class="source-meta">${badge(priceLabels[rec.price_state] || priceLabels.unknown, ["met", "stale", "uncomputable"].includes(rec.price_state) ? "warning" : "neutral")}${rec.observed_price !== undefined ? `<span>观察价格 ${number(rec.observed_price)}</span>` : ""}${rec.price_observed_at ? `<span>${date(rec.price_observed_at)}</span>` : ""}</div>${rec.price_state === "met" && review === "needs_review" ? '<p class="small muted">数值条件满足；投资判断尚未重新确认。</p>' : ""}<div class="source-meta"><span>持仓 v${e(rec.input_version)}</span><span>生成 ${date(rec.generated_at || rec.created_at)}</span><span>${rec.valid_until ? `有效期至 ${date(rec.valid_until)}` : "未设固定有效期"}</span></div>${rec.basis ? markdown(rec.basis) : ""}${array(rec.price_conditions).length ? `<div class="section-gap"><h4>可计算条件</h4>${objectView(rec.price_conditions)}</div>` : ""}${rec.agent_conditions ? `<div class="section-gap"><h4>仍需 Agent 判断</h4>${objectView(rec.agent_conditions)}</div>` : ""}${rec.review_reason ? `<p class="error-detail">${e(rec.review_reason)}</p>` : ""}${followup ? `<div class="source-meta recommendation-followup">复核处理：${e({ pending: "等待安排", assigned: "已安排研究", completed: "本轮研究已完成", waiting_review: "本轮未解决 · 可重新安排复核", cancelled: "已取消 · 可重新安排复核", superseded: "已由新版任务接替", failed: "处理失败，可重试" }[followup.state] || followup.state || "已登记")}${followup.job_id ? `<span>任务 ${e(followup.job_id)}</span>` : ""}</div>` : ""}${review === "needs_review" && !["pending", "assigned"].includes(followup?.state) ? `<button class="button compact section-gap" data-action="retry-recommendation" data-id="${e(rec.id)}">重新安排复核</button>` : ""}${evidenceReferences(rec)}</article>`;
+}
+function recommendations() {
+  const activeTotal = state.recommendationCoverage.recommendations?.total;
+  const historyTotal = state.recommendationCoverage.recommendations?.counts?.history;
+  return `<section class="card" id="active-recommendations"><div class="card-header"><h2>活跃建议与待复核事项</h2><span class="small muted">${Number.isInteger(activeTotal) ? `共 ${activeTotal} 条 · ` : ""}条件观察不执行交易</span></div><div class="card-body">${state.recommendations.length ? state.recommendations.map(recommendationCard).join("") : '<p class="small muted">当前没有仍需关注的结构化建议。</p>'}${pager("recommendations", state.recommendations)}</div></section><section class="card" id="recommendation-history"><div class="card-header"><h2>建议历史</h2><button class="button compact" data-action="recommendation-history" aria-expanded="${state.showRecommendationHistory}">${state.showRecommendationHistory ? "收起历史" : "查看历史"}${Number.isInteger(historyTotal) ? `（${historyTotal}）` : ""}</button></div>${state.showRecommendationHistory ? `<div class="card-body"><p class="small muted">已撤销或已过期建议保留供追溯。</p>${state.recommendationHistory.length ? state.recommendationHistory.map(recommendationCard).join("") : '<p class="small muted">当前页没有历史建议。</p>'}${pager("recommendationHistory", state.recommendationHistory)}</div>` : ""}</section>`;
 }
 function reportCard(report, index) {
   const a = state.account, expired = report.result?.valid_until && new Date(report.result.valid_until).getTime() <= Date.now();
-  return `<article class="card"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span>适用至 ${date(report.result.valid_until)}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${index === 0 ? markdown(report.report || report.result?.report || report.result || "报告正文为空") : `<details data-key="report:${e(report.id)}"><summary class="small">展开历史报告</summary><div class="section-gap">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>`}${reportReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
+  return `<article class="card"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span>适用至 ${date(report.result.valid_until)}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${index === 0 ? markdown(report.report || report.result?.report || report.result || "报告正文为空") : `<details data-key="report:${e(report.id)}"><summary class="small">展开历史报告</summary><div class="section-gap">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>`}${reportResearchScope(report)}${evidenceReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
 }
 function research() {
   if (!state.account) return noAccount();
@@ -802,9 +905,20 @@ function parseSymbols(text) {
     ),
   ];
 }
+function requestAccountSwitch(id) {
+  // Navigation and writes may still be settling; retain the latest user choice.
+  if (state.busy) {
+    state.pendingAccountId = id;
+    return;
+  }
+  return operation(() => switchAccount(id));
+}
 async function switchAccount(id) {
   rememberDrafts();
-  state.pages = { analyses: 0, jobs: 0, materials: 0 };
+  state.pages = { analyses: 0, jobs: 0, materials: 0, recommendations: 0, recommendationHistory: 0 };
+  state.showRecommendationHistory = false;
+  state.recommendationHistory = [];
+  state.recommendationCoverage = {};
   state.accountId = id;
   localStorage.setItem("guanlan.account", id);
   await loadAccount();
@@ -863,6 +977,15 @@ document.addEventListener("click", (event) => {
       state.pages[kind] = Math.max(0, Number(target.dataset.page) || 0);
       await loadAccount();
       render();
+    } else if (action === "retry-recommendation") {
+      await api(`/api/accounts/${encodeURIComponent(state.accountId)}/recommendations/${encodeURIComponent(target.dataset.id)}/retry`, { method: "POST", body: "{}" });
+      await loadAccount();
+      render();
+      toast("已登记复核需求，处理状态可在建议与 Agent 工作台查看。");
+    } else if (action === "recommendation-history") {
+      state.showRecommendationHistory = !state.showRecommendationHistory;
+      await loadAccount();
+      render();
     } else if (action === "open-material" || action === "material-range") {
       await openMaterial(target.dataset.id, Number(target.dataset.start) || 0);
     } else if (action === "more-events") {
@@ -870,7 +993,7 @@ document.addEventListener("click", (event) => {
       render();
     } else if (action === "global-result") {
       const run = await api(`/api/global-research/${encodeURIComponent(target.dataset.id)}`);
-      dialog("公共研究报告与调用统计", objectView(run.result || { state: run.state, error: run.error }));
+      dialog("公共研究报告与调用统计", `${researchVersion(run)}${objectView(run.result || { state: run.state, error: run.error })}${evidenceReferences(run)}`);
     } else if (action === "job-result") {
       const job = await api(`/api/jobs/${encodeURIComponent(target.dataset.id)}`);
       dialog("任务结果与可观察统计", objectView(job.result || { state: job.state, error: job.error, message: "尚无已提交结果；调用统计可查看工具事件。" }));
@@ -1114,7 +1237,7 @@ document.addEventListener("change", (event) => {
   const form = event.target.closest('form[data-draft-key]');
   if (form) form.dataset.dirty = "true";
   if (event.target.id === "account-switch")
-    operation(() => switchAccount(event.target.value));
+    requestAccountSwitch(event.target.value);
   if (event.target.id === "material-filter") {
     state.materialFilter = event.target.value;
     render();
@@ -1143,6 +1266,8 @@ function changeSignature() {
     materials: state.materials.map((m) => [m.id, m.version]),
     universe: state.universe,
     recommendations: state.recommendations,
+    recommendationHistory: state.recommendationHistory,
+    recommendationCoverage: state.recommendationCoverage,
     publicResearch: state.publicResearch,
     demands: state.demands,
     globalRuns: state.globalRuns,

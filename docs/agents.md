@@ -65,7 +65,7 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 - 预算耗尽、网络权限错误、子任务超时、父任务取消；不会凭空生成完成结果。
 - 缺成本/现金、未知发布时间和原文失败能在管道中完整表达。
 
-**测试不会证明模型总能正确分类或给出高质量投资判断。** 当前开发环境没有配置真实模型密钥，尚未执行真实模型多 Agent 研究。测试里分类与报告文本由 fixture 指定，验证的是材料不会丢失、混为同一事实或被工程准入规则屏蔽。不得把这个样例的通过称为真实模型质量验收。
+**测试不会证明模型总能正确分类或给出高质量投资判断。** 第二轮因缺模型配置未执行真实模型研究；第三轮已执行独立真实四轮：公共研究与 B 账户完成，A 两轮均因模型超时失败，完整验收未通过。执行结果与研究质量审阅状态见 [验证记录](verification.md)。测试里分类与报告文本由 fixture 指定，验证的是材料不会丢失、混为同一事实或被工程准入规则屏蔽。不得把这个样例的通过称为真实模型质量验收。
 
 配置真实服务后，先执行能力检查，再创建账户并执行“立即分析”。在任务详情确认多个独立子任务与工具结果，使用包含财报事实和荐股评论的公开材料作代表样例，检查主 Agent 是否引用事实并把评论标为观点；再检查缺失字段、冲突材料和条件性建议。子任务数量由主 Agent 自主决定，单次未派发子任务不表示编排不可用，可在账户研究目标中指定需要分别调查的两个实际问题。对模型输出质量进行多样例人工评估，并记录模型名称、服务商、日期、提示词版本和实际结果，不能将单次通过解释为永久保证。
 
@@ -108,4 +108,48 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 
 `model_usage` 事件及最终结果记录实际 HTTP 请求次数（含重试）、每次耗时、状态与安全错误类型。token 只记录服务商实际返回的数值计数，未提供时为 null；嵌套 cached/reasoning token 细节保留在每次请求记录，汇总只相加顶层计数。错误消息不含密钥、认证头或原始服务响应。`context_compacted` 记录整理次数和可检索记录数。
 
-第二轮实测：模型名称、模型密钥和搜索配置均未设置；`evaluate_model.py --case mixed_fact_opinion` 实际退出 78（SKIPPED）。因此十类真实模型研究质量、真实搜索能力仍未验证。确定性上下文/协议/输入测试不代替上述验证。
+历史记录（仅指第二轮，不代表当前配置）：当时模型名称、模型密钥和搜索配置均未设置；`evaluate_model.py --case mixed_fact_opinion` 实际退出 78（SKIPPED）。因此十类真实模型研究质量、真实搜索能力仍未验证。确定性上下文/协议/输入测试不代替上述验证。
+
+## 第三轮建议、范围和引用协议
+
+主 Agent 可以在 `finish_analysis` 中明确处理已有建议：
+
+| 字段 | 语义 |
+| --- | --- |
+| `maintained_suggestion_ids` | 明确维持已有建议，保留 ID；服务端绑定本轮核实的账户版本。 |
+| `suggestions[].id` | 原位更新当前账户已有建议，保留 ID 并增加修订号；不填 ID 时，新建议替代对应证券旧建议。 |
+| `revoked_suggestion_ids` | 明确撤销，不再作为活跃建议。 |
+| `review_suggestion_ids` | 尚待复核，保留条件和缺口。 |
+
+省略旧建议不会撤销它；账户级报告会把未明确处理的建议标为 `review_status=needs_review`，价格观察继续。单证券任务只处理其目标证券。同一未解决事项自动补做一次后仍未完成明确处理，会保留为 `review_followup.state=waiting_review`，等待页面重试或新的外部事件，不因每次价格检查或重复文字报告无限调用模型。过期与已撤销建议不能通过重试恢复为有效建议。
+
+`price_state` 表示 `met`、`not_met`、`stale`、`unknown` 等数值观察；`review_status` 表示判断是否有效。价格为 `met` 且判断为 `needs_review` 时，只能说价格条件满足，不能说投资判断已重新确认。模型不能指定服务端账户版本、价格观察或通知投递状态。
+
+初始 `suggestions_to_review` 是当前页的建议列表；分页总数、页偏移、`next_offset` 和本轮事件直接关联的 `event_linked_items` 位于 `suggestions_coverage`，`suggestion_index` 提供相同的覆盖信息作为索引别名。`list_recommendations(view='active', limit=30, offset=...)` 可遍历全部活跃建议，`get_recommendation(recommendation_id)` 可按需取详情；两者只访问当前账户，公共任务不能借此获取账户建议。历史用 `view='history'` 单独查询。建议的 `revision`、`previous_job_id`、`replaces_ids`、`replaced_by_id` 保留延续和替代关系。
+
+公共任务携带实际使用的 `universe_version` 与 `input_snapshot`。旧范围任务可完成并保留材料，但其综合结果标为 `stale`，不进入当前共享结论。账户结果保存本次 `universe_version` 和 `shared_research_used`，可追溯实际复用记录及范围；不能把旧公共结论无标记地当成当前结论。
+
+`references` 是服务端生成的机械解析结果：`resolved` 表示可访问的已存材料，`source_link` 表示只有来源链接，`unresolved` 表示材料不存在或不可访问。解析包含实际保存页码、字符数和访问完整性；未知或跨账户 ID 不披露材料私有元信息。运行时对引用缺口提供有限修正机会，仍未解决时保留缺口与有效报告部分。它不核验内容真伪，不设置来源数量、可信度或事实准入门槛。
+
+真实链路审阅还发现：已存 Agent 提取或生成报告本身可被定位，但这不等于已关联外部原文。此类引用保留 `representation_kind`，通过 `origin_references` 递归展示提交的父材料及各自解析状态；`origin_status=linked_materials` 只表示提交了父材料 ID，父项仍可能未解析或仍是生成内容。未关联时页面明确说明缺口，提取者自述来源页码放在 `claimed_source_range`，不作为已保存原文页码。抓取失败的材料只保留来源链接或未解析状态，不提供原文证据按钮。
+
+## 小规模真实服务链路
+
+`scripts/verify_live_chain.py` 使用生产 `Service`、工具与 Store，依次执行公共研究、两个不同虚拟账户研究、修改其中一个账户后再研究。所有新账户、材料、行情与任务写入独立 `data/evaluations/third-.../evaluation.sqlite3`，不把验收数据写入日常账户库。它只读取本项目配置：`.env` 提供环境变量，默认项目 `data/live.sqlite3` 中已保存的设置以 SQLite 只读方式加载并优先于环境默认值；可用 `--settings-db` 指定项目设置库。
+
+先确认四项模型配置：`MODEL_NAME`、`MODEL_BASE_URL`、`MODEL_PROTOCOL`、`MODEL_API_KEY`（或 `MODEL_KEY_ENV` 指定的环境变量）。搜索和行情另行按实际服务配置，不因模型可用就视为已通过。
+
+```sh
+# 只检查项目配置，不发模型请求，也不初始化或迁移日常数据库
+.venv/bin/python scripts/verify_live_chain.py --check-config
+
+# 实际模型与公开数据；最多 4 轮研究，每轮默认最多 40 次模型调用、600 秒
+.venv/bin/python scripts/verify_live_chain.py --max-calls 40 --timeout 600
+
+# 可选：先单独做两次请求的协议检查，然后执行真实研究
+.venv/bin/python scripts/verify_live_chain.py --probe --max-calls 40 --timeout 600
+```
+
+真实链路专用配置允许每个 Agent 最多 20 轮工具循环；这不改变上文日常运行的默认配置。研究题目收窄为核对实际原文中的营业收入、归母净利润和账户敞口，避免为了验收扩大研究范围。默认证券、公开 PDF 和物理页码见脚本参数；可用 `--source-url`、`--pages`、`--symbols` 与 `--query` 指定实际研究样例。材料与证券的对应关系仍须根据原文判断，不能因同时提供就假定相关。脚本记录实际来源、访问时间、材料 ID、工具事件、阶段输出、账户修改前后版本与可复算指标。`summary.json` 和各轮 `round-*.json` 为可追溯记录，不包含密钥；输出目录权限为 0700，JSON 为 0600。
+
+退出 78 表示模型未配置，1 表示服务或执行失败，2 表示机械观察尚不满足，0 仅表示规定的机械观察通过。认证失败、联网/超时与研究执行失败分别记录；`research_quality=pending_human_review` 不随退出 0 自动变为通过。完整公告更正等受控回归另有确定性测试，不描述为真实发布者刚发生的更正。

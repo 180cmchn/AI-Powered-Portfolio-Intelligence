@@ -1,0 +1,152 @@
+{
+  "tested_at": "2026-10-25T01:02:08.813613+08:00",
+  "test_kind": "real_network_application_adapters",
+  "results": {
+    "history": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": "2026-10-22",
+      "fetched_at": "2026-10-25T01:02:09.130801+08:00",
+      "truncated": false,
+      "total": null,
+      "amount_unit": "人民币元",
+      "volume_unit": "手（供应商原始口径）",
+      "row_count": 11,
+      "first_identity": {
+        "time": "2026-10-08"
+      }
+    },
+    "industry": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": null,
+      "fetched_at": "2026-10-25T01:02:09.389138+08:00",
+      "truncated": true,
+      "total": 496,
+      "amount_unit": null,
+      "volume_unit": null,
+      "row_count": 5,
+      "first_identity": {
+        "sector_id": "BK0420"
+      }
+    },
+    "concept": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": null,
+      "fetched_at": "2026-10-25T01:02:09.654193+08:00",
+      "truncated": true,
+      "total": 516,
+      "amount_unit": null,
+      "volume_unit": null,
+      "row_count": 5,
+      "first_identity": {
+        "sector_id": "BK0425"
+      }
+    },
+    "members": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": null,
+      "fetched_at": "2026-10-25T01:02:09.899375+08:00",
+      "truncated": true,
+      "total": 14,
+      "amount_unit": null,
+      "volume_unit": null,
+      "row_count": 5,
+      "first_identity": {
+        "symbol": "SZ:000089"
+      }
+    },
+    "sector_history": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": "2026-10-22",
+      "fetched_at": "2026-10-25T01:02:10.155656+08:00",
+      "truncated": false,
+      "total": null,
+      "amount_unit": "人民币元",
+      "volume_unit": "手（供应商原始口径）",
+      "row_count": 11,
+      "first_identity": {
+        "time": "2026-10-08"
+      }
+    },
+    "benchmark": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:public-website",
+      "as_of": "2026-10-22",
+      "fetched_at": "2026-10-25T01:02:10.396393+08:00",
+      "truncated": false,
+      "total": null,
+      "amount_unit": "人民币元",
+      "volume_unit": "手（供应商原始口径）",
+      "row_count": 11,
+      "first_identity": {
+        "time": "2026-10-08"
+      }
+    },
+    "fundamentals": {
+      "status": "ok",
+      "error": null,
+      "source": "eastmoney:datacenter-public-website",
+      "as_of": "2026-08-15 00:00:00",
+      "fetched_at": "2026-10-25T01:02:10.737128+08:00",
+      "truncated": true,
+      "total": null,
+      "amount_unit": "人民币元",
+      "volume_unit": null,
+      "row_count": 8,
+      "first_identity": {
+        "report_period": "2026-06-30 00:00:00",
+        "published_at": "2026-08-15 00:00:00"
+      }
+    },
+    "pdf_metadata": {
+      "access": "metadata",
+      "error": null,
+      "page_count": 110,
+      "byte_length": 832321,
+      "document_id": "0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6",
+      "fetched_at": "2026-10-25T01:02:11.205011+08:00"
+    },
+    "pdf_search": {
+      "access": "excerpt",
+      "error": null,
+      "searched_range": {
+        "start_page": 21,
+        "end_page": 80
+      },
+      "search_complete": false,
+      "truncated": true,
+      "cache_hit": true,
+      "match_pages": [
+        28,
+        31,
+        32,
+        37,
+        38,
+        73
+      ]
+    },
+    "pdf_page": {
+      "access": "excerpt",
+      "error": null,
+      "returned_range": {
+        "start_page": 28,
+        "end_page": 28
+      },
+      "truncated": true,
+      "returned_chars": 1136,
+      "cache_hit": true,
+      "document_id": "0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6",
+      "contains_search_term": true
+    }
+  }
+}

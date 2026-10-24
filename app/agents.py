@@ -38,6 +38,7 @@ STRINGS = {"type": "array", "items": STRING}
 INTEGER = {"type": "integer", "minimum": 0}
 PAGE = {"type": "integer", "minimum": 1}
 SUGGESTION = {"type": "object", "properties": {
+    "id": {"type": "string", "description": "更新当前账户已有建议时填写其 ID；省略则新建并替代同证券旧建议"},
     "security_id": STRING, "action": {"type": "string", "enum": ["watch", "buy_candidate", "add_candidate", "hold", "reduce_candidate", "exit_candidate"]},
     "basis": STRING, "material_ids": STRINGS, "valid_until": {"type": ["string", "null"]},
     "price_conditions": {"type": "array", "items": {"type": "object", "properties": {
@@ -55,12 +56,16 @@ RESEARCH_TOOLS = [
     _schema("pdf_metadata", "获取 PDF 标题、元数据及总页数；长财报先定位再读取。", {"url": STRING, "refresh": {"type": "boolean"}}, ["url"]),
     _schema("search_pdf", "检索长 PDF，返回匹配片段与实际页码，再用 read 指定页范围读取。",
             {"url": STRING, "query": STRING, "start_page": PAGE, "end_page": PAGE, "max_results": {"type": "integer", "minimum": 1, "maximum": 50}}, ["url", "query"]),
-    _schema("save_material", "保存逐条分类的研究材料；允许未知元数据，不设可信度准入门槛。材料可以包含 claim, category, security_ids, title, url, publisher, published_at, event_period, retrieved_at, excerpt, unit, access_scope, uncertainties。",
+    _schema("save_material", "保存逐条分类的 Agent 提取结果；允许未知元数据，不设可信度准入门槛。用 material_ids 关联 read/search 返回的原始材料 ID，不能编造；没有原文ID则保留缺口。材料可含 claim, category, security_ids, title, url, publisher, published_at, event_period, retrieved_at, excerpt, unit, access_scope, uncertainties。",
             {"material": {"type": "object", "additionalProperties": True}}, ["material"]),
     _schema("list_materials", "分页列出轻量材料索引（不包含全文）；用 ID 按需读取。", {"query": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}),
     _schema("search_materials", "检索已有公开材料并分页返回索引、片段及位置，不代表已读完整原文。", {"query": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}, ["query"]),
     _schema("get_material", "按材料 ID 读取元数据与有限首段；正文较长时按 next_start 继续。", {"material_id": STRING}, ["material_id"]),
     _schema("read_material_range", "读取指定材料字符范围，保留来源、页码、访问限制及范围信息。", {"material_id": STRING, "start": INTEGER, "length": {"type": "integer", "minimum": 1, "maximum": 12000}}, ["material_id"]),
+    _schema("list_recommendations", "分页取得当前账户建议，先按业务状态筛选。active 包含所有仍需关注的建议；按 next_offset 继续读取，不能将价格满足视为判断有效。公共研究不能读取账户建议。",
+            {"view": {"type": "string", "enum": ["active", "triggered", "needs_review", "history", "all"]},
+             "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
+    _schema("get_recommendation", "按已有建议 ID 读取当前账户的完整建议、价格状态与复核需求，禁止跨账户访问。", {"recommendation_id": STRING}, ["recommendation_id"]),
     _schema("recall_context", "检索当前 Agent 已整理的可见上下文；只读自己的历史。提供 record_id 时按字符范围取回原记录，否则按 query 分页查摘要与引用。",
             {"record_id": STRING, "query": STRING, "offset": INTEGER, "limit": {"type": "integer", "minimum": 1, "maximum": 20}, "start": INTEGER, "length": {"type": "integer", "minimum": 1, "maximum": 12000}}),
     _schema("history", "获取历史 OHLCV 与成交额，保留复权方式、时间和数据源限制。", {"symbol": STRING, "start": STRING, "end": STRING, "interval": STRING, "adjust": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}, ["symbol"]),
@@ -86,7 +91,9 @@ MANAGER_TOOLS = [
     _schema("finish_analysis", "提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
             {"report": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}}, "material_ids": STRINGS,
              "valid_until": {"type": ["string", "null"]}, "uncertainties": STRINGS,
-             "suggestions": {"type": "array", "items": SUGGESTION},
+             "suggestions": {"type": "array", "items": SUGGESTION, "maxItems": 100},
+             "maintained_suggestion_ids": STRINGS,
+             "review_suggestion_ids": STRINGS,
              "revoked_suggestion_ids": STRINGS,
              "research_records": {"type": "array", "items": RESEARCH_RECORD}}, ["report"]),
 ]
@@ -139,6 +146,7 @@ class ResearchRuntime:
         self.delivered_sequence = 0
         self.materials: list[dict] = []
         self.closed = False
+        self.reference_feedback_sent = False
         self.manager_session = self.client.session((PROMPTS / "manager.txt").read_text(), self.context)
 
     async def _use_budget(self) -> None:
@@ -211,7 +219,8 @@ class ResearchRuntime:
         definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
         allowed = {item["name"] for item in definitions}
         max_turns = int(self.config.get("max_agent_turns", 12))
-        for _ in range(max_turns):
+        reference_candidate = None
+        for turn_index in range(max_turns):
             if manager:
                 events = self._new_child_events()
                 if events:
@@ -226,6 +235,9 @@ class ResearchRuntime:
                 raise
             except Exception as exc:
                 await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:])})
+                if reference_candidate is not None:
+                    reference_candidate['reference_resolution_note'] = '引用修正请求未完成；保留原报告的已解析部分和明确缺口。'
+                    return reference_candidate
                 raise
             await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": self.client.usage_summary(session.requests)})
             if session.compactions > compactions:
@@ -248,8 +260,13 @@ class ResearchRuntime:
                     if call.name not in allowed:
                         raise ValueError("工具不在该 Agent 的权限范围内")
                     output = await self._dispatch(agent_id, call.name, call.arguments)
-                    if call.name in {"finish_analysis", "submit_report"}:
-                        submitted = copy.deepcopy(call.arguments)
+                    if call.name == 'finish_analysis' and output.get('reference_feedback'):
+                        reference_candidate = output['reference_feedback']
+                        if turn_index == max_turns - 1 or self.calls >= int(self.config.get('max_model_calls', 40)):
+                            output = {'accepted': True, 'resolved_result': reference_candidate,
+                                      'note': '没有剩余修正调用预算；保留引用缺口并交付有效部分。'}
+                    if call.name in {"finish_analysis", "submit_report"} and output.get('accepted'):
+                        submitted = copy.deepcopy(output.get('resolved_result', call.arguments))
                 except (ModelBudgetExceeded, asyncio.CancelledError):
                     raise
                 except Exception as exc:
@@ -259,6 +276,8 @@ class ResearchRuntime:
             self.client.add_results(session, results)
             if submitted is not None:
                 return submitted
+        if reference_candidate is not None:
+            return reference_candidate
         raise ModelBudgetExceeded("Agent 达到本轮最大工具循环次数；阶段材料已保留")
 
     def _preview(self, value: Any) -> Any:
@@ -328,6 +347,13 @@ class ResearchRuntime:
             return await self.tools.get_material(self._text(args, "material_id"))
         if name == "read_material_range":
             return await self.tools.read_material_range(self._text(args, "material_id"), start=max(0, int(args.get("start", 0))), length=max(1, min(int(args.get("length", 8000)), 12000)))
+        if name in {"list_recommendations", "get_recommendation"}:
+            if not self.account_id:
+                raise ValueError("公共研究不能读取账户私有建议")
+            if name == "get_recommendation":
+                return await self.tools.get_recommendation(self._text(args, "recommendation_id"))
+            return await self.tools.list_recommendations(view=args.get("view", "active"),
+                limit=max(1, min(int(args.get("limit", 30)), 100)), offset=max(0, int(args.get("offset", 0))))
         if name == "calculate":
             values = args.get("values")
             if not isinstance(values, list) or any(isinstance(v, bool) or not isinstance(v, (str, int, float)) for v in values):
@@ -369,10 +395,20 @@ class ResearchRuntime:
                 for key in ("suggestions", "research_records"):
                     if key in args and (not isinstance(args[key], list) or not all(isinstance(item, dict) for item in args[key])):
                         raise ValueError(f"{key} 需要对象数组")
-                if "revoked_suggestion_ids" in args and (not isinstance(args["revoked_suggestion_ids"], list) or not all(isinstance(item, str) and item.strip() for item in args["revoked_suggestion_ids"])):
-                    raise ValueError("revoked_suggestion_ids 需要已有建议 ID 的非空字符串数组")
-                if not self.account_id and (args.get("suggestions") or args.get("revoked_suggestion_ids")):
-                    raise ValueError("全局研究没有账户持仓版本；请提交公共 research_records，账户建议的提交或撤销由对应账户研究决定")
+                if len(args.get("suggestions") or []) > 100:
+                    raise ValueError("单次 suggestions 最多 100 条；已有建议可用 maintained_suggestion_ids 明确延续")
+                for key in ("revoked_suggestion_ids", "maintained_suggestion_ids", "review_suggestion_ids"):
+                    if key in args and (not isinstance(args[key], list) or not all(isinstance(item, str) and item.strip() for item in args[key])):
+                        raise ValueError(f"{key} 需要已有建议 ID 的非空字符串数组")
+                if not self.account_id and any(args.get(key) for key in ("suggestions", "revoked_suggestion_ids", "maintained_suggestion_ids", "review_suggestion_ids")):
+                    raise ValueError("全局研究没有账户持仓版本；请提交公共 research_records，账户建议的处理由对应账户研究决定")
+                if hasattr(self.tools, 'resolve_references'):
+                    resolved = await self.tools.resolve_references(args)
+                    if resolved['reference_summary']['unresolved'] and not self.reference_feedback_sent:
+                        self.reference_feedback_sent = True
+                        return {'accepted': False, 'reference_feedback': resolved,
+                                'message': '部分引用不存在或不在当前范围。可查已有材料修正；不要编造或静默换来源。仅反馈一次，再次提交仍有缺口将明确保留并交付有效部分。'}
+                    return {'accepted': True, 'resolved_result': resolved}
             return {"accepted": True}
         raise ValueError("未知工具")
 

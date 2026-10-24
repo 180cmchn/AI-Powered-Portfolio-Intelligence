@@ -817,7 +817,7 @@ def _extract_document(body: bytes, mime: str, config: dict, *, url: str = "", st
     if not text.strip() or (info.get("pages") and not any(p["text"].strip() for p in info["pages"])):
         raise ValueError("未提取到所选范围的原文文字；可能超出正文范围或需要扫描件 OCR，当前未读取全文")
     info.update(text=text, access="excerpt" if truncated else "full_text", truncated=truncated,
-                offset=offset, returned_chars=len(text),
+                offset=offset, returned_chars=len(text), requested_chars=max_chars,
                 extraction_note="仅包含本次 HTTP 响应的可提取文字；不执行网页脚本，不进行 OCR；页码为 PDF 物理页")
     return info
 

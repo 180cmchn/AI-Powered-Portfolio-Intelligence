@@ -1,5 +1,58 @@
 # 交付验证记录
 
+## 第三轮验证（2026-10-25，Asia/Shanghai）
+
+审查基线为 `7c9358367d98890dedd732b449224028cdd23485`，原有 131 项测试。六项问题均确认并修复，根因、代码、回归及 schema 3 兼容说明见 [第三轮交付](iteration-3.md)。
+
+### 工程与联网验证
+
+| 类别 | 实际命令与结果 | 证明范围 / 限制 |
+| --- | --- | --- |
+| 确定性测试 | `.venv/bin/python -m pytest -q`：**174 passed, 1 warning in 4.70s** | 生产业务代码、独立临时 SQLite、受控时钟与模型协议替身；含六项修复及交界回归。warning 为 Starlette/httpx 弃用提示。 |
+| 浏览器行为 | `PYTHON=.venv/bin/python PLAYWRIGHT_BROWSERS_PATH=/private/tmp/guanlan-playwright npm run test:browser`：两组 **PASS** | Chromium 实际交互；一组 HTTP 夹具，一组生产 FastAPI + 临时 SQLite，关闭 worker。涵盖刷新/草稿、106 条记录、活跃与历史分页、价格/判断独立状态、复核重试、引用与来源关联、账户隔离、版本展示。 |
+| 本机进程生命周期 | `.venv/bin/python scripts/check_local_lifecycle.py`：**PASS** | 临时 demo 库及随机回环端口，HTTP 创建账户、后台运行、停止、重启、schema 3 备份和 restore。没有模型或外部数据调用；没有让 Mac 实际进入睡眠。 |
+| 静态检查 | `.venv/bin/python -m compileall -q app scripts`、`node --check app/static/app.js`、`git diff --check`：通过 | 编译和差异检查，不能替代浏览器或模型研究验证。 |
+| 真实外部数据 | `PYTHONPATH=. .venv/bin/python tests/provider_smoke.py`：股票/板块/基准历史、目录、成分和财务接口均有实际数据 | 访问时间约 01:02:09–01:02:11，当前行情随后仍出现 RemoteProtocolError。结果见 [数据源实测](providers.md) 及 [汇总 JSON](third-network-observations.json)，不将 HTTP 200 视作数据口径验证。 |
+| 真实 PDF | 实际下载巨潮 PDF 832,321 字节、110 页，关键词检索并读取第 28 页 1,136 字符 | SHA-256 `0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6`；只证明所读页与访问范围。不是 OCR、整本财报审核或真实发布者更正。 |
+
+GitHub Actions 已加入固定 npm 锁文件与 Chromium 安装、两组浏览器执行、失败产物上传。多轮材料、通知、建议积累和任务恢复用确定性回归覆盖；尚未做连续数日运行压力测试。
+
+测试隔离说明：本轮早期 pytest 导入默认应用时，曾将当时无账户、无分析、无材料的日常 `live.sqlite3` 从 schema 2 升级至 3，并自动留下升级前备份；没有清空或丢失用户记录。随后在测试收集前设置独立临时库，浏览器也独立初始化；真实评估仅以只读方式加载日常库的设置，全部评估数据写入 `data/evaluations/`。
+
+### 真实模型与研究审阅
+
+用户已明确配置并授权执行。实际使用项目配置的 `responses` 协议、模型标识 `grok-4.7`、主机 `api.xxyapi.com`；这是所配置服务声明的模型标识，不代表独立验证其上游模型身份。行情/结构化研究适配器为 Eastmoney；搜索为 `disabled`，没有搜索认证或搜索覆盖验收。全部输出不包含 API key。
+
+实际执行：
+
+```sh
+.venv/bin/python scripts/verify_live_chain.py --settings-db data/live.sqlite3 --probe --timeout 360 --max-calls 20
+# 首次：协议两次请求通过；公共研究20次调用预算耗尽，退出1，未运行账户轮。
+.venv/bin/python scripts/verify_live_chain.py --settings-db data/live.sqlite3 --timeout 600 --max-calls 40
+# 第二次：独立评估库；四轮 completed/failed/completed/failed，退出1。
+```
+
+首次记录：`data/evaluations/third-20261025-010636-826502/`，01:06:36–01:10:13。协议成功后公共主报告仍未完成，不能据此称研究通过。第二次记录：`data/evaluations/third-20261025-011121-040584/`，01:11:21–01:34:37。两次原始输出均保留，没有以成功尝试覆盖失败记录。**完整真实端到端验收未通过**；公共研究和 B 账户有实际成功产物，A 两轮主报告均因模型网络超时失败。
+
+| 第二次轮次 | 实际结果 | 可观察结果与限制 |
+| --- | --- | --- |
+| 公共研究 | completed，17次模型调用 | 独立子研究、主 Agent 补读、最终报告及引用；两个财务指标与已保存原文一致，范围版本2。 |
+| 账户 A，100股茅台、现金10000、保守/长期 | failed，模型 ReadTimeout | 子 Agent 完成并保留材料；最终主请求连续两次超时，没有成功账户报告。不是未配置或认证失败。 |
+| 账户 B，500股平安银行、现金20000、平衡/中期 | completed，20次模型调用（含请求重试） | 复用3条当前公共研究，识别财报与持仓主体不同；2条结构化建议为持有观察/观察，不含价格条件。报价与成本缺失保留为未知。 |
+| 修改 A 为200股、输入v2 | failed，模型 ReadTimeout | 子 Agent 完成，主请求连续两次超时；200股、现金10000和v2输入保留，无成功分析或建议。B 的账户、报告与任务前后完整比较一致。 |
+
+初始行情对两只证券均返回 `RemoteProtocolError`，价格为 null。B 的 `metrics_recomputable=true` 仅表示空的已定价部分合计等于0.00，不代表真实估值已验证；完整市值、总资产、权重和收益保持 null。A 初始轮没有成功旧报告，因此“旧成功报告在持仓变化后失效”本次无法进行真实验证，该项由确定性回归覆盖，不用空集合断言冒充成功。
+
+核心事实的来源页码、材料ID、Decimal复算、账户隔离与失败审阅见 [真实产物逐项核对](third-model-review.md)。这是开发助手针对已保存产物的核对，`research_quality=pending_human_review` 保持不变；没有用户人工签字，也不能推广为完整财务分析或投资判断质量保证。真实进程启动后追加的来源链展示与并发事件修复分别通过新回归验证，不把这次旧进程执行冒称为最终代码每个分支的实测。
+
+### 真实产物与页面对照
+
+真实运行结束后，以 SQLite 只读连接将评估库备份到临时目录，使用生产 FastAPI、`worker=False` 和真实 Chromium 对照 `summary.json`、API 与界面。浏览器阻止外部请求及非 GET 写请求。A 显示v2、200股、两次失败任务、0报告/建议；B 显示v1、1份当前报告、2条活跃建议，行情缺失保持未知。当前公共研究为范围v2；实际打开保存的原文第1–2页（536字符），提取资料的未关联原文缺口仍明确展示，没有将提取升级为原文。
+
+对照结果保存在 `test-results/real-chain-011121/page-review.json`，同目录有各账户总览、研究、任务、原文定位及公共研究截图。实际 `external_requests=[]`、`write_requests=[]`、`page_errors=[]`、`inconsistencies=[]`。这是实际研究产物的页面审阅，区别于上文夹具浏览器回归；临时副本关闭后台并禁用 `.env`，其运行配置提示不代表真实模型进程的配置状态。
+
+页面审阅还触发了一个产品问题：导航请求未结束时，下拉账户选择被 `operation` 的 busy 保护丢弃。它没有造成跨账户结果覆盖，但可能选完又回到旧账户。现以 `pendingAccountId` 保留最新选择，当前操作结束后应用；生产浏览器回归先在旧代码失败，再验证受控延迟下连续 B/A/B 的最后选择、B 不显示 A 内容、返回 A 后草稿仍在，两组浏览器最终均通过。PDF 检索材料的按钮同步改称“已保存检索结果”，不再将结构化检索 JSON 称为正文。真实截图/产物对照与此受控并发回归分别记录。
+
 ## 第二轮最终验证（2026-10-23，Asia/Shanghai）
 
 基线：`e62ee5e`、原有 **57 passed**。最终执行：

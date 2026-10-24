@@ -13,6 +13,7 @@ from .domain import TZ, now
 from .materials import MaterialStore, SCHEMA as MATERIAL_SCHEMA
 from .recommendations import RecommendationStore, SCHEMA as RECOMMENDATION_SCHEMA
 from .scheduling import SchedulingStore, SCHEMA as SCHEDULING_SCHEMA
+from .references import ReferenceStore
 
 
 def uid() -> str:
@@ -31,7 +32,7 @@ class Conflict(Exception):
     pass
 
 
-class Store(MaterialStore, RecommendationStore, SchedulingStore):
+class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
@@ -42,10 +43,16 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 2:
+                if version and int(loads(version[0])) > 3:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 3:
+                    backup = self.path.with_name(self.path.name + ".before-v3.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -93,7 +100,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
             db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA)
             db.execute("BEGIN IMMEDIATE")
             self.migrate_material_catalog(db)
-            db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+            self.migrate_research_versions(db)
+            self.migrate_recommendations(db)
+            db.execute("UPDATE meta SET value='3' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -139,12 +148,15 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
         with self.connect() as db:
             return [self.account(r[0], db) for r in db.execute("SELECT id FROM accounts ORDER BY created_at")]
 
-    def save_account(self, payload, account_id=None, reason="account_saved"):
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
         data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
         account_id, stamp = account_id or uid(), now()
         delay = self.settings()["debounce_seconds"]
-        with self.connect() as db:
-            db.execute("BEGIN IMMEDIATE")
+        if db is not None:
             old = db.execute("SELECT version FROM accounts WHERE id=?", (account_id,)).fetchone()
             version = old[0] + 1 if old else 1
             if data.get("expected_version") is not None and (not old or data["expected_version"] != old[0]):
@@ -156,12 +168,13 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
                        (account_id, data["name"], data.get("cash"), dumps(data.get("preferences", {})),
                         dumps(data.get("holdings", [])), version, stamp, stamp))
             db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account_id,))
+            db.execute("UPDATE research_records SET applicability='stale' WHERE account_id=? AND applicability='current'", (account_id,))
             self._invalidate_recommendations(db, account_id, "账户持仓或偏好版本已变更")
             db.execute("DELETE FROM condition_latches WHERE account_id=?", (account_id,))
             account = self.account(account_id, db)
             db.execute("INSERT INTO snapshots VALUES(?,?,?,?)", (account_id, version, dumps(account), stamp))
             self._enqueue(db, account, reason, delay=delay)
-        return self.account(account_id)
+        return self.account(account_id, db)
 
     def _enqueue(self, db, account, reason, delay=0, event_key=None):
         if event_key:
@@ -239,10 +252,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
             raise KeyError("输入版本不存在")
         return loads(row[0])
 
-    def claim_jobs(self, limit=2):
+    def claim_jobs(self, limit=2, account_id=None):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            rows = db.execute("SELECT j.* FROM jobs j JOIN accounts a ON a.latest_job_id=j.id WHERE j.state='queued' AND j.due_at<=? ORDER BY j.created_at LIMIT ?", (now(), limit)).fetchall()
+            rows = db.execute("SELECT j.* FROM jobs j JOIN accounts a ON a.latest_job_id=j.id WHERE j.state='queued' AND j.due_at<=? AND (? IS NULL OR j.account_id=?) ORDER BY j.created_at LIMIT ?", (now(), account_id, account_id, limit)).fetchall()
             for r in rows:
                 db.execute("UPDATE jobs SET state='running',attempts=attempts+1,updated_at=? WHERE id=?", (now(), r["id"]))
                 db.execute("UPDATE accounts SET analysis_state='running' WHERE id=?", (r["account_id"],))
@@ -278,6 +291,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore):
                 return already["status"] == "current"
             acc = db.execute("SELECT * FROM accounts WHERE id=?", (job["account_id"],)).fetchone()
             valid = bool(acc and acc["version"] == job["input_version"] and acc["latest_job_id"] == job_id and job["state"] == "running")
+            result = self.resolve_result_references(result, job['account_id'], db)
             # Retain late results as explicitly stale history, never the current recommendation.
             db.execute("INSERT OR IGNORE INTO analyses VALUES(?,?,?,?,?,?,?,?,?,?)",
                        (uid(), job_id, job["account_id"], job["input_version"], "current" if valid else "stale", self.mode,

@@ -257,15 +257,32 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return store.jobs(account_id, limit=limit, offset=offset, events=events, summary=not events)
 
     @app.get("/api/accounts/{account_id}/recommendations")
-    async def recommendations(account_id: str):
+    async def recommendations(account_id: str, view: str = Query('all', pattern='^(active|history|triggered|needs_review|all)$'),
+                              limit: int = Query(100, ge=1, le=200), offset: int = Query(0, ge=0),
+                              page: bool = False, envelope: bool = False):
         store.account(account_id)
-        return store.recommendations(account_id)
+        if page or envelope:
+            return store.recommendations_page(account_id, limit, offset, view)
+        return store.recommendations(account_id, limit, offset, view)
+
+    @app.get('/api/accounts/{account_id}/recommendations/{recommendation_id}')
+    async def recommendation(account_id: str, recommendation_id: str):
+        store.account(account_id)
+        return store.recommendation(account_id, recommendation_id)
+
+    @app.post('/api/accounts/{account_id}/recommendations/{recommendation_id}/retry')
+    async def retry_recommendation(account_id: str, recommendation_id: str):
+        store.account(account_id)
+        try:
+            return store.retry_recommendation_review(account_id, recommendation_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc))
 
     @app.get("/api/research")
-    async def research_records(account_id: str | None = None, limit: int = Query(30, ge=1, le=100), offset: int = Query(0, ge=0)):
+    async def research_records(account_id: str | None = None, limit: int = Query(30, ge=1, le=100), offset: int = Query(0, ge=0), current_only: bool = True):
         if account_id:
             store.account(account_id)
-        return store.research_records(account_id=account_id, limit=limit, offset=offset)
+        return store.research_records(account_id=account_id, limit=limit, offset=offset, current_only=current_only)
 
     @app.get("/api/demands")
     async def demands(account_id: str | None = None, limit: int = Query(100, ge=1, le=200), offset: int = Query(0, ge=0)):
@@ -312,16 +329,12 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.get("/api/universe")
     async def universe():
         return {**store.meta("universe", {"watchlist": [], "candidates": []}), "monitored": store.monitored(),
+                'universe_version': store.universe_snapshot()['universe_version'],
                 "quotes": list(service.quotes().values())}
 
     @app.put("/api/universe")
     async def save_universe(data: UniverseInput):
-        old = store.meta("universe", {"watchlist": [], "candidates": []})
-        store.set_meta("universe", data.model_dump())
-        if old != data.model_dump():
-            # Shared candidate scope changes decision inputs for each account.
-            for a in store.accounts():
-                store.save_account(a, a["id"], reason="universe_changed")
+        store.save_universe(data)
         service.spawn(service.refresh_quotes())
         return await universe()
 
@@ -346,17 +359,25 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         if account_id:
             store.account(account_id)
         if index:
-            return store.material_index(account_id, query, limit=limit, offset=offset)
+            return store.material_index(account_id, query, limit=limit, offset=offset, public_only=not bool(account_id))
         # Keep the legacy body-bearing response available for existing callers.
-        return store.materials(account_id, query)[offset:offset + limit]
+        return [m for m in store.materials(account_id, query) if store.material_accessible(m['id'], account_id)][offset:offset + limit]
 
     @app.get("/api/materials/{material_id}")
-    async def material(material_id: str):
-        return store.material(material_id)
+    async def material(material_id: str, account_id: str | None = None):
+        if not store.material_accessible(material_id, account_id):
+            raise KeyError('材料不存在或不属于当前范围')
+        body = store.material(material_id)
+        ref = store.resolve_result_references({'material_ids': [material_id]}, account_id)['references'][0]
+        return {**body, **{k: ref[k] for k in ('origin_status', 'origin_references') if k in ref}}
 
     @app.get("/api/materials/{material_id}/range")
-    async def material_range(material_id: str, start: int = Query(0, ge=0), length: int = Query(6000, ge=1, le=12000)):
-        return store.material_range(material_id, start=start, length=length)
+    async def material_range(material_id: str, start: int = Query(0, ge=0), length: int = Query(6000, ge=1, le=12000), account_id: str | None = None):
+        if not store.material_accessible(material_id, account_id):
+            raise KeyError('材料不存在或不属于当前范围')
+        body = store.material_range(material_id, start=start, length=length)
+        ref = store.resolve_result_references({'material_ids': [material_id]}, account_id)['references'][0]
+        return {**body, **{k: ref[k] for k in ('origin_status', 'origin_references') if k in ref}}
 
     @app.get("/api/settings")
     async def settings():
