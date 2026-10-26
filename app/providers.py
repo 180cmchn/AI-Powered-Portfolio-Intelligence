@@ -86,7 +86,7 @@ def _quote_failure_kind(exc: Exception) -> str:
         return "dns"
     if isinstance(exc, httpx.ProxyError):
         return "proxy"
-    if isinstance(exc, httpx.TimeoutException):
+    if isinstance(exc, (httpx.TimeoutException, TimeoutError)):
         return "timeout"
     if isinstance(exc, httpx.RemoteProtocolError):
         return "remote_protocol"
@@ -259,6 +259,76 @@ class MarketProvider:
 
     async def quote(self, symbol: str) -> dict:
         symbol = normalize_symbol(symbol)
+        budget = max(0.1, min(45.0, float(self.config.get("quote_refresh_timeout_seconds", 45))))
+        try:
+            async with asyncio.timeout(budget):
+                return await self._quote(symbol)
+        except TimeoutError:
+            return {"symbol": symbol, "name": None, "price": None, "change_pct": None,
+                    "as_of": None, "fetched_at": now_iso(), "source": self.provider,
+                    "status": "unavailable", "security_status": "unknown", "delay_seconds": None,
+                    "fresh_for_triggers": False, "quote_kind": "unknown",
+                    "error": "行情读取达到整条请求路径的总时限", "request_diagnostics": [
+                        {"stage": "quote_total", "status": "failed", "failure_kind": "timeout", "budget_seconds": budget}]}
+
+    async def _sina_quote(self, symbol: str) -> dict | None:
+        """Read the publicly displayed Sina quote resource; no API/SLA claim.
+
+        The official stock page embeds hq.sinajs.cn/list=<symbol>; its hqParser
+        maps last/previous close/date/time to fields 3/2/30/31. Do not execute JS.
+        """
+        if self.config.get("quote_fallback_provider", "none") != "sina" or symbol.split(":")[0] not in ("SH", "SZ"):
+            return None
+        security = symbol.replace(":", "").lower()
+        source_url = f"https://finance.sina.com.cn/realstock/company/{security}/nc.shtml"
+        timeout = min(8.0, float(self.config.get("network_timeout_seconds", 12)))
+        started = time.monotonic()
+        diagnostic = {"stage": "quote_fallback", "host": "hq.sinajs.cn", "attempt": 1}
+        try:
+            async with asyncio.timeout(timeout):
+                async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
+                    async with client.stream("GET", "https://hq.sinajs.cn/list=" + security,
+                        headers={"User-Agent": "Mozilla/5.0 LocalStockResearch/4.0", "Referer": "https://finance.sina.com.cn/"}) as response:
+                        diagnostic["http_status"] = response.status_code
+                        response.raise_for_status()
+                        parts, size = [], 0
+                        async for chunk in response.aiter_bytes():
+                            size += len(chunk)
+                            if size > 100_000:
+                                raise ValueError("备用单证券行情响应超过 100 KB 上限")
+                            parts.append(chunk)
+            text = b"".join(parts).decode("gb18030")
+            matched = re.fullmatch(r'\s*var\s+hq_str_' + re.escape(security) + r'\s*=\s*"([^"\r\n]*)";?\s*', text)
+            if not matched:
+                raise ValueError("备用行情响应中的证券身份或文本格式不匹配")
+            fields = matched[1].split(",")
+            if len(fields) < 33 or not fields[0].strip():
+                raise ValueError("备用行情响应缺少证券名称、价格或源时间字段")
+            price, previous = _decimal(fields[3], 0), _decimal(fields[2], 0)
+            if price is None or Decimal(price) <= 0:
+                raise ValueError("备用数据源未返回有效价格")
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fields[30]) or not re.fullmatch(r"\d{2}:\d{2}:\d{2}", fields[31]):
+                raise ValueError("备用行情源时间缺失或格式异常")
+            observed = datetime.strptime(fields[30] + " " + fields[31], "%Y-%m-%d %H:%M:%S").replace(tzinfo=SHANGHAI)
+            change = format(((Decimal(price) / Decimal(previous) - 1) * 100).quantize(Decimal("0.01")), "f") if previous and Decimal(previous) > 0 else None
+            diagnostic.update(status="received", elapsed_seconds=round(time.monotonic() - started, 3))
+            result = {"symbol": symbol, "name": fields[0].strip(), "price": price, "change_pct": change,
+                      "change_pct_basis": "calculated_from_source_last_and_previous_close",
+                      "as_of": observed.isoformat(), "as_of_precision": "timestamp", "source_time_precision": "second",
+                      "fetched_at": now_iso(), "source": "sina:public-website", "source_url": source_url,
+                      "security_status": "unknown", "provider_status_raw": fields[32], "cache_hit": False,
+                      "fallback_diagnostic": diagnostic,
+                      "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+                      **quote_time_state(observed.isoformat(), self.config)}
+            self._close_snapshots[symbol] = result  # Also supplies observed identity without another network call.
+            return result
+        except (httpx.HTTPError, ValueError, OSError, TimeoutError) as exc:
+            diagnostic.update(status="failed", failure_kind=_quote_failure_kind(exc), exception=type(exc).__name__,
+                              elapsed_seconds=round(time.monotonic() - started, 3))
+            raise _QuoteFailure(exc, [diagnostic]) from exc
+
+    async def _quote(self, symbol: str) -> dict:
+        symbol = normalize_symbol(symbol)
         result = {"symbol": symbol, "name": None, "price": None, "change_pct": None,
                   "as_of": None, "fetched_at": now_iso(), "source": self.provider,
                   "status": "unavailable", "delay_seconds": None, "security_status": "unknown",
@@ -294,12 +364,20 @@ class MarketProvider:
             cause = exc.__cause__ if isinstance(exc, _QuoteFailure) else exc
             transient = isinstance(cause, httpx.RequestError) or (isinstance(cause, httpx.HTTPStatusError) and cause.response.status_code >= 500)
             if transient:
+                fallback = None
                 try:
-                    fallback = await self._closed_quote(symbol)
-                    if fallback:
-                        result.update(fallback, live_quote_error=result.pop("error"))
+                    fallback = await self._sina_quote(symbol)
                 except (httpx.HTTPError, ValueError, OSError, TimeoutError) as fallback_exc:
                     result["fallback_error"] = _error(fallback_exc)
+                    if isinstance(fallback_exc, _QuoteFailure):
+                        result["fallback_diagnostics"] = fallback_exc.diagnostics
+                if not fallback:
+                    try:
+                        fallback = await self._closed_quote(symbol)
+                    except (httpx.HTTPError, ValueError, OSError, TimeoutError) as fallback_exc:
+                        result["close_fallback_error"] = _error(fallback_exc)
+                if fallback:
+                    result.update(fallback, live_quote_error=result.pop("error"))
         return result
 
     async def security(self, symbol: str) -> dict:

@@ -44,7 +44,7 @@ def visible_message(message: dict) -> dict | None:
         return None
     # An allowlist of protocol fields prevents vendor-specific hidden reasoning
     # continuation fields from being copied into the visible archive.
-    keys = {"role", "type", "name", "call_id", "arguments", "output", "tool_call_id", "tool_calls", "content"}
+    keys = {"role", "type", "phase", "status", "name", "call_id", "arguments", "output", "tool_call_id", "tool_calls", "content"}
     return {key: copy.deepcopy(value) for key, value in message.items() if key in keys}
 
 

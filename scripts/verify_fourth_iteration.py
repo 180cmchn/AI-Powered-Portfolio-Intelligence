@@ -31,7 +31,7 @@ from scripts.verify_live_chain import configuration, public_config, observation,
 
 def code_identity():
     files = sorted([*ROOT.joinpath('app').rglob('*.py'), *ROOT.joinpath('app/prompts').glob('*.txt'),
-                    *ROOT.joinpath('app/static').glob('*'), Path(__file__)])
+                    *ROOT.joinpath('app/static').glob('*'), Path(__file__), ROOT/'scripts/inspect_fourth_browser.mjs'])
     digest = hashlib.sha256()
     for path in files:
         digest.update(str(path.relative_to(ROOT)).encode())
@@ -65,7 +65,7 @@ async def verify(args):
               'agent_timeout_seconds': 240, 'max_output_tokens': 3000,
               'debounce_seconds': 0, 'max_job_attempts': 2,
               'quote_cache_seconds': 300, 'read_max_bytes': 15000000,
-              'news_queries': ['贵州茅台与平安银行最近公开业绩披露及主要风险；发现报告来源，核对营业收入、净利润的报告期与口径。公开事实可供两个不同虚拟账户复用。控制为小规模研究，按需要派发资料子任务，材料充足后 prepare_synthesis 并提交简洁最终报告。'],
+              'news_queries': ['贵州茅台600519和平安银行000001最近一期公开业绩：每家公司只核对营业收入、归母净利润两项，含单位和报告期。把一家公司的资料核对交给独立研究子Agent，主Agent研究另一家并整合，可自主补查。不预给URL，使用本模型原生搜索发现资料。不延伸全行业；证据足够后 prepare_synthesis，提交简洁公共报告与出处，如实说明链接或片段范围，并保留汇总预算。'],
               'news_interval_minutes': 1440, 'news_start_hour': 0, 'news_end_hour': 24,
               'scheduled_research_enabled': True}
     store = Store(output / 'evaluation.sqlite3')
@@ -109,7 +109,7 @@ async def verify(args):
             while time.monotonic() < deadline:
                 runs = await request('GET', '/api/global-research')
                 if runs:
-                    run = runs[0]
+                    run = next((item for item in runs if item['id'] == run['id']), run) if run else min(runs, key=lambda item: item['created_at'])
                     if run['state'] in ('completed', 'failed', 'waiting_config', 'superseded'):
                         break
                 await asyncio.sleep(1)
@@ -162,6 +162,26 @@ async def verify(args):
                 'prior_success_stale': summary['steps']['holding_edit']['prior_success_stale'], 'b_unchanged': summary['steps']['b_unchanged'],
                 'normal_scheduler_and_worker': bool(summary['steps']['scheduler_news_demand'])}
             summary['checks'] = checks
+            save()
+            browser = await asyncio.to_thread(subprocess.run,
+                ['node', 'scripts/inspect_fourth_browser.mjs', f'http://127.0.0.1:{port}', str(output)],
+                cwd=ROOT, capture_output=True, text=True, timeout=180)
+            try:
+                summary['browser'] = json.loads(browser.stdout)
+            except ValueError:
+                summary['browser'] = {'ok': False, 'exit_code': browser.returncode, 'error': browser.stderr[-2000:]}
+            checks['real_browser_matches_api'] = bool(summary['browser'].get('ok'))
+            snapshot_path = output/'browser-api-snapshot.json'
+            if snapshot_path.exists():
+                snapshot = json.loads(snapshot_path.read_text())
+                def analysis_keys(rows):
+                    return sorted((r['id'], r['input_version'], r['status']) for r in rows)
+                checks['browser_api_matches_database'] = all(
+                    analysis_keys(snapshot.get('accounts', {}).get(key, {}).get('analyses', [])) == analysis_keys(store.analyses(aid))
+                    and snapshot.get('accounts', {}).get(key, {}).get('account', {}).get('version') == store.account(aid)['version']
+                    for key, aid in summary['account_ids'].items())
+            else:
+                checks['browser_api_matches_database'] = False
             summary['mechanical_acceptance'] = all(checks.values())
             save()
             return 0 if all(checks.values()) else 2

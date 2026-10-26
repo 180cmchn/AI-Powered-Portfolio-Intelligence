@@ -5,7 +5,7 @@ import httpx
 import pytest
 
 from app.agents import ResearchRuntime, RESEARCH_TOOLS, MANAGER_TOOLS
-from app.context import recall
+from app.context import compact, recall
 from app.model import ModelClient, ModelSession, ToolCall
 
 
@@ -14,6 +14,17 @@ def config(monkeypatch):
     monkeypatch.setenv("CONTEXT_TEST_KEY", "test-only-key")
     return {"model_name": "protocol-fixture", "model_key_env": "CONTEXT_TEST_KEY",
             "model_retries": 0, "max_context_chars": 10000, "max_tool_result_chars": 2000}
+
+
+def test_compaction_keeps_visible_message_phase_status_but_not_hidden_fields():
+    session = ModelSession("Research", history=[{"role": "user", "content": "Initial research"}, {
+        "type": "message", "role": "assistant", "phase": "commentary", "status": "completed",
+        "content": [{"type": "output_text", "text": "Still researching. " * 200}],
+        "reasoning_content": "DO_NOT_ARCHIVE_OPAQUE_DATA"}])
+    assert compact(session, 1500)
+    saved = json.loads(session.archive[0]["payload"])
+    assert saved["phase"] == "commentary" and saved["status"] == "completed"
+    assert "DO_NOT_ARCHIVE_OPAQUE_DATA" not in json.dumps(session.archive)
 
 
 @pytest.mark.asyncio

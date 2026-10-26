@@ -249,13 +249,24 @@ class ModelClient:
                      for item in output if item.get("type") == "function_call"]
             parts = []
             annotations = []
+            intermediate_message = False
             for item in output:
                 if item.get("type") != "message":
                     continue
                 content = item.get("content", [])
                 if not isinstance(content, list) or not all(isinstance(part, dict) for part in content):
                     raise ModelProtocolError("Responses 消息内容格式异常")
-                parts.extend(part.get("text", "") for part in content if part.get("type") == "output_text")
+                text_parts = [part.get("text", "") for part in content if part.get("type") == "output_text"]
+                if not all(isinstance(part, str) for part in text_parts):
+                    raise ModelProtocolError("Responses 返回的文本类型异常")
+                # A completed HTTP response can contain an intermediate assistant
+                # message. Explicit protocol metadata, never wording heuristics,
+                # decides whether its text is eligible to finish the agent loop.
+                # Older/compatible endpoints omitting phase keep their behavior.
+                if item.get("phase") == "commentary" or item.get("status") in {"in_progress", "incomplete"}:
+                    intermediate_message = True
+                else:
+                    parts.extend(text_parts)
                 for part in content:
                     for annotation in part.get("annotations", []) if isinstance(part.get("annotations"), list) else []:
                         if isinstance(annotation, dict) and annotation.get("type") == "url_citation":
@@ -276,7 +287,7 @@ class ModelClient:
             state = self._native_observation("observed", event_count=len(events), source_count=len(sources_by_url),
                 note="服务返回了原生搜索完成事件或非零工具用量；来源范围以实际返回内容为准。") if observed else self.native_status()
             turn = ModelTurn("\n".join(parts), calls, events, list(sources_by_url.values()), annotations,
-                             bool(events and not calls and not "\n".join(parts).strip()), state)
+                             bool((events or intermediate_message) and not calls and not "\n".join(parts).strip()), state)
             # Do not filter opaque reasoning items out of continuation history.
             session.history.extend(copy.deepcopy(output))
         else:

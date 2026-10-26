@@ -53,6 +53,7 @@ def public_config(config, origin):
     return {"configured": bool(config.get("model_name") and (os.getenv(config.get("model_key_env", "MODEL_API_KEY")) or no_key)),
             "protocol": config.get("model_protocol"), "model_name": config.get("model_name"), "model_host": host,
             "model_native_search": config.get("model_native_search", True), "quote_provider": config.get("quote_provider"),
+            "quote_fallback_provider": config.get("quote_fallback_provider"),
             "research_provider": config.get("research_provider"), "settings_origin": origin}
 
 

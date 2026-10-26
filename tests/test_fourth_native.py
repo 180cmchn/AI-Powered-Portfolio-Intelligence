@@ -96,6 +96,68 @@ async def test_native_only_intermediate_is_not_final_report(config):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("marker", [{"phase": "commentary"}, {"status": "in_progress"}, {"status": "incomplete"}])
+async def test_explicit_intermediate_message_continues_and_replays_metadata(config, marker):
+    intermediate = {**message("I will inspect the report", [ANNOTATION]), **marker}
+    seen = []
+
+    def handler(request):
+        payload = json.loads(request.content)
+        seen.append(payload)
+        if len(seen) == 1:
+            return response(SEARCH, intermediate)
+        assert intermediate in payload["input"]
+        return response({**message("Completed final research"), "phase": "final_answer", "status": "completed"})
+
+    client = ModelClient(config, transport=httpx.MockTransport(handler))
+    session = client.session("Research", CONTEXT)
+    try:
+        first = await client.complete(session, [])
+        assert first.continuation_required and first.text == ""
+        assert first.sources and first.annotations
+        second = await client.complete(session, [])
+        assert second.text == "Completed final research" and not second.continuation_required
+    finally:
+        await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_commentary_is_excluded_from_same_response_final_text(config):
+    client = ModelClient(config, transport=httpx.MockTransport(lambda request: response(
+        {**message("Working update"), "phase": "commentary"},
+        {**message("Final answer"), "phase": "final_answer"})))
+    try:
+        turn = await client.complete(client.session("Research", {}), [])
+        assert turn.text == "Final answer" and not turn.continuation_required
+    finally:
+        await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_commentary_only_does_not_complete_runtime_and_remains_budget_bounded(config, monkeypatch):
+    events = []
+    install(monkeypatch, lambda request: response({**message("Still checking"), "phase": "commentary"}))
+
+    async def emit(event):
+        events.append(event)
+
+    with pytest.raises(ModelBudgetExceeded):
+        await agents.run_research(CONTEXT, {**config, "max_model_calls": 2}, Tools(), emit)
+    assert not any(event["type"] == "agent_completed" for event in events)
+
+
+@pytest.mark.asyncio
+async def test_phase_omitted_or_null_remains_compatible_final_text(config):
+    for extra in ({}, {"phase": None}):
+        client = ModelClient(config, transport=httpx.MockTransport(lambda request: response({**message("Ordinary final"), **extra})))
+        try:
+            turn = await client.complete(client.session("Research", {}), [])
+            assert turn.text == "Ordinary final" and not turn.continuation_required
+        finally:
+            await client.aclose()
+
+
+@pytest.mark.asyncio
 async def test_incomplete_final_keeps_finished_search_sources_without_publishing_partial(config, monkeypatch):
     tools, events = Tools(), []
     install(monkeypatch, lambda request: httpx.Response(200, json={"status": "incomplete",
@@ -262,3 +324,43 @@ async def test_explicit_synthesis_compacts_context_at_resolved_function_boundary
     result = await agents.run_research(CONTEXT, config, tools, emit)
     assert result["report"] == "Final report" and len(payloads) == 2
     assert tools.checkpoints[0]["material_ids"] == ["m-visible"]
+
+
+@pytest.mark.asyncio
+async def test_failed_followup_remains_unresolved_beside_previous_report(config, monkeypatch):
+    tools, events = Tools(), []
+    calls = 0
+
+    async def handler(request):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return response(call("submit_report", {"summary": "Original completed report"}))
+        payload = json.loads(request.content)
+        assert "Verify subsequent correction" in json.dumps(payload)
+        raise httpx.ReadTimeout("controlled follow-up failure", request=request)
+
+    async def emit(event):
+        events.append(event)
+
+    install(monkeypatch, handler)
+    runtime = agents.ResearchRuntime(CONTEXT, config, tools, emit)
+    try:
+        result = await runtime._spawn({"task": "Read initial disclosure", "title": "Disclosure"})
+        child = runtime.children[result["agent_id"]]
+        await child.task_handle
+        assert child.status == "completed" and child.reports[0]["research_round"] == 1
+        await runtime._dispatch("manager", "follow_up", {"agent_id": child.id, "task": "Verify subsequent correction"})
+        await child.task_handle
+        assert child.status == "failed" and not child.inbox  # delivered, but failed
+        checkpoint = await runtime._save_checkpoint()
+        assert checkpoint["reports"][0]["summary"] == "Original completed report"
+        assert checkpoint["reports"][0]["research_round"] == 1
+        unresolved = checkpoint["unresolved_tasks"][0]
+        assert unresolved["round"] == 2 and unresolved["status"] == "failed"
+        assert unresolved["task"] == "Read initial disclosure"
+        assert unresolved["pending_messages"] == ["Verify subsequent correction"]
+        assert "ReadTimeout" in unresolved["error"]
+        assert "encrypted_content" not in json.dumps(checkpoint)
+    finally:
+        await runtime.close()

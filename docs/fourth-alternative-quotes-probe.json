@@ -1,0 +1,305 @@
+{
+  "test_kind": "read_only_public_website_alternatives_no_production_change",
+  "requests": [
+    {
+      "kind": "tencent_quotes",
+      "url": "https://qt.gtimg.cn/q=sh600519,sz000001",
+      "tested_at": "2026-10-27T00:10:57.194157+08:00",
+      "request_count": 1,
+      "http_status": 200,
+      "byte_length": 1071,
+      "content_type": "text/html; charset=GBK",
+      "location": null,
+      "sha256": "67ab4882978f581f5ed7db4e9ce1a11dad38e80f549d3af3eafc576cd33ff910",
+      "observed_body": "v_sh600519=\"1~贵州茅台~600519~1349.98~1335.00~1325.40~41599~24552~17047~1349.40~3~1349.00~1~1348.50~1~1348.00~16~1347.35~2~1349.98~0~1349.99~35~1350.00~748~1350.01~2~1350.03~5~~20261026161450~14.98~1.12~1350.00~1324.79~1349.98/41599/5574287630~41599~557429~0.33~20.72~~1350.00~1324.79~1.89~16875.85~16875.85~6.72~1468.50~1201.50~1.00~-767~1340.00~18.95~20.50~~~0.03~557428.7630~418.4938~31~   A~GP-A~0.06~1.89~3.85~32.41~27.30~1539.98~1151.01~4.81~7.39~4.05~1250081601~1250081601~-94.34~2.89~1250081601~~~-3.44~0.13~~CNY~0~___D__F__N~1350.18~-6~\";\nv_sz000001=\"51~平安银行~000001~11.30~11.20~11.15~1323113~744489~578624~11.29~8548~11.28~1243~11.27~1400~11.26~4480~11.25~6984~11.30~787~11.31~343~11.32~1525~11.33~1539~11.34~4662~~20261026161500~0.10~0.89~11.34~11.13~11.30/1323113/1485999504~1323113~148600~0.68~5.04~~11.34~11.13~1.87~2192.84~2192.87~0.46~12.32~10.08~1.09~13799~11.23~4.20~5.14~~~0.18~148599.9504~78.7610~697~   A~GP-A~4.62~-3.00~5.39~7.81~0.73~11.89~9.74~-3.67~-1.32~4.14~19405684991~19405918198~43.79~8.02~19405684991~~~3.19~-0.09~~CNY~0~~11.35~-9180~\";\n",
+      "parsed_observed_fields": [
+        {
+          "variable_security": "sh600519",
+          "field_count": 88,
+          "fields": {
+            "0": "1",
+            "1": "贵州茅台",
+            "2": "600519",
+            "3": "1349.98",
+            "4": "1335.00",
+            "30": "20261026161450",
+            "31": "14.98",
+            "32": "1.12"
+          }
+        },
+        {
+          "variable_security": "sz000001",
+          "field_count": 88,
+          "fields": {
+            "0": "51",
+            "1": "平安银行",
+            "2": "000001",
+            "3": "11.30",
+            "4": "11.20",
+            "30": "20261026161500",
+            "31": "0.10",
+            "32": "0.89"
+          }
+        }
+      ],
+      "elapsed_seconds": 0.276
+    },
+    {
+      "kind": "sina_quotes",
+      "url": "https://hq.sinajs.cn/list=sh600519,sz000001",
+      "tested_at": "2026-10-27T00:10:57.470035+08:00",
+      "request_count": 1,
+      "http_status": 200,
+      "byte_length": 578,
+      "content_type": "application/javascript; charset=GB18030",
+      "location": null,
+      "sha256": "b60c928ee22dbb6d4ff6667c85b700043baa2baaf68f2bb8e6a0d922079acb91",
+      "observed_body": "var hq_str_sh600519=\"贵州茅台,1325.400,1335.000,1349.980,1350.000,1324.790,1349.400,1349.980,4159916,5574287630.000,300,1349.400,100,1349.000,100,1348.500,1600,1348.000,200,1347.350,10,1349.980,3500,1349.990,74785,1350.000,200,1350.010,500,1350.030,2026-10-26,15:34:59,00,D|3100|4184938.00\";\nvar hq_str_sz000001=\"平安银行,11.150,11.200,11.300,11.340,11.130,11.290,11.300,132311308,1485999504.060,854800,11.290,124300,11.280,140000,11.270,448000,11.260,698400,11.250,78731,11.300,34300,11.310,152500,11.320,153900,11.330,466174,11.340,2026-10-26,16:30:00,00,D|69700|787610.000\";\n",
+      "parsed_observed_fields": [
+        {
+          "variable_security": "sh600519",
+          "field_count": 34,
+          "fields": {
+            "0": "贵州茅台",
+            "1": "1325.400",
+            "2": "1335.000",
+            "3": "1349.980",
+            "30": "2026-10-26",
+            "31": "15:34:59",
+            "32": "00"
+          }
+        },
+        {
+          "variable_security": "sz000001",
+          "field_count": 34,
+          "fields": {
+            "0": "平安银行",
+            "1": "11.150",
+            "2": "11.200",
+            "3": "11.300",
+            "30": "2026-10-26",
+            "31": "16:30:00",
+            "32": "00"
+          }
+        }
+      ],
+      "elapsed_seconds": 0.204
+    },
+    {
+      "kind": "tencent_page",
+      "url": "https://gu.qq.com/sh600519/gp",
+      "tested_at": "2026-10-27T00:10:57.673818+08:00",
+      "request_count": 1,
+      "http_status": 200,
+      "byte_length": 4310,
+      "content_type": "text/html; charset=utf-8",
+      "location": null,
+      "sha256": "8e8d2137e82f2647b5a6faba592f29576308f092824eb3b027ffc6abe0268851",
+      "title": [],
+      "public_script_links": [
+        "https://aegis.cdn-go.cn/aegis-sdk-v2/latest/aegis.min.js",
+        "https://st.gtimg.com/quotes/hs-fund/zxgweb-chart-1559c0d34041.js",
+        "https://ssl.captcha.qq.com/TCaptcha.js",
+        "https://mat1.gtimg.com/finance/js/flotr2/min.js",
+        "https://wzq.gtimg.com/resources/web-quota-page/SuperData_v20260825.js",
+        "https://st.gtimg.com/quotes/hs-fund/bundle.13362df9.js"
+      ],
+      "source_or_terms_fragments": [
+        "n\">try {\n      // web椤圭洰index.html涓祵鍏�\n      var url = 'https://galileotelemetry.tencent.com/collect'; //浼藉埄鐣ヤ笂鎶ュ湴鍧�锛屼笉鍙�\n      var id = 'SDK-fc9bfb"
+      ],
+      "elapsed_seconds": 0.233
+    },
+    {
+      "kind": "sina_page",
+      "url": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+      "tested_at": "2026-10-27T00:10:57.906697+08:00",
+      "request_count": 1,
+      "http_status": 200,
+      "byte_length": 159459,
+      "content_type": "text/html",
+      "location": null,
+      "sha256": "65284ae66640ad000684a0288f82779f0af9feae9a4c9100230ceae925bf2eaf",
+      "title": [
+        "贵州茅台(600519)股票股价,行情,新闻,财报数据_新浪财经_新浪网"
+      ],
+      "public_script_links": [
+        "//hq.sinajs.cn/list=sh600519",
+        "//www.sinaimg.cn/cj/ddp/js/swfobject2.2.js",
+        "//news.sina.com.cn/268/2015/0112/jquery.newest.js",
+        "//finance.sina.com.cn/other/src/app/FinanceAppTextPic.js",
+        "//n.sinaimg.cn/finance/hq2018/utils-hq.js?ts=3.7",
+        "//i.sso.sina.com.cn/js/ssologin.js",
+        "//finance.sina.com.cn/sinafinancesdk/js/sf_sdk.js",
+        "//n.sinaimg.cn/finance/hq2018/js/stock20180116.js?ts=3.6",
+        "//n.sinaimg.cn/finance/hq2018/fixTotalShare.js",
+        "//n.sinaimg.cn/finance/realstock/company/src/js/fixTotalShare.js?v=1.0.6",
+        "//n.sinaimg.cn/finance/stock/hq/src/fixTotalShare.js?v=1.3.2",
+        "//n.sinaimg.cn/finance/c30320b4/20220429/aifsb.js",
+        "//d1.sina.com.cn/litong/zhitou/sspnew.js",
+        "//www.sinaimg.cn/unipro/pub/suda_m_v634.js",
+        "//news.sina.com.cn/js/pctianyi/sima.js",
+        "//n.sinaimg.cn/tech/66ceb6d9/20180314/sidebar.min.js?cn=1.8",
+        "//d0.sina.com.cn/litong/zhitou/sinaads/release/sinaads.js",
+        "//finance.sina.com.cn/otc/activity/astock_dongmi24.js",
+        "//n.sinaimg.cn/finance/2024jpdm/js/dongmi.js?v=1.0",
+        "//www.sinaimg.cn/unipro/pub/suda_s_v851c.js",
+        "//n.sinaimg.cn/finance/0e475300/20210612/md5.js",
+        "//n.sinaimg.cn/finance/article/most_read/qrcode.js",
+        "//n.sinaimg.cn/finance/article/most_read/qrcode_UTF8.js",
+        "//n.sinaimg.cn/finance/article/most_read/jquery-qrcode.js",
+        "//n.sinaimg.cn/finance/66ceb6d9/20230830/index.js",
+        "//i1.sinaimg.cn/dy/fusioncharts/v3_2_2/FusionCharts.js",
+        "//n.sinaimg.cn/finance/cn_bill/FusionCharts.HC.xiu.js",
+        "//n.sinaimg.cn/finance/66ceb6d9/20230830/bigvpoint.js",
+        "//finance.sina.com.cn/other/src/sff.js",
+        "//n.sinaimg.cn/finance/66ceb6d9/20200221/companyNumber.js",
+        "//n.sinaimg.cn/tech/66ceb6d9/20191213/tg.js",
+        "//finance.sina.com.cn/jiawei/js/require-min.js",
+        "//n.sinaimg.cn/finance/hq2018/js/tzyvote.js?ts=3.6",
+        "//n.sinaimg.cn/tech/66ceb6d9/20181126/wq.js",
+        "//n.sinaimg.cn/news/66ceb6d9/20200506/wq.js",
+        "//n.sinaimg.cn/finance/c30320b4/20230224/wq.js",
+        "//n.sinaimg.cn/finance/66ceb6d9/20250225/wq.js",
+        "//www.sinaimg.cn/unipro/pub/suda_s_v851c.js",
+        "//n.sinaimg.cn/finance/stock/hq/src/kwjc.js?ts=4.2",
+        "//n.sinaimg.cn/finance/hq2018/js/radar.js?ts=3.6"
+      ],
+      "source_or_terms_fragments": [
+        " StandardBJTime = Math.round(new Date().getTime() / 1000);\r\n        //insertScript('http://counter.sina.com.cn/time?fm=JS');\r\n        insertScript('//hq.sinajs.cn/?format=json&func=window.StandardBJTime=hq_json_sys_time;if%28typeof%28StandardBJTime_Callback%29==%27function%27%29StandardBJTime_Callback%28%29;&list=sys_time');\r\n\r\n        /*添加cookie-----开始-----*/\r\n        (function(c,k,n,d,h){if(!c){return;}\r\n  ",
+        "lice(0,n);cookie.set(k,coo.join(','),h,d);})('sh600519');\r\n        /*添加cookie-----开始-----*/\r\n    \r\n    \r\n    \r\n    \r\n    \r\n    <script src=\"//fin"
+      ],
+      "elapsed_seconds": 0.37
+    }
+  ],
+  "api_contract": "Not established; these are public website resources, not assumed supported developer APIs.",
+  "official_source_inspection": [
+    {
+      "kind": "sina_display_parser",
+      "url": "https://n.sinaimg.cn/finance/hq2018/js/stock20180116.js?ts=3.6",
+      "tested_at": "2026-10-27T00:11:47.323076+08:00",
+      "http_status": 200,
+      "byte_length": 161793,
+      "sha256": "13d48344ae5612ab4601876552c067bde0a246f56073a347121154af2a3632cb",
+      "visible_fragments": [
+        {
+          "pattern": "hq_str_",
+          "excerpt": " digit: digit\n                }\n            },\n            function(data) {\n                var _d = hqParser.a(window['hq_str_' + papercode]);\n                /*成交量向下取整*/\n                data.volume = Math.floor(data.volume / 100) * 100;\n                data.BS = data.BS.toLowerCase();\n                data['买卖'] = {\n                        'up': '买入',\n                        'down': "
+        },
+        {
+          "pattern": "hq_str_",
+          "excerpt": "  '万/亿': true\n                }\n            },\n            function(data) {\n                var _d = hqParser.a(window['hq_str_' + papercode]);\n                data.change = data.now - _d.preClose;\n            });\n\n        new DataTable('#tt6_03', 'position_as_type_c3', '//vip.stock.finance.sina.com.cn/quotes_service/view/vML_DataList.php?asc=j&symbol=' + papercode + '&num=11', 'minut"
+        },
+        {
+          "pattern": "hq_str_",
+          "excerpt": "  '万/亿': true\n                }\n            },\n            function(data) {\n                var _d = hqParser.a(window['hq_str_' + papercode]);\n                data.change = data.now - _d.preClose;\n            });\n\n        new TabCont('ltgd');\n        //        new TabCont('finance_overview');\n        hoverShow.init();\n        new TabCont('trade_buy', 'mouseover').show(0);\n        new"
+        },
+        {
+          "pattern": "hq_str_",
+          "excerpt": "alse,true);}, true);\n            //Cookie.set(_cookieKey,0, _cookieCfg);\n            //0514 zyc\n            if (window['hq_str_' + papercode]&&window['hq_str_' + papercode+'_i']) {\n                _gotData(true);\n            }\n            //_getData();\n            /*主行情报价不做限制，一直刷*/\n            //setInterval(_getData, 5 * 1000);\n            setInterval(_abhbk_getData, 5 * 1000);\n      "
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "                      'down': '卖出'\n                    }[data.BS] || '中性盘';\n                data.change = data.now - _d.preClose;\n            });\n\n        new DataTable('#tt6_02', 'position_as_type_c2', '//vip.stock.finance.sina.com.cn/quotes_service/view/cn_price_list.php?&symbol=' + papercode + '&num=11', 'price_statist_list', {\n                now: 0,\n                volume: 1,\n    "
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "data) {\n                var _d = hqParser.a(window['hq_str_' + papercode]);\n                data.change = data.now - _d.preClose;\n            });\n\n        new DataTable('#tt6_03', 'position_as_type_c3', '//vip.stock.finance.sina.com.cn/quotes_service/view/vML_DataList.php?asc=j&symbol=' + papercode + '&num=11', 'minute_data_list', {\n                time: 0,\n                now: 1,\n    "
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "data) {\n                var _d = hqParser.a(window['hq_str_' + papercode]);\n                data.change = data.now - _d.preClose;\n            });\n\n        new TabCont('ltgd');\n        //        new TabCont('finance_overview');\n        hoverShow.init();\n        new TabCont('trade_buy', 'mouseover').show(0);\n        new TabCont('trade_info', 'mouseover').show(0);\n        technology.init("
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "    var _f_cfg_open = {\n                key: 'open',\n                digit: digit\n            };\n            var _f_cfg_preClose = {\n                key: 'preClose',\n                digit: digit\n            };\n            var _f_cfg_high = {\n                key: 'high',\n                digit: digit\n            };\n            var _f_cfg_low = {\n                key: 'low',\n              "
+        }
+      ]
+    },
+    {
+      "kind": "tencent_display_parser",
+      "url": "https://wzq.gtimg.com/resources/web-quota-page/SuperData_v20260825.js",
+      "tested_at": "2026-10-27T00:11:47.693533+08:00",
+      "http_status": 200,
+      "byte_length": 127941,
+      "sha256": "fdc23ee4211a2b267ff21cd38731530b1535843c052dffeaae629944863e2f65",
+      "visible_fragments": [
+        {
+          "pattern": "qt\\.gtimg\\.cn",
+          "excerpt": "sModule\",{value:!0});var i=e(51),u=r(i),o=e(54),a=r(o),f=e(57),c=r(f),s=e(55),l=r(s),h=e(56),p=r(h),_=e(5),v=e(48),d=\"//qt.gtimg.cn/?q=marketStat,sh000001,usDJI,r_hkHSI\",g=3e3,y=null,m={serverTime:null,stat:{},mkTime:null,mkqt:null},S=function(n){function e(t){(0,a[\"default\"])(this,e);var n=(0,c[\"default\"])(this,(e.__proto__||(0,u[\"default\"])(e)).call(this,t));return n.loadData(),n.init()"
+        },
+        {
+          "pattern": "qt\\.gtimg\\.cn",
+          "excerpt": "&h||l||void 0;t.exports={ROOT:p}}).call(n,e(76)(t),function(){return this}())},function(t,n){\"use strict\";var e=\"//web.sqt.gtimg.cn/utf8/\",r=2083,i=5e3,u=/loaded|complete|undefined/;t.exports={SQT_SERVER:e,MAX_LENGTH:r,READY_STATE:u,SQT_FRQ:i}},function(t,n,e){\"use strict\";function r(t){return t&&t.__esModule?t:{\"default\":t}}function i(t){return{id:t[1],no:t[2],version:t[3],compressM:t[4]"
+        },
+        {
+          "pattern": "\\[30\\]",
+          "excerpt": ")]=t})}},{key:\"setMarketAndTime\",value:function(){var t={},n={};if(window.v_sh000001){var e=window.v_sh000001.split(\"~\")[30].substring(8),r=e.substr(0,2)+\":\"+e.substr(2,2);t.cn=r,n.cn=window.v_sh000001}window.v_r_hkHSI&&(t.hk=window.v_r_hkHSI.split(\"~\")[30].split(\" \").pop().substring(0,5),n.hk=window.v_r_hkHSI),window.v_usDJI&&(t.us=window.v_usDJI.split(\"~\")[30].split(\" \").pop().su"
+        },
+        {
+          "pattern": "\\[30\\]",
+          "excerpt": "g(8),r=e.substr(0,2)+\":\"+e.substr(2,2);t.cn=r,n.cn=window.v_sh000001}window.v_r_hkHSI&&(t.hk=window.v_r_hkHSI.split(\"~\")[30].split(\" \").pop().substring(0,5),n.hk=window.v_r_hkHSI),window.v_usDJI&&(t.us=window.v_usDJI.split(\"~\")[30].split(\" \").pop().substr(0,5),n.us=window.v_usDJI),m.mkTime=t,m.mkqt=n}}]),(0,l[\"default\"])(e,[{key:\"init\",value:function(){y&&(clearInterval(y),y=null),"
+        },
+        {
+          "pattern": "\\[30\\]",
+          "excerpt": "SI.split(\"~\")[30].split(\" \").pop().substring(0,5),n.hk=window.v_r_hkHSI),window.v_usDJI&&(t.us=window.v_usDJI.split(\"~\")[30].split(\" \").pop().substr(0,5),n.us=window.v_usDJI),m.mkTime=t,m.mkqt=n}}]),(0,l[\"default\"])(e,[{key:\"init\",value:function(){y&&(clearInterval(y),y=null),y=setInterval(this.loadData.bind(this),g)}},{key:\"loadData\",value:function(){var t=this;return(0,_.importSc"
+        }
+      ]
+    },
+    {
+      "kind": "sina_home_terms",
+      "url": "https://finance.sina.com.cn/",
+      "tested_at": "2026-10-27T00:11:48.031542+08:00",
+      "http_status": 200,
+      "byte_length": 441215,
+      "sha256": "94120d735a7db9d85352eac2c1ae1a37e8a68fe181b2bb543c63b78ff5cd01a6",
+      "visible_fragments": [
+        {
+          "pattern": "hq_str_",
+          "excerpt": "ID);c.diff=1e3*60*60*getGlobalTimezone(a[d].area);c.template=a[d].template;b.push(c)}if(e)this.draw();else{e=!0;(window.hq_str_sys_time||window.StandardBJTime)&&this.setTime();this.getTime();setInterval(this.getTime.fnBind(this),36e5);setInterval(this.draw.fnBind(this),1e3)}};this.add=function(){};this.getTime=function(){getScript(a.replace(\"$random\",random()),this.setTime.fnBind(this"
+        },
+        {
+          "pattern": "hq_str_",
+          "excerpt": "me=function(){getScript(a.replace(\"$random\",random()),this.setTime.fnBind(this))};this.setTime=function(){c=1e3*(window.hq_str_sys_time||window.StandardBJTime);this.draw()};this.time=function(){return new Date(c)};this.draw=function(){var a,e;if(c){for(e=0;e<b.length;e++){a=new Date(c+b[e].diff);b[e].el.innerHTML=b[e].template?b[e].template.replace(\"YY\",a.getFullYear()).replace(\"Y\",(a"
+        },
+        {
+          "pattern": "hq_str_",
+          "excerpt": "n;window.loadHQ=new function(){function f(){function c(){r(\"//hq.sinajs.cn/list=sys_hqEtagMode\",function(){var r=window.hq_str_sys_hqEtagMode;if(n===undefined)n=r;else{l++,n==r&&f++;if(l==a){f?(i=t,s.set(o,\"0\",u)):(i=e,s.set(o,\"1\",u));return}n=r}setTimeout(c,2e3)})}s.set(o,\"-1\",{domain:\".sina.com.cn\",path:\"/\",expires:10});var n,f=0,l=0;c()}function l(){var n=s.get(o);switch(n){case\"1\""
+        },
+        {
+          "pattern": "\\[30\\]",
+          "excerpt": "[6];e.sell=1*d[7];e.volume=1*d[8];e.symbol&&/^(sh000|sh580)\\d*/.test(e.symbol)&&(e.volume*=100);e.amount=1*d[9];e.date=d[30];e.time=d[31];e.status=d[32];g={\"00\":\"\",\"01\":\"涓村仠1H\",\"02\":\"鍋滅墝\",\"03\":\"鍋滅墝\",\"04\":\"涓村仠\",\"05\":\"鍋�1/2\",\"07\":\"鏆傚仠\",\"-1\":\"鏃犺褰�\",\"-2\":\"鏈笂甯�\",\"-3\":\"閫�甯�\"};e.statusWord=\"00\"==e.status||e.buy||e.sell?\"\":g[e.status];\"02\"!=e.status&&\"03\"!=e.status||e.buy||e.sell||(e.sto"
+        },
+        {
+          "pattern": "\\[31\\]",
+          "excerpt": "d[7];e.volume=1*d[8];e.symbol&&/^(sh000|sh580)\\d*/.test(e.symbol)&&(e.volume*=100);e.amount=1*d[9];e.date=d[30];e.time=d[31];e.status=d[32];g={\"00\":\"\",\"01\":\"涓村仠1H\",\"02\":\"鍋滅墝\",\"03\":\"鍋滅墝\",\"04\":\"涓村仠\",\"05\":\"鍋�1/2\",\"07\":\"鏆傚仠\",\"-1\":\"鏃犺褰�\",\"-2\":\"鏈笂甯�\",\"-3\":\"閫�甯�\"};e.statusWord=\"00\"==e.status||e.buy||e.sell?\"\":g[e.status];\"02\"!=e.status&&\"03\"!=e.status||e.buy||e.sell||(e.stopDay=!0);e.ch"
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "okie=[a,\"=\",b,d,f,g,h].join(\"\")}}hqParser=new function(){function a(a,b){var c,d,e;if(!a){c={};c.enName=c.name=c.open=c.preClose=c.low=c.high=c.now=c.change=c.changeP=c.buy=c.sell=c.volume=c.amount=c.pe=c.income=c.high52=c.low52=c.low52=c.date=c.time=c.swing=\"--\";return c}d=a.split(\",\");e={};if(b)if(b.indexOf(\"hk\")>-1){e.symbol=b;e.sym=b.replace(\"hk\",\"\")}else{e.symbol=\"hk\"+b;e.sym=b}e."
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "Of(\"hk\")>-1){e.symbol=b;e.sym=b.replace(\"hk\",\"\")}else{e.symbol=\"hk\"+b;e.sym=b}e.enName=d[0];e.name=d[1];e.open=1*d[2];e.preClose=1*d[3];e.high=1*d[4];e.low=1*d[5];e.now=1*d[6];e.change=1*d[7];e.changeP=1*d[8];e.buy=1*d[9];e.sell=1*d[10];e.volume=1*d[12];e.amount=1*d[11];e.pe=1*d[13];e.pe=e.pe||\"--\";e.income=1*d[14];e.income=e.income||\"--\";e.high52=1*d[15];e.low52=1*d[16];e.date=d[17];e"
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "7];e.time=d[18];if(!e.open){e.open=\"--\";if(!e.now){e.high=\"--\";e.low=\"--\"}}if(!e.now){e.change=\"--\";e.changeP=\"--\"}if(e.preClose){e.swing=100*((e.high-e.low)/e.preClose);e.swing=isNaN(e.swing)?\"--\":e.swing}else{e.preClose=\"--\";e.swing=\"--\"}return e}function b(a,b){var c,d,e,f;if(!a){c={};c.enName=c.name=c.open=c.preClose=c.low=c.high=c.now=c.change=c.changeP=c.buy=c.sell=c.volume=c.amo"
+        },
+        {
+          "pattern": "preClose",
+          "excerpt": "if(!e.now){e.high=\"--\";e.low=\"--\"}}if(!e.now){e.change=\"--\";e.changeP=\"--\"}if(e.preClose){e.swing=100*((e.high-e.low)/e.preClose);e.swing=isNaN(e.swing)?\"--\":e.swing}else{e.preClose=\"--\";e.swing=\"--\"}return e}function b(a,b){var c,d,e,f;if(!a){c={};c.enName=c.name=c.open=c.preClose=c.low=c.high=c.now=c.change=c.changeP=c.buy=c.sell=c.volume=c.amount=c.pe=c.income=c.high52=c.low52=c.low"
+        }
+      ]
+    }
+  ],
+  "official_usage_statement": {
+    "url": "https://finance.sina.com.cn/",
+    "observed_with": "web tool, page footer line 1881",
+    "summary": "Sina describes free market information from partners for users obtaining information, warns of errors, omissions and delay, and does not present it as investment advice. It does not establish a supported developer API, redistribution licence, or SLA."
+  },
+  "adapter_choice": {
+    "provider": "sina:public-website",
+    "reason": "Both test symbols returned identified source timestamps; the official stock page directly embeds the exact quote resource and its public display script consumes hq_str_<security>.",
+    "scope": "Small local personal research display, explicit configurable fallback, no authentication or paid service; no guaranteed developer API contract."
+  }
+}

@@ -25,6 +25,12 @@
 
 模型请求日志记录 Agent、阶段、请求序号、输入字符数、输出字节数、耗时、状态、服务请求 ID 及实际工具用量。混合探测输入从 824 字符增长到约 30 KB，反映必须续接的不透明协议状态也会增大请求。运行时在完成资料研究后提供可见汇总检查点并建立精简汇总上下文；这不是对历史超时根因的单一归因。
 
+### 明确的中间消息不能结束研究
+
+[OpenAI 官方 reasoning 指南的 phase 说明](https://developers.openai.com/api/docs/guides/reasoning#phase-parameter) 明确区分 `commentary`（中间更新）与 `final_answer`（完成回答），并要求手动续接时保留原始 `phase`。适配器因此只把明确最终或未带阶段字段的普通文本作为最终候选；`phase=commentary` 或消息自身 `status=in_progress/incomplete` 的文字不会触发 Agent 完成。仅中间消息会继续现有有界循环，同一响应同时含中间说明与最终回答时只提取后者。原始输出项原样续接，整理后的可见归档也保留 `phase/status`，不保存隐藏推理。
+
+本轮转发端点的两份脱敏探测记录没有采集消息 `phase`，不能据此声称实际端点曾返回该字段，亦不能断言其从不返回。此次修复依据明确的官方协议与受控协议测试，没有按文字含义猜测“我将继续”等句子。省略 `phase` 或返回 `phase=null` 的普通最终文本保持兼容。
+
 ## 验证范围
 
-协议替身与生产组件验证位于 `tests/test_fourth_native.py`、`tests/test_fourth_recovery.py`、`tests/test_agents.py`。34 项通过，包括主/子 Agent 原生来源、混合续接、未完成响应不发布半份报告、失败分类、来源入库、真实 Service/Runtime/SQLite 汇总恢复、账户/范围/事件/行情/时效/源材料守卫及两次恢复上限。这些替身测试不是网络实测；上面两个 JSON 才是模型网络证据。完整多账户后台验收另行记录。
+协议替身与生产组件验证位于 `tests/test_fourth_native.py`、`tests/test_fourth_recovery.py`、`tests/test_agents.py`、`tests/test_context_runtime.py`。48 项通过，包括主/子 Agent 原生来源、混合续接、未完成响应不发布半份报告、失败分类、来源入库、真实 Service/Runtime/SQLite 汇总恢复、账户/范围/事件/行情/时效/源材料守卫及两次恢复上限。补查失败后，检查点保留旧报告对应轮次、未完成补查的状态/错误和已投递但尚未完成的消息，不能把旧报告误当成补查完成。阶段字段测试覆盖中间态续接、原样保留元数据、最终文本筛选、没有最终回答时的预算停止、无阶段字段兼容和上下文整理后的标签保留。这些替身测试不是网络实测；上面两个 JSON 才是模型网络证据。完整多账户后台验收另行记录。

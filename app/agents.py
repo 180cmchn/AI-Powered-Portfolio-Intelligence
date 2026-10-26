@@ -117,6 +117,7 @@ class AgentState:
     session: ModelSession
     status: str = "queued"
     inbox: list[str] = field(default_factory=list)
+    pending_messages: list[str] = field(default_factory=list)
     reports: list[dict] = field(default_factory=list)
     progress: list[dict] = field(default_factory=list)
     task_handle: asyncio.Task | None = None
@@ -237,12 +238,27 @@ class ResearchRuntime:
 
     async def _loop(self, agent_id: str, session: ModelSession, *, manager: bool) -> dict:
         max_turns = int(self.config.get("max_agent_turns", 12))
+        if not manager:
+            # A follow-up is a new bounded research round; the previous round
+            # may have disabled native search solely for its final submission.
+            session.native_search = True
         reference_candidate = None
         for turn_index in range(max_turns):
             definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
             if manager and self.synthesis_only:
                 permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
+            remaining_turns = max_turns - turn_index
+            if max_turns >= 6 and remaining_turns <= 3:
+                self.client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
+                    "remaining_shared_model_calls": max(0, int(self.config.get("max_model_calls", 40)) - self.calls)},
+                    "instruction": "本轮预算即将用完。整理已经取得的可见证据并及时提交完整结论，未知保持未知，不继续扩展研究。最后一轮仅提交报告；未完成的子任务和资料缺口须明确说明。"})
+                if remaining_turns == 1:
+                    final_tool = "finish_analysis" if manager else "submit_report"
+                    definitions = [tool for tool in definitions if tool["name"] == final_tool]
+                    session.native_search = False
+                    if manager:
+                        session.phase = "synthesis"
             allowed = {item["name"] for item in definitions}
             if manager:
                 events = self._new_child_events()
@@ -339,13 +355,18 @@ class ResearchRuntime:
         reports = []
         for child in self.children.values():
             for report in child.reports:
-                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions") if key in report}
+                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions", "research_round") if key in report}
                 if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
                     visible["summary"] = visible["summary"][:12000]
                     visible["summary_truncated"] = True
                 reports.append({"agent_id": child.id, "title": child.title, **visible})
         if not reports and not declaration:
             return {}
+        unresolved_tasks = [{"agent_id": child.id, "title": child.title, "task": child.task,
+            "status": child.status, "round": child.round, "error": child.error,
+            "pending_messages": list(dict.fromkeys([*child.pending_messages, *child.inbox]))}
+            for child in self.children.values()
+            if child.status != "completed" or child.pending_messages or child.inbox]
         material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
         checkpoint = {"phase": "synthesis", "task_id": self.task_id, "account_id": self.account_id,
             "input_version": self.input_version, "scope": self.context.get("scope", "account"),
@@ -355,6 +376,8 @@ class ResearchRuntime:
                 {mid for mid in (declaration or {}).get("material_ids", []) if isinstance(mid, str)}),
             "calculations": copy.deepcopy(self.calculations), "metrics": copy.deepcopy(self.context.get("metrics")),
             "open_questions": [question for report in reports for question in report.get("open_questions", [])],
+            "unresolved_tasks": unresolved_tasks,
+            "unresolved_tasks_note": "旧子报告不代表后续补查已完成；最终汇总须保留这些未决任务及其影响。" if unresolved_tasks else None,
             "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
         signature = json.dumps(checkpoint, sort_keys=True, default=str)
         if signature != self.checkpoint_signature:
@@ -473,6 +496,7 @@ class ResearchRuntime:
             child = self._child(self._text(args, "agent_id"))
             message = self._text(args, "message" if name == "send_message" else "task")
             child.inbox.append(message)
+            child.pending_messages.append(message)
             if child.status in {"completed", "failed", "cancelled"}:
                 child.round += 1
                 child.error = None
@@ -554,7 +578,12 @@ class ResearchRuntime:
                 async with asyncio.timeout(float(self.config.get("agent_timeout_seconds", 120))):
                     while True:
                         report = await self._loop(child.id, child.session, manager=False)
+                        report["research_round"] = child.round
                         child.reports.append(report)
+                        # Messages delivered before this completed report have
+                        # been covered; messages received during the request are
+                        # still in the inbox and remain visibly unresolved.
+                        child.pending_messages = list(child.inbox)
                         if child.inbox:
                             # Message arrived while the last model response was pending.
                             # Do not lose it just because that response ended a report.

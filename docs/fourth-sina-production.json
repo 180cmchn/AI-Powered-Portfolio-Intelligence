@@ -1,0 +1,151 @@
+{
+  "tested_at": "2026-10-27T00:15:41.738629+08:00",
+  "test_kind": "real_network_final_provider_with_explicit_public_sina_fallback",
+  "providers_sha256": "0c859f71950fe624a21d88ecd056cbc2937dc577784db31b8078d1882613e62a",
+  "configuration": {
+    "quote_provider": "eastmoney",
+    "quote_fallback_provider": "sina",
+    "network_timeout_seconds": 6,
+    "quote_cache_seconds": 30,
+    "quote_refresh_timeout_seconds": 45
+  },
+  "elapsed_seconds": 1.652,
+  "httpx_version": "0.28.1",
+  "results": {
+    "SH:600519": {
+      "symbol": "SH:600519",
+      "name": "贵州茅台",
+      "price": "1349.980",
+      "change_pct": "1.12",
+      "as_of": "2026-10-26T15:34:59+08:00",
+      "fetched_at": "2026-10-27T00:15:40.960417+08:00",
+      "source": "sina:public-website",
+      "status": "closed",
+      "delay_seconds": 31241,
+      "security_status": "unknown",
+      "fresh_for_triggers": false,
+      "quote_kind": "last_close",
+      "request_diagnostics": [
+        {
+          "stage": "quote",
+          "attempt": 1,
+          "host": "push2.eastmoney.com",
+          "status": "failed",
+          "failure_kind": "remote_protocol",
+          "exception": "RemoteProtocolError",
+          "elapsed_seconds": 0.285
+        },
+        {
+          "stage": "quote",
+          "attempt": 2,
+          "host": "push2.eastmoney.com",
+          "status": "failed",
+          "failure_kind": "remote_protocol",
+          "exception": "RemoteProtocolError",
+          "elapsed_seconds": 0.231
+        }
+      ],
+      "change_pct_basis": "calculated_from_source_last_and_previous_close",
+      "as_of_precision": "timestamp",
+      "source_time_precision": "second",
+      "source_url": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+      "provider_status_raw": "00",
+      "cache_hit": false,
+      "fallback_diagnostic": {
+        "stage": "quote_fallback",
+        "host": "hq.sinajs.cn",
+        "attempt": 1,
+        "http_status": 200,
+        "status": "received",
+        "elapsed_seconds": 0.184
+      },
+      "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+      "market_phase": "closed",
+      "valuation_note": "休市估值使用最近交易日收盘后数据源报价；源时间为供应商更新时间，不是逐笔成交时间。",
+      "live_quote_error": "网络连接失败 (RemoteProtocolError)"
+    },
+    "SZ:000001": {
+      "symbol": "SZ:000001",
+      "name": "平安银行",
+      "price": "11.300",
+      "change_pct": "0.89",
+      "as_of": "2026-10-26T16:30:00+08:00",
+      "fetched_at": "2026-10-27T00:15:41.736135+08:00",
+      "source": "sina:public-website",
+      "status": "closed",
+      "delay_seconds": 27941,
+      "security_status": "unknown",
+      "fresh_for_triggers": false,
+      "quote_kind": "last_close",
+      "request_diagnostics": [
+        {
+          "stage": "quote",
+          "attempt": 1,
+          "host": "push2.eastmoney.com",
+          "status": "failed",
+          "failure_kind": "remote_protocol",
+          "exception": "RemoteProtocolError",
+          "elapsed_seconds": 0.213
+        },
+        {
+          "stage": "quote",
+          "attempt": 2,
+          "host": "push2.eastmoney.com",
+          "status": "failed",
+          "failure_kind": "remote_protocol",
+          "exception": "RemoteProtocolError",
+          "elapsed_seconds": 0.222
+        }
+      ],
+      "change_pct_basis": "calculated_from_source_last_and_previous_close",
+      "as_of_precision": "timestamp",
+      "source_time_precision": "second",
+      "source_url": "https://finance.sina.com.cn/realstock/company/sz000001/nc.shtml",
+      "provider_status_raw": "00",
+      "cache_hit": false,
+      "fallback_diagnostic": {
+        "stage": "quote_fallback",
+        "host": "hq.sinajs.cn",
+        "attempt": 1,
+        "http_status": 200,
+        "status": "received",
+        "elapsed_seconds": 0.182
+      },
+      "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+      "market_phase": "closed",
+      "valuation_note": "休市估值使用最近交易日收盘后数据源报价；源时间为供应商更新时间，不是逐笔成交时间。",
+      "live_quote_error": "网络连接失败 (RemoteProtocolError)"
+    }
+  },
+  "security_cache_used": {
+    "SH:600519": true,
+    "SZ:000001": true
+  },
+  "valuations": {
+    "A": {
+      "holdings": "controlled evaluation fixture, not user holdings",
+      "symbol": "SH:600519",
+      "quantity": "100",
+      "known_priced_value": "134998.00",
+      "total_assets": "144998.00",
+      "missing_prices": [],
+      "matches_decimal_recalculation": true
+    },
+    "B": {
+      "holdings": "controlled evaluation fixture, not user holdings",
+      "symbol": "SZ:000001",
+      "quantity": "1000",
+      "known_priced_value": "11300.00",
+      "total_assets": "21300.00",
+      "missing_prices": [],
+      "matches_decimal_recalculation": true
+    }
+  },
+  "all_symbols_have_valid_source_dated_prices": true,
+  "intraday_trigger_verified": false,
+  "limitations": [
+    "This is an after-hours valuation run, not an intraday trigger verification.",
+    "Sina resource is publicly displayed website data with identified provider update times, not a supported developer API contract or SLA.",
+    "No separate Sina/Tencent paid subscription or credentials were configured."
+  ]
+}

@@ -38,6 +38,7 @@ class Settings(BaseModel):
     max_total_agents: int = Field(default=16, ge=1, le=64)
     max_context_chars: int = Field(default=240000, ge=10000, le=2000000)
     quote_provider: str = "eastmoney"
+    quote_fallback_provider: str = "sina"
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
     max_model_calls: int = Field(default=40, ge=2, le=300)
     agent_timeout_seconds: int = Field(default=120, ge=5, le=1800)
@@ -90,6 +91,13 @@ class Settings(BaseModel):
     def quote(cls, v):
         if v not in ("manual", "eastmoney"):
             raise ValueError("行情服务应为 eastmoney 或 manual")
+        return v
+
+    @field_validator("quote_fallback_provider")
+    @classmethod
+    def quote_fallback(cls, v):
+        if v not in ("none", "sina"):
+            raise ValueError("备用行情服务应为 sina 或 none")
         return v
 
     @field_validator("research_provider")

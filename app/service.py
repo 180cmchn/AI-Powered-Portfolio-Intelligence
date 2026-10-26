@@ -35,6 +35,7 @@ class ResearchTools:
                 JOIN material_notifications n ON n.material_id=d.anchor_material_id
                 WHERE d.id=? AND n.state='pending' ''', (material.get('document_version_id'),)).fetchone()
         if row:
+            self.store.bind_public_information(self.job['id'], [row[0]])
             pending = self.context.setdefault('pending_information', [])
             if row[0] not in {m['id'] for m in pending}:
                 pending.append(index_of(self.store.material(row[0])))
@@ -388,7 +389,15 @@ class Service:
     def notify_material_changes(self):
         # Persist first, then ask the existing public manager about relevance.
         # Failed or incomplete public work leaves the outbox pending.
-        for mid in self.store.pending_material_notifications():
+        with self.store.connect() as db:
+            # Owned discoveries retain their pending outbox entry. Skip them
+            # before pagination so a failed run's backlog cannot starve a new
+            # external event or repeatedly enqueue its own research inputs.
+            candidates = [row[0] for row in db.execute("""SELECT n.material_id FROM material_notifications n
+                LEFT JOIN information_routes r ON r.material_id=n.material_id
+                WHERE n.state='pending' AND (r.state IS NULL OR r.state IN ('pending','ready','routed'))
+                ORDER BY n.created_at,n.material_id LIMIT 100""")]
+        for mid in candidates:
             with self.store.connect() as db:
                 ready = db.execute("SELECT public_run_id,decision FROM information_routes WHERE material_id=? AND state IN ('ready','routed')", (mid,)).fetchone()
                 db.execute("INSERT OR IGNORE INTO information_routes VALUES(?,NULL,'pending',NULL,?,?)", (mid, now(), now()))
@@ -454,9 +463,10 @@ class Service:
                        "reason": run["reason"], "candidates": universe["candidates"], "watchlist": universe["watchlist"],
                        "quotes": {s: q for s, q in self.quotes().items() if s in set(universe['candidates'] + universe['watchlist'])},
                        "shared_research": self.store.research_records(limit=30), "calendar": market_state(),
-                       "pending_information": [index_of(self.store.material(mid)) for mid in self.store.pending_material_notifications()],
+                       "pending_information": [index_of(self.store.material(mid)) for mid in self.store.public_information_for_run(run['id'])],
                        "news_topics": cfg.get('news_queries', []),
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
+            self.store.bind_public_information(run['id'], [m['id'] for m in context['pending_information']])
             checkpoint = self.store.reusable_synthesis_checkpoint({**run, 'account_id': None}, context)
             if checkpoint:
                 context['synthesis_checkpoint'] = checkpoint

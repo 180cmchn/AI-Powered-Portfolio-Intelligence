@@ -138,6 +138,48 @@ class SchedulingStore:
                               (account_id, account_id, min(max(limit, 1), 1000), max(offset, 0))).fetchall()
         return [dict(r) for r in rows]
 
+    def bind_public_information(self, run_id, material_ids):
+        """Own discovered inputs in this run without creating another execution.
+
+        The outbox stays pending until a completed relevance plan is routed.
+        Failed work may be picked up by a later explicit/new-event run, while
+        ordinary ticks cannot turn the run's own discoveries into a retry loop.
+        """
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            run = db.execute("SELECT universe_version FROM global_runs WHERE id=? AND state='running'", (run_id,)).fetchone()
+            if not run or run['universe_version'] != self.universe_snapshot(db)['universe_version']:
+                return
+            stamp = now()
+            for mid in dict.fromkeys(material_ids):
+                pending = db.execute("""SELECT 1 FROM material_notifications n
+                    LEFT JOIN information_routes r ON r.material_id=n.material_id
+                    WHERE n.material_id=? AND n.state='pending' AND
+                    (r.state IS NULL OR r.state NOT IN ('ready','routed'))""", (mid,)).fetchone()
+                if not pending:
+                    continue
+                db.execute("""INSERT INTO information_routes VALUES(?,?,'researching',NULL,?,?)
+                    ON CONFLICT(material_id) DO UPDATE SET public_run_id=excluded.public_run_id,
+                    state='researching',updated_at=excluded.updated_at""", (mid, run_id, stamp, stamp))
+                db.execute("""INSERT INTO research_demands
+                    (event_key,account_id,input_version,kind,reason,state,job_id,detail,created_at,updated_at)
+                    VALUES(?,'',NULL,'public_information',?,'assigned',?,'included in current public research',?,?)
+                    ON CONFLICT(event_key) DO UPDATE SET state='assigned',job_id=excluded.job_id,
+                    detail=excluded.detail,updated_at=excluded.updated_at""",
+                    ('public_information:' + mid, '待判断关联的公开材料：' + mid, run_id, stamp, stamp))
+
+    def public_information_for_run(self, run_id, limit=100):
+        # A backlog from a failed run must not hide the new external event that
+        # caused this execution behind the first page of old notifications.
+        with self.connect() as db:
+            rows = db.execute("""SELECT n.material_id FROM material_notifications n
+                LEFT JOIN research_demands d ON d.event_key='public_information:' || n.material_id
+                LEFT JOIN information_routes r ON r.material_id=n.material_id
+                WHERE n.state='pending' AND (r.state IS NULL OR r.state NOT IN ('ready','routed'))
+                ORDER BY CASE WHEN d.job_id=? THEN 0 ELSE 1 END,n.created_at,n.material_id LIMIT ?""",
+                (run_id, limit)).fetchall()
+        return [row[0] for row in rows]
+
     def claim_global(self):
         from .store import uid, dumps
         with self.connect() as db:
@@ -214,6 +256,8 @@ class SchedulingStore:
             if state != "waiting_config":
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
                            ("completed" if state == "completed" else "failed", error or "global research completed", now(), run_id))
+                db.execute("""UPDATE information_routes SET state='awaiting_retry',updated_at=?
+                    WHERE public_run_id=? AND state='researching'""", (now(), run_id))
             return applicable
 
     @staticmethod
