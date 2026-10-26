@@ -356,13 +356,15 @@ class ResearchRuntime:
             # may have disabled native search solely for its final submission.
             session.native_search = True
         reference_candidate = None
+        reference_report_counts = {}
+        final_update_used = False
         for turn_index in range(max_turns):
             definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
             if manager and self.synthesis_only:
                 permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
             remaining_turns = max_turns - turn_index
-            final_request = self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
+            final_request = final_update_used or self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
             if max_turns >= 6 and remaining_turns <= 3:
                 self.client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
                     "remaining_shared_model_calls": max(0, int(self.config.get("max_model_calls", 40)) - self.calls)},
@@ -395,6 +397,7 @@ class ResearchRuntime:
             try:
                 while True:
                     self._pin_runtime_status(session, agent_id, remaining_turns, final_request)
+                    request_report_counts = {child.id: len(child.reports) for child in self.children.values()}
                     token = self.request_owner.set((agent_id, final_request))
                     try:
                         turn = await self.client.complete(session, definitions)
@@ -424,8 +427,12 @@ class ResearchRuntime:
                     await self._record_native(agent_id, partial)
                 await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:]),
                     "native_search": self.client.native_status()})
+                if final_update_used:
+                    raise  # A failed final update does not make the earlier report current.
                 if reference_candidate is not None:
                     reference_candidate['reference_resolution_note'] = '引用修正请求未完成；保留原报告的已解析部分和明确缺口。'
+                    if manager:
+                        await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
                     return reference_candidate
                 raise
             await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": self.client.usage_summary(session.requests)})
@@ -436,10 +443,19 @@ class ResearchRuntime:
                 if native_materials:
                     self.client.add_user(session, {"native_source_materials": native_materials})
                 if turn.continuation_required:
+                    if final_update_used:
+                        raise ModelError("最终补充汇总未提交报告；可见研究检查点保留")
                     continue
                 if not turn.text.strip():
                     raise ModelError("Agent 未提交可见报告")
-                return {"report" if manager else "summary": turn.text}
+                result = {"report" if manager else "summary": turn.text}
+                if manager and await self._defer_late_final(result, request_report_counts,
+                        can_update=not final_update_used and remaining_turns > 1 and self._remaining_calls() > 0):
+                    final_update_used = True
+                    continue
+                if manager and final_update_used:
+                    result["late_child_update_performed"] = True
+                return result
             if turn.text.strip():
                 await self._publish("agent_message", agent_id, {"summary": turn.text[:4000]})
             results: list[tuple[ToolCall, Any]] = []
@@ -456,7 +472,8 @@ class ResearchRuntime:
                     output = await self._dispatch(agent_id, call.name, call.arguments)
                     if call.name == 'finish_analysis' and output.get('reference_feedback'):
                         reference_candidate = output['reference_feedback']
-                        if turn_index == max_turns - 1 or self.calls >= int(self.config.get('max_model_calls', 40)):
+                        reference_report_counts = request_report_counts
+                        if final_update_used or turn_index == max_turns - 1 or self.calls >= int(self.config.get('max_model_calls', 40)):
                             output = {'accepted': True, 'resolved_result': reference_candidate,
                                       'note': '没有剩余修正调用预算；保留引用缺口并交付有效部分。'}
                     if call.name in {"finish_analysis", "submit_report"} and output.get('accepted'):
@@ -477,10 +494,44 @@ class ResearchRuntime:
             if native_materials:
                 self.client.add_user(session, {"native_source_materials": native_materials})
             if submitted is not None:
+                if manager and await self._defer_late_final(submitted, request_report_counts,
+                        can_update=not final_update_used and remaining_turns > 1 and self._remaining_calls() > 0):
+                    final_update_used = True
+                    continue
+                if manager and final_update_used:
+                    submitted["late_child_update_performed"] = True
                 return submitted
+            if final_update_used:
+                raise ModelError("最终补充汇总未提交报告；可见研究检查点保留")
         if reference_candidate is not None:
+            if manager:
+                await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
             return reference_candidate
         raise ModelBudgetExceeded("Agent 达到本轮最大工具循环次数；阶段材料已保留")
+
+    async def _defer_late_final(self, result: dict, report_counts: dict, *, can_update: bool) -> bool:
+        """Use at most one existing turn to absorb reports arriving during final HTTP."""
+        late = [{"agent_id": child.id, "title": child.title,
+                 "reports": copy.deepcopy(child.reports[report_counts.get(child.id, 0):])}
+                for child in self.children.values()
+                if child.status == "completed" and len(child.reports) > report_counts.get(child.id, 0)]
+        if not late:
+            return False
+        if can_update:
+            self.client.add_user(self.manager_session, {"late_completed_child_reports": late,
+                "previous_final_report": result,
+                "instruction": "这些子任务在上一份最终报告请求期间完成。请只做一次最终更新，吸收其可见报告、材料引用和缺口；纠正已过时的未交付状态。只提交 finish_analysis，不再联网、扩展研究或创建子任务；未知仍保持未知。"})
+            await self._publish("late_child_final_update", "manager", {"agent_ids": [item["agent_id"] for item in late],
+                "remaining_model_calls": self._remaining_calls()})
+            return True
+        result["unincorporated_child_reports"] = [{"agent_id": item["agent_id"], "title": item["title"],
+            "research_rounds": [report.get("research_round") for report in item["reports"]],
+            "material_ids": sorted({mid for report in item["reports"] for mid in report.get("material_ids", []) if isinstance(mid, str)}),
+            "reason": "本次最终请求期间交付；剩余调用/轮数不足或已执行一次最终更新"} for item in late]
+        note = "补充交付状态：" + "、".join(item["title"] for item in late) + "在本次报告请求期间完成，正文尚未吸收这次结果；相关结论仍需复核。"
+        result["uncertainties"] = [*(result.get("uncertainties") or []), note]
+        result["report"] = str(result.get("report") or "") + "\n\n" + note
+        return False
 
     async def _record_native(self, agent_id, turn):
         native_materials = []
@@ -494,6 +545,8 @@ class ResearchRuntime:
 
     async def _save_checkpoint(self, declaration: dict | None = None) -> dict:
         """Persist only visible, finished research; service enforces freshness/CAS."""
+        if declaration is None:
+            declaration = copy.deepcopy((self.synthesis_checkpoint or {}).get("manager_summary") or {})
         reports = []
         for child in self.children.values():
             for report in child.reports:
@@ -517,7 +570,8 @@ class ResearchRuntime:
                 {mid for report in reports for mid in report.get("material_ids", []) if isinstance(mid, str)} |
                 {mid for mid in (declaration or {}).get("material_ids", []) if isinstance(mid, str)}),
             "calculations": copy.deepcopy(self.calculations), "metrics": copy.deepcopy(self.context.get("metrics")),
-            "open_questions": [question for report in reports for question in report.get("open_questions", [])],
+            "open_questions": [*(declaration.get("open_questions") or []),
+                *[question for report in reports for question in report.get("open_questions", [])]],
             "unresolved_tasks": unresolved_tasks,
             "unresolved_tasks_note": "旧子报告不代表后续补查已完成；最终汇总须保留这些未决任务及其影响。" if unresolved_tasks else None,
             "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
@@ -733,9 +787,13 @@ class ResearchRuntime:
                         if child.inbox:
                             # Message arrived while the last model response was pending.
                             # Do not lose it just because that response ended a report.
+                            await self._save_checkpoint()
                             await self._publish("agent_progress", child.id, {"summary": report.get("summary", ""), "follow_up_pending": True})
                             continue
                         child.status = "completed"
+                        # Persist before the parent HTTP returns or fails. A next
+                        # manager turn is not guaranteed after this completion.
+                        await self._save_checkpoint()
                         await self._publish("agent_completed", child.id, {"report": report, "round": child.round})
                         return
         except TimeoutError:

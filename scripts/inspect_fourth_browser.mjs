@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const result = {kind: 'read_only_chrome_ui_persisted_api_comparison', started_at: new Date().toISOString(),
@@ -46,6 +47,15 @@ const displayedDate = value => {
     timeZone:'Asia/Shanghai', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}).format(date);
 };
 
+export async function holdingNumbers(row) {
+  // Production prices/quantities are direct td text; secondary spans contain
+  // dates, units and status. textContent would concatenate price + date digits.
+  const primary = await row.locator('td').evaluateAll(cells=>cells.map(cell=>Array.from(cell.childNodes)
+    .filter(node=>node.nodeType === Node.TEXT_NODE).map(node=>node.textContent).join('').trim()));
+  return {quantity:primary[1] || null,price:primary[2] || null};
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 try {
   const [rawBase, rawOutput] = process.argv.slice(2);
   if (!rawBase || !rawOutput) throw new Error('Usage: node scripts/inspect_fourth_browser.mjs BASE_URL OUTPUT_DIR');
@@ -153,8 +163,7 @@ try {
         check(`${key}_${position.symbol}_holding_visible`, count === 1,1,count);
         if (count !== 1) continue;
         const cells = await row.locator('td').allTextContents();
-        const quantity = normal(cells[1]).match(/^-?[\d,.]+/)?.[0];
-        const price = normal(cells[2]).match(/^-?[\d,.]+/)?.[0];
+        const {quantity,price} = await holdingNumbers(row);
         check(`${key}_${position.symbol}_quantity_matches`, number(quantity) === number(position.quantity),position.quantity,quantity);
         check(`${key}_${position.symbol}_price_matches`, number(price) === number(position.price),position.price,price || null);
         check(`${key}_${position.symbol}_price_is_known`, number(position.price) !== null && number(position.price) > 0,
@@ -326,4 +335,5 @@ try {
   });
   process.stdout.write(JSON.stringify(result)+'\n');
   process.exitCode = result.ok ? 0 : 2;
+}
 }

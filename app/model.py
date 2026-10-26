@@ -389,6 +389,7 @@ class ModelClient:
                            "agent_id": session.agent_id if session else "probe",
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
+                           "requested_max_output_tokens": payload.get("max_output_tokens", payload.get("max_completion_tokens", payload.get("max_tokens"))),
                            "output_bytes": 0, "request_id": None,
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None}
@@ -443,6 +444,12 @@ class ModelClient:
             if isinstance(data.get("usage"), dict):
                 # Preserve only numeric usage counters, never raw provider fields.
                 observation["usage"] = _numeric_counters(data["usage"])
+                reported = observation["usage"].get("output_tokens", observation["usage"].get("completion_tokens"))
+                requested = observation["requested_max_output_tokens"]
+                if isinstance(reported, (int, float)) and isinstance(requested, (int, float)):
+                    # This compares provider-reported counters with the request;
+                    # it does not independently measure tokens, cost or capability.
+                    observation["reported_output_exceeds_requested"] = reported > requested
             if isinstance(data.get("server_side_tool_usage"), dict):
                 observation["server_side_tool_usage"] = _numeric_counters(data["server_side_tool_usage"])
             if isinstance(data.get("id"), str):

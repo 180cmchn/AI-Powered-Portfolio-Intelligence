@@ -42,6 +42,14 @@ def code_identity():
             'dependencies': {name: importlib.metadata.version(name) for name in ['fastapi', 'uvicorn', 'httpx', 'pydantic', 'pypdf']}}
 
 
+def scheduled_news_demands(store, run_id):
+    # Source discovery can create more than one page of newer demands. Audit the
+    # exact run's original scheduler demand rather than only the latest UI page.
+    with store.connect() as db:
+        return [dict(row) for row in db.execute(
+            "SELECT * FROM research_demands WHERE kind='news_observation' AND job_id=? ORDER BY id", (run_id,))]
+
+
 async def verify(args):
     config, origin = configuration(args.settings_db)
     output = args.output.resolve()
@@ -115,7 +123,7 @@ async def verify(args):
                 await asyncio.sleep(1)
             if not run:
                 raise TimeoutError('scheduled public research not started')
-            summary['steps']['scheduler_news_demand'] = [d for d in store.demands() if d['kind'] == 'news_observation']
+            summary['steps']['scheduler_news_demand'] = scheduled_news_demands(store, run['id'])
             obs = observation(store, store.global_run(run['id']), True)
             summary['rounds'].append(obs); write_json(output/'round-1-public.json', obs, config); save()
             print(json.dumps({'stage': 'public', 'state': obs['state'], 'output': str(output)}), flush=True)
