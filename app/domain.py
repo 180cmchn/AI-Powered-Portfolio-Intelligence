@@ -160,7 +160,9 @@ def metrics(account: dict, quotes: dict, securities: dict) -> dict:
         notes.append("部分成本未录入或行情缺失：不计算完整持仓成本收益。")
     if missing:
         notes.append("部分证券缺少价格：已知价格市值为部分合计，不展示完整仓位权重或总资产。")
-    if any(p["quote"].get("status") not in ("ok", "live", "demo") for p in positions):
+    if any(p["quote"].get("status") == "closed" for p in positions):
+        notes.append("休市估值使用标明源日期的最近有效收盘报价；不是盘中实时价格，不触发要求新鲜行情的条件。")
+    if any(p["quote"].get("status") not in ("ok", "live", "demo", "closed") for p in positions):
         notes.append("部分行情缺失、延迟或状态待确认；估值使用已保存报价，详情见行情时间与来源。")
     notes.append("数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。")
     return {"positions": positions, "securities_value": money(value) if not missing else None,

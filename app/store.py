@@ -14,6 +14,7 @@ from .materials import MaterialStore, SCHEMA as MATERIAL_SCHEMA
 from .recommendations import RecommendationStore, SCHEMA as RECOMMENDATION_SCHEMA
 from .scheduling import SchedulingStore, SCHEMA as SCHEDULING_SCHEMA
 from .references import ReferenceStore
+from .recovery import RecoveryStore
 
 
 def uid() -> str:
@@ -32,7 +33,7 @@ class Conflict(Exception):
     pass
 
 
-class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore):
+class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
@@ -43,7 +44,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 3:
+                if version and int(loads(version[0])) > 4:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -53,6 +54,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 3:
                     backup = self.path.with_name(self.path.name + ".before-v3.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 4:
+                    backup = self.path.with_name(self.path.name + ".before-v4.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -91,6 +98,13 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
                 CREATE TABLE IF NOT EXISTS material_uses(
                   material_id TEXT NOT NULL, job_id TEXT NOT NULL, account_id TEXT NOT NULL,
                   PRIMARY KEY(material_id,job_id));
+                CREATE TABLE IF NOT EXISTS synthesis_checkpoints(
+                  job_id TEXT PRIMARY KEY, account_id TEXT NOT NULL, input_version INTEGER,
+                  universe_version INTEGER NOT NULL, body TEXT NOT NULL, guard TEXT NOT NULL,
+                  created_at TEXT NOT NULL, resume_count INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS information_routes(
+                  material_id TEXT PRIMARY KEY, public_run_id TEXT, state TEXT NOT NULL,
+                  decision TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
             """)
             existing_mode = db.execute("SELECT value FROM meta WHERE key='mode'").fetchone()
             if existing_mode and loads(existing_mode[0]) != mode:
@@ -102,7 +116,17 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
             self.migrate_material_catalog(db)
             self.migrate_research_versions(db)
             self.migrate_recommendations(db)
-            db.execute("UPDATE meta SET value='3' WHERE key='schema_version'")
+            settings_row = db.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
+            saved_settings = loads(settings_row[0], {}) if settings_row else {}
+            # Independent settings: an old search-provider disable never disables
+            # model-hosted search. Preserve an explicit new choice on every upgrade.
+            if "model_native_search" not in saved_settings:
+                saved_settings["model_native_search"] = defaults()["model_native_search"]
+                db.execute("INSERT OR REPLACE INTO meta VALUES('settings',?)", (dumps(saved_settings),))
+                db.execute("INSERT OR IGNORE INTO meta VALUES('native_search_migration',?)", (dumps({
+                    "at": now(), "from_schema": 3, "legacy_search_provider": saved_settings.get("search_provider"),
+                    "model_native_search": saved_settings["model_native_search"], "reason": "independent_model_tool_setting"}),))
+            db.execute("UPDATE meta SET value='4' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -130,7 +154,11 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
             db.execute("INSERT OR REPLACE INTO meta VALUES(?,?)", (key, dumps(value)))
 
     def settings(self):
-        return {**defaults(), **self.meta("settings", {})}
+        settings = {**defaults(), **self.meta("settings", {})}
+        # Keep legacy values in the DB for traceability, out of the runtime/UI.
+        for key in ("search_provider", "search_key_env", "search_max_results", "news_read_sources"):
+            settings.pop(key, None)
+        return settings
 
     def account(self, account_id, db=None):
         if db is None:
@@ -206,7 +234,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
             for j in ids:
                 db.execute("DELETE FROM events WHERE job_id=?", (j,))
             db.execute("DELETE FROM recommendation_events WHERE recommendation_id IN (SELECT id FROM recommendations WHERE account_id=?)", (account_id,))
-            for table in ("accounts", "snapshots", "jobs", "analyses", "material_uses", "recommendations", "research_records", "research_demands", "condition_latches"):
+            for table in ("accounts", "snapshots", "jobs", "analyses", "material_uses", "recommendations", "research_records", "research_demands", "condition_latches", "synthesis_checkpoints"):
                 col = "id" if table == "accounts" else "account_id"
                 db.execute(f"DELETE FROM {table} WHERE {col}=?", (account_id,))
 
@@ -217,6 +245,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
                 raise KeyError("任务不存在")
             r = dict(row)
             r["result"] = loads(r["result"])
+            r["synthesis_checkpoint"] = self.checkpoint_status(job_id)
             if events:
                 r["events"] = [loads(e[0]) for e in db.execute("SELECT body FROM events WHERE job_id=? ORDER BY seq", (job_id,))]
             return r
@@ -229,6 +258,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
         result = []
         for r in rows:
             item = dict(r)
+            item["synthesis_checkpoint"] = self.checkpoint_status(item['id'])
             if summary:
                 item.pop("result", None)
             else:
@@ -299,6 +329,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore)
             terminal = "completed" if valid else ("cancelled" if job["state"] == "cancelled" else "superseded")
             db.execute("UPDATE jobs SET state=?,result=?,data_as_of=?,updated_at=? WHERE id=?", (terminal, dumps(result), data_as_of, now(), job_id))
             if valid:
+                db.execute('UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id=? AND input_version=?',
+                           (result.get('synthesis_checkpoint_job_id'), job['account_id'], job['input_version']))
                 db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND job_id<>? AND status='current'", (job["account_id"], job_id))
                 db.execute("UPDATE accounts SET analysis_state='current' WHERE id=?", (job["account_id"],))
                 self._save_suggestions(db, job, result)

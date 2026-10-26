@@ -20,6 +20,12 @@ def document(text, **extra):
             "requested_range": {"start_page": 1, "end_page": 20}, **extra}
 
 
+def collected(store, material, **options):
+    """Controlled collector starts a trusted observation before saving bytes."""
+    token = store.begin_material_observation(material["url"])
+    return store.save_material(material, observation_id=token, **options)
+
+
 def test_read_lengths_share_document_version_and_preserve_representations(store):
     short = store.save_material(document("x" * 12000), notify=True)
     long = store.save_material(document("x" * 40000), notify=True)
@@ -48,6 +54,8 @@ def test_existing_material_can_register_one_notification_after_agent_read(store)
     assert two["id"] == one["id"] and not two["_created"]
     assert store.pending_material_notifications() == [one["id"]]
     Service(store).notify_material_changes()
+    assert store.pending_material_notifications() == [one["id"]]
+    Service(store).route_material_changes("controlled-public-report", {}, [one["id"]])
     for _ in range(3):
         store.save_material(document("agent-read"), notify=True)
     assert not store.pending_material_notifications()
@@ -73,8 +81,8 @@ def test_original_summary_and_model_extraction_have_independent_identity(store):
 
 
 def test_real_original_change_even_same_url_publication_and_excerpt(store):
-    first = store.save_material(document("same page", published_at="2026-10-20"), notify=True)
-    second = store.save_material(document("same page", published_at="2026-10-20",
+    first = collected(store, document("same page", published_at="2026-10-20"), notify=True)
+    second = collected(store, document("same page", published_at="2026-10-20",
         document_id="controlled-original-byte-fingerprint-v2"), notify=True)
     assert second["version"] == 2 and second["previous_id"] == first["id"]
     assert second["change_kind"] == "original_content_changed"
@@ -93,12 +101,14 @@ def test_notification_partial_delivery_recovers_without_duplicate_demands(store,
             raise RuntimeError("controlled interruption after another target persisted")
         return original(account_id, *args, **kwargs)
     monkeypatch.setattr(store, "request_analysis", interrupt)
+    Service(store).notify_material_changes()
     with pytest.raises(RuntimeError, match="controlled interruption"):
-        Service(store).notify_material_changes()
+        Service(store).route_material_changes("controlled-public-report", {}, [saved["id"]])
     assert store.pending_material_notifications() == [saved["id"]]
     restarted = Store(store.path)
     Service(restarted).notify_material_changes()
-    Service(restarted).notify_material_changes()
+    Service(restarted).route_material_changes("controlled-public-report", {}, [saved["id"]])
+    Service(restarted).route_material_changes("controlled-public-report", {}, [saved["id"]])
     demands = [d for d in restarted.demands() if d["kind"] == "public_information"]
     assert sorted(d["account_id"] for d in demands) == sorted(["", first["id"], second["id"]])
     assert not restarted.pending_material_notifications()
@@ -108,27 +118,29 @@ def test_notification_partial_delivery_recovers_without_duplicate_demands(store,
 async def test_agent_then_scan_real_service_path_reuses_original_and_backfills(store, monkeypatch):
     from app import providers
     account = store.save_account(AccountInput(name="controlled-real-code-path"))
-    cfg = {**store.settings(), "search_provider": "tavily", "news_queries": ["controlled fixture"],
-           "read_max_chars": 40000, "news_read_sources": True}
+    cfg = {**store.settings(), "news_queries": ["controlled fixture"], "read_max_chars": 40000}
     store.set_meta("settings", cfg)
-    async def read(url, config, **options):
-        length = config["read_max_chars"]
-        return document("x" * length, returned_chars=length)
-    async def search(*args, **kwargs):
-        return {"results": [{"url": document("")["url"], "snippet": "controlled search summary"}]}
-    monkeypatch.setattr(providers, "read_url", read)
-    monkeypatch.setattr(providers, "search", search)
+    async def fetch(url, config):
+        return b"<article>" + b"x" * 40000 + b"</article>", "text/html", url
+    monkeypatch.setattr(providers, "_fetch_public", fetch)
+    providers._DOCUMENT_CACHE.clear()
     tools = ResearchTools(store, store.job(account["latest_job_id"]), cfg)
     first = await tools.read(document("")["url"])
-    await tools.search("controlled fixture")
     assert not store.pending_material_notifications()
     service = Service(store)
     scan = await service.news_scan()
-    assert not scan["new_material_ids"]  # additional 40k read is not a new source version
+    assert scan["state"] == "queued"
+    public = ResearchTools(store, {"id": "controlled-public-job", "account_id": None}, cfg)
+    await public.read(document("")["url"], offset=12000)
+    await public.record_native_search("child", [{"type": "web_search_call"}], [
+        {"url": document("")["url"], "snippet": "controlled search summary"}], [])
+    service.notify_material_changes()
+    assert len(store.pending_material_notifications()) == 2
+    service.route_material_changes("controlled-public-report", {}, store.pending_material_notifications())
     second = await tools.read(document("")["url"])
     assert second["material_id"] == first["material_id"]
     original_reads = [m for m in store.material_index() if m["representation_kind"] == "original_document"]
-    assert {m["char_count"] for m in original_reads} == {12000, 40000}
+    assert len(original_reads) == 2 and {m["char_count"] for m in original_reads} == {12000}
     assert {m["document_version"] for m in original_reads} == {1}
     demands = [d for d in store.demands(account["id"]) if d["kind"] == "public_information"]
     assert len(demands) == 2  # one summary and one original, independently typed
@@ -138,11 +150,11 @@ async def test_agent_then_scan_real_service_path_reuses_original_and_backfills(s
 
 
 def test_cached_old_original_is_not_misreported_as_publisher_reversion(store):
-    first = store.save_material(document("old"), notify=True)
-    second = store.save_material(document("new", document_id="controlled-v2"), notify=True)
+    first = collected(store, document("old"), notify=True)
+    second = collected(store, document("new", document_id="controlled-v2"), notify=True)
     cached = store.save_material(document("old", cache_hit=True, fetched_at="2026-10-25T08:00:00+08:00"), notify=True)
     assert cached["id"] == first["id"] and not cached["_document_created"]
-    reverted = store.save_material(document("old", cache_hit=False), notify=True)
+    reverted = collected(store, document("old", cache_hit=False), notify=True)
     assert reverted["version"] == 3 and reverted["previous_id"] == second["id"]
 
 

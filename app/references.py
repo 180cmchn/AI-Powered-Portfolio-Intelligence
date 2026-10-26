@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from urllib.parse import quote, urlsplit
 
-from .materials import index_of
+from .materials import index_of, parent_material_ids
 
 
 def source_url(value):
@@ -30,6 +30,29 @@ class ReferenceStore:
             with self.connect() as conn:
                 return self.resolve_result_references(result, account_id, conn)
 
+        native_sources = None
+        def url_key(url):
+            return urlsplit(url)._replace(fragment='').geturl()
+
+        def saved_native_source(url):
+            nonlocal native_sources
+            if native_sources is None:
+                native_sources = {}
+                rows = db.execute("""SELECT m.id,m.body FROM materials m
+                    JOIN material_catalog c ON c.material_id=m.id
+                    JOIN material_representations r ON r.material_id=m.id
+                    JOIN material_document_versions d ON d.id=r.document_version_id
+                    WHERE d.representation_kind='native_search_source' AND
+                    (c.scope='public' OR (?<>'' AND (c.account_id=? OR EXISTS
+                    (SELECT 1 FROM material_uses u WHERE u.material_id=m.id AND u.account_id=?))))
+                    ORDER BY m.created_at DESC,m.rowid DESC""", (account_id or '', account_id or '', account_id or '')).fetchall()
+                for row in rows:
+                    body = loads(row['body'])
+                    stored_url = source_url(body.get('url'))
+                    if stored_url:
+                        native_sources.setdefault(url_key(stored_url), row['id'])
+            return native_sources.get(url_key(url))
+
         def resolve(material_id, ancestry=()):
             if material_id in ancestry or len(ancestry) >= 5:
                 return {'material_id': material_id, 'status': 'unresolved', 'reason': 'reference_chain_not_resolved'}
@@ -46,6 +69,13 @@ class ReferenceStore:
                 return {'material_id': material_id, 'url': url,
                         'status': 'source_link' if url else 'unresolved', 'reason': 'saved_retrieval_failed',
                         'access': 'failed'}
+            if body.get('representation') == 'native_search_source' and body.get('access') == 'source_link':
+                return {'material_id': material_id, 'url': url, 'title': meta.get('source_title') or meta.get('title'),
+                        'status': 'source_link' if url else 'unresolved', 'reason': 'native_search_link_only',
+                        'access': 'source_link', 'representation_kind': 'native_search_source',
+                        'scope': meta.get('scope'),
+                        'document_identity_kind': meta.get('document_identity_kind'),
+                        'range': {'read_completeness': 'source_link_only'}}
             ref = {'material_id': material_id, 'status': 'resolved',
                     'title': meta.get('source_title') or meta.get('title'), 'url': url,
                     'scope': meta.get('scope'), 'access': meta.get('access', 'unknown'),
@@ -58,8 +88,7 @@ class ReferenceStore:
                     'locator': '/api/materials/' + quote(material_id, safe='') + '/range' +
                                ('?account_id=' + quote(account_id, safe='') if account_id else '')}
             if meta.get('representation_kind') in ('agent_extraction', 'generated_analysis'):
-                parent_ids = body.get('material_ids') or body.get('source_material_ids') or []
-                parent_ids = [mid for mid in parent_ids if isinstance(mid, str)] if isinstance(parent_ids, list) else []
+                parent_ids = parent_material_ids(body)
                 ref['origin_references'] = [resolve(mid, (*ancestry, material_id)) for mid in dict.fromkeys(parent_ids)]
                 ref['origin_status'] = 'linked_materials' if parent_ids else 'unlinked'
                 # Claimed source pages are model metadata, not provider-confirmed
@@ -74,8 +103,7 @@ class ReferenceStore:
             if not isinstance(value, dict):
                 return value
             item = {key: walk(val) for key, val in value.items() if key not in ('references', 'reference_summary')}
-            ids = item.get('material_ids', [])
-            ids = [v for v in ids if isinstance(v, str)] if isinstance(ids, list) else []
+            ids = parent_material_ids(item)
             if isinstance(item.get('material_id'), str):
                 ids = [item['material_id'], *ids]
             refs = [resolve(mid) for mid in dict.fromkeys(ids)]
@@ -89,10 +117,17 @@ class ReferenceStore:
             for key in ('report', 'summary', 'basis'):
                 if isinstance(item.get(key), str):
                     urls.extend(v.rstrip('.,;，。；') for v in re.findall(r'https?://[^\s<>\]\)"\u3000]+', item[key]))
-            known = {ref.get('url') for ref in refs}
-            refs += [{'url': url, 'status': 'source_link', 'reason': 'not_located_in_saved_material'}
-                     for url in dict.fromkeys(urls) if source_url(url) and url not in known]
-            if refs or any(k in item for k in ('report', 'material_ids', 'material_id')):
+            known = {url_key(ref['url']) for ref in refs if source_url(ref.get('url'))}
+            for url in dict.fromkeys(urls):
+                if not source_url(url) or url_key(url) in known:
+                    continue
+                mid = saved_native_source(url)
+                ref = resolve(mid) if mid else {'url': url, 'status': 'source_link', 'reason': 'not_located_in_saved_material'}
+                if mid and ref.get('url') != url:
+                    ref['citation_url'] = url
+                refs.append(ref)
+                known.add(url_key(url))
+            if refs or any(k in item for k in ('report', 'material_ids', 'source_material_ids', 'material_id')):
                 item['references'] = refs
             return item
 

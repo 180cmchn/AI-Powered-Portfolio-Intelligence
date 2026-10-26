@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT))
 
 from app.config import db_path, defaults
 from app.domain import AccountInput, TZ, symbol
-from app.model import ModelClient, ModelConfigurationError, ModelError, probe_model
+from app.model import ModelClient, ModelConfigurationError, ModelError, probe_model, probe_native_search
 from app.service import ResearchTools, Service
 from app.store import Store
 
@@ -52,7 +52,7 @@ def public_config(config, origin):
     no_key = host in ("localhost", "127.0.0.1", "::1") and config.get("model_allow_no_key", False)
     return {"configured": bool(config.get("model_name") and (os.getenv(config.get("model_key_env", "MODEL_API_KEY")) or no_key)),
             "protocol": config.get("model_protocol"), "model_name": config.get("model_name"), "model_host": host,
-            "search_provider": config.get("search_provider"), "quote_provider": config.get("quote_provider"),
+            "model_native_search": config.get("model_native_search", True), "quote_provider": config.get("quote_provider"),
             "research_provider": config.get("research_provider"), "settings_origin": origin}
 
 
@@ -112,7 +112,8 @@ def observation(store, run, global_run=False):
               "shared_research_used": result.get("shared_research_used", []),
               "reference_resolution": result.get("reference_resolution", result.get("references", [])),
               "reference_summary": result.get("reference_summary", {}),
-              "metrics_recomputable": (recomputed == metric.get("known_priced_value")) if metric else None,
+              "all_holdings_priced": bool(metric.get('positions')) and all(p.get('price') is not None for p in metric.get('positions', [])),
+              "metrics_recomputable": (bool(values) and len(values) == len(metric.get('positions', [])) and recomputed == metric.get("known_priced_value")) if metric else None,
               "known_priced_value_recomputed": recomputed if metric else None}
     return {"job_id": run["id"], "scope": "public" if global_run else "account", "state": run["state"],
             "error": run.get("error"), "failure_category": classify_failure(run.get("error")) if run["state"] in ("failed", "waiting_config") else None,
@@ -184,10 +185,7 @@ async def verify(args, config, origin):
             result = await source_tools.read(args.source_url, page=page, limit=10000)
             reads.append({k: result.get(k) for k in ("url", "material_id", "material_identity", "access", "error", "fetched_at", "document_id", "returned_range", "returned_chars", "truncated")})
         summary["steps"]["public_material_reads"] = reads
-        if config.get("search_provider") not in (None, "disabled"):
-            summary["steps"]["search"] = await source_tools.search(args.query)
-        else:
-            summary["steps"]["search"] = {"status": "unconfigured", "note": "Public URL retrieval remains available."}
+        summary["steps"]["native_search_probe"] = await probe_native_search(config)
         checkpoint()
         store.request_analysis(None, "evaluation", "third:global", reason=purpose)
         run = store.claim_global()
@@ -214,7 +212,7 @@ async def verify(args, config, origin):
         edited = store.save_account({**current_a, "holdings": [{"symbol": symbols[0], "quantity": "200"}],
                                     "expected_version": current_a["version"]}, a["id"], reason=purpose + "；本次 A 持仓由100股改为200股，复核最新敞口。")
         summary["steps"]["holding_edit"] = {"previous_version": current_a["version"], "new_version": edited["version"],
-            "prior_analyses_stale": all(store.analysis(row["id"])["status"] == "stale" for row in old_a_analyses),
+            "prior_analyses_stale": bool(old_a_analyses) and all(store.analysis(row["id"])["status"] == "stale" for row in old_a_analyses),
             "had_prior_analysis": bool(old_a_analyses), "new_job_id": edited["latest_job_id"]}
         # Only the explicitly edited account executes; unrelated deferred work stays inspectable.
         claimed = store.claim_jobs(limit=1, account_id=a["id"])
@@ -236,7 +234,7 @@ async def verify(args, config, origin):
         checks = [len(summary["rounds"]) == 4, bool(summary["steps"]["account_b_unchanged_after_a_edit"]),
                   bool(old_a_analyses), summary["steps"]["holding_edit"]["prior_analyses_stale"],
                   any(read.get("returned_chars", 0) for read in reads),
-                  any(q.get("price") is not None for q in summary["steps"]["quote_records"].values()),
+                  all(summary["steps"]["quote_records"].get(s, {}).get("price") is not None for s in symbols),
                   all(run["observations"]["report_returned"] for run in summary["rounds"]),
                   any(run["observations"]["subagent_tool_call"] for run in summary["rounds"])]
         summary["mechanical_observations_passed"] = all(checks)

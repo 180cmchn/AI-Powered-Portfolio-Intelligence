@@ -91,12 +91,12 @@ def test_settings_roundtrip_preserves_active_job_and_tracks_new_demand(api):
     account = make_account(store)
     job = store.claim_jobs()[0]
     settings = client.get('/api/settings').json()
-    settings.update(news_interval_minutes=45, news_start_hour=8, news_end_hour=23, news_read_sources=False,
+    settings.update(news_interval_minutes=45, news_start_hour=8, news_end_hour=23, model_native_search=False,
                     research_provider='tushare', tushare_token_env='TEST_TUSHARE_TOKEN', read_cache_seconds=600)
     saved = client.put('/api/settings', json=settings)
     assert saved.status_code == 200, saved.text
     assert saved.json()['news_interval_minutes'] == 45
-    assert saved.json()['news_read_sources'] is False
+    assert saved.json()['model_native_search'] is False
     assert store.job(job['id'])['state'] == 'running'
     assert any(d['kind'] == 'configuration_changed' and d['state'] == 'pending' for d in store.demands(account['id']))
 

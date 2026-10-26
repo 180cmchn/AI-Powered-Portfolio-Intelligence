@@ -1,3 +1,5 @@
+> 第四轮行情实测和间歇断连限制见 [行情修复记录](fourth-quotes.md)。下方较早日期的网络记录保留为历史观察。
+
 # 行情、搜索、原文与日历适配
 
 适配代码位于 `app/providers.py`。证券身份使用交易所加六位代码，例如 `SH:600519`、`SZ:000001`、`SH:510300`。名称不作为身份键。数量由账户模块保存为股或份，行情价格为每股或每份人民币价格。价格与涨跌幅返回十进制字符串，避免二进制浮点误差。
@@ -57,13 +59,13 @@ PDF 原始字节 SHA-256 为 `0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fd
 
 `quote_provider=manual` 明确返回“未启用”，不生成行情。测试中的 MockTransport 与独立演示库均不代表联网数据。
 
-## 搜索服务
+## 模型原生联网（第四轮）
 
-配置 `search_provider=tavily` 或 `brave`，把密钥置于环境变量，设置 `search_key_env` 为变量名；默认分别读取 `TAVILY_API_KEY`、`BRAVE_API_KEY`。前端和数据库只需保存变量名，不保存密钥。缺少服务或密钥时返回 `status=unavailable` 与原因，不返回模拟资讯。
+不再配置独立搜索服务。主/子 Agent 的 Responses 请求同时传服务端 `{"type":"web_search"}` 与本地 function；网络由当前模型服务执行，沿用模型凭据。只解析可见调用、URL、标题、片段和引用；不透明续接仅在内存，既不写日志也不作事实证据。
 
-接口依据 2026-10-22 核对的供应商文档实现：[Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search) 使用 POST `/search` 与 Bearer 认证；[Brave Web Search](https://api-dashboard.search.brave.com/app/documentation/web-search/get-started) 使用 GET `/res/v1/web/search` 与 `X-Subscription-Token`。结果保留标题、URL、摘录、供应商返回的发布时间与抓取时间。日期没有返回时为 `null`，不从抓取时间推测。搜索摘录统一标记 `access=excerpt`，不声称读过原文。供应商可能计费，需拥有对应账号与套餐权限。
+2026-10-26 实测当前 `api.xxyapi.com/v1`、标识 `grok-4.7`：发现搜索返回两次完成的搜索调用、15个来源URL；混合本地函数两轮续接也通过。上游身份未独立验证。服务返回链接及零长度引用位置，不表示本地下载全文或定位页码。详细脱敏产物见 `fourth-native-probe.json` 与 `fourth-native-mixed.json`。
 
-本次没有应用搜索密钥，因此**未完成 Tavily/Brave 真实认证请求**；测试仅验证请求格式、缺配置、错误处理和字段保留。开发时浏览器/检索工具访问文档不等于应用已拥有该工具或其 API 权限。
+参考 [OpenAI Web search](https://developers.openai.com/api/docs/guides/tools-web-search)、[xAI Web Search](https://docs.x.ai/developers/tools/web-search)、[xAI Citations](https://docs.x.ai/developers/tools/citations)。官方能力不自动等于第三方端点能力。能力探测失败不会启用其他平台。
 
 ## 公开网页和公告
 
@@ -95,8 +97,7 @@ PDF 工具共用下载缓存：
 | quote_provider | eastmoney | eastmoney 或 manual |
 | network_timeout_seconds | 12 | 每次外部 HTTP 连接/读写超时 |
 | quote_stale_seconds | 180 | 行情时间距当前超过该值标为 stale |
-| search_provider | disabled | disabled、tavily、brave |
-| search_key_env | 按供应商默认 | 环境变量名称 |
+| model_native_search | true | 同模型原生联网；能力需真实观察 |
 | search_max_results | 6 | 搜索每次返回上限，1–20 |
 | read_timeout_seconds | 30 | 原文读取总时限 |
 | read_max_bytes | 5000000 | 响应字节上限 |

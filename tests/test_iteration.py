@@ -136,24 +136,22 @@ async def test_material_indexes_ranges_search_privacy_and_reversions(store):
 async def test_news_same_url_and_published_at_corrected_body_triggers_review(store, monkeypatch):
     from app import providers
     a = account(store)
-    store.set_meta('settings',{**store.settings(),'search_provider':'tavily','news_queries':['company']})
-    source={'text':'old source'}
-    async def search(*args, **kw):
-        return {'results':[{'url':'https://example.test/report','snippet':'same unchanged summary','published_at':'2026-10-22'}]}
-    async def read(*args, **kw):
-        return {**source,'url':'https://example.test/report','access':'full_text','truncated':False}
-    monkeypatch.setattr(providers,'search',search)
-    monkeypatch.setattr(providers,'read_url',read)
-    service=Service(store)
-    first=await service.news_scan()
-    assert len(first['new_material_ids'])==2
-    assert not (await service.news_scan())['new_material_ids']
-    source['text']='corrected source'
-    changed=await service.news_scan()
-    assert len(changed['new_material_ids'])==1
-    m=store.material(changed['new_material_ids'][0])
-    assert m['version']==2 and m['previous_id']
-    assert len([d for d in store.demands(a['id']) if d['kind']=='public_information'])==3
+    store.set_meta('settings', {**store.settings(), 'news_queries': ['company']})
+    async def forbidden(*args, **kwargs):
+        raise AssertionError('independent search must never run')
+    monkeypatch.setattr(providers, 'search', forbidden)
+    service = Service(store)
+    first = await service.news_scan()
+    assert first['state'] == 'queued'
+    assert (await service.news_scan())['demand_id'] == first['demand_id']
+    for content in ['old source', 'corrected source']:
+        material = store.save_material({'scope': 'public', 'url': 'https://example.test/report',
+            'content': content, 'access': 'full_text', 'published_at': '2026-10-22'}, notify=True)
+        service.notify_material_changes()
+        assert material['id'] in store.pending_material_notifications()
+        service.route_material_changes('controlled-public-report', {}, [material['id']])
+    assert material['version'] == 2 and material['previous_id']
+    assert len([d for d in store.demands(a['id']) if d['kind'] == 'public_information']) == 2
 
 
 def suggestion(expiry):
@@ -235,7 +233,7 @@ def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
         db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
         db.execute('DROP TABLE material_catalog')
     upgraded=Store(store.path)
-    assert upgraded.meta('schema_version')==3
+    assert upgraded.meta('schema_version')==4
     assert upgraded.account(a['id'])['version']==1
     assert upgraded.material(m['id'])['content']=='old text'
     assert store.path.with_name(store.path.name+'.before-v2.bak').exists()
@@ -293,8 +291,8 @@ async def test_material_save_cannot_claim_other_accounts_private_id(store):
 
 def test_document_hash_not_only_excerpt_detects_later_page_correction(store):
     base={'url':'https://example.test/report.pdf','access':'excerpt','scope':'public','text':'identical first page', 'document_id':'full-byte-hash-v1'}
-    one=store.save_material(base)
-    two=store.save_material({**base,'document_id':'full-byte-hash-v2'})
+    one=store.save_material(base, observation_id=store.begin_material_observation(base['url']))
+    two=store.save_material({**base,'document_id':'full-byte-hash-v2'}, observation_id=store.begin_material_observation(base['url']))
     assert two['version']==2 and two['previous_id']==one['id']
 
 
@@ -336,6 +334,8 @@ def test_source_update_notification_survives_interruption_before_dispatch(store)
     assert not reopened.save_material({'scope':'public','url':'https://example.test/new','content':'correction'},notify=True)['_created']
     svc=Service(reopened)
     svc.notify_material_changes()
+    assert reopened.pending_material_notifications() == [material['id']]
+    svc.route_material_changes('controlled-public-report', {}, [material['id']])
     assert not reopened.pending_material_notifications()
     assert any(material['id'] in d['reason'] for d in reopened.demands(a['id']))
     before=len(reopened.demands())

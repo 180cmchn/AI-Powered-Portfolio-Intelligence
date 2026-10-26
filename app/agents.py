@@ -50,7 +50,6 @@ RESEARCH_RECORD = {"type": "object", "properties": {
     "title": STRING, "reason": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
     "material_ids": STRINGS, "status": STRING, "key_changes": STRING, "account_fit": STRING}, "required": ["kind", "title", "reason"]}
 RESEARCH_TOOLS = [
-    _schema("search", "搜索公开材料；返回结果与访问范围，不将摘要冒充已阅读原文。", {"query": STRING}, ["query"]),
     _schema("read", "读取公开网页正文与附件；可按 PDF 物理页码（从 1 开始）或文本字符范围读取。访问范围及截断状态以返回值为准。",
             {"url": STRING, "start_page": PAGE, "end_page": PAGE, "page": PAGE, "offset": INTEGER, "limit": {"type": "integer", "minimum": 1, "maximum": 20000}, "refresh": {"type": "boolean"}}, ["url"]),
     _schema("pdf_metadata", "获取 PDF 标题、元数据及总页数；长财报先定位再读取。", {"url": STRING, "refresh": {"type": "boolean"}}, ["url"]),
@@ -78,6 +77,7 @@ RESEARCH_TOOLS = [
             {"operation": STRING, "values": {"type": "array", "items": {"type": ["string", "number"]}}}, ["operation", "values"]),
 ]
 MANAGER_TOOLS = [
+    _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS}, ["summary"]),
     _schema("spawn_research", "创建有独立模型上下文和工具循环的子 Agent；按需要创建，不要求固定数量。",
             {"task": STRING, "title": STRING, "context": {"type": "object", "additionalProperties": True}}, ["task"]),
     _schema("send_message", "给子 Agent 发送补充消息。运行中在下个安全边界接收；已完成则继续同一会话。",
@@ -95,6 +95,10 @@ MANAGER_TOOLS = [
              "maintained_suggestion_ids": STRINGS,
              "review_suggestion_ids": STRINGS,
              "revoked_suggestion_ids": STRINGS,
+             "information_impacts": {"type": "array", "items": {"type": "object", "properties": {
+                 "material_id": STRING, "status": {"type": "string", "enum": ["relevant", "irrelevant", "uncertain"]},
+                 "symbols": STRINGS, "sectors": STRINGS, "market_wide": {"type": "boolean"}, "explanation": STRING,
+                 "event_key": STRING}, "required": ["material_id", "status", "explanation"]}},
              "research_records": {"type": "array", "items": RESEARCH_RECORD}}, ["report"]),
 ]
 CHILD_TOOLS = [
@@ -145,12 +149,24 @@ class ResearchRuntime:
         self.condition = asyncio.Condition()
         self.delivered_sequence = 0
         self.materials: list[dict] = []
+        self.calculations: list[dict] = []
+        self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
+        self.synthesis_only = bool(self.synthesis_checkpoint)
+        self.synthesis_started_calls = 0
+        self.checkpoint_signature = ""
         self.closed = False
         self.reference_feedback_sent = False
         self.manager_session = self.client.session((PROMPTS / "manager.txt").read_text(), self.context)
+        self.manager_session.agent_id = "manager"
+        if self.synthesis_only:
+            self.manager_session.phase = "synthesis"
+            self.manager_session.native_search = False
+            self.client.add_user(self.manager_session, {"recovery": "基于已保存的可见研究成果完成最终汇总；不重复联网或创建子任务。当前持仓与版本以本次 context 为准。"})
 
     async def _use_budget(self) -> None:
         async with self.budget_lock:
+            if self.synthesis_only and self.calls - self.synthesis_started_calls >= max(1, min(int(self.config.get("synthesis_max_calls", 4)), 8)):
+                raise ModelBudgetExceeded("汇总恢复达到有限调用预算；检查点保留，未发布半份最终报告")
             if self.calls >= int(self.config.get("max_model_calls", 40)):
                 raise ModelBudgetExceeded("已达到本轮模型调用预算；已保存持仓及材料保留，可调整预算后重试")
             self.calls += 1
@@ -170,6 +186,8 @@ class ResearchRuntime:
 
     async def run(self) -> dict:
         await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason")})
+        if self.synthesis_only:
+            await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4)})
         try:
             async with asyncio.timeout(float(self.config.get("analysis_timeout_seconds", 600))):
                 result = await self._loop("manager", self.manager_session, manager=True)
@@ -180,6 +198,8 @@ class ResearchRuntime:
                                "input_version": self.input_version, "data_as_of": self.context.get("data_as_of"),
                                "agents": [child.snapshot() for child in self.children.values()],
                                "model_calls": self.calls, "model_usage": self.client.usage_summary(self.client.requests),
+                               "synthesis_recovered": bool(self.context.get("synthesis_checkpoint")),
+                               "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
                                "materials": copy.deepcopy(self.materials)})
                 await self._publish("agent_completed", "manager", {"report": result["report"], "model_calls": self.calls, "model_usage": result["model_usage"]})
@@ -216,15 +236,22 @@ class ResearchRuntime:
         return text[:1200]
 
     async def _loop(self, agent_id: str, session: ModelSession, *, manager: bool) -> dict:
-        definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
-        allowed = {item["name"] for item in definitions}
         max_turns = int(self.config.get("max_agent_turns", 12))
         reference_candidate = None
         for turn_index in range(max_turns):
+            definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
+            if manager and self.synthesis_only:
+                permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "finish_analysis"}
+                definitions = [tool for tool in definitions if tool["name"] in permitted]
+            allowed = {item["name"] for item in definitions}
             if manager:
                 events = self._new_child_events()
                 if events:
                     self.client.add_user(session, {"research_events": events})
+                if not self.synthesis_only and self.children and all(child.status in {"completed", "failed", "cancelled"} for child in self.children.values()):
+                    if any(child.reports for child in self.children.values()):
+                        await self._save_checkpoint()
+                        session.phase = "synthesis"
             else:
                 self._deliver_inbox(self.children[agent_id])
             request_start, compactions = len(session.requests), session.compactions
@@ -234,15 +261,24 @@ class ResearchRuntime:
                 await self._publish("model_error", agent_id, {"error": "模型请求随研究任务取消", "requests": copy.deepcopy(session.requests[request_start:])})
                 raise
             except Exception as exc:
-                await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:])})
+                partial = getattr(exc, "native_turn", None)
+                if partial is not None:
+                    await self._record_native(agent_id, partial)
+                await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:]),
+                    "native_search": self.client.native_status()})
                 if reference_candidate is not None:
                     reference_candidate['reference_resolution_note'] = '引用修正请求未完成；保留原报告的已解析部分和明确缺口。'
                     return reference_candidate
                 raise
             await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": self.client.usage_summary(session.requests)})
+            native_materials = await self._record_native(agent_id, turn)
             if session.compactions > compactions:
                 await self._publish("context_compacted", agent_id, {"compactions": session.compactions, "archived_records": len(session.archive), "retrieval_tool": "recall_context"})
             if not turn.calls:
+                if native_materials:
+                    self.client.add_user(session, {"native_source_materials": native_materials})
+                if turn.continuation_required:
+                    continue
                 if not turn.text.strip():
                     raise ModelError("Agent 未提交可见报告")
                 return {"report" if manager else "summary": turn.text}
@@ -274,11 +310,62 @@ class ResearchRuntime:
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
             self.client.add_results(session, results)
+            if manager and getattr(self, "_fresh_synthesis_context", None) is not None:
+                fresh = self._fresh_synthesis_context
+                session.history = fresh.history
+                session.archive = fresh.archive
+                self._fresh_synthesis_context = None
+                self.client.add_user(session, {"phase": "synthesis", "instruction": "研究已完成。使用检查点中的可见成果，必要时读取已有材料或重新计算，然后提交 finish_analysis；保持报告精炼。"})
+            if native_materials:
+                self.client.add_user(session, {"native_source_materials": native_materials})
             if submitted is not None:
                 return submitted
         if reference_candidate is not None:
             return reference_candidate
         raise ModelBudgetExceeded("Agent 达到本轮最大工具循环次数；阶段材料已保留")
+
+    async def _record_native(self, agent_id, turn):
+        native_materials = []
+        if turn.native_events or turn.sources or turn.annotations:
+            if hasattr(self.tools, "record_native_search"):
+                native_materials = await self.tools.record_native_search(agent_id, turn.native_events, turn.sources, turn.annotations)
+                self.materials.extend(copy.deepcopy(native_materials or []))
+            await self._publish("native_search", agent_id, {"events": turn.native_events, "sources": turn.sources,
+                "annotations": turn.annotations, "materials": native_materials, "capability": turn.native_status})
+        return native_materials
+
+    async def _save_checkpoint(self, declaration: dict | None = None) -> dict:
+        """Persist only visible, finished research; service enforces freshness/CAS."""
+        reports = []
+        for child in self.children.values():
+            for report in child.reports:
+                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions") if key in report}
+                if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
+                    visible["summary"] = visible["summary"][:12000]
+                    visible["summary_truncated"] = True
+                reports.append({"agent_id": child.id, "title": child.title, **visible})
+        if not reports and not declaration:
+            return {}
+        material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
+        checkpoint = {"phase": "synthesis", "task_id": self.task_id, "account_id": self.account_id,
+            "input_version": self.input_version, "scope": self.context.get("scope", "account"),
+            "data_as_of": self.context.get("data_as_of"), "reports": reports,
+            "materials": material_index, "material_ids": sorted({m["id"] for m in material_index if m.get("id")} |
+                {mid for report in reports for mid in report.get("material_ids", []) if isinstance(mid, str)} |
+                {mid for mid in (declaration or {}).get("material_ids", []) if isinstance(mid, str)}),
+            "calculations": copy.deepcopy(self.calculations), "metrics": copy.deepcopy(self.context.get("metrics")),
+            "open_questions": [question for report in reports for question in report.get("open_questions", [])],
+            "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
+        signature = json.dumps(checkpoint, sort_keys=True, default=str)
+        if signature != self.checkpoint_signature:
+            self.checkpoint_signature = signature
+            checkpoint["created_at"] = datetime.now(SHANGHAI).isoformat()
+            self.synthesis_checkpoint = checkpoint
+            if hasattr(self.tools, "save_checkpoint"):
+                await self.tools.save_checkpoint(copy.deepcopy(checkpoint))
+            await self._publish("synthesis_checkpoint", "manager", {"phase": "synthesis", "reports": len(reports),
+                "material_ids": checkpoint["material_ids"], "calculations": len(self.calculations)})
+        return checkpoint
 
     def _preview(self, value: Any) -> Any:
         serialized = json.dumps(value, ensure_ascii=False, default=str)
@@ -294,9 +381,15 @@ class ResearchRuntime:
 
     def _new_child_events(self) -> list[dict]:
         events = [event for event in self.events[self.delivered_sequence:]
-                  if event["agent_id"] != "manager" and event["type"] not in {"tool_started", "tool_result", "model_usage", "context_compacted"}]
+                  if event["agent_id"] != "manager" and event["type"] not in {"tool_started", "tool_result", "model_usage", "context_compacted", "native_search"}]
         self.delivered_sequence = len(self.events)
-        return copy.deepcopy(events)
+        events = copy.deepcopy(events)
+        for event in events:
+            if event["type"] == "material_saved":
+                material = event["payload"].get("material", {})
+                event["payload"]["material"] = {k: v for k, v in material.items() if k in {"id", "url", "source_title", "category", "classification", "access", "material_ids"}}
+                event["payload"]["material"]["excerpt"] = str(material.get("content") or "")[:1000]
+        return events
 
     @staticmethod
     def _text(args: dict, name: str, *, required: bool = True) -> str:
@@ -313,8 +406,6 @@ class ResearchRuntime:
         return self.children[agent_id]
 
     async def _dispatch(self, agent_id: str, name: str, args: dict) -> Any:
-        if name == "search":
-            return await self.tools.search(self._text(args, "query"))
         if name == "read":
             return await self.tools.read(self._text(args, "url"), **{key: args[key] for key in ("start_page", "end_page", "page", "offset", "limit", "refresh") if key in args})
         if name in {"pdf_metadata", "search_pdf", "history", "sectors", "sector_members", "sector_history", "benchmark_history", "fundamentals"}:
@@ -358,7 +449,24 @@ class ResearchRuntime:
             values = args.get("values")
             if not isinstance(values, list) or any(isinstance(v, bool) or not isinstance(v, (str, int, float)) for v in values):
                 raise ValueError("values 必须为已知数值数组；缺失值不能按零计算")
-            return await self.tools.calculate(self._text(args, "operation"), values)
+            output = await self.tools.calculate(self._text(args, "operation"), values)
+            self.calculations.append({"agent_id": agent_id, "operation": args["operation"], "values": copy.deepcopy(values), "result": copy.deepcopy(output)})
+            self.calculations = self.calculations[-32:]
+            return output
+        if name == "prepare_synthesis":
+            if any(child.status in {"queued", "running"} for child in self.children.values()):
+                raise ValueError("仍有运行中的子任务；请先等待或明确取消后再汇总")
+            self._text(args, "summary")
+            await self._save_checkpoint(args)
+            self.synthesis_only = True
+            self.synthesis_started_calls = self.calls
+            fresh = self.client.session(self.manager_session.system, {**self.context, "synthesis_checkpoint": self.synthesis_checkpoint})
+            # This function's result is resolved by the ordinary tool loop first;
+            # compacting the old session here would orphan its pending call.
+            self.manager_session.phase = "synthesis"
+            self.manager_session.native_search = False
+            self._fresh_synthesis_context = fresh
+            return {"accepted": True, "phase": "synthesis", "material_ids": self.synthesis_checkpoint.get("material_ids", [])}
         if name == "spawn_research":
             return await self._spawn(args)
         if name in {"send_message", "follow_up"}:
@@ -425,6 +533,7 @@ class ResearchRuntime:
                    "scope": self.context.get("scope", "account"),
                    "data_as_of": self.context.get("data_as_of"), "task_context": copy.deepcopy(args.get("context", {}))}
         session = self.client.session((PROMPTS / "researcher.txt").read_text(), context)
+        session.agent_id = child_id
         child = AgentState(child_id, args.get("title") or task[:60], task, session)
         self.children[child_id] = child
         await self._publish("agent_created", child_id, {"title": child.title, "task": task, "status": "queued"})

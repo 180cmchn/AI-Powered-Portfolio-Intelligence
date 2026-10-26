@@ -1,0 +1,283 @@
+{
+  "endpoint": "https://api.xxyapi.com/v1",
+  "model_label": "grok-4.7",
+  "protocol": "responses",
+  "request_native_tool": "web_search",
+  "request_tool_choice": "required",
+  "request_budget": 1,
+  "status_code": 200,
+  "duration_seconds": 11.71,
+  "request_id": "3ec4458c-ba39-4a49-84da-ae99d77a32b7",
+  "response_fields": [
+    "created_at",
+    "completed_at",
+    "id",
+    "max_output_tokens",
+    "model",
+    "object",
+    "output",
+    "parallel_tool_calls",
+    "previous_response_id",
+    "reasoning",
+    "temperature",
+    "text",
+    "tool_choice",
+    "tools",
+    "top_p",
+    "usage",
+    "user",
+    "incomplete_details",
+    "status",
+    "store",
+    "metadata",
+    "background",
+    "service_tier",
+    "truncation",
+    "top_logprobs",
+    "presence_penalty",
+    "frequency_penalty",
+    "prompt_cache_key",
+    "max_tool_calls",
+    "safety_identifier",
+    "error",
+    "instructions"
+  ],
+  "output_types": [
+    "reasoning",
+    "web_search_call",
+    "web_search_call",
+    "reasoning",
+    "reasoning",
+    "reasoning",
+    "message"
+  ],
+  "native_events": [
+    {
+      "id": "ws_9c8f15d3-f7ee-95cf-b274-d28c7b1c5a2f_call-411a9134-e109-4668-b10d-e8199dc03b59-0",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Kweichow Moutai official investor financial reports",
+        "sources": [
+          {
+            "type": "url",
+            "url": "http://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESH_STOCK/2026/2026-4/2026-04-17/12104104.PDF"
+          },
+          {
+            "type": "url",
+            "url": "https://companiesmarketcap.com/annual-reports/440.ar.en.2025.pdf"
+          },
+          {
+            "type": "url",
+            "url": "https://companiesmarketcap.com/kweichow-moutai/annual-reports/"
+          },
+          {
+            "type": "url",
+            "url": "https://craft.co/kweichow-moutai/financials"
+          },
+          {
+            "type": "url",
+            "url": "https://companiesmarketcap.com/annual-reports/440.ar.en.2023.pdf?save"
+          },
+          {
+            "type": "url",
+            "url": "https://th.investing.com/equities/moutai"
+          },
+          {
+            "type": "url",
+            "url": "https://www.finanzen.net/unternehmensprofil/kweichow_moutai"
+          },
+          {
+            "type": "url",
+            "url": "https://www.finanzen.ch/dividende/kweichow_moutai"
+          },
+          {
+            "type": "url",
+            "url": "https://de.marketscreener.com/kurs/aktie/KWEICHOW-MOUTAI-CO-LTD-6496237/finanzen-ergebnisrechnung/"
+          },
+          {
+            "type": "url",
+            "url": "https://markets.businessinsider.com/stocks/kweichow_moutai-stock"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ws_9c8f15d3-f7ee-95cf-b274-d28c7b1c5a2f_call-411a9134-e109-4668-b10d-e8199dc03b59-1",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Kweichow Moutai official investor relations financial reports site:moutai.com.cn OR site:sse.com.cn",
+        "sources": [
+          {
+            "type": "url",
+            "url": "https://english.sse.com.cn/markets/equities/announcements/detail.shtml?seq/2073314/date/20250813"
+          },
+          {
+            "type": "url",
+            "url": "http://english.sse.com.cn/news/newsrelease/voice/c/5727798.shtml"
+          },
+          {
+            "type": "url",
+            "url": "http://www.moutai.com.cn/mtjt/2026-05/01/6a0b1c1202c34ad58efec647eb2c4966/2026050118464690777.pdf"
+          },
+          {
+            "type": "url",
+            "url": "https://www.moutai.com.cn/eportal/ui?currentPage=7&moduleId=d3f80281d91e4ca09af0acfdd6fba4f4&pageId=8a51d0c91f574816b3500fbb636f283a&staticRequest=yes"
+          },
+          {
+            "type": "url",
+            "url": "https://static.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-04-17/600519_20260417_9QS4.pdf"
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "input_tokens": 16659,
+    "input_tokens_details": {
+      "cached_tokens": 3968
+    },
+    "output_tokens": 783,
+    "output_tokens_details": {
+      "reasoning_tokens": 658
+    },
+    "total_tokens": 17442,
+    "num_sources_used": 0,
+    "num_server_side_tools_used": 2,
+    "cost_in_usd_ticks": 209017600,
+    "server_side_tool_usage_details": {
+      "web_search_calls": 2,
+      "x_search_calls": 0,
+      "x_posts_fetched": 0,
+      "x_users_fetched": 0,
+      "code_interpreter_calls": 0,
+      "file_search_calls": 0,
+      "mcp_calls": 0,
+      "document_search_calls": 0,
+      "image_generation_calls": 0
+    },
+    "context_details": {
+      "input_tokens": 14354,
+      "output_tokens": 663
+    }
+  },
+  "server_side_tool_usage": null,
+  "status": "completed",
+  "annotations": [
+    {
+      "type": "url_citation",
+      "url": "https://www.finanzen.ch/dividende/kweichow_moutai",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://www.finanzen.ch/dividende/kweichow_moutai"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://static.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-04-17/600519_20260417_9QS4.pdf",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://static.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-04-17/600519_20260417_9QS4.pdf"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://craft.co/kweichow-moutai/financials",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://craft.co/kweichow-moutai/financials"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://www.moutai.com.cn/eportal/ui?currentPage=7&moduleId=d3f80281d91e4ca09af0acfdd6fba4f4&pageId=8a51d0c91f574816b3500fbb636f283a&staticRequest=yes",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://www.moutai.com.cn/eportal/ui?currentPage=7&moduleId=d3f80281d91e4ca09af0acfdd6fba4f4&pageId=8a51d0c91f574816b3500fbb636f283a&staticRequest=yes"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://companiesmarketcap.com/annual-reports/440.ar.en.2025.pdf",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://companiesmarketcap.com/annual-reports/440.ar.en.2025.pdf"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://markets.businessinsider.com/stocks/kweichow_moutai-stock",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://markets.businessinsider.com/stocks/kweichow_moutai-stock"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://th.investing.com/equities/moutai",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://th.investing.com/equities/moutai"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://english.sse.com.cn/markets/equities/announcements/detail.shtml?seq/2073314/date/20250813",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://english.sse.com.cn/markets/equities/announcements/detail.shtml?seq/2073314/date/20250813"
+    },
+    {
+      "type": "url_citation",
+      "url": "http://english.sse.com.cn/news/newsrelease/voice/c/5727798.shtml",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "http://english.sse.com.cn/news/newsrelease/voice/c/5727798.shtml"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://companiesmarketcap.com/kweichow-moutai/annual-reports/",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://companiesmarketcap.com/kweichow-moutai/annual-reports/"
+    },
+    {
+      "type": "url_citation",
+      "url": "http://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESH_STOCK/2026/2026-4/2026-04-17/12104104.PDF",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "http://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESH_STOCK/2026/2026-4/2026-04-17/12104104.PDF"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://www.finanzen.net/unternehmensprofil/kweichow_moutai",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://www.finanzen.net/unternehmensprofil/kweichow_moutai"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://de.marketscreener.com/kurs/aktie/KWEICHOW-MOUTAI-CO-LTD-6496237/finanzen-ergebnisrechnung/",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://de.marketscreener.com/kurs/aktie/KWEICHOW-MOUTAI-CO-LTD-6496237/finanzen-ergebnisrechnung/"
+    },
+    {
+      "type": "url_citation",
+      "url": "http://www.moutai.com.cn/mtjt/2026-05/01/6a0b1c1202c34ad58efec647eb2c4966/2026050118464690777.pdf",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "http://www.moutai.com.cn/mtjt/2026-05/01/6a0b1c1202c34ad58efec647eb2c4966/2026050118464690777.pdf"
+    },
+    {
+      "type": "url_citation",
+      "url": "https://companiesmarketcap.com/annual-reports/440.ar.en.2023.pdf?save",
+      "start_index": 0,
+      "end_index": 0,
+      "title": "https://companiesmarketcap.com/annual-reports/440.ar.en.2023.pdf?save"
+    }
+  ],
+  "visible_text": [
+    "**Official result:** [Kweichow Moutai Co., Ltd. (600519) — 2025 Semi-annual Report](https://english.sse.com.cn/markets/equities/announcements/detail.shtml?seq/2073314/date/20250813)"
+  ],
+  "verification_kind": "real_model_network",
+  "upstream_identity": "not independently verified; configured forwarding-service model label only",
+  "documents_locally_downloaded": false,
+  "source_fulltext_hashes": null
+}

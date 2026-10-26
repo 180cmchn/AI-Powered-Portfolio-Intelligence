@@ -1,0 +1,636 @@
+{
+  "tested_at": "2026-10-26T23:54:17.884041+08:00",
+  "test_kind": "real_mac_network_diagnostics",
+  "system": "Darwin",
+  "configuration": {
+    "quote_provider": "eastmoney",
+    "network_timeout_seconds": 12,
+    "quote_stale_seconds": 180,
+    "research_provider": "eastmoney"
+  },
+  "proxy_env_present": {
+    "HTTP_PROXY": true,
+    "HTTPS_PROXY": true,
+    "ALL_PROXY": false,
+    "NO_PROXY": true,
+    "http_proxy": false,
+    "https_proxy": false,
+    "all_proxy": false,
+    "no_proxy": false
+  },
+  "diagnostics": [
+    {
+      "stage": "dns",
+      "host": "push2.eastmoney.com",
+      "status": "failed",
+      "exception": "gaierror",
+      "elapsed_seconds": 0.003
+    },
+    {
+      "stage": "dns",
+      "host": "push2his.eastmoney.com",
+      "status": "failed",
+      "exception": "gaierror",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "stage": "production_quote",
+      "elapsed_seconds": 0.043,
+      "result": {
+        "symbol": "SH:600519",
+        "name": null,
+        "price": null,
+        "change_pct": null,
+        "as_of": null,
+        "fetched_at": "2026-10-26T23:54:17.929669+08:00",
+        "source": "eastmoney",
+        "status": "unavailable",
+        "delay_seconds": null,
+        "security_status": "unknown",
+        "error": "网络连接失败 (ConnectError)"
+      }
+    },
+    {
+      "stage": "production_quote",
+      "elapsed_seconds": 0.008,
+      "result": {
+        "symbol": "SZ:000001",
+        "name": null,
+        "price": null,
+        "change_pct": null,
+        "as_of": null,
+        "fetched_at": "2026-10-26T23:54:17.937619+08:00",
+        "source": "eastmoney",
+        "status": "unavailable",
+        "delay_seconds": null,
+        "security_status": "unknown",
+        "error": "网络连接失败 (ConnectError)"
+      }
+    },
+    {
+      "stage": "direct_protocol_control",
+      "trust_env": true,
+      "exception": "ConnectError",
+      "cause": "ConnectError",
+      "elapsed_seconds": 0.008
+    },
+    {
+      "stage": "direct_protocol_control",
+      "trust_env": false,
+      "exception": "ConnectError",
+      "cause": "ConnectError",
+      "elapsed_seconds": 0.003
+    }
+  ],
+  "unsandboxed": {
+    "tested_at": "2026-10-26T23:54:31.947123+08:00",
+    "diagnostics": [
+      {
+        "stage": "dns",
+        "host": "push2.eastmoney.com",
+        "status": "resolved",
+        "addresses": [
+          "240e:e1:9600:209:1000::174",
+          "43.144.251.121"
+        ],
+        "elapsed_seconds": 0.04
+      },
+      {
+        "stage": "dns",
+        "host": "push2his.eastmoney.com",
+        "status": "resolved",
+        "addresses": [
+          "14.103.188.89",
+          "240e:e1:8000:1b04::25e"
+        ],
+        "elapsed_seconds": 0.039
+      },
+      {
+        "stage": "production_quote",
+        "elapsed_seconds": 0.265,
+        "result": {
+          "symbol": "SH:600519",
+          "name": "贵州茅台",
+          "price": "1349.98",
+          "change_pct": "1.12",
+          "as_of": "2026-10-26T16:11:50+08:00",
+          "fetched_at": "2026-10-26T23:54:31.217937+08:00",
+          "source": "eastmoney:public-website",
+          "status": "stale",
+          "delay_seconds": 27761,
+          "security_status": "unknown",
+          "source_url": "https://quote.eastmoney.com/sh600519.html",
+          "precision": 2
+        }
+      },
+      {
+        "stage": "production_quote",
+        "elapsed_seconds": 0.258,
+        "result": {
+          "symbol": "SZ:000001",
+          "name": "平安银行",
+          "price": "11.3",
+          "change_pct": "0.89",
+          "as_of": "2026-10-26T15:34:57+08:00",
+          "fetched_at": "2026-10-26T23:54:31.475457+08:00",
+          "source": "eastmoney:public-website",
+          "status": "stale",
+          "delay_seconds": 29974,
+          "security_status": "unknown",
+          "source_url": "https://quote.eastmoney.com/sz000001.html",
+          "precision": 2
+        }
+      },
+      {
+        "stage": "direct_protocol_control",
+        "trust_env": true,
+        "http_status": 200,
+        "content_type": "application/json; charset=UTF-8",
+        "byte_length": 195,
+        "payload": {
+          "rc": 0,
+          "rt": 4,
+          "svr": 177617597,
+          "lt": 1,
+          "full": 1,
+          "dlmkts": "",
+          "dsc": "0",
+          "data": {
+            "f43": 134998,
+            "f57": "600519",
+            "f58": "贵州茅台",
+            "f59": 2,
+            "f60": 133500,
+            "f86": 1793002310,
+            "f127": "白酒Ⅱ",
+            "f170": 112
+          }
+        },
+        "elapsed_seconds": 0.241
+      },
+      {
+        "stage": "direct_protocol_control",
+        "trust_env": false,
+        "http_status": 200,
+        "content_type": "application/json; charset=UTF-8",
+        "byte_length": 195,
+        "payload": {
+          "rc": 0,
+          "rt": 4,
+          "svr": 177617589,
+          "lt": 1,
+          "full": 1,
+          "dlmkts": "",
+          "dsc": "0",
+          "data": {
+            "f43": 134998,
+            "f57": "600519",
+            "f58": "贵州茅台",
+            "f59": 2,
+            "f60": 133500,
+            "f86": 1793002310,
+            "f127": "白酒Ⅱ",
+            "f170": 112
+          }
+        },
+        "elapsed_seconds": 0.231
+      }
+    ]
+  },
+  "intermittent_failure_controls": [
+    {
+      "case": "configured_proxy",
+      "host": "push2.eastmoney.com",
+      "trust_env": true,
+      "tested_at": "2026-10-26T23:58:06.448148+08:00",
+      "exception": "RemoteProtocolError",
+      "elapsed_seconds": 0.255
+    },
+    {
+      "case": "direct",
+      "host": "push2.eastmoney.com",
+      "trust_env": false,
+      "tested_at": "2026-10-26T23:58:06.703458+08:00",
+      "exception": "RemoteProtocolError",
+      "elapsed_seconds": 0.252
+    },
+    {
+      "case": "configured_proxy_fltt1",
+      "host": "push2.eastmoney.com",
+      "trust_env": true,
+      "tested_at": "2026-10-26T23:58:06.955614+08:00",
+      "exception": "RemoteProtocolError",
+      "elapsed_seconds": 0.237
+    },
+    {
+      "case": "direct_history",
+      "host": "push2his.eastmoney.com",
+      "trust_env": false,
+      "tested_at": "2026-10-26T23:58:07.192325+08:00",
+      "http_status": 200,
+      "byte_length": 1307,
+      "payload": {
+        "rc": 0,
+        "rt": 17,
+        "svr": 177617931,
+        "lt": 1,
+        "full": 0,
+        "dlmkts": "",
+        "dsc": "0",
+        "data": {
+          "code": "600519",
+          "market": 1,
+          "name": "贵州茅台",
+          "decimal": 2,
+          "dktotal": 6028,
+          "preKPrice": 1258.62,
+          "klines": [
+            "2026-10-08,1252.90,1255.79,1258.00,1242.00,25168,3145413157.00,1.27,-0.22,-2.83,0.20",
+            "2026-10-09,1255.42,1263.00,1282.00,1255.42,35111,4453223189.00,2.12,0.57,7.21,0.28",
+            "2026-10-12,1262.95,1288.00,1288.00,1261.00,31556,4042857559.00,2.14,1.98,25.00,0.25",
+            "2026-10-13,1287.00,1274.89,1288.48,1268.11,26573,3393315572.00,1.58,-1.02,-13.11,0.21",
+            "2026-10-14,1270.10,1286.00,1286.75,1266.00,23773,3045608010.00,1.63,0.87,11.11,0.19",
+            "2026-10-15,1286.00,1312.97,1317.76,1282.00,57677,7537706224.00,2.78,2.10,26.97,0.46",
+            "2026-10-16,1311.57,1329.00,1329.88,1301.68,38502,5075528306.00,2.15,1.22,16.03,0.31",
+            "2026-10-19,1322.50,1324.97,1348.60,1321.00,39729,5308935919.00,2.08,-0.30,-4.03,0.32",
+            "2026-10-20,1321.01,1331.88,1335.00,1316.14,34136,4525398959.00,1.42,0.52,6.91,0.27",
+            "2026-10-21,1331.88,1309.69,1331.98,1302.36,33514,4403823070.00,2.22,-1.67,-22.19,0.27",
+            "2026-10-22,1303.21,1318.49,1322.00,1296.00,42491,5576216948.00,1.99,0.67,8.80,0.34",
+            "2026-10-23,1311.84,1335.00,1343.88,1310.00,57686,7677216283.00,2.57,1.25,16.51,0.46",
+            "2026-10-26,1325.40,1349.98,1350.00,1324.79,41599,5574287630.00,1.89,1.12,14.98,0.33"
+          ]
+        }
+      },
+      "elapsed_seconds": 0.235
+    }
+  ],
+  "previous_provider_runs": [
+    {
+      "tested_at": "2026-10-26T23:57:31.431581+08:00",
+      "test_kind": "real_network_final_provider_with_controlled_valuation_inputs",
+      "providers_sha256": "9f7f641f31e4bf574d27db7bac0a4145432fe6c3b37ca8c1f4033e7345e17f02",
+      "elapsed_seconds": 2.41,
+      "httpx_version": "0.28.1",
+      "results": {
+        "SH:600519": {
+          "symbol": "SH:600519",
+          "name": null,
+          "price": null,
+          "change_pct": null,
+          "as_of": null,
+          "fetched_at": "2026-10-26T23:57:29.623621+08:00",
+          "source": "eastmoney",
+          "status": "unavailable",
+          "delay_seconds": null,
+          "security_status": "unknown",
+          "fresh_for_triggers": false,
+          "quote_kind": "unknown",
+          "error": "网络连接失败 (RemoteProtocolError)",
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.225
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.205
+            }
+          ]
+        },
+        "SZ:000001": {
+          "symbol": "SZ:000001",
+          "name": null,
+          "price": null,
+          "change_pct": null,
+          "as_of": null,
+          "fetched_at": "2026-10-26T23:57:30.228505+08:00",
+          "source": "eastmoney",
+          "status": "unavailable",
+          "delay_seconds": null,
+          "security_status": "unknown",
+          "fresh_for_triggers": false,
+          "quote_kind": "unknown",
+          "error": "网络连接失败 (RemoteProtocolError)",
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.213
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.224
+            }
+          ]
+        }
+      },
+      "security_cache_used": {
+        "SH:600519": null,
+        "SZ:000001": null
+      },
+      "valuations": {
+        "A": {
+          "holdings": "controlled evaluation fixture, not user holdings",
+          "symbol": "SH:600519",
+          "quantity": "100",
+          "known_priced_value": "0.00",
+          "total_assets": null,
+          "missing_prices": [
+            "SH:600519"
+          ],
+          "matches_decimal_recalculation": false
+        },
+        "B": {
+          "holdings": "controlled evaluation fixture, not user holdings",
+          "symbol": "SZ:000001",
+          "quantity": "1000",
+          "known_priced_value": "0.00",
+          "total_assets": null,
+          "missing_prices": [
+            "SZ:000001"
+          ],
+          "matches_decimal_recalculation": false
+        }
+      },
+      "all_symbols_have_valid_source_dated_prices": false,
+      "intraday_trigger_verified": false,
+      "limitations": [
+        "Observed quotes are the source website's post-close snapshots; this run does not verify intraday triggering.",
+        "Subsequent requests reproduced RemoteProtocolError; prior successes and failures are both retained. No cause has yet been isolated."
+      ]
+    },
+    {
+      "tested_at": "2026-10-27T00:00:16.538606+08:00",
+      "test_kind": "real_network_final_provider_with_controlled_valuation_inputs",
+      "providers_sha256": "409a412c2bb6d7a87edf989a90c33a1526ed51e0b176ce2ee5814e663f915f45",
+      "elapsed_seconds": 1.826,
+      "httpx_version": "0.28.1",
+      "results": {
+        "SH:600519": {
+          "symbol": "SH:600519",
+          "name": "贵州茅台",
+          "price": "1349.98",
+          "change_pct": "1.12",
+          "as_of": "2026-10-26",
+          "fetched_at": "2026-10-27T00:00:15.698774+08:00",
+          "source": "eastmoney:daily-unadjusted-close",
+          "status": "closed",
+          "delay_seconds": null,
+          "security_status": "unknown",
+          "fresh_for_triggers": false,
+          "quote_kind": "last_close",
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.228
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.276
+            }
+          ],
+          "as_of_precision": "date",
+          "source_time_precision": "date",
+          "source_url": "https://quote.eastmoney.com/sh600519.html",
+          "market_phase": "closed",
+          "cache_hit": false,
+          "cache_age_seconds": 0,
+          "session_close_at": "2026-10-26T15:00:00+08:00",
+          "session_close_time_basis": "exchange_calendar_not_supplier_timestamp",
+          "valuation_note": "即时接口失败，休市估值改用同供应商最近已完成交易日的未复权日线收盘价。源时间仅精确到日期；不构造秒级行情时间，不触发新鲜行情条件。",
+          "fallback_diagnostic": {
+            "stage": "closed_quote",
+            "host": "push2his.eastmoney.com",
+            "status": "received",
+            "elapsed_seconds": 0.308
+          },
+          "live_quote_error": "网络连接失败 (RemoteProtocolError)"
+        },
+        "SZ:000001": {
+          "symbol": "SZ:000001",
+          "name": "平安银行",
+          "price": "11.30",
+          "change_pct": "0.89",
+          "as_of": "2026-10-26",
+          "fetched_at": "2026-10-27T00:00:16.535919+08:00",
+          "source": "eastmoney:daily-unadjusted-close",
+          "status": "closed",
+          "delay_seconds": null,
+          "security_status": "unknown",
+          "fresh_for_triggers": false,
+          "quote_kind": "last_close",
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.23
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.213
+            }
+          ],
+          "as_of_precision": "date",
+          "source_time_precision": "date",
+          "source_url": "https://quote.eastmoney.com/sz000001.html",
+          "market_phase": "closed",
+          "cache_hit": false,
+          "cache_age_seconds": 0,
+          "session_close_at": "2026-10-26T15:00:00+08:00",
+          "session_close_time_basis": "exchange_calendar_not_supplier_timestamp",
+          "valuation_note": "即时接口失败，休市估值改用同供应商最近已完成交易日的未复权日线收盘价。源时间仅精确到日期；不构造秒级行情时间，不触发新鲜行情条件。",
+          "fallback_diagnostic": {
+            "stage": "closed_quote",
+            "host": "push2his.eastmoney.com",
+            "status": "received",
+            "elapsed_seconds": 0.234
+          },
+          "live_quote_error": "网络连接失败 (RemoteProtocolError)"
+        }
+      },
+      "security_cache_used": {
+        "SH:600519": true,
+        "SZ:000001": true
+      },
+      "valuations": {
+        "A": {
+          "holdings": "controlled evaluation fixture, not user holdings",
+          "symbol": "SH:600519",
+          "quantity": "100",
+          "known_priced_value": "134998.00",
+          "total_assets": "144998.00",
+          "missing_prices": [],
+          "matches_decimal_recalculation": true
+        },
+        "B": {
+          "holdings": "controlled evaluation fixture, not user holdings",
+          "symbol": "SZ:000001",
+          "quantity": "1000",
+          "known_priced_value": "11300.00",
+          "total_assets": "21300.00",
+          "missing_prices": [],
+          "matches_decimal_recalculation": true
+        }
+      },
+      "all_symbols_have_valid_source_dated_prices": true,
+      "intraday_trigger_verified": false,
+      "limitations": [
+        "Observed values are post-close snapshots or same-provider unadjusted daily closes, not intraday prices.",
+        "Intermittent RemoteProtocolError occurs with both environment proxy and direct control; no evidence isolates DNS, proxy, rate limit or a parser error as the cause."
+      ]
+    }
+  ],
+  "final_provider": {
+    "tested_at": "2026-10-27T00:01:02.194532+08:00",
+    "test_kind": "real_network_final_provider_with_controlled_valuation_inputs",
+    "providers_sha256": "650ba0f41877b53cbb58cfd25099938a0618bcfaf5b4434f37a53c5fc45dad18",
+    "elapsed_seconds": 3.053,
+    "httpx_version": "0.28.1",
+    "results": {
+      "SH:600519": {
+        "symbol": "SH:600519",
+        "name": null,
+        "price": null,
+        "change_pct": null,
+        "as_of": null,
+        "fetched_at": "2026-10-27T00:00:59.768495+08:00",
+        "source": "eastmoney",
+        "status": "unavailable",
+        "delay_seconds": null,
+        "security_status": "unknown",
+        "fresh_for_triggers": false,
+        "quote_kind": "unknown",
+        "error": "网络连接失败 (RemoteProtocolError)",
+        "request_diagnostics": [
+          {
+            "stage": "quote",
+            "attempt": 1,
+            "host": "push2.eastmoney.com",
+            "status": "failed",
+            "failure_kind": "remote_protocol",
+            "exception": "RemoteProtocolError",
+            "elapsed_seconds": 0.23
+          },
+          {
+            "stage": "quote",
+            "attempt": 2,
+            "host": "push2.eastmoney.com",
+            "status": "failed",
+            "failure_kind": "remote_protocol",
+            "exception": "RemoteProtocolError",
+            "elapsed_seconds": 0.226
+          }
+        ],
+        "fallback_error": "网络连接失败 (RemoteProtocolError)"
+      },
+      "SZ:000001": {
+        "symbol": "SZ:000001",
+        "name": null,
+        "price": null,
+        "change_pct": null,
+        "as_of": null,
+        "fetched_at": "2026-10-27T00:01:00.652125+08:00",
+        "source": "eastmoney",
+        "status": "unavailable",
+        "delay_seconds": null,
+        "security_status": "unknown",
+        "fresh_for_triggers": false,
+        "quote_kind": "unknown",
+        "error": "网络连接失败 (RemoteProtocolError)",
+        "request_diagnostics": [
+          {
+            "stage": "quote",
+            "attempt": 1,
+            "host": "push2.eastmoney.com",
+            "status": "failed",
+            "failure_kind": "remote_protocol",
+            "exception": "RemoteProtocolError",
+            "elapsed_seconds": 0.249
+          },
+          {
+            "stage": "quote",
+            "attempt": 2,
+            "host": "push2.eastmoney.com",
+            "status": "failed",
+            "failure_kind": "remote_protocol",
+            "exception": "RemoteProtocolError",
+            "elapsed_seconds": 0.246
+          }
+        ],
+        "fallback_error": "网络连接失败 (RemoteProtocolError)"
+      }
+    },
+    "security_cache_used": {
+      "SH:600519": null,
+      "SZ:000001": null
+    },
+    "valuations": {
+      "A": {
+        "holdings": "controlled evaluation fixture, not user holdings",
+        "symbol": "SH:600519",
+        "quantity": "100",
+        "known_priced_value": "0.00",
+        "total_assets": null,
+        "missing_prices": [
+          "SH:600519"
+        ],
+        "matches_decimal_recalculation": false
+      },
+      "B": {
+        "holdings": "controlled evaluation fixture, not user holdings",
+        "symbol": "SZ:000001",
+        "quantity": "1000",
+        "known_priced_value": "0.00",
+        "total_assets": null,
+        "missing_prices": [
+          "SZ:000001"
+        ],
+        "matches_decimal_recalculation": false
+      }
+    },
+    "all_symbols_have_valid_source_dated_prices": false,
+    "intraday_trigger_verified": false,
+    "limitations": [
+      "Observed values are post-close snapshots or same-provider unadjusted daily closes, not intraday prices.",
+      "Intermittent RemoteProtocolError occurs with both environment proxy and direct control; no evidence isolates DNS, proxy, rate limit or a parser error as the cause."
+    ]
+  }
+}

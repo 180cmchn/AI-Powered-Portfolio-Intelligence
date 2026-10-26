@@ -372,7 +372,7 @@ class RecommendationStore:
         with self.connect() as db:
             return [dict(r) for r in db.execute("SELECT * FROM recommendation_events WHERE recommendation_id=? ORDER BY seq", (recommendation_id,))]
 
-    def review_recommendations(self, quotes=None, stamp=None, material_ids=None):
+    def review_recommendations(self, quotes=None, stamp=None, material_ids=None, material_account_ids=None):
         """Observe price independently of judgment validity; persist follow-up in the same transaction."""
         from .store import loads
         stamp = stamp or datetime.now(TZ)
@@ -396,7 +396,7 @@ class RecommendationStore:
                     if row["input_version"] != account["version"]:
                         body.update(state="needs_review", review_status="needs_review", review_reason="账户持仓或偏好版本已变更")
                         self._review_demand(db, row, body, f"input:v{account['version']}", body["review_reason"])
-                    if material_ids:
+                    if material_ids and (material_account_ids is None or row['account_id'] in material_account_ids):
                         materials = sorted(set(material_ids))
                         new_materials = []
                         for material_id in materials:
@@ -412,7 +412,7 @@ class RecommendationStore:
                     # Needs-review recommendations continue observing every explicit price rule.
                     if row["security_id"] in quotes:
                         quote = quotes[row["security_id"]]
-                        fresh = quote.get("status") in ("ok", "live")
+                        fresh = quote.get("status") in ("ok", "live") and quote.get("fresh_for_triggers") is not False
                         try:
                             quote_time = parse_time(quote.get("as_of"))
                             fresh = fresh and quote_time is not None and 0 <= (stamp - quote_time).total_seconds() <= self.settings()["quote_stale_seconds"]

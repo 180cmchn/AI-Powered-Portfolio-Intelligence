@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 import logging
+import hashlib
 import os
 import time
 from urllib.parse import urlsplit
@@ -18,8 +19,54 @@ log = logging.getLogger("guanlan")
 
 
 class ResearchTools:
-    def __init__(self, store: Store, job: dict, config: dict):
+    def __init__(self, store: Store, job: dict, config: dict, context=None):
         self.store, self.job, self.config = store, job, config
+        self.context = context
+
+    async def save_checkpoint(self, checkpoint):
+        if self.context is not None:
+            self.store.save_synthesis_checkpoint(self.job, checkpoint, self.context)
+
+    def _track_public_material(self, material):
+        if self.job.get('account_id') or self.context is None:
+            return
+        with self.store.connect() as db:
+            row = db.execute('''SELECT d.anchor_material_id FROM material_document_versions d
+                JOIN material_notifications n ON n.material_id=d.anchor_material_id
+                WHERE d.id=? AND n.state='pending' ''', (material.get('document_version_id'),)).fetchone()
+        if row:
+            pending = self.context.setdefault('pending_information', [])
+            if row[0] not in {m['id'] for m in pending}:
+                pending.append(index_of(self.store.material(row[0])))
+
+    async def record_native_search(self, agent_id, events, sources, annotations):
+        from .model import native_search_fingerprint
+        from .references import source_url
+        if any(event.get('status') == 'completed' for event in events):
+            self.store.set_meta('native_search_capability', {
+                'status': 'observed', 'checked_at': now(),
+                'fingerprint': native_search_fingerprint(self.config),
+                'evidence': {'event_types': list(dict.fromkeys(e.get('type') for e in events)),
+                             'event_count': len(events), 'source_count': len(sources)},
+                'note': '服务返回了原生联网调用项；未返回的工具用量与访问范围保持未知'})
+        saved = []
+        for item in sources:
+            if not isinstance(item, dict) or not source_url(item.get('url')):
+                continue
+            snippet = item.get('snippet') or item.get('excerpt') or ''
+            # A hosted citation never proves a local download or full document hash.
+            material = self.store.save_material({
+                'url': item['url'], 'source_title': item.get('title'), 'scope': 'public',
+                'content': snippet, 'source': 'model_native_search', 'classification': 'uncertain',
+                'access': 'search_excerpt' if snippet else 'source_link',
+                'representation': 'native_search_source', 'fetched_at': now(),
+                'native_search': {'agent_id': agent_id, 'visible_metadata': item,
+                                  'annotations': [a for a in annotations if a.get('url') == item['url']],
+                                  'local_document_downloaded': False}},
+                self.job['id'], self.job.get('account_id'), notify=not bool(self.job.get('account_id')))
+            saved.append(index_of(material))
+            self._track_public_material(material)
+        return saved
 
     async def save_material(self, material: dict):
         # A model-authored extraction may contain account context. Keep it scoped;
@@ -31,19 +78,17 @@ class ResearchTools:
         return index_of(saved)
 
     async def search(self, query: str):
-        result = await providers.search(query, self.config)
-        for item in result.get("results", []):
-            material = self.store.save_material({**item, "scope": "public", "source_title": item.get("title"),
-                "content": item.get("snippet"), "classification": "uncertain", "access": "search_excerpt"}, self.job["id"], self.job.get("account_id"))
-            item["material_id"] = material["id"]
-            item["material_identity"] = {k: material[k] for k in ("document_version_id", "document_version", "representation_kind", "document_identity_kind", "read_completeness")}
-        return result
+        # Legacy callable only. No credentials are sent to independent search APIs.
+        return {'available': False, 'error': '独立搜索工具已退出；请使用当前模型会话的原生联网工具'}
 
     async def read(self, url: str, **options):
-        result = await providers.read_url(url, {**self.config, "read_max_chars": min(self.config.get("read_max_chars", 12000), 12000)}, **options)
+        result = await providers.read_url(url, {**self.config, '_material_observer': self.store,
+                    "read_max_chars": min(self.config.get("read_max_chars", 12000), 12000)}, **options)
         material = self.store.save_material({**result, "scope": "public", "source_title": result.get("title"),
-                                            "classification": "uncertain"}, self.job["id"], self.job.get("account_id"))
-        return {**result, "material_id": material["id"], "material_identity": {
+                                            "classification": "uncertain"}, self.job["id"], self.job.get("account_id"),
+                                            observation_id=result.get('_observation_id'), notify=not bool(self.job.get('account_id')))
+        self._track_public_material(material)
+        return {**{k: v for k, v in result.items() if not k.startswith('_')}, "material_id": material["id"], "material_identity": {
             k: material[k] for k in ("document_version_id", "document_version", "representation_kind", "document_identity_kind", "read_completeness")}}
 
     async def list_materials(self, query: str = "", limit=20, offset=0):
@@ -83,13 +128,16 @@ class ResearchTools:
         return rows
 
     async def pdf_metadata(self, url, **options):
-        return await providers.pdf_metadata(url, self.config, **options)
+        result = await providers.pdf_metadata(url, {**self.config, '_material_observer': self.store}, **options)
+        return {k: v for k, v in result.items() if not k.startswith('_')}
 
     async def search_pdf(self, url, query, **options):
-        result = await providers.search_pdf(url, query, self.config, **options)
+        result = await providers.search_pdf(url, query, {**self.config, '_material_observer': self.store}, **options)
         saved = self.store.save_material({**result, "scope": "public", "access": "pdf_search",
-                                         "content": dumps(result), "classification": "uncertain"}, self.job["id"], self.job.get("account_id"))
-        return {**result, "material_id": saved["id"]}
+                                         "content": dumps({k: v for k, v in result.items() if not k.startswith('_')}), "classification": "uncertain"}, self.job["id"], self.job.get("account_id"),
+                                         observation_id=result.get('_observation_id'), notify=not bool(self.job.get('account_id')))
+        self._track_public_material(saved)
+        return {**{k: v for k, v in result.items() if not k.startswith('_')}, "material_id": saved["id"]}
 
     async def _market_data(self, method, **kwargs):
         result = await getattr(providers.MarketProvider(self.config), method)(**kwargs)
@@ -147,6 +195,7 @@ class Service:
         self.active: dict[str, asyncio.Task] = {}
         self.loop_task = None
         self.refresh_lock = asyncio.Lock()
+        self.native_probe_lock = asyncio.Lock()
         self.last_tick = 0.0
         self.last_wall_tick = 0.0
         self.last_error = None
@@ -157,18 +206,25 @@ class Service:
         self.quote_task = None
         self.last_recommendation_check = 0.0
 
+    def record_model_event(self, job_id, event):
+        self.store.event(job_id, event)
+        payload = event.get('payload') or {}
+        capability = payload.get('capability') or payload.get('native_search')
+        if isinstance(capability, dict) and capability.get('fingerprint') and capability.get('status'):
+            self.store.set_meta('native_search_capability', capability)
+
     def quotes(self):
         quotes = self.store.cache("quotes")
         stamp = datetime.now(TZ)
         for quote in quotes.values():
-            if quote.get("as_of"):
+            if quote.get('status') in ('ok', 'closed', 'stale') and quote.get('as_of'):
+                quote.update(providers.quote_time_state(quote['as_of'], self.store.settings(), stamp=stamp,
+                    source_precision=quote.get('as_of_precision', 'timestamp')))
+            elif quote.get('as_of') and quote.get('as_of_precision') != 'date':
                 try:
-                    delay = max(0, (stamp - datetime.fromisoformat(quote["as_of"])).total_seconds())
-                    quote["delay_seconds"] = int(delay)
-                    if delay > self.store.settings()["quote_stale_seconds"] and quote.get("status") == "ok":
-                        quote["status"] = "stale"
+                    quote['delay_seconds'] = max(0, int((stamp - datetime.fromisoformat(quote['as_of'])).total_seconds()))
                 except (ValueError, TypeError):
-                    quote["status"] = "unknown_time"
+                    quote['delay_seconds'] = None
         return quotes
 
     def account(self, account_id):
@@ -216,7 +272,7 @@ class Service:
                             if not existing or not existing.get("kind"):
                                 existing = await provider.security(s)
                             self.store.put_cache("securities", s, {**existing, "symbol": s, "name": q["name"]})
-                        if q.get("price") and previous.get("price"):
+                        if q.get("price") and previous.get("price") and q.get('status') == 'ok' and q.get('fresh_for_triggers') is not False and market_state()['phase'] in ('morning', 'afternoon'):
                             baseline = self.store.meta(f"price_baseline:{s}", previous["price"])
                             p, b = Decimal(q["price"]), Decimal(baseline)
                             if b and abs(p / b - 1) * 100 >= Decimal(str(cfg["price_trigger_pct"])):
@@ -288,11 +344,17 @@ class Service:
                 self.store.event(job["id"], {"type": "demo_summary", "message": "仅执行本地计算；没有模拟模型或 Agent 发言"})
             else:
                 async def emit(event):
-                    self.store.event(job["id"], event)
+                    self.record_model_event(job["id"], event)
                 research = self.runner or run_research
-                result = await asyncio.wait_for(research(context, cfg, ResearchTools(self.store, job, cfg), emit), timeout=max(0.01, cfg["analysis_timeout_seconds"] - (time.monotonic() - started)))
+                checkpoint = self.store.reusable_synthesis_checkpoint(job, context)
+                if checkpoint:
+                    context['synthesis_checkpoint'] = checkpoint
+                    self.store.event(job['id'], {'type': 'synthesis_resuming', 'message': '正在复用已保存的研究成果重试汇总',
+                        'checkpoint_job_id': checkpoint['checkpoint_job_id'], 'attempt': checkpoint['resume_attempt']})
+                result = await asyncio.wait_for(research(context, cfg, ResearchTools(self.store, job, cfg, context), emit), timeout=max(0.01, cfg["analysis_timeout_seconds"] - (time.monotonic() - started)))
                 result["metrics"] = values
             result.update(input_version=job["input_version"], data_as_of=data_as_of,
+                          synthesis_checkpoint_job_id=(context.get('synthesis_checkpoint') or {}).get('checkpoint_job_id'),
                           account_id=account["id"], job_id=job["id"], mode=self.store.mode,
                           universe_version=scope['universe_version'],
                           shared_research_used=[{'id': r['id'], 'universe_version': r.get('universe_version'),
@@ -315,50 +377,66 @@ class Service:
 
     async def news_scan(self):
         cfg = self.store.settings()
-        if self.store.mode != "live" or not cfg["news_queries"] or cfg["search_provider"] == "disabled":
-            return
-        new_ids = []
-        visited = set()
-        errors = []
-        for query in cfg["news_queries"]:
-            result = await providers.search(query, cfg)
-            if result.get("error"):
-                errors.append(result["error"])
-            for item in result.get("results", []):
-                m = self.store.save_material({**item, "scope": "public", "content": item.get("snippet"), "classification": "uncertain", "access": "search_excerpt"}, notify=True)
-                if m["_document_created"]:
-                    new_ids.append(m["id"])
-                # Search summaries can stay unchanged after a source correction.
-                url = item.get("url")
-                if cfg["news_read_sources"] and url and url not in visited:
-                    visited.add(url)
-                    document = await providers.read_url(url, cfg, refresh=True)
-                    full = self.store.save_material({**document, "scope": "public", "classification": "uncertain",
-                                                     "published_at": item.get("published_at")}, notify=True)
-                    if full["_document_created"]:
-                        new_ids.append(full["id"])
-        new_ids = list(dict.fromkeys(new_ids))
-        self.notify_material_changes()
-        self.store.set_meta("last_news_scan", {"at": now(), "new_versions": len(new_ids), "errors": errors})
-        return {"new_material_ids": new_ids, "errors": errors}
+        if self.store.mode != "live" or not cfg["news_queries"] or not cfg["model_native_search"]:
+            return {'state': 'disabled'}
+        bucket = int(time.time() // (cfg['news_interval_minutes'] * 60))
+        demand = self.store.request_analysis(None, 'news_observation', f'news-observation:{bucket}',
+            reason='公开信息观察：' + '；'.join(cfg['news_queries']) + '。自行决定查询与补查，使用本模型原生联网工具。')
+        self.store.set_meta('last_news_scan', {'at': now(), 'state': 'queued', 'demand_id': demand['id']})
+        return {'state': 'queued', 'demand_id': demand['id']}
 
     def notify_material_changes(self):
-        ids = self.store.pending_material_notifications()
-        if not ids:
-            return
-        self.store.review_recommendations(material_ids=ids)
-        accounts = self.store.accounts()
-        for material_id in ids:
-            material = self.store.material(material_id)
-            kind = material.get("representation_kind")
-            label = "原始文档新增或内容变化" if kind == "original_document" else "摘要表示新增或变化" if kind == "summary" else "文本表示新增或变化（原始身份未知）"
-            self.store.request_analysis(None, "public_information", "public_information:" + material_id,
-                                        reason=label + "：" + material_id)
-            for acc in accounts:
-                self.store.request_analysis(acc["id"], "public_information", f"news:{acc['id']}:{material_id}",
-                                            reason="new_public_information:" + material_id + "；" + label, delay=2)
-        # Every target has a durable idempotent demand before acknowledging delivery.
-        self.store.complete_material_notifications(ids)
+        # Persist first, then ask the existing public manager about relevance.
+        # Failed or incomplete public work leaves the outbox pending.
+        for mid in self.store.pending_material_notifications():
+            with self.store.connect() as db:
+                ready = db.execute("SELECT public_run_id,decision FROM information_routes WHERE material_id=? AND state IN ('ready','routed')", (mid,)).fetchone()
+                db.execute("INSERT OR IGNORE INTO information_routes VALUES(?,NULL,'pending',NULL,?,?)", (mid, now(), now()))
+            if ready:
+                from .store import loads
+                self.route_material_changes(ready['public_run_id'], {'information_impacts': [loads(ready['decision'])]}, [mid])
+                continue
+            self.store.request_analysis(None, 'public_information', 'public_information:' + mid,
+                reason='待判断关联的公开材料：' + mid)
+
+    def route_material_changes(self, run_id, result, material_ids):
+        from .scheduling import information_impact
+        decisions = {d.get('material_id'): d for d in (result.get('information_impacts') or [])
+                     if isinstance(d, dict) and isinstance(d.get('material_id'), str)} if isinstance(result.get('information_impacts', []), list) else {}
+        securities = self.store.cache('securities')
+        for mid in material_ids:
+            decision = information_impact(decisions.get(mid), mid)
+            # Semantic event identity comes from the public manager, with its
+            # explanation retained for inspection; unknown identity keeps mid.
+            event = 'event:' + hashlib.sha256(decision['event_key'].encode()).hexdigest() if decision.get('event_key') else mid
+            anchor_key = 'information_event_anchor:' + event
+            anchor = self.store.meta(anchor_key)
+            if not anchor:
+                anchor = mid
+                self.store.set_meta(anchor_key, anchor)
+            relevant = set(decision.get('symbols') or [])
+            sectors = set(decision.get('sectors') or [])
+            selected = []
+            for account in self.store.accounts():
+                symbols = {h['symbol'] for h in account['holdings']} | set(self.store.recommendation_symbols(account['id']))
+                known_sectors = {securities.get(s, {}).get('sector') for s in symbols}
+                broad = decision.get('status') != 'irrelevant' and (
+                    decision.get('status') != 'relevant' or decision.get('market_wide') or
+                    not (relevant or sectors) or (sectors and None in known_sectors))
+                if broad or (decision.get('status') != 'irrelevant' and (symbols & relevant or known_sectors & sectors)):
+                    selected.append(account['id'])
+                    self.store.request_analysis(account['id'], 'public_information', f"news:{account['id']}:{event}",
+                        reason=f'公共研究 {run_id} 关联材料 {mid}；复用公共结论并独立适配账户', delay=2)
+            self.store.review_recommendations(material_ids=[anchor], material_account_ids=selected)
+            with self.store.connect() as db:
+                db.execute("""INSERT INTO information_routes VALUES(?,?,'routed',?,?,?)
+                    ON CONFLICT(material_id) DO UPDATE SET state='routed',public_run_id=excluded.public_run_id,
+                    decision=excluded.decision,updated_at=excluded.updated_at""",
+                           (mid, run_id, dumps({**decision, 'material_id': mid, 'account_ids': selected}), now(), now()))
+                db.execute("UPDATE research_demands SET state='completed',detail='covered by public research',updated_at=? WHERE event_key=?",
+                           (now(), 'public_information:' + mid))
+            # The selected account demands are durable before acknowledgement.
+            self.store.complete_material_notifications([mid])
 
     async def execute_global(self, run):
         from .agents import run_research
@@ -376,15 +454,24 @@ class Service:
                        "reason": run["reason"], "candidates": universe["candidates"], "watchlist": universe["watchlist"],
                        "quotes": {s: q for s, q in self.quotes().items() if s in set(universe['candidates'] + universe['watchlist'])},
                        "shared_research": self.store.research_records(limit=30), "calendar": market_state(),
+                       "pending_information": [index_of(self.store.material(mid)) for mid in self.store.pending_material_notifications()],
+                       "news_topics": cfg.get('news_queries', []),
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
+            checkpoint = self.store.reusable_synthesis_checkpoint({**run, 'account_id': None}, context)
+            if checkpoint:
+                context['synthesis_checkpoint'] = checkpoint
             async def emit(event):
-                self.store.event(run["id"], event)
+                self.record_model_event(run["id"], event)
             if self.store.mode == "demo":
                 result = {"report": "演示模式：全局调度已执行；未调用模型或生成研究结论", "demo": True, "model_calls": 0}
             else:
                 result = await asyncio.wait_for((self.runner or run_research)(context, cfg,
-                         ResearchTools(self.store, {**run, "account_id": None}, cfg), emit), cfg["analysis_timeout_seconds"])
-            self.store.finish_global(run["id"], "completed", result)
+                         ResearchTools(self.store, {**run, "account_id": None}, cfg, context), emit), cfg["analysis_timeout_seconds"])
+            result['_information_material_ids'] = [m['id'] for m in context['pending_information']]
+            result['synthesis_checkpoint_job_id'] = (context.get('synthesis_checkpoint') or {}).get('checkpoint_job_id')
+            published = self.store.finish_global(run["id"], "completed", result)
+            if published:
+                self.route_material_changes(run['id'], result, [m['id'] for m in context['pending_information']])
         except ModelConfigurationError as e:
             self.store.finish_global(run["id"], "waiting_config", error=str(e))
         except asyncio.CancelledError:
@@ -395,6 +482,8 @@ class Service:
     async def scheduler_tick(self, stamp=None):
         stamp = stamp or datetime.now(TZ)
         state, cfg = market_state(stamp), self.store.settings()
+        if not cfg.get('scheduled_research_enabled', True):
+            return
         prior_seen = self.store.meta("schedule:last_seen")
         if prior_seen:
             prior = datetime.fromisoformat(prior_seen)
@@ -404,7 +493,7 @@ class Service:
                                                 reason=f"close_summary:服务恢复补充 {prior.date()} 收盘复核，使用当前可得资料并注明时点")
         if not prior_seen or prior_seen[:16] != stamp.isoformat()[:16]:
             self.store.set_meta("schedule:last_seen", stamp.isoformat())
-        if cfg["news_start_hour"] <= stamp.hour < cfg["news_end_hour"] and self.store.mode == "live" and cfg["news_queries"] and cfg["search_provider"] != "disabled":
+        if cfg["news_start_hour"] <= stamp.hour < cfg["news_end_hour"] and self.store.mode == "live" and cfg["news_queries"] and cfg["model_native_search"]:
             bucket = int(stamp.timestamp() // (cfg["news_interval_minutes"] * 60))
             if self.store.meta("schedule:news") != bucket and (not self.news_task or self.news_task.done()):
                 async def scan():

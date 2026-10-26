@@ -54,9 +54,20 @@ class EvaluationTools:
 
     async def search(self, query):
         if self.live:
-            return await providers.search(query, self.config)
+            return {"status": "unavailable", "error": "Use the native model tool; independent search removed"}
         return {"mode": "synthetic_input_evaluation", "status": "ok", "query": query,
                 "results": [index(item) | {"snippet": item["text"][:1500]} for item in self.documents]}
+
+    async def record_native_search(self, agent_id, events, sources, annotations):
+        saved = []
+        for source in sources:
+            material = {**source, 'id': f'native-source-{len(self.materials)+1}',
+                        'access': 'search_excerpt' if source.get('snippet') else 'source_link',
+                        'representation_kind': 'native_search_source', 'evaluation_only': True,
+                        'synthetic_input': False, 'local_document_downloaded': False}
+            self.materials.append(material)
+            saved.append(index(material))
+        return saved
 
     def _document(self, url):
         found = next((item for item in self.documents if item["url"] == url), None)
@@ -180,6 +191,7 @@ async def evaluate_one(args, config, case, account_spec, output, live):
                "previous_analysis": case.get("previous_analysis"), "reason": purpose,
                "specified_source_urls": args.live_url or [doc["url"] for doc in case.get("documents", [])],
                "research_query": args.query or case["title"], "evaluation_mode": "real_model_live_sources" if live else "real_model_synthetic_inputs"}
+    config = {**config, "model_native_search": bool(live) and config.get("model_native_search", True)}
     tools, events = EvaluationTools(config, case, live), []
 
     async def emit(event):
@@ -230,8 +242,8 @@ async def evaluate(args):
         return 0
     if args.check_config:
         print(json.dumps({"model_name_present": bool(config.get("model_name")), "model_key_present": bool(os.getenv(config["model_key_env"])),
-                          "search_provider_configured": config.get("search_provider") not in {None, "disabled"},
-                          "search_key_present": bool(os.getenv(config["search_key_env"]))}, ensure_ascii=False))
+                          "model_native_search": config.get("model_native_search", True),
+                          "native_capability": "unverified; explicit probe required"}, ensure_ascii=False))
         return 0
     probe = await probe_model(config)  # No search/market calls when credentials absent.
     print("PROBE PASSED: 实际两轮函数协议；不是研究质量验收。", flush=True)

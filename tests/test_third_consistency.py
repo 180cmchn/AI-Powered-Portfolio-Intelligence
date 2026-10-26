@@ -75,13 +75,15 @@ def test_citations_resolve_ranges_and_do_not_disclose_private_material(store):
         'suggestions': [{'material_ids': [private['id'], public['id']]}],
         'research_records': [{'findings': [{'material_id': summary['id']}]}]}, a['id'])
     refs = result['references']
-    assert [r['status'] for r in refs[:4]] == ['resolved', 'resolved', 'unresolved', 'unresolved']
-    assert refs[0]['range']['pages'][0]['page'] == 28
-    assert refs[0]['range']['truncated'] is True
-    assert refs[1]['access'] == 'search_excerpt'
+    by_id = {r['material_id']: r for r in refs if r.get('material_id')}
+    assert by_id[public['id']]['status'] == by_id[summary['id']]['status'] == 'resolved'
+    assert by_id[private['id']]['status'] == by_id['does-not-exist']['status'] == 'unresolved'
+    assert by_id[public['id']]['range']['pages'][0]['page'] == 28
+    assert by_id[public['id']]['range']['truncated'] is True
+    assert by_id[summary['id']]['access'] == 'search_excerpt'
     assert refs[-1]['status'] == 'source_link'
-    assert 'B secret' not in str(result) and 'title' not in refs[3]
-    assert result['suggestions'][0]['references'][0]['status'] == 'unresolved'
+    assert 'B secret' not in str(result) and 'title' not in by_id[private['id']]
+    assert next(r for r in result['suggestions'][0]['references'] if r['material_id'] == private['id'])['status'] == 'unresolved'
     assert result['research_records'][0]['findings'][0]['references'][0]['status'] == 'resolved'
     assert store.resolve_result_references({'material_ids': [private['id']]})['references'][0]['status'] == 'unresolved'
 
@@ -117,8 +119,9 @@ def test_model_extraction_is_not_raw_evidence_and_parent_references_are_scoped(s
     assert ref['representation_kind'] == 'agent_extraction'
     assert 'returned_range' not in ref['range']
     assert ref['claimed_source_range']['returned_range']['start_page'] == 999
-    assert ref['origin_references'][0]['range']['returned_range']['start_page'] == 5
-    assert ref['origin_references'][1]['status'] == 'unresolved'
+    parents = {r['material_id']: r for r in ref['origin_references']}
+    assert parents[raw['id']]['range']['returned_range']['start_page'] == 5
+    assert parents[private['id']]['status'] == 'unresolved'
     assert resolved['reference_summary']['unresolved'] == 1
     unlinked = store.save_material({'scope': 'public', 'representation': 'agent_extraction', 'content': 'no source ids'})
     assert store.resolve_result_references({'material_ids': [unlinked['id']]})['references'][0]['origin_status'] == 'unlinked'
@@ -155,7 +158,7 @@ def test_legacy_public_scope_stays_unknown_and_backup_preserves_ids(store):
         db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
         db.execute("UPDATE research_records SET universe_version=NULL,applicability='legacy_unknown',logical_identity=NULL")
     upgraded = Store(store.path)
-    assert upgraded.meta('schema_version') == 3
+    assert upgraded.meta('schema_version') == 4
     assert upgraded.account(a['id'])['version'] == 1
     assert upgraded.material(m['id'])['content'] == 'legacy summary'
     assert not upgraded.research_records()

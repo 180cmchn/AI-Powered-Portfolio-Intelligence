@@ -29,12 +29,14 @@ class Settings(BaseModel):
     model_key_env: str = "MODEL_API_KEY"
     model_allow_no_key: bool = False
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
+    model_native_search: bool = True
+    synthesis_request_timeout_seconds: int = Field(default=120, ge=5, le=600)
+    synthesis_max_calls: int = Field(default=4, ge=1, le=8)
+    synthesis_checkpoint_max_age_seconds: int = Field(default=1800, ge=60, le=86400)
     chat_use_max_completion_tokens: bool = False
     model_retries: int = Field(default=1, ge=0, le=3)
     max_total_agents: int = Field(default=16, ge=1, le=64)
     max_context_chars: int = Field(default=240000, ge=10000, le=2000000)
-    search_provider: str = "disabled"
-    search_key_env: str = "TAVILY_API_KEY"
     quote_provider: str = "eastmoney"
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
     max_model_calls: int = Field(default=40, ge=2, le=300)
@@ -43,6 +45,7 @@ class Settings(BaseModel):
     max_agent_turns: int = Field(default=12, ge=2, le=60)
     max_output_tokens: int = Field(default=4000, ge=256, le=32000)
     quote_interval_seconds: int = Field(default=60, ge=30, le=3600)
+    scheduled_research_enabled: bool = True
     scan_interval_minutes: int = Field(default=5, ge=1, le=240)
     analysis_interval_minutes: int = Field(default=15, ge=1, le=1440)
     close_summary_time: str = "15:15"
@@ -50,7 +53,6 @@ class Settings(BaseModel):
     quote_stale_seconds: int = Field(default=180, ge=30, le=86400)
     network_timeout_seconds: int = Field(default=12, ge=2, le=60)
     news_queries: list[str] = Field(default_factory=list, max_length=20)
-    search_max_results: int = Field(default=6, ge=1, le=20)
     read_timeout_seconds: int = Field(default=30, ge=5, le=120)
     read_max_bytes: int = Field(default=5000000, ge=10000, le=20000000)
     read_max_chars: int = Field(default=40000, ge=1000, le=200000)
@@ -60,7 +62,6 @@ class Settings(BaseModel):
     news_interval_minutes: int = Field(default=30, ge=1, le=1440)
     news_start_hour: int = Field(default=8, ge=0, le=24)
     news_end_hour: int = Field(default=23, ge=0, le=24)
-    news_read_sources: bool = True
     quote_cache_seconds: int = Field(default=30, ge=0, le=3600)
     quote_refresh_timeout_seconds: int = Field(default=45, ge=5, le=300)
     read_cache_seconds: int = Field(default=300, ge=0, le=3600)
@@ -70,7 +71,7 @@ class Settings(BaseModel):
     research_provider: str = "eastmoney"
     tushare_token_env: str = "TUSHARE_TOKEN"
 
-    @field_validator("model_key_env", "search_key_env", "tushare_token_env")
+    @field_validator("model_key_env", "tushare_token_env")
     @classmethod
     def env_name(cls, v):
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,79}", v):
@@ -82,13 +83,6 @@ class Settings(BaseModel):
     def protocol(cls, v):
         if v not in ("responses", "chat_completions"):
             raise ValueError("不支持的模型接口协议")
-        return v
-
-    @field_validator("search_provider")
-    @classmethod
-    def search(cls, v):
-        if v not in ("disabled", "tavily", "brave"):
-            raise ValueError("搜索服务应为 disabled、tavily 或 brave")
         return v
 
     @field_validator("quote_provider")
@@ -199,11 +193,12 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.get("/api/status")
     async def status():
+        from .model import native_search_status
         cfg = store.settings()
         p = urlsplit(cfg["model_base_url"])
         key_ready = bool(os.getenv(cfg["model_key_env"])) or (cfg.get("model_allow_no_key", False) and p.hostname in ("localhost", "127.0.0.1", "::1"))
         return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and key_ready),
-                "search_configured": cfg["search_provider"] != "disabled" and bool(os.getenv(cfg["search_key_env"])),
+                "native_search": native_search_status(cfg, store.meta('native_search_capability')),
                 "calendar": market_state(), "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
                 "last_resume": store.meta("last_resume")}, "settings": cfg, "time": now(),
                 "model_probe": store.meta("model_probe"), "last_quote_refresh": store.meta("last_quote_refresh")}
@@ -385,7 +380,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.put("/api/settings")
     async def update_settings(data: Settings):
-        store.set_meta("settings", data.model_dump())
+        # Preserve deprecated values for audit; they are never exposed to runtime.
+        store.set_meta("settings", {**store.meta('settings', {}), **data.model_dump()})
         store.set_meta("model_probe", None)
         service.resume_waiting_config()
         for a in store.accounts():
@@ -403,6 +399,21 @@ def create_app(path=None, mode=None, worker=True, runner=None):
             return result
         except ModelError as e:
             return {"ok": False, "error": str(e)}
+
+    @app.post('/api/settings/probe-native-search')
+    async def probe_native():
+        from .model import native_search_status, probe_native_search
+        if mode == 'demo':
+            return {'status': 'disabled', 'note': '演示模式不调用模型服务'}
+        async with service.native_probe_lock:
+            cached = native_search_status(store.settings(), store.meta('native_search_capability'))
+            if cached.get('checked_at'):
+                age = (datetime.now(TZ) - datetime.fromisoformat(cached['checked_at'])).total_seconds()
+                if 0 <= age < 600:
+                    return {**cached, 'cache_hit': True}
+            result = await probe_native_search(store.settings())
+            store.set_meta('native_search_capability', {**result, 'checked_at': now()})
+            return result
 
     @app.post("/api/backup")
     async def backup():

@@ -1,0 +1,171 @@
+{
+  "endpoint": "https://api.xxyapi.com/v1",
+  "model_label": "grok-4.7",
+  "protocol": "responses",
+  "max_requests": 3,
+  "native_events": [
+    {
+      "type": "web_search_call",
+      "id": "ws_3829989f-a1dd-913d-abaf-0c8e34c6698f_call-5788b97b-475a-4a67-acbe-27350fed9e76-0",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ping An Bank official investor annual report"
+      },
+      "source_count": 5
+    },
+    {
+      "type": "web_search_call",
+      "id": "ws_3829989f-a1dd-913d-abaf-0c8e34c6698f_call-5788b97b-475a-4a67-acbe-27350fed9e76-1",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "平安银行 投资者关系 年度报告 site:bank.pingan.com OR site:ir.pingan.com"
+      },
+      "source_count": 5
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://companiesmarketcap.com/annual-reports/9660.ar.en.2024.pdf"
+    },
+    {
+      "url": "https://companiesmarketcap.com/ping-an-bank/annual-reports/"
+    },
+    {
+      "url": "https://ebank.pingan.com.cn/ir/file/upload/2026-03-21%20Ping%20An%20Bank%202025%20Annual%20Report.pdf"
+    },
+    {
+      "url": "https://ebank.pingan.com.cn/ir/file/upload/%E5%B9%B3%E5%AE%89%E9%93%B6%E8%A1%8C2024%E5%B9%B4%E6%8A%A5_%E8%8B%B1%E6%96%87%E7%89%88_0427%20v2.pdf"
+    },
+    {
+      "url": "http://bank.pingan.com/bankPingAnCom/ir"
+    },
+    {
+      "url": "https://bank.pingan.com/about/news/1747635403373.shtml"
+    },
+    {
+      "url": "https://bank.pingan.com/about/news/1742895041816.shtml"
+    },
+    {
+      "url": "http://ir.pingan.com/gtouzizheguanxixiaoz/index.shtml"
+    },
+    {
+      "url": "https://bank.pingan.com/about/news/1710495492090.shtml"
+    }
+  ],
+  "annotations": [],
+  "local_echo_calls": 1,
+  "nonce_continued": true,
+  "visible_text": "[LOCAL_NONCE]\nhttps://ebank.pingan.com.cn/ir/file/upload/2026-03-21%20Ping%20An%20Bank%202025%20Annual%20Report.pdf",
+  "ok": true,
+  "native_status": {
+    "status": "observed",
+    "fingerprint": "c58aa45f9f9211a825558d447dadfce07cf04cb3e498e9ff6d78647225d0fd21",
+    "checked_at": "2026-10-26T15:58:24.561781+00:00",
+    "event_count": 2,
+    "source_count": 9,
+    "note": "服务返回了原生搜索完成事件或非零工具用量；来源范围以实际返回内容为准。"
+  },
+  "requests": [
+    {
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "agent_id": "mixed-probe",
+      "stage": "native_function_probe",
+      "input_chars": 824,
+      "input_items": 1,
+      "output_bytes": 31233,
+      "request_id": "4e6a7acd-b1ae-4f3c-a403-9cfeb8380ff5",
+      "native_search_requested": true,
+      "status_code": 200,
+      "usage": {
+        "input_tokens": 10607,
+        "input_tokens_details": {
+          "cached_tokens": 3456
+        },
+        "output_tokens": 324,
+        "output_tokens_details": {
+          "reasoning_tokens": 256
+        },
+        "total_tokens": 10931,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 2,
+        "cost_in_usd_ticks": 161111600,
+        "server_side_tool_usage_details": {
+          "web_search_calls": 2,
+          "x_search_calls": 0,
+          "x_posts_fetched": 0,
+          "x_users_fetched": 0,
+          "code_interpreter_calls": 0,
+          "file_search_calls": 0,
+          "mcp_calls": 0,
+          "document_search_calls": 0,
+          "image_generation_calls": 0
+        },
+        "context_details": {
+          "input_tokens": 8244,
+          "output_tokens": 192
+        }
+      },
+      "error": null,
+      "request_timeout_seconds": 60.0,
+      "duration_ms": 6338.68,
+      "response_id": "3829989f-a1dd-913d-abaf-0c8e34c6698f"
+    },
+    {
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "agent_id": "mixed-probe",
+      "stage": "native_function_probe",
+      "input_chars": 30410,
+      "input_items": 9,
+      "output_bytes": 3046,
+      "request_id": "fcb55917-6cf9-486d-a0ad-f099bfd56edc",
+      "native_search_requested": false,
+      "status_code": 200,
+      "usage": {
+        "input_tokens": 7447,
+        "input_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "output_tokens": 229,
+        "output_tokens_details": {
+          "reasoning_tokens": 176
+        },
+        "total_tokens": 7676,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 0,
+        "cost_in_usd_ticks": 49436000,
+        "context_details": {
+          "input_tokens": 7447,
+          "output_tokens": 236
+        }
+      },
+      "error": null,
+      "request_timeout_seconds": 60.0,
+      "duration_ms": 3362.55,
+      "response_id": "ba375320-71d7-9802-b00b-41af93806dec"
+    }
+  ],
+  "usage": {
+    "requests": 2,
+    "duration_ms": 9701.23,
+    "failed_requests": 0,
+    "usage": {
+      "input_tokens": 18054,
+      "output_tokens": 553,
+      "total_tokens": 18607,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 2,
+      "cost_in_usd_ticks": 210547600
+    },
+    "usage_reported_requests": 2
+  },
+  "verification_kind": "real_model_network",
+  "upstream_identity": "not independently verified; configured forwarding-service model label only",
+  "documents_locally_downloaded": false,
+  "source_fulltext_hashes": null
+}

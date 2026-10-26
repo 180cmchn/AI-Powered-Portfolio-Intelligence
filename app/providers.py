@@ -25,6 +25,8 @@ import httpx
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 
+from .calendar import market_state
+
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 EASTMONEY_ENDPOINT = "https://push2.eastmoney.com/api/qt/stock/get"
 EASTMONEY_FIELDS = "f43,f57,f58,f59,f60,f86,f170,f127"
@@ -74,45 +76,196 @@ def _error(exc: Exception) -> str:
     return str(exc)[:300] if isinstance(exc, ValueError) else type(exc).__name__
 
 
+def _quote_failure_kind(exc: Exception) -> str:
+    """Only report a network cause when the exception chain supports it."""
+    causes, current = [], exc
+    while current is not None and len(causes) < 8:
+        causes.append(current)
+        current = current.__cause__ or current.__context__
+    if any(isinstance(item, socket.gaierror) for item in causes):
+        return "dns"
+    if isinstance(exc, httpx.ProxyError):
+        return "proxy"
+    if isinstance(exc, httpx.TimeoutException):
+        return "timeout"
+    if isinstance(exc, httpx.RemoteProtocolError):
+        return "remote_protocol"
+    if isinstance(exc, httpx.HTTPStatusError):
+        return "rate_limited" if exc.response.status_code == 429 else "http_status"
+    if isinstance(exc, httpx.RequestError):
+        return "connection"
+    return "invalid_response"
+
+
+class _QuoteFailure(ValueError):
+    def __init__(self, exc: Exception, diagnostics: list[dict]):
+        super().__init__(_error(exc))
+        self.diagnostics = diagnostics
+
+
+def _last_completed_session(stamp: datetime) -> datetime | None:
+    for days in range(15):
+        day = (stamp - timedelta(days=days)).replace(hour=15, minute=0, second=0, microsecond=0)
+        if day > stamp:
+            continue
+        trading = market_state(day)["trading_day"]
+        if trading is None:
+            return None
+        if trading:
+            return day
+    return None
+
+
+def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None = None,
+                     source_precision: str = "timestamp") -> dict:
+    """Re-evaluate cached timestamps without presenting a close as a live tick."""
+    stamp = stamp or datetime.now(SHANGHAI)
+    calendar = market_state(stamp)
+    result = {"status": "unknown_time", "delay_seconds": None,
+              "market_phase": calendar["phase"], "quote_kind": "unknown",
+              "fresh_for_triggers": False}
+    if source_precision == "date":
+        try:
+            if not isinstance(as_of, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", as_of):
+                return result
+            source_date = datetime.strptime(as_of, "%Y-%m-%d").date()
+        except ValueError:
+            return result
+        latest = _last_completed_session(stamp) if calendar["phase"] == "closed" else None
+        result.update(status="closed" if latest and source_date == latest.date() else
+                      "future_timestamp" if source_date > stamp.date() else "stale", quote_kind="last_close")
+        return result
+    try:
+        observed = datetime.fromisoformat(as_of) if as_of else None
+        if observed is None or observed.tzinfo is None:
+            return result
+        observed = observed.astimezone(SHANGHAI)
+        age = int((stamp - observed).total_seconds())
+    except (TypeError, ValueError, OverflowError):
+        return result
+    result.update(delay_seconds=max(0, age), status="future_timestamp" if age < -60 else "stale")
+    if age < -60:
+        return result
+    # Calendar coverage is required: an unknown holiday cannot certify a close.
+    if calendar["phase"] == "closed":
+        latest = _last_completed_session(stamp)
+        if latest and observed.date() == latest.date() and observed.hour >= 15:
+            result.update(status="closed", quote_kind="last_close",
+                          valuation_note="休市估值使用最近交易日收盘后数据源报价；源时间为供应商更新时间，不是逐笔成交时间。")
+        if result["status"] == "closed":
+            return result
+    if age <= int(config.get("quote_stale_seconds", 180)):
+        result.update(status="ok", quote_kind="session_snapshot",
+                      fresh_for_triggers=age >= 0 and calendar["phase"] in ("morning", "afternoon"))
+    return result
+
+
 class MarketProvider:
     """A public website adapter, not an exchange-authorized real-time feed."""
 
     def __init__(self, config: dict):
         self.config = config
         self.provider = config.get("quote_provider", "eastmoney")
+        self._snapshots: dict = {}
+        self._close_snapshots: dict = {}
 
     async def _data(self, symbol: str) -> dict:
         if self.provider != "eastmoney":
             raise ValueError("行情数据源未启用；manual 模式只使用显式录入的行情快照")
         exchange, code = normalize_symbol(symbol).split(":")
-        secid = f"{'1' if exchange == 'SH' else '0'}.{code}"
-        async with httpx.AsyncClient(timeout=float(self.config.get("network_timeout_seconds", 12))) as client:
-            response = await client.get(
-                EASTMONEY_ENDPOINT,
-                params={"secid": secid, "fields": EASTMONEY_FIELDS},
-                headers={"User-Agent": "Mozilla/5.0 LocalStockResearch/1.0", "Referer": "https://quote.eastmoney.com/"},
-            )
-            response.raise_for_status()
-            payload = response.json()
-        if not isinstance(payload, dict):
-            raise ValueError("行情响应格式异常，预期证券数据对象")
-        data = payload.get("data")
-        if payload.get("rc") != 0 or not isinstance(data, dict):
-            raise ValueError("行情服务未返回证券数据；证券代码可能无效或服务暂不可用")
-        if str(data.get("f57", "")) != code or not data.get("f58"):
-            raise ValueError("行情响应中的证券身份与请求不匹配")
-        # Reject unsupported market/code combinations instead of silently pricing an index.
-        if _kind(symbol, str(data.get("f58", ""))) is None:
+        if _kind(symbol) is None:
             raise ValueError("首版仅支持可识别的 A 股与场内 ETF，请核对交易所和代码")
+        ttl = _bounded(self.config.get("quote_cache_seconds"), 30, 0, 300)
+        cached = self._snapshots.get(symbol)
+        if ttl and cached and time.monotonic() - cached[0] < ttl:
+            return {**cached[1], "_quote_meta": {**cached[1]["_quote_meta"], "cache_hit": True,
+                    "cache_age_seconds": int(time.monotonic() - cached[0])}}
+        secid = f"{'1' if exchange == 'SH' else '0'}.{code}"
+        diagnostics = []
+        attempts = _bounded(self.config.get("quote_max_attempts"), 2, 1, 3)
+        async with httpx.AsyncClient(timeout=float(self.config.get("network_timeout_seconds", 12))) as client:
+            for attempt in range(1, attempts + 1):
+                started = time.monotonic()
+                diagnostic = {"stage": "quote", "attempt": attempt, "host": "push2.eastmoney.com"}
+                try:
+                    response = await client.get(
+                        EASTMONEY_ENDPOINT,
+                        params={"secid": secid, "fields": EASTMONEY_FIELDS},
+                        headers={"User-Agent": "Mozilla/5.0 LocalStockResearch/1.0", "Referer": "https://quote.eastmoney.com/"},
+                    )
+                    diagnostic["http_status"] = response.status_code
+                    response.raise_for_status()
+                    if len(response.content) > 100_000:
+                        raise ValueError("单证券行情响应超过 100 KB 上限")
+                    payload = response.json()
+                    if not isinstance(payload, dict):
+                        raise ValueError("行情响应格式异常，预期证券数据对象")
+                    data = payload.get("data")
+                    if payload.get("rc") != 0 or not isinstance(data, dict):
+                        raise ValueError("行情服务未返回证券数据；证券代码可能无效或服务暂不可用")
+                    if str(data.get("f57", "")) != code or not data.get("f58"):
+                        raise ValueError("行情响应中的证券身份与请求不匹配")
+                    diagnostic.update(status="received", elapsed_seconds=round(time.monotonic() - started, 3))
+                    diagnostics.append(diagnostic)
+                    break
+                except (httpx.HTTPError, ValueError, OSError) as exc:
+                    diagnostic.update(status="failed", failure_kind=_quote_failure_kind(exc),
+                                      exception=type(exc).__name__, elapsed_seconds=round(time.monotonic() - started, 3))
+                    diagnostics.append(diagnostic)
+                    # A 429 is an explicit throttle, not a transient disconnect:
+                    # let the normal refresh interval retry instead of adding load.
+                    retryable = isinstance(exc, httpx.RequestError) or (isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code >= 500)
+                    if not retryable or attempt == attempts:
+                        raise _QuoteFailure(exc, diagnostics) from exc
+                    await asyncio.sleep(min(0.15 * 2 ** (attempt - 1), 0.6))
+        data = {**data, "_quote_meta": {"fetched_at": now_iso(), "cache_hit": False,
+                "cache_age_seconds": 0, "request_diagnostics": diagnostics}}
+        if ttl:
+            self._snapshots[symbol] = (time.monotonic(), data)
         return data
+
+    async def _closed_quote(self, symbol: str) -> dict | None:
+        """Same public provider, unadjusted daily close; never an intraday feed."""
+        stamp = datetime.now(SHANGHAI)
+        if self.provider != "eastmoney" or market_state(stamp)["phase"] != "closed":
+            return None
+        latest = _last_completed_session(stamp)
+        if latest is None:
+            return None
+        exchange, code = symbol.split(":")
+        started = time.monotonic()
+        async with asyncio.timeout(float(self.config.get("network_timeout_seconds", 12)) + 1):
+            rows, meta = await self._eastmoney_history(f"{'1' if exchange == 'SH' else '0'}.{code}",
+                latest.strftime("%Y%m%d"), latest.strftime("%Y%m%d"), "daily", "none")
+        rows = _validated_bars(rows, latest.strftime("%Y%m%d"), latest.strftime("%Y%m%d"))
+        if not rows or rows[-1]["time"] != latest.date().isoformat() or not meta.get("name"):
+            return None
+        row = rows[-1]
+        if Decimal(row["close"]) <= 0:
+            return None
+        result = {"symbol": symbol, "name": meta["name"], "price": row["close"],
+                  "change_pct": row.get("change_pct"), "as_of": row["time"], "as_of_precision": "date",
+                  "source_time_precision": "date", "fetched_at": meta["fetched_at"],
+                  "source": "eastmoney:daily-unadjusted-close", "source_url": f"https://quote.eastmoney.com/{symbol.replace(':', '').lower()}.html",
+                  "status": "closed", "quote_kind": "last_close", "fresh_for_triggers": False,
+                  "delay_seconds": None, "market_phase": "closed", "security_status": "unknown",
+                  "cache_hit": meta.get("cache_hit", False), "cache_age_seconds": meta.get("cache_age_seconds", 0),
+                  "session_close_at": latest.isoformat(), "session_close_time_basis": "exchange_calendar_not_supplier_timestamp",
+                  "valuation_note": "即时接口失败，休市估值改用同供应商最近已完成交易日的未复权日线收盘价。源时间仅精确到日期；不构造秒级行情时间，不触发新鲜行情条件。",
+                  "fallback_diagnostic": {"stage": "closed_quote", "host": "push2his.eastmoney.com", "status": "received",
+                                          "elapsed_seconds": round(time.monotonic() - started, 3)}}
+        self._close_snapshots[symbol] = result
+        return result
 
     async def quote(self, symbol: str) -> dict:
         symbol = normalize_symbol(symbol)
         result = {"symbol": symbol, "name": None, "price": None, "change_pct": None,
                   "as_of": None, "fetched_at": now_iso(), "source": self.provider,
-                  "status": "unavailable", "delay_seconds": None, "security_status": "unknown"}
+                  "status": "unavailable", "delay_seconds": None, "security_status": "unknown",
+                  "fresh_for_triggers": False, "quote_kind": "unknown"}
         try:
             data = await self._data(symbol)
+            result.update(data.get("_quote_meta", {}))
             precision = data.get("f59")
             if type(precision) is not int or not 0 <= precision <= 6:
                 raise ValueError("行情价格精度字段缺失或异常，不能推测 ETF/股票小数位")
@@ -124,18 +277,29 @@ class MarketProvider:
             if isinstance(stamp, (int, float)) and stamp > 0:
                 try:
                     observed = datetime.fromtimestamp(stamp, SHANGHAI)
-                    age = int((datetime.now(SHANGHAI) - observed).total_seconds())
-                    result.update(as_of=observed.isoformat(), delay_seconds=max(0, age))
-                    result["status"] = "future_timestamp" if age < -60 else "stale" if age > int(self.config.get("quote_stale_seconds", 180)) else "ok"
+                    result.update(as_of=observed.isoformat())
+                    result.update(quote_time_state(result["as_of"], self.config))
                 except (OverflowError, OSError, ValueError):
                     result["status"] = "unknown_time"
             else:
                 result["status"] = "unknown_time"
             if result["price"] is None or Decimal(result["price"]) <= 0:
-                result.update(price=None, status="unavailable", error="数据源未返回有效价格；不能据此推断停牌状态")
+                result.update(price=None, status="unavailable", fresh_for_triggers=False,
+                              error="数据源未返回有效价格；不能据此推断停牌状态")
         except (httpx.HTTPError, ValueError, OSError) as exc:
             result["error"] = _error(exc)
-        result["fetched_at"] = now_iso()
+            if isinstance(exc, _QuoteFailure):
+                result["request_diagnostics"] = exc.diagnostics
+            result["fetched_at"] = now_iso()
+            cause = exc.__cause__ if isinstance(exc, _QuoteFailure) else exc
+            transient = isinstance(cause, httpx.RequestError) or (isinstance(cause, httpx.HTTPStatusError) and cause.response.status_code >= 500)
+            if transient:
+                try:
+                    fallback = await self._closed_quote(symbol)
+                    if fallback:
+                        result.update(fallback, live_quote_error=result.pop("error"))
+                except (httpx.HTTPError, ValueError, OSError, TimeoutError) as fallback_exc:
+                    result["fallback_error"] = _error(fallback_exc)
         return result
 
     async def security(self, symbol: str) -> dict:
@@ -144,12 +308,19 @@ class MarketProvider:
         result = {"symbol": symbol, "code": code, "exchange": exchange, "name": None,
                   "kind": _kind(symbol), "sector": None, "source": self.provider,
                   "fetched_at": now_iso(), "status": "unavailable"}
+        fallback = self._close_snapshots.get(symbol)
+        if fallback:
+            return {**result, "name": fallback["name"], "source": fallback["source"],
+                    "fetched_at": fallback["fetched_at"], "cache_hit": True, "status": "ok"}
         try:
             data = await self._data(symbol)
+            result.update(data.get("_quote_meta", {}))
             result.update(name=data["f58"], kind=_kind(symbol, data["f58"]), sector=data.get("f127") or None,
                           source="eastmoney:public-website", status="ok")
         except (httpx.HTTPError, ValueError, OSError) as exc:
             result["error"] = _error(exc)
+            if isinstance(exc, _QuoteFailure):
+                result["request_diagnostics"] = exc.diagnostics
         return result
 
 
@@ -559,6 +730,11 @@ def _financial_comparisons(rows: list[dict]) -> list[dict]:
 
 
 async def search(query: str, config: dict) -> dict:
+    """Deprecated compatibility adapter; research runtime uses model-native search.
+
+    Retained only for old direct integrations. No model/service fallback may call
+    this function when native search is unavailable.
+    """
     """Return raw search excerpts; they are not claims of full source access."""
     provider = config.get("search_provider", "disabled")
     result = {"query": query, "provider": provider, "results": [], "fetched_at": now_iso(), "status": "unavailable"}
@@ -671,7 +847,13 @@ async def _download_document(url: str, config: dict, refresh: bool = False) -> d
     if parts.scheme not in ("http", "https") or not parts.hostname or parts.username or parts.password:
         raise ValueError("仅能读取无登录凭据的公开 HTTP/HTTPS 原文链接")
     url = parts._replace(fragment="").geturl()
-    key = (url, _body_limit(config))
+    observer = config.get("_material_observer")
+    scope = config.get("_material_observation_scope", "public")
+    account_id = config.get("_material_observation_account_id")
+    # Durable tokens belong to one database and access scope. A global byte cache
+    # must not smuggle a different database's trusted observation into a save.
+    observer_key = (os.path.realpath(observer.path), scope, account_id) if observer is not None else None
+    key = (url, _body_limit(config), observer_key)
     ttl = _bounded(config.get("read_cache_seconds"), 300, 0, 3600)
     cached = _DOCUMENT_CACHE.get(key)
     if not refresh and ttl and cached and time.monotonic() - cached[0] < ttl:
@@ -682,13 +864,21 @@ async def _download_document(url: str, config: dict, refresh: bool = False) -> d
     task = _DOCUMENT_INFLIGHT.get(task_key)
     if task is None:
         async def fetch() -> dict:
-            async with asyncio.timeout(float(config.get("read_timeout_seconds", 30))):
-                body, mime, final_url = await _fetch_public(url, config)
+            observation_id = observer.begin_material_observation(url, scope=scope, account_id=account_id) if observer is not None else None
+            try:
+                async with asyncio.timeout(float(config.get("read_timeout_seconds", 30))):
+                    body, mime, final_url = await _fetch_public(url, config)
+            except Exception as exc:
+                if observation_id is not None:
+                    exc._material_observation_id = observation_id
+                raise
             if len(body) > _body_limit(config):
                 raise ValueError("原文超过读取字节上限")
             document = {"body": body, "content_type": mime, "final_url": final_url,
                         "fetched_at": now_iso(), "document_id": hashlib.sha256(body).hexdigest(),
                         "byte_length": len(body)}
+            if observation_id is not None:
+                document["_observation_id"] = observation_id
             if ttl:
                 _DOCUMENT_CACHE[key] = (time.monotonic(), document)
                 _DOCUMENT_CACHE.move_to_end(key)
@@ -832,6 +1022,8 @@ async def _document_operation(url: str, config: dict, operation, refresh: bool) 
         result.update(extracted)
     except Exception as exc:
         result["error"] = _error(exc)
+        if getattr(exc, "_material_observation_id", None) is not None:
+            result["_observation_id"] = exc._material_observation_id
     return result
 
 

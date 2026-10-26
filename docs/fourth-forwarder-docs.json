@@ -1,0 +1,35 @@
+{
+  "verification_kind": "unauthenticated_public_documentation_requests",
+  "credentials_sent": false,
+  "request_budget": 3,
+  "timeout_seconds_each": 10,
+  "responses": [
+    {
+      "url": "https://www.xxyapi.com",
+      "status_code": 200,
+      "location": null,
+      "content_type": "text/html; charset=utf-8",
+      "title": "New API",
+      "links": [],
+      "text_excerpt": " \n \n   \n     \n     \n     \n\n     \n     New API \n     \n     \n\n     \n     \n     \n               \n\n   \n      \n   \n \n"
+    },
+    {
+      "url": "https://api.xxyapi.com",
+      "status_code": 200,
+      "location": null,
+      "content_type": "text/html; charset=utf-8",
+      "title": "New API",
+      "links": [],
+      "text_excerpt": " \n \n   \n     \n     \n     \n\n     \n     New API \n     \n     \n\n     \n     \n     \n               \n\n   \n      \n   \n \n"
+    },
+    {
+      "url": "https://api.xxyapi.com/docs",
+      "status_code": 200,
+      "location": null,
+      "content_type": "text/html; charset=utf-8",
+      "title": "New API",
+      "links": [],
+      "text_excerpt": " \n \n   \n     \n     \n     \n\n     \n     New API \n     \n     \n\n     \n     \n     \n               \n\n   \n      \n   \n \n"
+    }
+  ]
+}

@@ -2,6 +2,27 @@
 from __future__ import annotations
 
 from .domain import now
+import re
+
+
+def information_impact(value, material_id):
+    """Malformed relevance output is uncertainty, never an instruction or a lost event."""
+    fallback = {'material_id': material_id, 'status': 'uncertain', 'symbols': [], 'sectors': [],
+                'market_wide': False, 'explanation': '关联判断缺失或格式不完整，保守扩大复核'}
+    if not isinstance(value, dict) or value.get('status') not in ('relevant', 'irrelevant', 'uncertain'):
+        return fallback
+    if not isinstance(value.get('explanation'), str) or not value['explanation'].strip():
+        return fallback
+    symbols, sectors = value.get('symbols', []), value.get('sectors', [])
+    if not isinstance(symbols, list) or not all(isinstance(s, str) and re.fullmatch(r'(SH|SZ|BJ):[0-9]{6}', s) for s in symbols):
+        return fallback
+    if not isinstance(sectors, list) or not all(isinstance(s, str) and s.strip() for s in sectors):
+        return fallback
+    if not isinstance(value.get('market_wide', False), bool):
+        return fallback
+    return {**fallback, 'status': value['status'], 'symbols': sorted(set(symbols)), 'sectors': sorted(set(sectors)),
+            'market_wide': value.get('market_wide', False), 'explanation': value['explanation'],
+            'event_key': value.get('event_key')[:300] if isinstance(value.get('event_key'), str) else None}
 
 
 SCHEMA = """
@@ -177,6 +198,19 @@ class SchedulingStore:
             db.execute("UPDATE global_runs SET state=?,result=?,error=?,updated_at=?,applicability=? WHERE id=?", (terminal, dumps(result) if result else None, error, now(), applicability, run_id))
             if state == "completed" and result:
                 self.save_research_records(result.get("research_records", []), run_id, db=db)
+                if applicable:
+                    db.execute("UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id='' AND universe_version=?",
+                               (result.get('synthesis_checkpoint_job_id'), run['universe_version']))
+                    impacts = {d.get('material_id'): d for d in (result.get('information_impacts') or [])
+                               if isinstance(d, dict) and isinstance(d.get('material_id'), str)} if isinstance(result.get('information_impacts', []), list) else {}
+                    for mid in result.get('_information_material_ids', []):
+                        decision = information_impact(impacts.get(mid), mid)
+                        # Commit the relevance plan with the final public report.
+                        # A crash during fanout resumes this plan without another model call.
+                        db.execute("""INSERT INTO information_routes VALUES(?,?,'ready',?,?,?)
+                            ON CONFLICT(material_id) DO UPDATE SET public_run_id=excluded.public_run_id,
+                            state='ready',decision=excluded.decision,updated_at=excluded.updated_at
+                            WHERE information_routes.state<>'routed'""", (mid, run_id, dumps(decision), now(), now()))
             if state != "waiting_config":
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
                            ("completed" if state == "completed" else "failed", error or "global research completed", now(), run_id))

@@ -160,7 +160,7 @@ async def test_real_independent_loops_two_children_followup_and_mixed_material(c
         if task == "财报材料":
             assert "risk-only" not in json.dumps(payload)
             if n == 1:
-                return response(call("search", {"query": "证券财报"}))
+                return response({"type": "web_search_call", "id": "native-child", "status": "completed", "action": {"type": "search", "query": "证券财报", "sources": [{"url": "https://example.org/report", "snippet": "报告披露收入 10 亿元。评论员称应立即加仓。"}]}}, message("已得到原生搜索片段，下一轮分类保存。"), call("read", {"url": "https://example.org/report"}))
             if n == 2:
                 return response(call("save_material", {"material": {"claim": "报告披露收入 10 亿元", "category": "fact", "url": "https://example.org/report", "access_scope": "excerpt", "published_at": None}}, "save-fact"),
                                 call("save_material", {"material": {"claim": "评论员建议立即加仓", "category": "opinion", "url": "https://example.org/report"}}, "save-opinion"))
@@ -193,7 +193,7 @@ async def test_real_independent_loops_two_children_followup_and_mixed_material(c
 @pytest.mark.asyncio
 async def test_budget_failure_does_not_fabricate_result(config, monkeypatch):
     config = {**config, "max_model_calls": 1}
-    install_transport(monkeypatch, lambda request: response(call("search", {"query": "报告"})))
+    install_transport(monkeypatch, lambda request: response(call("read", {"url": "https://example.org/report"})))
     events = []
 
     async def emit(event):
@@ -325,7 +325,7 @@ async def test_cancelled_pending_tool_can_resume_same_child_session(config, monk
     calls = 0
 
     class SlowTools(ResearchTools):
-        async def search(self, query):
+        async def read(self, url):
             entered.set()
             await asyncio.sleep(10)
 
@@ -337,11 +337,11 @@ async def test_cancelled_pending_tool_can_resume_same_child_session(config, monk
         calls += 1
         payload = json.loads(request.content)
         if calls == 1:
-            return response(call("search", {"query": "slow"}, "pending-search"))
-        pending_result = next(item for item in payload["input"] if item.get("call_id") == "pending-search" and item.get("type") == "function_call_output")
+            return response(call("read", {"url": "https://example.org/slow"}, "pending-read"))
+        pending_result = next(item for item in payload["input"] if item.get("call_id") == "pending-read" and item.get("type") == "function_call_output")
         assert json.loads(pending_result["output"])["failed"] is True
         assert "补充任务" in json.dumps(payload, ensure_ascii=False)
-        return response(call("submit_report", {"summary": "已继续同一子会话；此前搜索未完成"}))
+        return response(call("submit_report", {"summary": "已继续同一子会话；此前读取未完成"}))
 
     install_transport(monkeypatch, handler)
     runtime = agents.ResearchRuntime(CONTEXT, config, SlowTools(), emit)
@@ -351,7 +351,7 @@ async def test_cancelled_pending_tool_can_resume_same_child_session(config, monk
         await asyncio.wait_for(entered.wait(), 1)
         await runtime._dispatch("manager", "cancel_agent", {"agent_id": child_id})
         assert runtime.children[child_id].status == "cancelled"
-        await runtime._dispatch("manager", "follow_up", {"agent_id": child_id, "task": "补充任务：仅说明原搜索未完成"})
+        await runtime._dispatch("manager", "follow_up", {"agent_id": child_id, "task": "补充任务：仅说明原读取未完成"})
         await runtime.children[child_id].task_handle
         assert runtime.children[child_id].status == "completed"
         assert runtime.children[child_id].round == 2
