@@ -1,0 +1,336 @@
+{
+  "evidence_kind": "real_model_network_normal_http_worker_final_candidate",
+  "started_at": "2026-10-27T01:12:50.207388+08:00",
+  "finished_at": "2026-10-27T01:27:47.294723+08:00",
+  "tested_source_commit": "a5f6eb240ba0ac2e4c8b9ce89dcc723fc5a36e7c",
+  "startup_worktree_status": "",
+  "completion_worktree_status": "",
+  "application_sha256": "f5525f47dbc98fc1a24602e15200a1c907ce7423cf6a1af4001a2663923b95f7",
+  "same_application_code": true,
+  "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "dependencies": {
+    "fastapi": "0.159.1",
+    "uvicorn": "0.54.0",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "pypdf": "6.21.2"
+  },
+  "configuration": {
+    "configured": true,
+    "protocol": "responses",
+    "model_name": "grok-4.7",
+    "model_host": "api.xxyapi.com",
+    "model_native_search": true,
+    "quote_provider": "eastmoney",
+    "quote_fallback_provider": "sina",
+    "research_provider": "eastmoney",
+    "settings_origin": "project_environment_and_defaults"
+  },
+  "resource_limits": {
+    "max_model_calls": 30,
+    "max_agent_turns": 18,
+    "max_total_agents": 4,
+    "max_concurrent_agents": 2,
+    "analysis_timeout_seconds": 600,
+    "agent_timeout_seconds": 240,
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "synthesis_max_calls": 4,
+    "model_retries": 1,
+    "max_output_tokens": 3000,
+    "max_job_attempts": 2
+  },
+  "probe": {
+    "status": "observed",
+    "event_count": 2,
+    "source_count": 15,
+    "checked_at": "2026-10-26T17:13:01.193770+00:00"
+  },
+  "rounds": [
+    {
+      "label": "public",
+      "job_id": "90b304cdb26842ff91bbe574282aae76",
+      "state": "completed",
+      "input_version": null,
+      "model_calls": 28,
+      "recorded_http_requests": 28,
+      "requests_by_agent": {
+        "manager": 16,
+        "research-3c9ece00b6f0": 12
+      },
+      "request_errors": [],
+      "completed_native_calls": 26,
+      "output_limit_reported_exceedances": 4,
+      "final_request": {
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "input_chars": 106510,
+        "duration_ms": 69820.84,
+        "status_code": 200,
+        "requested_max_output_tokens": 3000,
+        "reported_output_exceeds_requested": true
+      },
+      "final_report_chars": 953,
+      "reference_summary": {
+        "resolved": 61,
+        "source_link": 214,
+        "unresolved": 0
+      },
+      "synthesis_recovered": false,
+      "shared_research_used": [],
+      "valuation": null
+    },
+    {
+      "label": "A-100",
+      "job_id": "9c2036b289d34900a02bb17457370445",
+      "state": "completed",
+      "input_version": 1,
+      "model_calls": 7,
+      "recorded_http_requests": 7,
+      "requests_by_agent": {
+        "manager": 7
+      },
+      "request_errors": [],
+      "completed_native_calls": 2,
+      "output_limit_reported_exceedances": 1,
+      "final_request": {
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "input_chars": 68054,
+        "duration_ms": 95555.85,
+        "status_code": 200,
+        "requested_max_output_tokens": 3000,
+        "reported_output_exceeds_requested": true
+      },
+      "final_report_chars": 1118,
+      "reference_summary": {
+        "resolved": 20,
+        "source_link": 19,
+        "unresolved": 0
+      },
+      "synthesis_recovered": false,
+      "shared_research_used": [
+        {
+          "id": "082cbd16b1b14623ab687a38849d18ab",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        },
+        {
+          "id": "1a5605947da64fbfa7c7e5f0a7a421b7",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        }
+      ],
+      "valuation": {
+        "securities_value": "134998.00",
+        "cash": "10000",
+        "total_assets": "144998.00",
+        "missing_prices": [],
+        "unrealized_pnl": null,
+        "known_cost_positions": 0
+      }
+    },
+    {
+      "label": "B-500",
+      "job_id": "a817088e902e48d6a66d56416eca2d83",
+      "state": "completed",
+      "input_version": 1,
+      "model_calls": 4,
+      "recorded_http_requests": 4,
+      "requests_by_agent": {
+        "manager": 4
+      },
+      "request_errors": [],
+      "completed_native_calls": 0,
+      "output_limit_reported_exceedances": 1,
+      "final_request": {
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "input_chars": 38094,
+        "duration_ms": 71223.19,
+        "status_code": 200,
+        "requested_max_output_tokens": 3000,
+        "reported_output_exceeds_requested": true
+      },
+      "final_report_chars": 909,
+      "reference_summary": {
+        "resolved": 22,
+        "source_link": 4,
+        "unresolved": 0
+      },
+      "synthesis_recovered": false,
+      "shared_research_used": [
+        {
+          "id": "082cbd16b1b14623ab687a38849d18ab",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        },
+        {
+          "id": "1a5605947da64fbfa7c7e5f0a7a421b7",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        }
+      ],
+      "valuation": {
+        "securities_value": "5650.00",
+        "cash": "20000",
+        "total_assets": "25650.00",
+        "missing_prices": [],
+        "unrealized_pnl": null,
+        "known_cost_positions": 0
+      }
+    },
+    {
+      "label": "A-200",
+      "job_id": "73545215b3c54ddb8858dafc49aacf44",
+      "state": "completed",
+      "input_version": 2,
+      "model_calls": 7,
+      "recorded_http_requests": 7,
+      "requests_by_agent": {
+        "manager": 7
+      },
+      "request_errors": [],
+      "completed_native_calls": 0,
+      "output_limit_reported_exceedances": 1,
+      "final_request": {
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "input_chars": 85526,
+        "duration_ms": 89328.41,
+        "status_code": 200,
+        "requested_max_output_tokens": 3000,
+        "reported_output_exceeds_requested": true
+      },
+      "final_report_chars": 1066,
+      "reference_summary": {
+        "resolved": 20,
+        "source_link": 6,
+        "unresolved": 0
+      },
+      "synthesis_recovered": false,
+      "shared_research_used": [
+        {
+          "id": "082cbd16b1b14623ab687a38849d18ab",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        },
+        {
+          "id": "1a5605947da64fbfa7c7e5f0a7a421b7",
+          "universe_version": 1,
+          "scope": "public",
+          "applicability": "current"
+        }
+      ],
+      "valuation": {
+        "securities_value": "269996.00",
+        "cash": "10000",
+        "total_assets": "279996.00",
+        "missing_prices": [],
+        "unrealized_pnl": null,
+        "known_cost_positions": 0
+      }
+    }
+  ],
+  "checks": {
+    "all_four_final_reports": true,
+    "native_search_in_actual_research": true,
+    "native_search_from_child": true,
+    "completed_child_report": true,
+    "two_symbols_validly_priced": true,
+    "all_account_valuations_complete": true,
+    "public_facts_reused": true,
+    "prior_success_stale": true,
+    "b_unchanged": true,
+    "normal_scheduler_and_worker": true,
+    "real_browser_matches_api": true,
+    "browser_api_matches_database": true,
+    "browser_recommendations_match_database": true
+  },
+  "mechanical_acceptance": true,
+  "quotes": {
+    "SH:600519": {
+      "symbol": "SH:600519",
+      "price": "1349.980",
+      "source": "sina:public-website",
+      "source_url": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+      "as_of": "2026-10-26T15:34:59+08:00",
+      "as_of_precision": "timestamp",
+      "fetched_at": "2026-10-27T01:21:28.628613+08:00",
+      "status": "closed",
+      "quote_kind": "last_close",
+      "fresh_for_triggers": false
+    },
+    "SZ:000001": {
+      "symbol": "SZ:000001",
+      "price": "11.300",
+      "source": "sina:public-website",
+      "source_url": "https://finance.sina.com.cn/realstock/company/sz000001/nc.shtml",
+      "as_of": "2026-10-26T16:30:00+08:00",
+      "as_of_precision": "timestamp",
+      "fetched_at": "2026-10-27T01:21:28.646363+08:00",
+      "status": "closed",
+      "quote_kind": "last_close",
+      "fresh_for_triggers": false
+    }
+  },
+  "holding_edit": {
+    "previous_version": 1,
+    "new_version": 2,
+    "had_prior_success": true,
+    "prior_success_stale": true
+  },
+  "b_unchanged": true,
+  "scheduler_news_demands": [
+    {
+      "id": 1,
+      "event_key": "news-observation:20752",
+      "account_id": "",
+      "input_version": null,
+      "kind": "news_observation",
+      "reason": "公开信息观察：贵州茅台600519和平安银行000001最近一期公开业绩：每家公司只核对营业收入、归母净利润两项，含单位和报告期。把一家公司的资料核对交给独立研究子Agent，主Agent研究另一家并整合，可自主补查。不预给URL，使用本模型原生搜索发现资料。不延伸全行业；证据足够后 prepare_synthesis，提交简洁公共报告与出处，如实说明链接或片段范围，并保留汇总预算。。自行决定查询与补查，使用本模型原生联网工具。",
+      "state": "completed",
+      "job_id": "90b304cdb26842ff91bbe574282aae76",
+      "detail": "global research completed",
+      "created_at": "2026-10-27T01:13:01.502530+08:00",
+      "updated_at": "2026-10-27T01:17:49.491604+08:00"
+    }
+  ],
+  "browser": {
+    "ok": true,
+    "checks": 53,
+    "browser": {
+      "engine": "chromium",
+      "requested_channel": "chrome",
+      "executable_path": null,
+      "version": "155.0.8059.86"
+    },
+    "screenshots": 9,
+    "errors": [],
+    "inconsistencies": []
+  },
+  "material_counts": {
+    "native_search_source": 126,
+    "generated_analysis": 1,
+    "original_document": 14,
+    "agent_extraction": 9
+  },
+  "tests": {
+    "python_passed": 296,
+    "browser_behavior_suites_passed": 2,
+    "inspection_price_dom_regression": "passed",
+    "classification": "protocol substitutes/production component integrations/browser tests distinct from this real network run"
+  },
+  "quality_scope": "Engineering checks passed; figure/valuation review and remaining source/condition limitations are documented separately. No investment efficacy or persistent provider availability claim.",
+  "full_evidence_directory": "data/evaluations/fourth-20261027-011250",
+  "review_documents": [
+    "docs/fourth-final-evidence-review.md",
+    "docs/fourth-final-valuations.md",
+    "docs/fourth-final-runtime.md"
+  ]
+}
