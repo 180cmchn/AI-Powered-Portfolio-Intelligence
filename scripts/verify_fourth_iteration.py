@@ -156,6 +156,7 @@ async def verify(args):
             quotes = summary['steps']['quote_records']
             checks = {'all_four_final_reports': len(summary['rounds']) == 4 and all(r['state'] == 'completed' and r['observations']['report_returned'] for r in summary['rounds']),
                 'native_search_in_actual_research': bool(native), 'native_search_from_child': any(e.get('agent_id') != 'manager' for e in native),
+                'completed_child_report': any(e['type'] == 'agent_completed' and e.get('agent_id') not in (None, 'manager') and e.get('payload', {}).get('report') for e in summary['rounds'][0]['events']),
                 'two_symbols_validly_priced': all(quotes.get(s, {}).get('price') and quotes[s].get('status') in ('ok', 'closed') for s in ('SH:600519','SZ:000001')),
                 'all_account_valuations_complete': all(r['observations'].get('all_holdings_priced') and r['observations'].get('metrics_recomputable') for r in summary['rounds'][1:]),
                 'public_facts_reused': all(r['result'].get('shared_research_used') for r in summary['rounds'][1:]),
@@ -180,8 +181,15 @@ async def verify(args):
                     analysis_keys(snapshot.get('accounts', {}).get(key, {}).get('analyses', [])) == analysis_keys(store.analyses(aid))
                     and snapshot.get('accounts', {}).get(key, {}).get('account', {}).get('version') == store.account(aid)['version']
                     for key, aid in summary['account_ids'].items())
+                def recommendation_keys(rows):
+                    return [(r['id'], r.get('price_state'), r.get('review_status')) for r in rows]
+                checks['browser_recommendations_match_database'] = all(
+                    recommendation_keys(snapshot['accounts'][key]['recommendations']['items']) == recommendation_keys(store.recommendations_page(aid, 10, 0, 'active')['items'])
+                    and snapshot['accounts'][key]['recommendations']['total'] == store.recommendations_page(aid, 10, 0, 'active')['total']
+                    for key, aid in summary['account_ids'].items())
             else:
                 checks['browser_api_matches_database'] = False
+                checks['browser_recommendations_match_database'] = False
             summary['mechanical_acceptance'] = all(checks.values())
             save()
             return 0 if all(checks.values()) else 2

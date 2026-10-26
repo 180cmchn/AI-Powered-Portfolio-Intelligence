@@ -784,6 +784,7 @@ function eventMessage(event) {
     p.summary ||
     p.content ||
     p.error ||
+    p.note ||
     p.task ||
     p.goal ||
     p.tool_name ||
@@ -794,7 +795,7 @@ function eventMessage(event) {
 }
 function eventHTML(event) {
   const p = event.payload;
-  return `<div class="event"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${p && typeof p === "object" && Object.keys(p).length ? `<details><summary>查看事件与来源详情</summary><pre>${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
+  return `<div class="event"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", budget_closeout: "正在整理最终报告", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${p && typeof p === "object" && Object.keys(p).length ? `<details><summary>查看事件与来源详情</summary><pre>${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
 }
 function jobCard(job) {
   const events = state.events[job.id];

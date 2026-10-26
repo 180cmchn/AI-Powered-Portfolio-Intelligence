@@ -22,6 +22,22 @@ const label = value => ({completed:'已完成', current:'当前版本', stale:'�
   closed:'已收盘', ok:'已获取', error:'获取失败', error_cached:'刷新失败 · 使用缓存', missing:'未获取',
   unknown_time:'行情时间未知', delayed:'延迟', fresh:'已更新'}[value] || value);
 const number = value => value === null || value === undefined || value === '' ? null : Number(String(value).replaceAll(',', ''));
+// Production app/static/app.js state.pageSize; inspect the same active first page.
+const recommendationPageSize = 10;
+const recommendationPriceLabels = {met:'价格条件已满足', not_met:'价格条件未满足', stale:'报价过期 · 条件待更新',
+  uncomputable:'价格条件暂不可计算', no_conditions:'未设价格条件', unknown:'价格条件尚未检查'};
+const recommendationReviewLabels = {valid:'判断已复核', watching:'判断仍在跟踪', triggered:'判断仍在跟踪',
+  needs_review:'判断待复核', expired:'已过期', revoked:'已撤销'};
+const recommendationReview = (item, account) => {
+  const saved = item.review_status || item.state || item.status || 'watching';
+  if (['revoked','expired'].includes(saved)) return saved;
+  if (item.valid_until && new Date(item.valid_until).getTime() <= Date.now()) return 'expired';
+  if (item.input_version !== undefined && item.input_version !== account.version) return 'needs_review';
+  return saved;
+};
+const recommendationSignature = envelope => ({total:envelope?.total, items:(envelope?.items || []).map(item=>({
+  id:item.id, price_state:item.price_state, review_status:item.review_status, state:item.state, status:item.status,
+  input_version:item.input_version, valid_until:item.valid_until}))});
 const displayedDate = value => {
   if (!value) return '时间未知';
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}（源仅日期）`;
@@ -60,11 +76,12 @@ try {
   const snapshots = {};
   for (const [key, account] of Object.entries(chosen)) {
     if (!account) continue;
-    const [analyses, jobs, records] = await Promise.all([
+    const [analyses, jobs, records, recommendations] = await Promise.all([
       get(`/api/accounts/${account.id}/analyses?limit=100`),
       get(`/api/accounts/${account.id}/jobs?limit=100`),
-      get(`/api/research?account_id=${account.id}&limit=30`)]);
-    snapshots[key] = {account, analyses, jobs, records};
+      get(`/api/research?account_id=${account.id}&limit=30`),
+      get(`/api/accounts/${account.id}/recommendations?view=active&envelope=true&limit=${recommendationPageSize}&offset=0`)]);
+    snapshots[key] = {account, analyses, jobs, records, recommendations};
   }
   const apiSnapshot = {captured_at:new Date().toISOString(), accounts:snapshots, global_runs:globalRuns, universe,
     status:{mode:status.mode, timezone:status.timezone, worker:status.worker, native_search:status.native_search}};
@@ -121,7 +138,7 @@ try {
   };
 
   for (const [key,snapshot] of Object.entries(snapshots)) {
-    const {account,analyses,jobs} = snapshot;
+    const {account,analyses,jobs,recommendations} = snapshot;
     const {context,page} = await newPage(account.id);
     try {
       await page.goto(`${base.origin}/#overview`,{waitUntil:'domcontentloaded'}); await ready(page);
@@ -146,6 +163,47 @@ try {
       }
       await screenshot(page,`${key}-overview`);
       await navigate(page,'research');
+      const recommendationSection = page.locator('#active-recommendations');
+      await recommendationSection.waitFor();
+      const recommendationItems = Array.isArray(recommendations?.items) ? recommendations.items : [];
+      const recommendationCards = recommendationSection.locator('.recommendation');
+      const actualRecommendationIds = await recommendationCards.evaluateAll(cards=>cards.map(card=>card.dataset.recommendationId));
+      const expectedRecommendationIds = recommendationItems.map(item=>item.id);
+      const recommendationHeader = normal(await recommendationSection.locator('.card-header').innerText());
+      const visibleRecommendationTotal = recommendationHeader.match(/共\s+(\d+)\s+条/)?.[1];
+      check(`${key}_active_recommendation_api_page`, Array.isArray(recommendations?.items)
+        && Number.isInteger(recommendations.total) && recommendations.total >= 0
+        && recommendations.view === 'active' && recommendations.limit === recommendationPageSize && recommendations.offset === 0
+        && recommendationItems.length === Math.min(recommendations.total,recommendationPageSize),
+        {view:'active',limit:recommendationPageSize,offset:0},
+        {view:recommendations?.view,limit:recommendations?.limit,offset:recommendations?.offset,
+          total:recommendations?.total,returned:recommendationItems.length,ids:expectedRecommendationIds});
+      check(`${key}_active_recommendation_first_page_ids`, JSON.stringify(actualRecommendationIds) === JSON.stringify(expectedRecommendationIds),
+        expectedRecommendationIds,actualRecommendationIds,'Exact ordered first-page IDs; no requirement to manufacture recommendations.');
+      check(`${key}_active_recommendation_count_matches`, actualRecommendationIds.length === recommendationItems.length
+        && visibleRecommendationTotal !== undefined && Number(visibleRecommendationTotal) === recommendations?.total,
+        {first_page:recommendationItems.length,total:recommendations?.total},
+        {first_page:actualRecommendationIds.length,total:visibleRecommendationTotal === undefined ? null : Number(visibleRecommendationTotal)});
+      const emptyMessageVisible = await recommendationSection.getByText('当前没有仍需关注的结构化建议。',{exact:true}).isVisible();
+      const expectedEmpty = recommendations?.total === 0 && recommendationItems.length === 0;
+      check(`${key}_active_recommendation_empty_state`, emptyMessageVisible === expectedEmpty
+        && (!expectedEmpty || actualRecommendationIds.length === 0),
+        {empty:expectedEmpty,total:recommendations?.total},{empty_message:emptyMessageVisible,visible_ids:actualRecommendationIds},
+        expectedEmpty ? 'The persisted API contains no active recommendations; the UI must explicitly show the empty state.' : 'Existing active recommendations must be displayed, without an empty-state substitute.');
+      for (const item of recommendationItems) {
+        const index = actualRecommendationIds.indexOf(item.id);
+        const card = index >= 0 ? recommendationCards.nth(index) : null;
+        const actualReview = card ? normal(await card.locator('.split-heading .pill').innerText()) : null;
+        const actualPrice = card ? normal(await card.locator(':scope > .source-meta').first().locator('.pill').innerText()) : null;
+        const effectiveReview = recommendationReview(item,account);
+        const expectedReview = recommendationReviewLabels[effectiveReview] || effectiveReview;
+        const expectedPrice = recommendationPriceLabels[item.price_state] || recommendationPriceLabels.unknown;
+        check(`${key}_recommendation_${item.id}_business_states`, actualReview === expectedReview && actualPrice === expectedPrice,
+          {price_state:item.price_state,review_status:item.review_status,effective_review_status:effectiveReview,
+            price_label:expectedPrice,review_label:expectedReview},
+          {price_label:actualPrice,review_label:actualReview},
+          'Price-condition state and investment-review state are separate; expired/version-mismatched display follows the production UI rules.');
+      }
       const current = analyses.find(analysis => analysis.status === 'current' && analysis.input_version === account.version);
       check(`${key}_current_success_in_api`, Boolean(current),'Current successful report for latest account version',
         current ? {id:current.id,input_version:current.input_version,status:current.status} : analyses.map(a=>({id:a.id,input_version:a.input_version,status:a.status})));
@@ -247,6 +305,11 @@ try {
     const signature = item=>({id:item?.id,version:item?.version,latest_job_id:item?.latest_job_id});
     check(`${key}_input_stable_during_inspection`,JSON.stringify(signature(after)) === JSON.stringify(signature(snapshot.account)),
       signature(snapshot.account),signature(after),'A changed task/version requires a new inspection; this script never modifies the server.');
+    const afterRecommendations = await get(`/api/accounts/${snapshot.account.id}/recommendations?view=active&envelope=true&limit=${recommendationPageSize}&offset=0`);
+    check(`${key}_active_recommendations_stable_during_inspection`,
+      JSON.stringify(recommendationSignature(afterRecommendations)) === JSON.stringify(recommendationSignature(snapshot.recommendations)),
+      recommendationSignature(snapshot.recommendations),recommendationSignature(afterRecommendations),
+      'A concurrent change to IDs, totals, or business states invalidates the stable UI/API comparison.');
   }
   check('no_browser_runtime_errors',result.page_errors.length === 0,[],result.page_errors);
   check('no_browser_mutating_requests',result.blocked_mutations.length === 0,[],result.blocked_mutations);

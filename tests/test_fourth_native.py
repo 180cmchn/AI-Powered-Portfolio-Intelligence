@@ -364,3 +364,24 @@ async def test_failed_followup_remains_unresolved_beside_previous_report(config,
         assert "encrypted_content" not in json.dumps(checkpoint)
     finally:
         await runtime.close()
+
+
+@pytest.mark.asyncio
+async def test_local_budget_does_not_invalidate_observed_native_search(config):
+    attempts = 0
+    async def budget():
+        nonlocal attempts
+        attempts += 1
+        if attempts > 1:
+            raise ModelBudgetExceeded("Local budget exhausted before HTTP")
+    client = ModelClient(config, before_request=budget, transport=httpx.MockTransport(lambda request: response(SEARCH)))
+    session = client.session("Research", {})
+    try:
+        await client.complete(session, [])
+        assert client.native_status()["status"] == "observed"
+        with pytest.raises(ModelBudgetExceeded):
+            await client.complete(session, [])
+        assert len(session.requests) == 1
+        assert client.native_status()["status"] == "observed"
+    finally:
+        await client.aclose()

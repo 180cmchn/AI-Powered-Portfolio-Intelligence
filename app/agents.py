@@ -9,7 +9,9 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
+import time
 import uuid
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -17,7 +19,7 @@ from typing import Any, Awaitable, Callable
 from zoneinfo import ZoneInfo
 
 from .model import ModelBudgetExceeded, ModelClient, ModelError, ModelSession, ToolCall
-from .context import recall
+from .context import archive, recall
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -25,6 +27,10 @@ SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 class ResearchTimeout(ModelError):
     pass
+
+
+class _CloseoutRequired(ModelBudgetExceeded):
+    """No HTTP was sent: rebuild this request with the final-report tools."""
 
 
 def _schema(name: str, description: str, properties: dict, required: list[str] | None = None) -> dict:
@@ -73,8 +79,8 @@ RESEARCH_TOOLS = [
     _schema("sector_history", "获取板块历史表现，可与基准 history 数据比较。", {"sector_id": STRING, "start": STRING, "end": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}, ["sector_id"]),
     _schema("benchmark_history", "获取市场基准历史表现，支持 CSI300、SSE50、CSI500，保留数据覆盖与限制。", {"benchmark": STRING, "start": STRING, "end": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}),
     _schema("fundamentals", "获取可用财务指标、报告期和披露时间；不可用字段保持未知。", {"symbol": STRING, "periods": {"type": "integer", "minimum": 1, "maximum": 40}}, ["symbol"]),
-    _schema("calculate", "用代码做精确数值计算（sum/multiply/divide/percent）；只传已知输入，不以缺失代替零。",
-            {"operation": STRING, "values": {"type": "array", "items": {"type": ["string", "number"]}}}, ["operation", "values"]),
+    _schema("calculate", "用代码做精确数值计算；percent 为 a/b*100，不是增长率。增长率先 subtract 求差，再 percent；只传已知输入，不以缺失代替零。",
+            {"operation": {"type": "string", "enum": ["sum", "multiply", "product", "divide", "ratio", "percent", "subtract", "difference"]}, "values": {"type": "array", "items": {"type": ["string", "number"]}}}, ["operation", "values"]),
 ]
 MANAGER_TOOLS = [
     _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS}, ["summary"]),
@@ -142,6 +148,10 @@ class ResearchRuntime:
         self.task_id = context.get("task_id") or context.get("job_id") or str(uuid.uuid4())
         self.calls = 0
         self.budget_lock = asyncio.Lock()
+        self.request_owner = ContextVar("research_request_owner", default=("manager", False))
+        self.budget_closing = False
+        self.closeout_waited = False
+        self.deadline: float | None = None
         self.client = ModelClient(config, before_request=self._use_budget)
         self.semaphore = asyncio.Semaphore(max(1, int(config.get("max_concurrent_agents", 3))))
         self.children: dict[str, AgentState] = {}
@@ -170,7 +180,109 @@ class ResearchRuntime:
                 raise ModelBudgetExceeded("汇总恢复达到有限调用预算；检查点保留，未发布半份最终报告")
             if self.calls >= int(self.config.get("max_model_calls", 40)):
                 raise ModelBudgetExceeded("已达到本轮模型调用预算；已保存持仓及材料保留，可调整预算后重试")
+            agent_id, final_request = self.request_owner.get()
+            remaining = int(self.config.get("max_model_calls", 40)) - self.calls
+            # This guard also runs before HTTP retries, under the shared lock.
+            # A child must never consume the manager's final submission slot.
+            if agent_id != "manager" and remaining <= 1:
+                raise ModelBudgetExceeded("共享调用预算已为主 Agent 最终汇总保留；子任务未完成部分保持未知")
+            if self._shared_closeout() and not final_request:
+                raise _CloseoutRequired("共享预算进入收尾；本次尚未发送 HTTP")
             self.calls += 1
+
+    def _shared_closeout(self) -> bool:
+        remaining = self._remaining_calls()
+        active = sum(child.status in {"queued", "running"} for child in self.children.values())
+        # Leave one submission per active child and two manager calls (final
+        # report plus, when available, citation correction / a failed request).
+        if remaining <= active + 2:
+            self.budget_closing = True
+        return self.budget_closing
+
+    def _remaining_calls(self) -> int:
+        remaining = int(self.config.get("max_model_calls", 40)) - self.calls
+        if self.synthesis_only:
+            remaining = min(remaining, max(1, min(int(self.config.get("synthesis_max_calls", 4)), 8)) - (self.calls - self.synthesis_started_calls))
+        return max(0, remaining)
+
+    async def _wait_for_closeout(self) -> None:
+        if self.closeout_waited:
+            return
+        self.closeout_waited = True
+        active = [child.task_handle for child in self.children.values()
+                  if child.task_handle and not child.task_handle.done()]
+        wait_seconds = 30.0
+        if self.deadline is not None:
+            request_time = float(self.config.get("synthesis_request_timeout_seconds", self.config.get("model_request_timeout_seconds", 90)))
+            remaining_time = max(0.0, self.deadline - time.monotonic())
+            wait_seconds = min(wait_seconds, max(0.0, remaining_time - min(request_time, remaining_time / 2)))
+        await self._publish("budget_closeout", "manager", {"remaining_model_calls": self._remaining_calls(),
+            "active_children": len(active), "wait_seconds": wait_seconds,
+            "note": "预算内收尾；等待已有子任务提交可见成果，未完成研究保留缺口。"})
+        if active and wait_seconds > 0:
+            # Timeout does not silently turn unfinished work into a report.
+            await asyncio.wait(active, timeout=wait_seconds)
+
+    def _pin_runtime_status(self, session: ModelSession, agent_id: str, remaining_turns: int, final_request: bool) -> None:
+        """Refresh the retained seed, so compaction cannot erase collaboration."""
+        states = list(self.children.values()) if agent_id == "manager" else [self.children[agent_id]]
+        visible = []
+        # Summaries are bounded; complete reports remain available via agent_status
+        # during research. Explicit truncation is not represented as complete text.
+        summary_limit = max(160, min(1200, int(self.config.get("max_context_chars", 240_000)) // max(16, len(states) * 8)))
+        for child in states:
+            item = {"agent_id": child.id, "title": child.title[:200], "status": child.status, "round": child.round,
+                    "error": child.error, "report_count": len(child.reports),
+                    "pending_messages": list(dict.fromkeys([*child.pending_messages, *child.inbox]))}
+            if child.reports:
+                report = child.reports[-1]
+                summary = str(report.get("summary") or "")
+                item["latest_report"] = {"research_round": report.get("research_round"), "summary": summary[:summary_limit],
+                    "summary_truncated": len(summary) > summary_limit,
+                    "material_ids": report.get("material_ids", []), "open_questions": report.get("open_questions", [])}
+            if child.progress:
+                item["latest_progress"] = {"summary": str(child.progress[-1].get("summary") or "")[:summary_limit],
+                    "material_ids": child.progress[-1].get("material_ids", []), "is_final_report": False}
+            visible.append(item)
+        status = {"agent_id": agent_id, "model_calls_used": self.calls,
+            "remaining_shared_model_calls": self._remaining_calls(),
+            "remaining_agent_turns": remaining_turns, "closing": self.budget_closing,
+            "children": visible,
+            "instruction": "这是当前运行状态。已有子任务不要重复创建；旧报告不代表后续补查已完成，阶段进展不等于最终报告。"}
+        if final_request:
+            status["instruction"] += " 当前只提交已有证据支持的报告；明确列出未完成任务、资料缺口及其影响，未知数字或分类保持未知，不再扩展研究。"
+        limit = max(1000, int(self.config.get("max_context_chars", 240_000)) // 3)
+        if len(json.dumps(status, ensure_ascii=False)) > limit:
+            record = archive(session, status, "runtime_status")
+            status.update(details_truncated=True, record_id=record["record_id"],
+                retrieve="recall_context(record_id,start,length) 取回完整可见状态；研究阶段也可用 agent_status。未取回的待办和缺口不能视为已解决。")
+            for item in visible:
+                item["pending_message_count"] = len(item["pending_messages"])
+                item["unresolved"] = item["status"] != "completed" or bool(item["pending_messages"]) or bool((item.get("latest_report") or {}).get("open_questions"))
+                item["pending_messages"] = [str(message)[:160] for message in item["pending_messages"][:2]]
+                item["error"] = str(item["error"])[:160] if item["error"] else None
+                item["title"] = item["title"][:80]
+                item["details_truncated"] = True
+                item.pop("latest_progress", None)
+                if item.get("latest_report"):
+                    report = item["latest_report"]
+                    item["latest_report"] = {"research_round": report["research_round"], "summary": report["summary"][:160],
+                        "summary_truncated": True, "material_ids": [str(mid)[:120] for mid in report["material_ids"][:2]],
+                        "open_question_count": len(report["open_questions"])}
+            # Preserve every child ID/status/round and unresolved flag even when
+            # a large number of reports needs retrieval instead of inline text.
+            for key in ("latest_report", "pending_messages", "error", "title"):
+                if len(json.dumps(status, ensure_ascii=False)) <= limit:
+                    break
+                for item in visible:
+                    item.pop(key, None)
+            while visible and len(json.dumps(status, ensure_ascii=False)) > limit:
+                omitted = visible.pop()
+                status["children_omitted"] = status.get("children_omitted", 0) + 1
+                status["unresolved_children_omitted"] = status.get("unresolved_children_omitted", 0) + int(omitted["unresolved"])
+        seed = json.loads(session.history[0]["content"])
+        seed["runtime_status"] = status
+        session.history[0]["content"] = json.dumps(seed, ensure_ascii=False, default=str)
 
     async def _publish(self, kind: str, agent_id: str, payload: dict) -> dict:
         # No raw model request/response or opaque reasoning state is logged.
@@ -186,6 +298,7 @@ class ResearchRuntime:
         return event
 
     async def run(self) -> dict:
+        self.deadline = time.monotonic() + float(self.config.get("analysis_timeout_seconds", 600))
         await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason")})
         if self.synthesis_only:
             await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4)})
@@ -249,6 +362,7 @@ class ResearchRuntime:
                 permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
             remaining_turns = max_turns - turn_index
+            final_request = self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
             if max_turns >= 6 and remaining_turns <= 3:
                 self.client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
                     "remaining_shared_model_calls": max(0, int(self.config.get("max_model_calls", 40)) - self.calls)},
@@ -259,6 +373,13 @@ class ResearchRuntime:
                     session.native_search = False
                     if manager:
                         session.phase = "synthesis"
+            if final_request:
+                if manager:
+                    await self._wait_for_closeout()
+                definitions = [tool for tool in definitions if tool["name"] == ("finish_analysis" if manager else "submit_report")]
+                session.native_search = False
+                if manager:
+                    session.phase = "synthesis"
             allowed = {item["name"] for item in definitions}
             if manager:
                 events = self._new_child_events()
@@ -272,7 +393,28 @@ class ResearchRuntime:
                 self._deliver_inbox(self.children[agent_id])
             request_start, compactions = len(session.requests), session.compactions
             try:
-                turn = await self.client.complete(session, definitions)
+                while True:
+                    self._pin_runtime_status(session, agent_id, remaining_turns, final_request)
+                    token = self.request_owner.set((agent_id, final_request))
+                    try:
+                        turn = await self.client.complete(session, definitions)
+                        break
+                    except _CloseoutRequired:
+                        # Concurrent requests or a retry reached the shared tail
+                        # after the payload was prepared. Rebuild before HTTP.
+                        final_request = True
+                        definitions = [tool for tool in definitions if tool["name"] == ("finish_analysis" if manager else "submit_report")]
+                        allowed = {item["name"] for item in definitions}
+                        session.native_search = False
+                        if manager:
+                            session.phase = "synthesis"
+                            await self._wait_for_closeout()
+                            events = self._new_child_events()
+                            if events:
+                                self.client.add_user(session, {"research_events": events})
+                            await self._save_checkpoint()
+                    finally:
+                        self.request_owner.reset(token)
             except asyncio.CancelledError:
                 await self._publish("model_error", agent_id, {"error": "模型请求随研究任务取消", "requests": copy.deepcopy(session.requests[request_start:])})
                 raise
@@ -493,6 +635,8 @@ class ResearchRuntime:
         if name == "spawn_research":
             return await self._spawn(args)
         if name in {"send_message", "follow_up"}:
+            if self._shared_closeout():
+                raise ValueError("共享预算已进入收尾；不再追加研究，未决问题写入最终报告")
             child = self._child(self._text(args, "agent_id"))
             message = self._text(args, "message" if name == "send_message" else "task")
             child.inbox.append(message)
@@ -547,6 +691,8 @@ class ResearchRuntime:
     async def _spawn(self, args: dict) -> dict:
         if self.closed:
             raise ValueError("分析任务已经关闭")
+        if self._shared_closeout():
+            raise ValueError("共享预算已进入收尾；不再创建子任务，汇总已有证据并说明缺口")
         if len(self.children) >= int(self.config.get("max_total_agents", 16)):
             raise ValueError("已达到本轮子 Agent 数量上限；可继续已有子任务或直接分析")
         task = self._text(args, "task")

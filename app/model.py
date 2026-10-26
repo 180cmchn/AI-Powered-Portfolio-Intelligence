@@ -220,6 +220,9 @@ class ModelClient:
             endpoint = "chat/completions"
         try:
             data = await self._post(endpoint, payload, session)
+        except ModelBudgetExceeded:
+            # A local limit stops before HTTP and says nothing about endpoint capability.
+            raise
         except ModelError:
             if self.config.get("model_native_search", True) and session.native_search and self.protocol == "responses":
                 observation = session.requests[-1] if session.requests else {}
