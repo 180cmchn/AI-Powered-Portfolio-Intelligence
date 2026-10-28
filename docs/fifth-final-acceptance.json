@@ -1,0 +1,2082 @@
+{
+  "record_kind": "sanitized_iteration5_real_evidence",
+  "status": "full_native_intraday_acceptance_not_passed",
+  "separate_runs": [
+    {
+      "test_kind": "real_159278_native_model_http_scheduler_worker",
+      "started_at": "2026-10-28T11:58:18.684660+08:00",
+      "finished_at": "2026-10-28T11:58:20.200028+08:00",
+      "code": {
+        "commit": "e0049cd2111ec20402d6752a7dc0a879202e3050",
+        "worktree_status": "",
+        "application_sha256": "a082453e83b58652946e6a8940c3968daaaf9f7ebfce75a871adb8e914617748",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "final_code": {
+        "commit": "e0049cd2111ec20402d6752a7dc0a879202e3050",
+        "worktree_status": "",
+        "application_sha256": "a082453e83b58652946e6a8940c3968daaaf9f7ebfce75a871adb8e914617748",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "same_application_code": true,
+      "configuration": {
+        "configured": true,
+        "protocol": "responses",
+        "model_name": "deepseek-v4.1-flash-1017",
+        "model_host": "api.xxyapi.com",
+        "reasoning_effort": "medium",
+        "model_native_search": true,
+        "quote_provider": "eastmoney",
+        "quote_fallback_provider": "sina",
+        "research_provider": "eastmoney",
+        "settings_origin": "project_environment_and_defaults",
+        "model_protocol": "responses",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_allow_no_key": false,
+        "fingerprint": "3f577ecadf24712d555753a0bcc9131076658621fbe88df12b6c695236db04ae"
+      },
+      "security": {
+        "symbol": "SZ:159278",
+        "name": "机器人ETF鹏华",
+        "full_name": "鹏华国证机器人产业交易型开放式指数证券投资基金",
+        "quantity_unit": "份"
+      },
+      "budget": {
+        "max_model_calls_per_round": 30,
+        "planned_rounds": 4,
+        "note": "计划四轮不是费用硬上限；所有实际启动执行另计。HTTP请求上限不限制一次请求内多次原生搜索；未返回计费金额保持未知。"
+      },
+      "checks": {
+        "fixed_code": true,
+        "execution_finished_without_error": false,
+        "all_started_executions_completed": false,
+        "all_four_reports": false,
+        "quote_identity_matches_159278": false,
+        "quote_price_precision": true,
+        "three_intraday_fresh_samples": false,
+        "b_inputs_isolated": false,
+        "successful_old_A_report_stale": false,
+        "normal_scheduler_worker": false,
+        "native_search_observed": false,
+        "visible_child_report": false,
+        "effort_sent_consistently": true,
+        "effort_request_accepted": false,
+        "manager_child_synthesis_requests": false,
+        "A_snapshot_metrics_recomputable": false,
+        "A_edited_quantity_cash": false,
+        "browser_matches_persisted_API": false
+      },
+      "mechanical_acceptance": false,
+      "request_accounting": {
+        "http_requests": 1,
+        "native_search_event_items": 0,
+        "completed_native_search_items": 0,
+        "provider_reported_usage": [
+          null
+        ],
+        "retries": 0,
+        "duration_ms": 711.01,
+        "billing_amount": null
+      },
+      "execution_inventory": {
+        "planned_rounds": 4,
+        "started_executions": 1,
+        "public_executions": 1,
+        "account_executions": 0,
+        "additional_executions": [
+          {
+            "job_id": "f08761ff51e9470b94fdedf3a05ca703",
+            "state": "running",
+            "label": "additional-public"
+          }
+        ]
+      },
+      "execution_failure": {
+        "type": "HTTPStatusError"
+      },
+      "http_failures": null,
+      "research_quality": "not_assessable_no_report",
+      "natural_price_trigger": "not_observed",
+      "new_material_event": "not_established_by_this_run",
+      "controlled_trigger_recovery": "separate_deterministic_tests_not_real_endpoint_fault",
+      "local_run_name": "fifth-20261028-115818",
+      "quote_samples": [
+        {
+          "received_at": "2026-10-28T11:58:19.551127+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T11:58:19.551081+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人PH",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T11:58:19.549965+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 1699,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.049
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.06
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.279
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)"
+          },
+          "intraday_fresh": false
+        }
+      ],
+      "rounds": [],
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "task_id": "f08761ff51e9470b94fdedf3a05ca703",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning.effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": null,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 21707,
+          "input_items": 1,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 0,
+          "request_id": null,
+          "native_search_requested": true,
+          "status_code": null,
+          "usage": null,
+          "error": "cancelled",
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 711.01
+        }
+      ],
+      "holding_edit": null,
+      "b_input_unchanged_by_a_edit": null,
+      "accounts": {},
+      "browser": {
+        "kind": null,
+        "started_at": null,
+        "ok": null,
+        "checks": null,
+        "page_errors": null,
+        "mutating_requests": null
+      }
+    },
+    {
+      "test_kind": "real_159278_native_model_http_scheduler_worker",
+      "started_at": "2026-10-28T12:05:59.640690+08:00",
+      "finished_at": "2026-10-28T12:08:05.096641+08:00",
+      "code": {
+        "commit": "a8b6a0fec8dff9a852e73863d8c7a4d931675a92",
+        "worktree_status": "",
+        "application_sha256": "8712aa29919ad4492db5b820247f3467d750a18b237b31cddd076e309570347b",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "final_code": {
+        "commit": "a8b6a0fec8dff9a852e73863d8c7a4d931675a92",
+        "worktree_status": "",
+        "application_sha256": "8712aa29919ad4492db5b820247f3467d750a18b237b31cddd076e309570347b",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "same_application_code": true,
+      "configuration": {
+        "configured": true,
+        "protocol": "responses",
+        "model_name": "deepseek-v4.1-flash-1017",
+        "model_host": "api.xxyapi.com",
+        "reasoning_effort": "medium",
+        "model_native_search": true,
+        "quote_provider": "eastmoney",
+        "quote_fallback_provider": "sina",
+        "research_provider": "eastmoney",
+        "settings_origin": "project_environment_and_defaults",
+        "model_protocol": "responses",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_allow_no_key": false,
+        "fingerprint": "3f577ecadf24712d555753a0bcc9131076658621fbe88df12b6c695236db04ae"
+      },
+      "security": {
+        "symbol": "SZ:159278",
+        "canonical_name": "机器人ETF鹏华",
+        "name": "机器人ETF鹏华",
+        "kind": "etf",
+        "full_name": "鹏华国证机器人产业交易型开放式指数证券投资基金",
+        "quantity_unit": "份",
+        "identity_source": {
+          "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+          "checked_at": "2026-10-28",
+          "kind": "official_listing_identity_checked_by_developer"
+        }
+      },
+      "budget": {
+        "max_model_calls_per_round": 30,
+        "planned_rounds": 4,
+        "note": "计划四轮不是费用硬上限；所有实际启动执行另计。HTTP请求上限不限制一次请求内多次原生搜索；未返回计费金额保持未知。"
+      },
+      "checks": {
+        "fixed_code": true,
+        "execution_finished_without_error": true,
+        "all_started_executions_completed": false,
+        "all_four_reports": false,
+        "quote_identity_matches_159278": true,
+        "quote_price_precision": true,
+        "three_intraday_fresh_samples": false,
+        "b_inputs_isolated": false,
+        "successful_old_A_report_stale": false,
+        "normal_scheduler_worker": true,
+        "native_search_observed": false,
+        "visible_child_report": false,
+        "effort_sent_consistently": true,
+        "effort_request_accepted": true,
+        "manager_child_synthesis_requests": false,
+        "A_snapshot_metrics_recomputable": false,
+        "A_edited_quantity_cash": false,
+        "browser_matches_persisted_API": false
+      },
+      "mechanical_acceptance": false,
+      "request_accounting": {
+        "http_requests": 3,
+        "native_search_event_items": 0,
+        "completed_native_search_items": 0,
+        "provider_reported_usage": [
+          null,
+          null,
+          null
+        ],
+        "retries": 0,
+        "duration_ms": 22848.2,
+        "billing_amount": null
+      },
+      "execution_inventory": {
+        "planned_rounds": 4,
+        "started_executions": 3,
+        "public_executions": 1,
+        "account_executions": 2,
+        "additional_executions": []
+      },
+      "execution_failure": null,
+      "http_failures": null,
+      "research_quality": "not_assessable_no_report",
+      "natural_price_trigger": "not_observed",
+      "new_material_event": "not_established_by_this_run",
+      "controlled_trigger_recovery": "separate_deterministic_tests_not_real_endpoint_fault",
+      "local_run_name": "fifth-20261028-120559",
+      "quote_samples": [
+        {
+          "received_at": "2026-10-28T12:06:00.784622+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:06:00.784523+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:06:00.782365+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2160,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.204
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.278
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.182
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        },
+        {
+          "received_at": "2026-10-28T12:07:01.559199+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:07:01.559075+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:07:01.556606+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2221,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.206
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.217
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.175
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        },
+        {
+          "received_at": "2026-10-28T12:08:02.210689+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:08:02.210543+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:08:02.207974+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2282,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.152
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.17
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.162
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        }
+      ],
+      "rounds": [
+        {
+          "label": "public",
+          "job_id": "2ad2031d36544858aca11e1abcbdfb22",
+          "scope": "public",
+          "state": "failed",
+          "error": "模型返回空结果，未生成完整文本或本地函数调用",
+          "failure_category": "research_execution_failed",
+          "input_version": null,
+          "event_counts": {
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        },
+        {
+          "label": "A",
+          "job_id": "7fb192b8339b4724a5a7cb3b54ca56de",
+          "scope": "account",
+          "state": "failed",
+          "error": "模型返回空结果，未生成完整文本或本地函数调用",
+          "failure_category": "research_execution_failed",
+          "input_version": 1,
+          "event_counts": {
+            "model_configuration_bound": 1,
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1,
+            "failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        },
+        {
+          "label": "B",
+          "job_id": "bb2a036b9e594a828e1904c65dd5eee2",
+          "scope": "account",
+          "state": "failed",
+          "error": "模型返回空结果，未生成完整文本或本地函数调用",
+          "failure_category": "research_execution_failed",
+          "input_version": 1,
+          "event_counts": {
+            "model_configuration_bound": 1,
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1,
+            "failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        }
+      ],
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "task_id": "2ad2031d36544858aca11e1abcbdfb22",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning.effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 20768,
+          "input_items": 1,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 280,
+          "request_id": "07938233-d7c9-4b5a-8123-20da528d3562",
+          "native_search_requested": true,
+          "status_code": 200,
+          "usage": null,
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 7702.69,
+          "response_id": "resp_384b0a224f9c4dac234e5c31"
+        },
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "task_id": "7fb192b8339b4724a5a7cb3b54ca56de",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning.effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 23870,
+          "input_items": 1,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 280,
+          "request_id": "49f68d2c-0cc8-459c-9433-a9c20182625f",
+          "native_search_requested": true,
+          "status_code": 200,
+          "usage": null,
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 7872.72,
+          "response_id": "resp_7b11b93b89288b8668ade50f"
+        },
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "task_id": "bb2a036b9e594a828e1904c65dd5eee2",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning.effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 21700,
+          "input_items": 1,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 280,
+          "request_id": "be25af7d-4ede-47be-b7d9-3bef8b8f31fb",
+          "native_search_requested": true,
+          "status_code": 200,
+          "usage": null,
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 7272.79,
+          "response_id": "resp_710183a9a8d541c98e6fa05d"
+        }
+      ],
+      "holding_edit": {
+        "state": "not_run",
+        "reason": "A_initial_report_not_successful"
+      },
+      "b_input_unchanged_by_a_edit": true,
+      "accounts": {
+        "a": {
+          "id": "31b39f79c8314f4eb8ca024dd85254d3",
+          "name": "第五轮 ETF 验收 A",
+          "version": 1,
+          "cash": "10000",
+          "holdings": [
+            {
+              "symbol": "SZ:159278",
+              "quantity": "10000",
+              "cost_price": null
+            }
+          ],
+          "analysis_state": "failed",
+          "latest_job_id": "7fb192b8339b4724a5a7cb3b54ca56de",
+          "metrics": {
+            "positions": [
+              {
+                "symbol": "SZ:159278",
+                "quantity": "10000",
+                "cost_price": null,
+                "name": "机器人ETF鹏华",
+                "kind": "etf",
+                "sector": null,
+                "price": "0.965",
+                "market_value": "9650.00",
+                "unrealized_pnl": null,
+                "quote": {
+                  "symbol": "SZ:159278",
+                  "name": "机器人ETF鹏华",
+                  "price": "0.965",
+                  "change_pct": "7.34",
+                  "as_of": "2026-10-28T11:30:00+08:00",
+                  "fetched_at": "2026-10-28T12:06:00.498425+08:00",
+                  "source": "sina:public-website",
+                  "status": "stale",
+                  "delay_seconds": 2282,
+                  "security_status": "unknown",
+                  "fresh_for_triggers": false,
+                  "quote_kind": "unknown",
+                  "request_diagnostics": [
+                    {
+                      "stage": "quote",
+                      "attempt": 1,
+                      "host": "push2.eastmoney.com",
+                      "status": "failed",
+                      "failure_kind": "remote_protocol",
+                      "exception": "RemoteProtocolError",
+                      "elapsed_seconds": 0.056
+                    },
+                    {
+                      "stage": "quote",
+                      "attempt": 2,
+                      "host": "push2.eastmoney.com",
+                      "status": "failed",
+                      "failure_kind": "remote_protocol",
+                      "exception": "RemoteProtocolError",
+                      "elapsed_seconds": 0.201
+                    }
+                  ],
+                  "change_pct_basis": "calculated_from_source_last_and_previous_close",
+                  "as_of_precision": "timestamp",
+                  "source_time_precision": "second",
+                  "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+                  "provider_status_raw": "00",
+                  "cache_hit": false,
+                  "fallback_diagnostic": {
+                    "stage": "quote_fallback",
+                    "host": "hq.sinajs.cn",
+                    "attempt": 1,
+                    "http_status": 200,
+                    "status": "received",
+                    "elapsed_seconds": 0.17
+                  },
+                  "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+                  "market_phase": "closed",
+                  "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+                  "source_name": "机器人PH",
+                  "identity_source": {
+                    "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+                    "checked_at": "2026-10-28",
+                    "kind": "official_listing_identity_checked_by_developer"
+                  }
+                },
+                "weight_pct": "100.00"
+              }
+            ],
+            "securities_value": "9650.00",
+            "known_priced_value": "9650.00",
+            "cash": "10000",
+            "total_assets": "19650.00",
+            "unrealized_pnl": null,
+            "known_cost_pnl": null,
+            "known_cost_positions": 0,
+            "missing_prices": [],
+            "notes": [
+              "部分成本未录入或行情缺失：不计算完整持仓成本收益。",
+              "部分行情缺失、延迟或状态待确认；估值使用已保存报价，详情见行情时间与来源。",
+              "数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。"
+            ],
+            "sector_weights": [
+              {
+                "sector": "未分类（含未穿透 ETF）",
+                "market_value": "9650.00",
+                "weight_pct": "100.00"
+              }
+            ],
+            "calculated_at": "2026-10-28T12:08:02.220647+08:00",
+            "weight_basis": "已录入持仓证券市值（不含现金）"
+          }
+        },
+        "b": {
+          "id": "9c72fa73f70047fe9ce19da428bf9c05",
+          "name": "第五轮 ETF 验收 B",
+          "version": 1,
+          "cash": "20000",
+          "holdings": [],
+          "analysis_state": "failed",
+          "latest_job_id": "bb2a036b9e594a828e1904c65dd5eee2",
+          "metrics": {
+            "positions": [],
+            "securities_value": "0.00",
+            "known_priced_value": "0.00",
+            "cash": "20000",
+            "total_assets": "20000.00",
+            "unrealized_pnl": "0.00",
+            "known_cost_pnl": null,
+            "known_cost_positions": 0,
+            "missing_prices": [],
+            "notes": [
+              "数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。"
+            ],
+            "sector_weights": [],
+            "calculated_at": "2026-10-28T12:08:02.227379+08:00",
+            "weight_basis": "已录入持仓证券市值（不含现金）"
+          }
+        }
+      },
+      "browser": {
+        "kind": "read_only_chrome_ui_persisted_api_comparison",
+        "started_at": "2026-10-28T04:08:02.371Z",
+        "ok": false,
+        "checks": {
+          "two_identified_accounts": true,
+          "a_selected_account": true,
+          "a_input_version_visible": true,
+          "a_SZ:159278_holding_visible": true,
+          "a_SZ:159278_quantity_matches": true,
+          "a_SZ:159278_price_matches": true,
+          "a_SZ:159278_price_is_known": true,
+          "a_SZ:159278_quote_source_visible": true,
+          "a_active_recommendation_api_page": true,
+          "a_active_recommendation_first_page_ids": true,
+          "a_active_recommendation_count_matches": true,
+          "a_active_recommendation_empty_state": true,
+          "a_current_success_in_api": false,
+          "a_previous_success_is_stale_in_api": false,
+          "a_latest_job_visible_and_matches": true,
+          "b_selected_account": true,
+          "b_input_version_visible": true,
+          "b_active_recommendation_api_page": true,
+          "b_active_recommendation_first_page_ids": true,
+          "b_active_recommendation_count_matches": true,
+          "b_active_recommendation_empty_state": true,
+          "b_current_success_in_api": false,
+          "b_latest_job_visible_and_matches": true,
+          "market_SZ:159278_quote_matches": true,
+          "public_current_success_in_api": false,
+          "public_research_records_visible": false,
+          "a_input_stable_during_inspection": true,
+          "a_active_recommendations_stable_during_inspection": true,
+          "b_input_stable_during_inspection": true,
+          "b_active_recommendations_stable_during_inspection": true,
+          "no_browser_runtime_errors": true,
+          "no_browser_mutating_requests": true
+        },
+        "page_errors": [],
+        "mutating_requests": null
+      }
+    },
+    {
+      "test_kind": "real_159278_native_model_http_scheduler_worker",
+      "started_at": "2026-10-28T12:12:05.862234+08:00",
+      "finished_at": "2026-10-28T12:14:11.815081+08:00",
+      "code": {
+        "commit": "a8b6a0fec8dff9a852e73863d8c7a4d931675a92",
+        "worktree_status": "",
+        "application_sha256": "8712aa29919ad4492db5b820247f3467d750a18b237b31cddd076e309570347b",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "final_code": {
+        "commit": "a8b6a0fec8dff9a852e73863d8c7a4d931675a92",
+        "worktree_status": "",
+        "application_sha256": "8712aa29919ad4492db5b820247f3467d750a18b237b31cddd076e309570347b",
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "dependencies": {
+          "fastapi": "0.159.1",
+          "uvicorn": "0.54.0",
+          "httpx": "0.28.1",
+          "pydantic": "2.14.1",
+          "pypdf": "6.21.2"
+        }
+      },
+      "same_application_code": true,
+      "configuration": {
+        "configured": true,
+        "protocol": "chat_completions",
+        "model_name": "deepseek-v4.1-flash-1017",
+        "model_host": "api.xxyapi.com",
+        "reasoning_effort": "medium",
+        "model_native_search": true,
+        "quote_provider": "eastmoney",
+        "quote_fallback_provider": "sina",
+        "research_provider": "eastmoney",
+        "settings_origin": "project_environment_and_defaults",
+        "model_protocol": "chat_completions",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_allow_no_key": false,
+        "fingerprint": "a894c78b8f082a2d6a1e8ec1a73eae466941776a608629487767f7fd45f4f2a2"
+      },
+      "security": {
+        "symbol": "SZ:159278",
+        "canonical_name": "机器人ETF鹏华",
+        "name": "机器人ETF鹏华",
+        "kind": "etf",
+        "full_name": "鹏华国证机器人产业交易型开放式指数证券投资基金",
+        "quantity_unit": "份",
+        "identity_source": {
+          "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+          "checked_at": "2026-10-28",
+          "kind": "official_listing_identity_checked_by_developer"
+        }
+      },
+      "budget": {
+        "max_model_calls_per_round": 30,
+        "planned_rounds": 4,
+        "note": "计划四轮不是费用硬上限；所有实际启动执行另计。HTTP请求上限不限制一次请求内多次原生搜索；未返回计费金额保持未知。"
+      },
+      "checks": {
+        "fixed_code": true,
+        "execution_finished_without_error": true,
+        "all_started_executions_completed": false,
+        "all_four_reports": false,
+        "quote_identity_matches_159278": true,
+        "quote_price_precision": true,
+        "three_intraday_fresh_samples": false,
+        "b_inputs_isolated": false,
+        "successful_old_A_report_stale": false,
+        "normal_scheduler_worker": true,
+        "native_search_observed": false,
+        "visible_child_report": false,
+        "effort_sent_consistently": true,
+        "effort_request_accepted": true,
+        "manager_child_synthesis_requests": false,
+        "A_snapshot_metrics_recomputable": false,
+        "A_edited_quantity_cash": false,
+        "browser_matches_persisted_API": false
+      },
+      "mechanical_acceptance": false,
+      "request_accounting": {
+        "http_requests": 3,
+        "native_search_event_items": 0,
+        "completed_native_search_items": 0,
+        "provider_reported_usage": [
+          {
+            "prompt_tokens": 7436,
+            "completion_tokens": 0,
+            "total_tokens": 7436,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          },
+          {
+            "prompt_tokens": 8197,
+            "completion_tokens": 0,
+            "total_tokens": 8197,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          },
+          {
+            "prompt_tokens": 7514,
+            "completion_tokens": 0,
+            "total_tokens": 7514,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          }
+        ],
+        "retries": 0,
+        "duration_ms": 17324.13,
+        "billing_amount": null
+      },
+      "execution_inventory": {
+        "planned_rounds": 4,
+        "started_executions": 3,
+        "public_executions": 1,
+        "account_executions": 2,
+        "additional_executions": []
+      },
+      "execution_failure": null,
+      "http_failures": null,
+      "research_quality": "not_assessable_no_report",
+      "natural_price_trigger": "not_observed",
+      "new_material_event": "not_established_by_this_run",
+      "controlled_trigger_recovery": "separate_deterministic_tests_not_real_endpoint_fault",
+      "local_run_name": "fifth-20261028-121205",
+      "quote_samples": [
+        {
+          "received_at": "2026-10-28T12:12:07.170144+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:12:07.170029+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:12:07.167677+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2527,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.176
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.161
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.187
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        },
+        {
+          "received_at": "2026-10-28T12:13:08.843432+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:13:08.843275+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:13:08.840227+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2588,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.155
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 1.189
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.155
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        },
+        {
+          "received_at": "2026-10-28T12:14:09.469566+08:00",
+          "market": {
+            "timezone": "Asia/Shanghai",
+            "date": "2026-10-28",
+            "as_of": "2026-10-28T12:14:09.469485+08:00",
+            "trading_day": true,
+            "phase": "closed",
+            "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+            "coverage": {
+              "start": "2026-01-01",
+              "end": "2026-12-31"
+            },
+            "reason": "日历覆盖范围内的交易日"
+          },
+          "session": "lunch_break",
+          "quote": {
+            "symbol": "SZ:159278",
+            "name": "机器人ETF鹏华",
+            "price": "0.965",
+            "change_pct": "7.34",
+            "as_of": "2026-10-28T11:30:00+08:00",
+            "fetched_at": "2026-10-28T12:14:09.467947+08:00",
+            "source": "sina:public-website",
+            "status": "stale",
+            "delay_seconds": 2649,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "request_diagnostics": [
+              {
+                "stage": "quote",
+                "attempt": 1,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.163
+              },
+              {
+                "stage": "quote",
+                "attempt": 2,
+                "host": "push2.eastmoney.com",
+                "status": "failed",
+                "failure_kind": "remote_protocol",
+                "exception": "RemoteProtocolError",
+                "elapsed_seconds": 0.071
+              }
+            ],
+            "change_pct_basis": "calculated_from_source_last_and_previous_close",
+            "as_of_precision": "timestamp",
+            "source_time_precision": "second",
+            "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+            "provider_status_raw": "00",
+            "cache_hit": false,
+            "fallback_diagnostic": {
+              "stage": "quote_fallback",
+              "host": "hq.sinajs.cn",
+              "attempt": 1,
+              "http_status": 200,
+              "status": "received",
+              "elapsed_seconds": 0.222
+            },
+            "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+            "market_phase": "closed",
+            "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+            "source_name": "机器人PH",
+            "identity_source": {
+              "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+              "checked_at": "2026-10-28",
+              "kind": "official_listing_identity_checked_by_developer"
+            }
+          },
+          "intraday_fresh": false
+        }
+      ],
+      "rounds": [
+        {
+          "label": "public",
+          "job_id": "55d9c03bf2a24c25bfcb4e16fef7b429",
+          "scope": "public",
+          "state": "failed",
+          "error": "Chat Completions 返回缺少 choices[0].message",
+          "failure_category": "research_execution_failed",
+          "input_version": null,
+          "event_counts": {
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        },
+        {
+          "label": "A",
+          "job_id": "549417afda0645cf95078cd7d272a502",
+          "scope": "account",
+          "state": "failed",
+          "error": "Chat Completions 返回缺少 choices[0].message",
+          "failure_category": "research_execution_failed",
+          "input_version": 1,
+          "event_counts": {
+            "model_configuration_bound": 1,
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1,
+            "failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        },
+        {
+          "label": "B",
+          "job_id": "ae25c17a8a6143b0bfe23634dde03a8a",
+          "scope": "account",
+          "state": "failed",
+          "error": "Chat Completions 返回缺少 choices[0].message",
+          "failure_category": "research_execution_failed",
+          "input_version": 1,
+          "event_counts": {
+            "model_configuration_bound": 1,
+            "agent_started": 1,
+            "model_error": 1,
+            "agent_failed": 1,
+            "failed": 1
+          },
+          "observations": {
+            "report_returned": false,
+            "subagent_created": false,
+            "subagent_tool_call": false,
+            "stage_result_observed": false,
+            "follow_up_observed": false,
+            "follow_up_required": "review_actual_research_need; absence is not automatic failure",
+            "shared_research_used": [],
+            "reference_resolution": [],
+            "reference_summary": {},
+            "all_holdings_priced": false,
+            "metrics_recomputable": null,
+            "known_priced_value_recomputed": null
+          },
+          "model_calls": null
+        }
+      ],
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "chat/completions",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "chat_completions",
+          "task_id": "55d9c03bf2a24c25bfcb4e16fef7b429",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning_effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 21034,
+          "input_items": 2,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 3076,
+          "request_id": "80617997-8c4c-42d9-aa92-3ebe465f4c14",
+          "native_search_requested": false,
+          "status_code": 200,
+          "usage": {
+            "prompt_tokens": 7436,
+            "completion_tokens": 0,
+            "total_tokens": 7436,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          },
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 4470.31,
+          "reported_output_exceeds_requested": false
+        },
+        {
+          "attempt": 1,
+          "endpoint": "chat/completions",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "chat_completions",
+          "task_id": "549417afda0645cf95078cd7d272a502",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning_effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 24131,
+          "input_items": 2,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 5403,
+          "request_id": "a25ccdcf-f962-4c0b-b829-7bc2a904f263",
+          "native_search_requested": false,
+          "status_code": 200,
+          "usage": {
+            "prompt_tokens": 8197,
+            "completion_tokens": 0,
+            "total_tokens": 8197,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          },
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 5925.87,
+          "reported_output_exceeds_requested": false
+        },
+        {
+          "attempt": 1,
+          "endpoint": "chat/completions",
+          "model": "deepseek-v4.1-flash-1017",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "chat_completions",
+          "task_id": "ae25c17a8a6143b0bfe23634dde03a8a",
+          "reasoning_effort": "medium",
+          "reasoning_effort_path": "reasoning_effort",
+          "reasoning_effort_sent": "medium",
+          "request_accepted": true,
+          "reported_reasoning_effort": null,
+          "agent_id": "manager",
+          "stage": "research",
+          "input_chars": 21960,
+          "input_items": 2,
+          "requested_max_output_tokens": 4000,
+          "output_bytes": 6879,
+          "request_id": "f6dc7ca8-865a-4081-8348-c9ef544fc54c",
+          "native_search_requested": false,
+          "status_code": 200,
+          "usage": {
+            "prompt_tokens": 7514,
+            "completion_tokens": 0,
+            "total_tokens": 7514,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0
+            },
+            "completion_tokens_details": {
+              "text_tokens": 0,
+              "audio_tokens": 0,
+              "image_tokens": 0,
+              "reasoning_tokens": 0
+            },
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "claude_cache_creation_5_m_tokens": 0,
+            "claude_cache_creation_1_h_tokens": 0
+          },
+          "error": null,
+          "request_timeout_seconds": 90.0,
+          "duration_ms": 6927.95,
+          "reported_output_exceeds_requested": false
+        }
+      ],
+      "holding_edit": {
+        "state": "not_run",
+        "reason": "A_initial_report_not_successful"
+      },
+      "b_input_unchanged_by_a_edit": true,
+      "accounts": {
+        "a": {
+          "id": "9c9385bae7d5419ba6ce7b0755f3bdba",
+          "name": "第五轮 ETF 验收 A",
+          "version": 1,
+          "cash": "10000",
+          "holdings": [
+            {
+              "symbol": "SZ:159278",
+              "quantity": "10000",
+              "cost_price": null
+            }
+          ],
+          "analysis_state": "failed",
+          "latest_job_id": "549417afda0645cf95078cd7d272a502",
+          "metrics": {
+            "positions": [
+              {
+                "symbol": "SZ:159278",
+                "quantity": "10000",
+                "cost_price": null,
+                "name": "机器人ETF鹏华",
+                "kind": "etf",
+                "sector": null,
+                "price": "0.965",
+                "market_value": "9650.00",
+                "unrealized_pnl": null,
+                "quote": {
+                  "symbol": "SZ:159278",
+                  "name": "机器人ETF鹏华",
+                  "price": "0.965",
+                  "change_pct": "7.34",
+                  "as_of": "2026-10-28T11:30:00+08:00",
+                  "fetched_at": "2026-10-28T12:12:07.032469+08:00",
+                  "source": "sina:public-website",
+                  "status": "stale",
+                  "delay_seconds": 2649,
+                  "security_status": "unknown",
+                  "fresh_for_triggers": false,
+                  "quote_kind": "unknown",
+                  "request_diagnostics": [
+                    {
+                      "stage": "quote",
+                      "attempt": 1,
+                      "host": "push2.eastmoney.com",
+                      "status": "failed",
+                      "failure_kind": "remote_protocol",
+                      "exception": "RemoteProtocolError",
+                      "elapsed_seconds": 0.166
+                    },
+                    {
+                      "stage": "quote",
+                      "attempt": 2,
+                      "host": "push2.eastmoney.com",
+                      "status": "failed",
+                      "failure_kind": "remote_protocol",
+                      "exception": "RemoteProtocolError",
+                      "elapsed_seconds": 0.237
+                    }
+                  ],
+                  "change_pct_basis": "calculated_from_source_last_and_previous_close",
+                  "as_of_precision": "timestamp",
+                  "source_time_precision": "second",
+                  "source_url": "https://finance.sina.com.cn/realstock/company/sz159278/nc.shtml",
+                  "provider_status_raw": "00",
+                  "cache_hit": false,
+                  "fallback_diagnostic": {
+                    "stage": "quote_fallback",
+                    "host": "hq.sinajs.cn",
+                    "attempt": 1,
+                    "http_status": 200,
+                    "status": "received",
+                    "elapsed_seconds": 0.182
+                  },
+                  "source_note": "新浪公开网页展示行情，来自其合作方；非签约数据API，不保证无延迟或持续可用。",
+                  "market_phase": "closed",
+                  "live_quote_error": "网络连接失败 (RemoteProtocolError)",
+                  "source_name": "机器人PH",
+                  "identity_source": {
+                    "url": "https://www.szse.cn/disclosure/notice/t20250807_615378.html",
+                    "checked_at": "2026-10-28",
+                    "kind": "official_listing_identity_checked_by_developer"
+                  }
+                },
+                "weight_pct": "100.00"
+              }
+            ],
+            "securities_value": "9650.00",
+            "known_priced_value": "9650.00",
+            "cash": "10000",
+            "total_assets": "19650.00",
+            "unrealized_pnl": null,
+            "known_cost_pnl": null,
+            "known_cost_positions": 0,
+            "missing_prices": [],
+            "notes": [
+              "部分成本未录入或行情缺失：不计算完整持仓成本收益。",
+              "部分行情缺失、延迟或状态待确认；估值使用已保存报价，详情见行情时间与来源。",
+              "数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。"
+            ],
+            "sector_weights": [
+              {
+                "sector": "未分类（含未穿透 ETF）",
+                "market_value": "9650.00",
+                "weight_pct": "100.00"
+              }
+            ],
+            "calculated_at": "2026-10-28T12:14:09.475409+08:00",
+            "weight_basis": "已录入持仓证券市值（不含现金）"
+          }
+        },
+        "b": {
+          "id": "6cc44f4c14454aff9fc059657b0d84c6",
+          "name": "第五轮 ETF 验收 B",
+          "version": 1,
+          "cash": "20000",
+          "holdings": [],
+          "analysis_state": "failed",
+          "latest_job_id": "ae25c17a8a6143b0bfe23634dde03a8a",
+          "metrics": {
+            "positions": [],
+            "securities_value": "0.00",
+            "known_priced_value": "0.00",
+            "cash": "20000",
+            "total_assets": "20000.00",
+            "unrealized_pnl": "0.00",
+            "known_cost_pnl": null,
+            "known_cost_positions": 0,
+            "missing_prices": [],
+            "notes": [
+              "数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。"
+            ],
+            "sector_weights": [],
+            "calculated_at": "2026-10-28T12:14:09.479080+08:00",
+            "weight_basis": "已录入持仓证券市值（不含现金）"
+          }
+        }
+      },
+      "browser": {
+        "kind": "read_only_chrome_ui_persisted_api_comparison",
+        "started_at": "2026-10-28T04:14:09.599Z",
+        "ok": false,
+        "checks": {
+          "two_identified_accounts": true,
+          "a_selected_account": true,
+          "a_input_version_visible": true,
+          "a_SZ:159278_holding_visible": true,
+          "a_SZ:159278_quantity_matches": true,
+          "a_SZ:159278_price_matches": true,
+          "a_SZ:159278_price_is_known": true,
+          "a_SZ:159278_quote_source_visible": true,
+          "a_active_recommendation_api_page": true,
+          "a_active_recommendation_first_page_ids": true,
+          "a_active_recommendation_count_matches": true,
+          "a_active_recommendation_empty_state": true,
+          "a_current_success_in_api": false,
+          "a_previous_success_is_stale_in_api": false,
+          "a_latest_job_visible_and_matches": true,
+          "b_selected_account": true,
+          "b_input_version_visible": true,
+          "b_active_recommendation_api_page": true,
+          "b_active_recommendation_first_page_ids": true,
+          "b_active_recommendation_count_matches": true,
+          "b_active_recommendation_empty_state": true,
+          "b_current_success_in_api": false,
+          "b_latest_job_visible_and_matches": true,
+          "market_SZ:159278_quote_matches": true,
+          "public_current_success_in_api": false,
+          "public_research_records_visible": false,
+          "a_input_stable_during_inspection": true,
+          "a_active_recommendations_stable_during_inspection": true,
+          "b_input_stable_during_inspection": true,
+          "b_active_recommendations_stable_during_inspection": true,
+          "no_browser_runtime_errors": true,
+          "no_browser_mutating_requests": true
+        },
+        "page_errors": [],
+        "mutating_requests": null
+      },
+      "usage_caveat": "本次尚未兼容转发success/data封装；requests.usage是顶层转发计数，completion_tokens=0不能当作data.usage内模型实际输出计数。单独结构诊断定位后修复。"
+    }
+  ],
+  "raw_database_policy": "独立评估SQLite及完整本地记录未提交；公开文件仅含虚拟账户输入与脱敏诊断。",
+  "post_envelope_fix_probe": {
+    "test_kind": "real_bounded_function_continuation_after_envelope_fix",
+    "started_at": "2026-10-28T12:19:04.564027+08:00",
+    "code": {
+      "commit": "24e3e8cfee4779affc63dc0d421ef1b5ec6b92b9",
+      "worktree_status": "M docs/fifth-browser-ci.md\n?? docs/fifth-159278-research-status.md\n?? docs/fifth-chat-before-fix-account.png\n?? docs/fifth-chat-before-fix-jobs.png\n?? docs/fifth-chat-response-structure.json\n?? docs/fifth-final-acceptance.json\n?? docs/fifth-settings-controlled.png\n?? docs/iteration-5.md",
+      "application_sha256": "7e3ff457f497825dd389803327c8e1c618cc2672e1139a18ea7fab9f535f4ae6",
+      "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+      "dependencies": {
+        "fastapi": "0.159.1",
+        "uvicorn": "0.54.0",
+        "httpx": "0.28.1",
+        "pydantic": "2.14.1",
+        "pypdf": "6.21.2"
+      }
+    },
+    "configuration": {
+      "configured": true,
+      "protocol": "chat_completions",
+      "model_name": "deepseek-v4.1-flash-1017",
+      "model_host": "api.xxyapi.com",
+      "reasoning_effort": "medium",
+      "model_native_search": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "research_provider": "eastmoney",
+      "settings_origin": "project_environment_and_defaults",
+      "model_protocol": "chat_completions",
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_allow_no_key": false,
+      "fingerprint": "a894c78b8f082a2d6a1e8ec1a73eae466941776a608629487767f7fd45f4f2a2"
+    },
+    "budget": {
+      "max_http_requests": 2,
+      "max_output_tokens_per_request": 1200
+    },
+    "checks": {
+      "function_call": true,
+      "function_result_continuation": true,
+      "effort_sent_unchanged": true,
+      "responses_unwrapped": true
+    },
+    "note": "新进程加载固定代码，仅验证函数调用与返回值续接；不代表原生搜索、159278报告或盘中链路。保留模型/协议/effort/native设置。",
+    "ok": true,
+    "requests": [
+      {
+        "attempt": 1,
+        "endpoint": "chat/completions",
+        "model": "deepseek-v4.1-flash-1017",
+        "base_url": "https://api.xxyapi.com/v1",
+        "protocol": "chat_completions",
+        "task_id": "fifth-chat-fixed-20261028-121904",
+        "reasoning_effort": "medium",
+        "reasoning_effort_path": "reasoning_effort",
+        "reasoning_effort_sent": "medium",
+        "request_accepted": true,
+        "reported_reasoning_effort": null,
+        "agent_id": "capability-probe",
+        "stage": "function_probe",
+        "input_chars": 534,
+        "input_items": 2,
+        "requested_max_output_tokens": 1200,
+        "output_bytes": 2980,
+        "request_id": "874ef045-cf7d-4f01-8fa4-faa7c6b35721",
+        "native_search_requested": false,
+        "status_code": 200,
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "completion_tokens": 44,
+          "completion_tokens_details": {
+            "image_tokens": 0,
+            "reasoning_tokens": 18
+          },
+          "cost": 0.0001452,
+          "market_cost": 7.26e-05,
+          "prompt_tokens": 308,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0,
+            "video_tokens": 0
+          },
+          "total_tokens": 352
+        },
+        "error": null,
+        "request_timeout_seconds": 60.0,
+        "duration_ms": 2957.5,
+        "response_envelope": "data",
+        "forwarder_usage": {
+          "prompt_tokens": 77,
+          "completion_tokens": 0,
+          "total_tokens": 77,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0
+          },
+          "completion_tokens_details": {
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "claude_cache_creation_5_m_tokens": 0,
+          "claude_cache_creation_1_h_tokens": 0
+        },
+        "reported_output_exceeds_requested": false,
+        "response_id": "gen_01M60BQC59MVJQS68GBG6S70QR"
+      },
+      {
+        "attempt": 1,
+        "endpoint": "chat/completions",
+        "model": "deepseek-v4.1-flash-1017",
+        "base_url": "https://api.xxyapi.com/v1",
+        "protocol": "chat_completions",
+        "task_id": "fifth-chat-fixed-20261028-121904",
+        "reasoning_effort": "medium",
+        "reasoning_effort_path": "reasoning_effort",
+        "reasoning_effort_sent": "medium",
+        "request_accepted": true,
+        "reported_reasoning_effort": null,
+        "agent_id": "capability-probe",
+        "stage": "function_probe",
+        "input_chars": 2668,
+        "input_items": 4,
+        "requested_max_output_tokens": 1200,
+        "output_bytes": 2612,
+        "request_id": "057addd5-3909-4e8c-982e-5149ba8c2d21",
+        "native_search_requested": false,
+        "status_code": 200,
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "completion_tokens": 14,
+          "completion_tokens_details": {
+            "image_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "cost": 7.7868e-05,
+          "market_cost": 3.8934e-05,
+          "prompt_tokens": 378,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 178,
+            "video_tokens": 0
+          },
+          "total_tokens": 392
+        },
+        "error": null,
+        "request_timeout_seconds": 60.0,
+        "duration_ms": 1491.85,
+        "response_envelope": "data",
+        "forwarder_usage": {
+          "prompt_tokens": 102,
+          "completion_tokens": 0,
+          "total_tokens": 102,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0
+          },
+          "completion_tokens_details": {
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "claude_cache_creation_5_m_tokens": 0,
+          "claude_cache_creation_1_h_tokens": 0
+        },
+        "reported_output_exceeds_requested": false,
+        "response_id": "gen_01M60BQDN96YNHH1M40CK5FF0R"
+      }
+    ],
+    "usage_summary": {
+      "requests": 2,
+      "duration_ms": 4449.35,
+      "failed_requests": 0,
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "completion_tokens": 58,
+        "cost": 0.00022306799999999999,
+        "market_cost": 0.00011153399999999999,
+        "prompt_tokens": 686,
+        "total_tokens": 744
+      },
+      "usage_reported_requests": 2
+    },
+    "native_search_status": {
+      "status": "unsupported",
+      "fingerprint": "eab3c75faad8b1fe4d419e0f92d8f67dc1b3d6abfb921f800238d42325f71ac2",
+      "note": "当前仅适配 Responses 内置 web_search；Chat Completions 的独立搜索模型不属于此路径。"
+    },
+    "finished_at": "2026-10-28T12:19:09.058516+08:00",
+    "final_code": {
+      "commit": "24e3e8cfee4779affc63dc0d421ef1b5ec6b92b9",
+      "worktree_status": "M docs/fifth-browser-ci.md\n?? docs/fifth-159278-research-status.md\n?? docs/fifth-chat-before-fix-account.png\n?? docs/fifth-chat-before-fix-jobs.png\n?? docs/fifth-chat-response-structure.json\n?? docs/fifth-final-acceptance.json\n?? docs/fifth-settings-controlled.png\n?? docs/iteration-5.md",
+      "application_sha256": "7e3ff457f497825dd389803327c8e1c618cc2672e1139a18ea7fab9f535f4ae6",
+      "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+      "dependencies": {
+        "fastapi": "0.159.1",
+        "uvicorn": "0.54.0",
+        "httpx": "0.28.1",
+        "pydantic": "2.14.1",
+        "pypdf": "6.21.2"
+      }
+    },
+    "same_application_code": true,
+    "billing_amount": null,
+    "billing_note": "仅保留服务返回数值计数；未确认货币单位及实际账单，不推算收费。"
+  },
+  "pre_fix_chat_structure_diagnostic": {
+    "started_at": "2026-10-28T12:13:45.133569+08:00",
+    "finished_at": "2026-10-28T12:13:54.793266+08:00",
+    "requests": [
+      {
+        "attempt": 1,
+        "endpoint": "chat/completions",
+        "model": "deepseek-v4.1-flash-1017",
+        "base_url": "https://api.xxyapi.com/v1",
+        "protocol": "chat_completions",
+        "task_id": null,
+        "reasoning_effort": "medium",
+        "reasoning_effort_path": "reasoning_effort",
+        "reasoning_effort_sent": "medium",
+        "request_accepted": true,
+        "reported_reasoning_effort": null,
+        "agent_id": "unknown",
+        "stage": "research",
+        "input_chars": 231,
+        "input_items": 2,
+        "requested_max_output_tokens": 128,
+        "output_bytes": 3044,
+        "request_id": "a93fa8fa-655d-4b21-849e-c81e58a8abb7",
+        "native_search_requested": false,
+        "status_code": 200,
+        "usage": {
+          "prompt_tokens": 24,
+          "completion_tokens": 0,
+          "total_tokens": 24,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0
+          },
+          "completion_tokens_details": {
+            "text_tokens": 0,
+            "audio_tokens": 0,
+            "image_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "claude_cache_creation_5_m_tokens": 0,
+          "claude_cache_creation_1_h_tokens": 0
+        },
+        "error": null,
+        "request_timeout_seconds": 30.0,
+        "duration_ms": 9659.56,
+        "reported_output_exceeds_requested": false
+      }
+    ],
+    "outcome": "single_success_data_layer_detected; pre-fix parser rejected nested choices",
+    "full_structure_file": "fifth-chat-response-structure.json"
+  },
+  "baseline_native_preflight": {
+    "ok": false,
+    "status": "request_failed",
+    "checked_at": "2026-10-28T03:43:27.611008+00:00",
+    "error": "模型返回空结果，未生成完整文本或本地函数调用",
+    "requests": [
+      {
+        "attempt": 1,
+        "endpoint": "responses",
+        "model": "deepseek-v4.1-flash-1017",
+        "base_url": "https://api.xxyapi.com/v1",
+        "protocol": "responses",
+        "task_id": null,
+        "reasoning_effort": "medium",
+        "reasoning_effort_path": "reasoning.effort",
+        "reasoning_effort_sent": "medium",
+        "request_accepted": true,
+        "reported_reasoning_effort": null,
+        "agent_id": "capability-probe",
+        "stage": "native_search_probe",
+        "input_chars": 602,
+        "input_items": 1,
+        "requested_max_output_tokens": 1200,
+        "output_bytes": 280,
+        "request_id": "15c8dbe0-8fef-4b0e-b2d5-305bf758a3d9",
+        "native_search_requested": true,
+        "status_code": 200,
+        "usage": null,
+        "error": null,
+        "request_timeout_seconds": 60.0,
+        "duration_ms": 10005.88,
+        "response_id": "resp_95e805eeb63df1633eb9239a"
+      }
+    ],
+    "model_usage": {
+      "requests": 1,
+      "duration_ms": 10005.88,
+      "failed_requests": 0,
+      "usage": null,
+      "usage_reported_requests": 0
+    }
+  },
+  "recorded_model_http_attempts_total": 11,
+  "attempt_count_note": "11次记录含预检1、首次脚本失败后取消1、固定Responses3、修复前Chat3、结构诊断1、修复后函数续接2；次数不是计费次数或金额。",
+  "final_regressions": {
+    "python": {
+      "passed": 431,
+      "warnings": 1,
+      "duration_seconds": 12.61
+    },
+    "browser": {
+      "groups_passed": 2,
+      "completed_at": "2026-10-28T12:18:26+08:00",
+      "app_manifest_sha256": "24911dae351bd15b0da38ac9ab5475c83d36f43362b07224b744f1d55d6b0a32"
+    },
+    "mac_lifecycle": "passed_schema5_and_max_persisted_on_real_process_restart_in_isolated_demo_database",
+    "remote_ci": "old_run_failure_unchanged_not_pushed"
+  }
+}

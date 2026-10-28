@@ -85,3 +85,11 @@ Linux 使用执行时复制的脱敏后端快照；复制后其余并行修改�
 - 失败时新增 `frontend-production-trace.zip` 与 `frontend-production-requests.json`，与既有截图一同由 CI 的 `test-results/` artifact 收集；请求记录只保存方法、API 路径和响应状态，不保存凭据或请求正文。
 - 远端日志节选与独立环境日志保存在本机 `/tmp/guanlan-iteration5-ci/`：`remote-ci-excerpt.log`、`linux-browser.log`、`linux-old-ui.log`、`mac-old-ui.log`。
 - Linux 设置页截图：`/tmp/guanlan-iteration5-ci/current/test-results/frontend-production-settings.png`；基线前端红回归截图/请求记录/trace：`/tmp/guanlan-iteration5-ci/old-ui/test-results/`。临时副本没有用户密钥或日常数据库。
+
+## 转发响应兼容补丁后的复核（12:18）
+
+2026-10-28 12:18:16 至 12:18:26（Asia/Shanghai），在 `app/model.py` 新增单层 `success/data` 转发响应兼容后的冻结工作区，再次执行 `PYTHON=.venv/bin/python PLAYWRIGHT_BROWSERS_PATH=/tmp/guanlan-pw npm run test:browser`：HTTP fixture 与生产 FastAPI + 新建临时 SQLite 两组均通过。此轮运行环境仍为 macOS ARM64 / Python 3.14.4 / Node 25.9.0 / Chromium 151.0.7922.34。
+
+运行前后按前述清单方法核对全部 22 个应用源文件，完全一致。本次应用清单 SHA-256：`24911dae351bd15b0da38ac9ab5475c83d36f43362b07224b744f1d55d6b0a32`；本次 `app/model.py` SHA-256：`322936c59efb86bb07b92f890953c6671d738cfdba65808aad9e111b2ebe58a0`。原 12:04 哈希清单保留为当时证据，不作覆盖。
+
+本次仅重跑本机受控浏览器验证，未重跑 Linux 安装或远端 CI，未发起收费模型请求；不能以此替代新补丁的真实模型验收。远端历史失败状态保持不变。

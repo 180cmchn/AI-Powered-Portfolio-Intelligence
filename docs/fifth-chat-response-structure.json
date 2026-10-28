@@ -1,0 +1,230 @@
+{
+  "kind": "single_bounded_response_structure_diagnostic",
+  "started_at": "2026-10-28T12:13:45.133569+08:00",
+  "note": "字段类型与长度；不记录原始文本、隐藏推理或密钥。此诊断不作为联网研究验收。",
+  "http": {
+    "url": "https://api.xxyapi.com/v1/chat/completions",
+    "status": 200,
+    "content_type": "application/json",
+    "bytes": 3044
+  },
+  "response_shape": {
+    "data": {
+      "choices": {
+        "type": "array",
+        "length": 1,
+        "first": {
+          "finish_reason": {
+            "type": "string",
+            "length": 4
+          },
+          "index": {
+            "type": "int"
+          },
+          "logprobs": {
+            "type": "NoneType"
+          },
+          "message": {
+            "type": "object",
+            "keys": [
+              "content",
+              "provider_metadata",
+              "reasoning",
+              "reasoning_details",
+              "role"
+            ]
+          }
+        }
+      },
+      "created": {
+        "type": "int"
+      },
+      "generationId": {
+        "type": "string",
+        "length": 30
+      },
+      "id": {
+        "type": "string",
+        "length": 30
+      },
+      "model": {
+        "type": "string",
+        "length": 50
+      },
+      "object": {
+        "type": "string",
+        "length": 15
+      },
+      "system_fingerprint": {
+        "type": "string",
+        "length": 13
+      },
+      "usage": {
+        "cache_creation_input_tokens": {
+          "type": "int"
+        },
+        "completion_tokens": {
+          "type": "int"
+        },
+        "completion_tokens_details": {
+          "image_tokens": {
+            "type": "int"
+          },
+          "reasoning_tokens": {
+            "type": "int"
+          }
+        },
+        "cost": {
+          "type": "float"
+        },
+        "cost_details": {
+          "type": "NoneType"
+        },
+        "is_byok": {
+          "type": "bool"
+        },
+        "market_cost": {
+          "type": "float"
+        },
+        "prompt_tokens": {
+          "type": "int"
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": {
+            "type": "int"
+          },
+          "cached_tokens": {
+            "type": "int"
+          },
+          "video_tokens": {
+            "type": "int"
+          }
+        },
+        "total_tokens": {
+          "type": "int"
+        }
+      }
+    },
+    "success": {
+      "type": "bool"
+    },
+    "usage": {
+      "prompt_tokens": {
+        "type": "int"
+      },
+      "completion_tokens": {
+        "type": "int"
+      },
+      "total_tokens": {
+        "type": "int"
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": {
+          "type": "int"
+        },
+        "text_tokens": {
+          "type": "int"
+        },
+        "audio_tokens": {
+          "type": "int"
+        },
+        "image_tokens": {
+          "type": "int"
+        }
+      },
+      "completion_tokens_details": {
+        "text_tokens": {
+          "type": "int"
+        },
+        "audio_tokens": {
+          "type": "int"
+        },
+        "image_tokens": {
+          "type": "int"
+        },
+        "reasoning_tokens": {
+          "type": "int"
+        }
+      },
+      "input_tokens": {
+        "type": "int"
+      },
+      "output_tokens": {
+        "type": "int"
+      },
+      "input_tokens_details": {
+        "type": "NoneType"
+      },
+      "claude_cache_creation_5_m_tokens": {
+        "type": "int"
+      },
+      "claude_cache_creation_1_h_tokens": {
+        "type": "int"
+      }
+    }
+  },
+  "standard_choices": {
+    "type": "NoneType",
+    "length": null,
+    "first_has_message": false
+  },
+  "failure": {
+    "type": "ModelProtocolError",
+    "error": "Chat Completions 返回缺少 choices[0].message"
+  },
+  "requests": [
+    {
+      "attempt": 1,
+      "endpoint": "chat/completions",
+      "model": "deepseek-v4.1-flash-1017",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "chat_completions",
+      "task_id": null,
+      "reasoning_effort": "medium",
+      "reasoning_effort_path": "reasoning_effort",
+      "reasoning_effort_sent": "medium",
+      "request_accepted": true,
+      "reported_reasoning_effort": null,
+      "agent_id": "unknown",
+      "stage": "research",
+      "input_chars": 231,
+      "input_items": 2,
+      "requested_max_output_tokens": 128,
+      "output_bytes": 3044,
+      "request_id": "a93fa8fa-655d-4b21-849e-c81e58a8abb7",
+      "native_search_requested": false,
+      "status_code": 200,
+      "usage": {
+        "prompt_tokens": 24,
+        "completion_tokens": 0,
+        "total_tokens": 24,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 0,
+          "audio_tokens": 0,
+          "image_tokens": 0
+        },
+        "completion_tokens_details": {
+          "text_tokens": 0,
+          "audio_tokens": 0,
+          "image_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "claude_cache_creation_5_m_tokens": 0,
+        "claude_cache_creation_1_h_tokens": 0
+      },
+      "error": null,
+      "request_timeout_seconds": 30.0,
+      "duration_ms": 9659.56,
+      "reported_output_exceeds_requested": false
+    }
+  ],
+  "native_search_status": {
+    "status": "unsupported",
+    "fingerprint": "eab3c75faad8b1fe4d419e0f92d8f67dc1b3d6abfb921f800238d42325f71ac2",
+    "note": "当前仅适配 Responses 内置 web_search；Chat Completions 的独立搜索模型不属于此路径。"
+  },
+  "finished_at": "2026-10-28T12:13:54.793266+08:00"
+}
