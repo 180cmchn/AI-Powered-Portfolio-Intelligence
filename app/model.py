@@ -483,6 +483,24 @@ class ModelClient:
             if not isinstance(data, dict):
                 observation["error"] = "invalid_response_type"
                 raise ModelProtocolError("模型服务返回的 JSON 顶层必须为对象")
+            root_field = "output" if self.protocol == "responses" else "choices"
+            if root_field not in data and ("success" in data or "data" in data):
+                # Support only the observed, explicit one-layer success/data
+                # envelope. A standard root always wins, including a malformed
+                # one: never replace it with an attractive nested completion.
+                inner = data.get("data")
+                shape = inner.get(root_field) if isinstance(inner, dict) else None
+                if (data.get("success") is not True or not isinstance(inner, dict)
+                        or not isinstance(shape, list) or not all(isinstance(item, dict) for item in shape)
+                        or data.get("error") or inner.get("error") or inner.get("success") is False):
+                    observation["error"] = "invalid_response_envelope"
+                    raise ModelProtocolError("模型服务的 success/data 封装未明确成功或缺少当前协议结果；未使用不完整或多层封装")
+                observation["response_envelope"] = "data"
+                if isinstance(data.get("usage"), dict):
+                    # Forwarder counters can disagree with the model's own
+                    # counters. Keep them separate; never add or substitute them.
+                    observation["forwarder_usage"] = _numeric_counters(data["usage"])
+                data = inner
             reported_effort = (data.get("reasoning") or {}).get("effort") if isinstance(data.get("reasoning"), dict) else data.get("reasoning_effort")
             if reported_effort in ("none", "minimal", "low", "medium", "high", "xhigh", "max"):
                 observation["reported_reasoning_effort"] = reported_effort
