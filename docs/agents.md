@@ -1,24 +1,30 @@
-> 第四轮：原生搜索与本地工具分开解析。两者真实混合续接证据见 `fourth-native-mixed.json`；完整验收见 [第四轮记录](iteration-4.md)。
+> 当前配置入口采用第六轮的[供应商与统一角色](sixth-provider-roles.md)，Mac 启停、升级和换机见[运行说明](mac-operations.md)。下方标记第二至第五轮的验收与增量章节保留当时结论；历史成功不代表第六轮真实调用已经通过。
 
 # 运行时 Agent 与模型接入
 
-本项目的产品运行时使用本地 Python 编排器，不依赖开发这个项目的 Codex 会话、开发助手的内部工具或任何隐含模型权限。未设置模型名称或密钥时显示配置缺失，不生成假研究结论。演示模式仅执行固定样例数据的数值计算，不调用或模拟 Agent。
+本项目的产品运行时使用本地 Python 编排器，不依赖开发这个项目的 Codex 会话、开发助手的内部工具或任何隐含模型权限。角色未绑定已发现模型或没有可用凭据时显示配置缺失，不生成假研究结论。演示模式仅执行固定样例数据的数值计算，不调用或模拟 Agent。
 
 ## 实际执行路径
 
-`app/agents.py::run_research(context, config, research_tools, emit)` 为一个账户输入版本建立主 Agent 会话。主 Agent 可以自行研究，也可以调用 `spawn_research`。每个子任务具有独立 `ModelSession`、工具循环、收件箱、超时和阶段报告；模型调用由本机通过 HTTP 发往配置的服务商。
+`app/agents.py::run_research(context, config, research_tools, emit)` 为一个账户输入版本建立主 Agent 会话。主 Agent 可以自行研究，也可以从冻结的全局目录选择 `role_id` 调用 `spawn_research`。账户 A、B 和新账户拥有同一完整目录；只有供应商/模型与 effort 可以按账户覆盖。每个子任务具有独立 `ModelClient`、`ModelSession`、工具循环、收件箱、超时和阶段报告；模型调用由本机通过 HTTP 发往该角色预先绑定的供应商。
 
-主 Agent 的工具包括 `spawn_research`、`send_message`、`follow_up`、`wait_agents`、`agent_status`、`cancel_agent`，以及所有研究工具。`send_message` 在正在运行的子任务的下一次协议安全边界送达；对子任务发出 `follow_up` 会沿用原会话，并保留此前子报告。子任务通过 `report_progress` 提交可见发现、通过 `submit_report` 交付报告。普通文本回复也可以结束该轮。主 Agent 自主决定是否派发、派发几个、何时追问和结束，不执行固定角色委员会。
+主 Agent 的工具包括 `list_agent_roles`、`list_business_demands`、`list_forecast_targets`、`spawn_research`、`send_message`、`follow_up`、`wait_agents`、`agent_status`、`cancel_agent`，以及所有研究工具。`send_message` 在正在运行的子任务的下一次协议安全边界送达；对子任务发出 `follow_up` 会沿用原角色、原配置快照和原会话，并保留此前子报告。子任务通过 `report_progress` 提交可见发现、通过 `submit_report` 交付报告。普通文本回复也可以结束该轮。主 Agent 自主决定是否派发、派发几个、何时追问和结束，不执行固定角色委员会。
 
 等待采用 `asyncio.Condition` 的事件通知；材料保存、阶段发现、完成和失败会唤醒主 Agent。没有定时轮询子 Agent 的后台循环。主 Agent 在下一轮模型请求前收到未送达的子任务事件。所有显式保存的材料都能到达主 Agent，缺元数据或分类不确定不会被拒收。工具运行明细仍记录到界面，但工具开始/结束本身不强制额外模型调用。
 
-主 Agent 和子 Agent 均可使用同模型服务端原生 `web_search`，以及本地 `read`、`save_material`、`list_materials`、`search_materials`、`get_material`、`read_material_range`、`recall_context`、`calculate`，以及 PDF 定位、历史行情、板块、基准和基本面工具。工具不提供账户修改、密钥读取、交易、文件系统或 shell 权限。网页和公告只作为数据进入工具结果。材料保留来源及访问范围；模型负责分类和采用，代码不做“可信度评分/来源白名单/双来源准入”。网络读取的私网地址阻止属于工具网络边界，与材料可信度无关。
+各 Agent 在所绑定的模型/协议实际支持时可使用当前会话服务端原生 `web_search`，并可使用获准的本地 `read`、`save_material`、`list_materials`、`search_materials`、`get_material`、`read_material_range`、`recall_context`、`calculate`，以及 PDF 定位、历史行情、板块、基准和基本面工具。工具不提供账户修改、密钥读取、交易、文件系统或 shell 权限。网页和公告只作为数据进入工具结果。材料保留来源及访问范围；模型负责分类和采用，代码不做“可信度评分/来源白名单/双来源准入”。网络读取的私网地址阻止属于工具网络边界，与材料可信度无关。
 
-提示词源文件是 `app/prompts/manager.txt` 和 `app/prompts/researcher.txt`。提示词要求区分事实、主体声明或预测、外部观点、传闻/冲突和自身推论；允许未知类别和空元数据。外部荐股观点可以用于研究线索，不能改写成已证实的客观依据。代码计算数值，模型解释及综合。公开材料不要包含账户私有信息；账户上下文与结论不放入公共材料缓存。
+初始提示词来自 `app/prompts/manager.txt`、五个具名研究角色 `.txt` 及通用约束 `researcher.txt`。运行时加载数据库中已冻结的全局角色版本，角色并非仅给同一通用实例改名。提示词要求区分事实、主体声明或预测、外部观点、传闻/冲突和自身推论；允许未知类别和空元数据。外部荐股观点可以用于研究线索，不能改写成已证实的客观依据。代码计算数值，模型解释及综合。公开材料不要包含账户私有信息；账户上下文与结论不放入公共材料缓存。
+
+## 正式预测与共享范围
+
+只有主 Agent 可在 `finish_analysis.forecasts` 发布本账户最终方向；子报告属于内部研究意见，不直接写正式账本、不计算子角色涨跌排行榜。服务端固定证券与期限、基准和目标日期、账户、发布时间及规则；首次成功正式结果锁定，后续观点单列为探索记录。详见[预测评估口径](forecast-evaluation.md)。
+
+跨账户仅共享行情、外部原始网页/公告/搜索片段及可复算基础计算。其他账户或公共模型的报告、摘要、提取、子报告和检查点不能通过材料检索、父来源链或上下文归档注入账户研究。公共任务可以发现来源和路由调查事项，其路由不是投资证据。
 
 ## 模型协议与能力检查
 
-在后端环境配置 `MODEL_NAME`、`MODEL_BASE_URL`、`MODEL_PROTOCOL` 以及 `MODEL_API_KEY`。界面只保存密钥所在的环境变量名，例如 `MODEL_API_KEY`；密钥不会进入前端配置或任务日志。名称由用户选择，不预设任何当前开发模型的 API 可用性。
+在“模型供应商”页面录入 API Key、Base URL 和协议，后端将 Key 存入 macOS 钥匙串并自动请求模型目录。随后在“Agent 角色”选择默认供应商、实际发现的模型和五档 effort，在“账户模型”按需覆盖。普通 GET、提示词、任务快照与日志不包含完整 Key。旧环境变量仅作为升级兼容引用，供应商中没有默认模型或 effort；模型名不能手工创建，目录失败不会以静态热门模型清单代替。
 
 支持两种明确协议：
 
@@ -27,9 +33,9 @@
 | `responses` | 调用 `{base_url}/responses`，保存并重放完整 `output` 项，包括函数调用和不透明 reasoning 项；追加 `function_call_output`。使用 `store: false` 和 `include: ["reasoning.encrypted_content"]`。 |
 | `chat_completions` | 调用 `{base_url}/chat/completions`，保留独立消息历史，追加带 `tool_call_id` 的 `tool` 消息。 |
 
-`model_base_url` 指向 API 前缀，例如 `https://api.openai.com/v1`，不要填写 `/responses` 完整方法地址。远程服务要求 HTTPS，本机 localhost / 127.0.0.1 / ::1 可用 HTTP。仅当本机服务无需认证时设置 `model_allow_no_key=true`。某些 Chat Completions 模型要求 `max_completion_tokens`，此时设置 `chat_use_max_completion_tokens=true`；不自动猜测或静默改换协议。
+供应商 Base URL 指向 API 前缀，例如 `https://api.openai.com/v1`；页面也接受粘贴 `/responses` 或 `/chat/completions` 完整地址，保存时规范化为 API 根路径供模型列举和推理共用。远程服务要求 HTTPS，本机 localhost / 127.0.0.1 / ::1 可用 HTTP。某些 Chat Completions 模型要求 `max_completion_tokens`，此时设置 `chat_use_max_completion_tokens=true`；不自动猜测或静默改换协议。
 
-界面的模型能力检查调用 `app/model.py::probe_model`：第一次让模型真实调用函数，本机返回一个此前未提供给模型的随机 token，第二次检查模型是否能正确续接返回值。检查会产生两轮模型请求和可能的服务费用；正常研究不会反复执行此检查。它只验证当前端点、模型的函数调用与状态续接，不代表研究质量或全部可选功能都已获验证。如果服务不支持上述字段或工具协议，错误直接展示，不降级为伪造的多 Agent。
+界面的模型能力检查使用全局主 Agent 当前默认绑定，调用 `app/model.py::probe_model`：第一次让模型真实调用函数，本机返回一个此前未提供给模型的随机 token，第二次检查模型是否能正确续接返回值。检查会产生两轮模型请求和可能的服务费用；正常研究不会反复执行此检查。它只验证当前端点、模型的函数调用与状态续接，不代表研究质量或全部可选功能都已获验证。如果服务不支持上述字段或工具协议，错误直接展示，不降级为伪造的多 Agent。
 
 Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不作为可见思维链、日志或界面内容展示。Chat Completions 服务商若返回其特有续接字段，同样只保存在该会话的内存历史中。生产日志不保存模型 HTTP 请求体、响应体或认证头；错误保留 HTTP 状态、安全分类及可操作的配置说明。服务响应正文仅用于辨认参数拒绝，不原样写入日志。
 
@@ -37,7 +43,7 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 
 ## 生命周期与成本边界
 
-每个事件携带账户 ID、输入版本、任务 ID、Agent ID、上海时间戳和可见 payload。服务层在保存结果时再次核对最新账户版本与任务状态；旧任务结果无法覆盖新版本。取消 `run_research` 会传播到所有子任务。已保存公开材料可以复用，账户报告和输入依然隔离。失败不修改或回滚用户持仓。
+每个事件携带账户 ID、输入版本、任务 ID、Agent ID、上海时间戳和可见 payload；每次模型请求另记录角色、供应商及连接修订、原始模型 ID、提示词版本、发送 effort、服务回报、耗时与用量。服务层在保存结果时再次核对最新账户版本与任务状态；旧任务结果无法覆盖新版本。取消 `run_research` 会传播到所有子任务。已保存公开材料可以复用，账户报告和输入依然隔离。失败不修改或回滚用户持仓。
 
 子任务超时、失败或取消后会补齐尚未完成的工具调用结果，因而可以在合法的工具协议边界继续该子会话。主任务失败时保留已写入的阶段事件和材料；可以从界面重试。服务重启后由持久任务层恢复为新一次执行，复用已保存材料，而非声称恢复未落盘的模型隐藏状态。Mac 睡眠期间不执行请求。
 
@@ -73,7 +79,7 @@ Responses 的不透明 reasoning 状态仅在进程内用于协议续接，不�
 
 配置真实服务后，先执行能力检查，再创建账户并执行“立即分析”。在任务详情确认多个独立子任务与工具结果，使用包含财报事实和荐股评论的公开材料作代表样例，检查主 Agent 是否引用事实并把评论标为观点；再检查缺失字段、冲突材料和条件性建议。子任务数量由主 Agent 自主决定，单次未派发子任务不表示编排不可用，可在账户研究目标中指定需要分别调查的两个实际问题。对模型输出质量进行多样例人工评估，并记录模型名称、服务商、日期、提示词版本和实际结果，不能将单次通过解释为永久保证。
 
-另附可运行的真实模型评估脚本，读取 `.env` 的模型配置，执行实际 HTTP 请求；不会写入应用的研究历史：
+以下是早期独立评估工具的命令说明：它们读取 `.env` 的旧单模型配置，执行实际 HTTP 请求，不读取网页中的新角色绑定，也不等价于第六轮完整供应商→角色→账户链路验收；不会写入应用研究历史。原有历史结果保持不变：
 
 ```bash
 # 仅测试当前配置的模型工具协议（会产生模型调用费用）

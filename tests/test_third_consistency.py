@@ -113,7 +113,7 @@ def test_model_extraction_is_not_raw_evidence_and_parent_references_are_scoped(s
                               'url': 'https://example.test/raw', 'returned_range': {'start_page': 5, 'end_page': 5}})
     private = store.save_material({'content': 'B private', 'scope': 'account'}, account_id=b['id'])
     claim = store.save_material({'scope': 'public', 'representation': 'agent_extraction', 'content': 'model claim',
-        'material_ids': [raw['id'], private['id']], 'returned_range': {'start_page': 999, 'end_page': 999}})
+        'material_ids': [raw['id'], private['id']], 'returned_range': {'start_page': 999, 'end_page': 999}}, account_id=a['id'])
     resolved = store.resolve_result_references({'material_ids': [claim['id']]}, a['id'])
     ref = resolved['references'][0]
     assert ref['representation_kind'] == 'agent_extraction'
@@ -144,7 +144,8 @@ def test_account_fit_is_invalidated_without_invalidating_public_facts(store):
     store.publish(job['id'], {'report': 'account fit fixture', 'research_records': [{**record, 'account_fit': 'old input'}]}, None)
     store.save_account(AccountInput(name='updated preferences', holdings=[], preferences={'risk': 'conservative'}), a['id'])
     current = store.research_records(a['id'])
-    assert len(current) == 1 and current[0]['scope'] == 'public'
+    assert current == []  # Public model conclusions are not account research inputs.
+    assert store.research_records()[0]['scope'] == 'public'
     private = next(r for r in store.research_records(a['id'], current_only=False) if r['scope'] == 'account')
     assert private['input_version'] == 1 and private['applicability'] == 'stale'
 
@@ -158,7 +159,7 @@ def test_legacy_public_scope_stays_unknown_and_backup_preserves_ids(store):
         db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
         db.execute("UPDATE research_records SET universe_version=NULL,applicability='legacy_unknown',logical_identity=NULL")
     upgraded = Store(store.path)
-    assert upgraded.meta('schema_version') == 5
+    assert upgraded.meta('schema_version') == 6
     assert upgraded.account(a['id'])['version'] == 1
     assert upgraded.material(m['id'])['content'] == 'legacy summary'
     assert not upgraded.research_records()

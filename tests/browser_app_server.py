@@ -33,9 +33,19 @@ from app.main import create_app
 from app.domain import AccountInput, TZ
 from app import model
 import uvicorn
+import httpx
+from tests.helpers_sixth import configure_test_team
 
 app = create_app(os.environ['APP_DB_PATH'], mode='live', worker=False)
 store = app.state.store
+fixture_provider = configure_test_team(store, store.settings())
+actual_discovery = store.discover_models
+async def fixture_discovery(provider_id, **kwargs):
+    kwargs['transport'] = httpx.MockTransport(lambda request: httpx.Response(200, json={
+        'data': [{'id': name} for name in ('browser-native-observed', 'browser-native-auth', 'browser-native-failure')]}))
+    return await actual_discovery(provider_id, **kwargs)
+store.discover_models = fixture_discovery
+asyncio.run(fixture_discovery(fixture_provider['id'], force=True))
 assert store.settings()['model_native_search'] is True
 assert store.meta('native_search_migration')['legacy_search_provider'] == 'disabled'
 probe_calls = 0
@@ -54,7 +64,7 @@ model.probe_native_search = controlled_native_probe
 async def reopen_fixture():
     reopened = Store(store.path)
     return {'model_native_search': reopened.settings()['model_native_search'],
-            'reasoning_effort': reopened.settings()['reasoning_effort'],
+            'reasoning_effort': next(role for role in reopened.list_agent_roles() if role['role_id'] == 'manager')['resolved']['reasoning_effort'],
             'legacy_search_provider': reopened.meta('settings')['search_provider'],
             'probe_calls': probe_calls}
 
@@ -126,6 +136,7 @@ listener = socket.socket()
 listener.bind(('127.0.0.1', 0))
 port = listener.getsockname()[1]
 print(json.dumps({'port': port, 'account_id': account['id'], 'other_id': other['id'],
+                  'provider_id': fixture_provider['id'],
                   'material_id': material['id'], 'private_id': private['id'], 'unknown_id': unknown,
                   'native_link_id': native_link['id'], 'native_excerpt_id': native_excerpt['id'],
                   'checkpoint_job_id': failed['id'],

@@ -49,6 +49,8 @@ class Settings(BaseModel):
     max_output_tokens: int = Field(default=4000, ge=256, le=32000)
     quote_interval_seconds: int = Field(default=60, ge=30, le=3600)
     scheduled_research_enabled: bool = True
+    market_refresh_enabled: bool = True
+    forecast_evaluation_enabled: bool = True
     scan_interval_minutes: int = Field(default=5, ge=1, le=240)
     analysis_interval_minutes: int = Field(default=15, ge=1, le=1440)
     close_summary_time: str = "15:15"
@@ -193,6 +195,20 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         response.headers["Cache-Control"] = "no-store"
         return response
 
+    from fastapi.exceptions import RequestValidationError
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_handler(request, exc):
+        # Pydantic includes submitted input in its default errors. Keys are write-only.
+        return JSONResponse({'detail': [{'loc': e['loc'], 'msg': e['msg'], 'type': e['type']} for e in exc.errors()]}, status_code=422)
+
+    @app.exception_handler(ValueError)
+    async def value_handler(request, exc):
+        return JSONResponse({'detail': str(exc)}, status_code=422)
+
+    from .sixth_api import register_sixth_routes
+    register_sixth_routes(app, store, service)
+
     @app.exception_handler(KeyError)
     async def missing_handler(request, exc):
         return JSONResponse({"detail": str(exc.args[0])}, status_code=404)
@@ -204,9 +220,9 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.get("/api/status")
     async def status():
         from .model import native_search_status, native_search_fingerprint
-        cfg = store.settings()
+        cfg, binding_error = service.manager_config(credentials=False)
         from .config import reasoning_effort
-        configuration_errors = []
+        configuration_errors = [binding_error] if binding_error else []
         try:
             reasoning_effort(cfg)
         except ValueError as exc:
@@ -216,11 +232,12 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         probe = store.meta("model_probe")
         if probe and probe.get('fingerprint') != native_search_fingerprint(cfg):
             probe = {"ok": False, "status": "unverified", "note": "配置已变化，历史协议探测不适用于当前模型、端点或思考强度。"}
-        return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and key_ready and not configuration_errors),
+        return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and not configuration_errors),
                 "configuration_errors": configuration_errors,
                 "native_search": native_search_status(cfg, store.meta('native_search_capability')),
                 "calendar": market_state(), "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
-                "last_resume": store.meta("last_resume")}, "settings": cfg, "time": now(),
+                "last_resume": store.meta("last_resume")}, "settings": store.settings(), "time": now(),
+                "global_manager": {k: v for k, v in cfg.items() if k in ("model_name", "reasoning_effort", "provider_id", "team_id")},
                 "model_probe": probe, "running_model_configs": store.running_model_configs(),
                 "last_quote_refresh": store.meta("last_quote_refresh")}
 
@@ -418,6 +435,7 @@ def create_app(path=None, mode=None, worker=True, runner=None):
             return {"ok": False, "message": "演示数据库不调用真实模型；请切换 live 服务进行能力探测"}
         config = store.settings()
         try:
+            config = service.manager_config()
             result = await probe_model(config)
             store.set_meta("model_probe", {**result, "checked_at": now()})
             return result
@@ -429,16 +447,20 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.post('/api/settings/probe-native-search')
     async def probe_native():
-        from .model import native_search_status, probe_native_search
+        from .model import native_search_status, probe_native_search, ModelConfigurationError
         if mode == 'demo':
             return {'status': 'disabled', 'note': '演示模式不调用模型服务'}
         async with service.native_probe_lock:
-            cached = native_search_status(store.settings(), store.meta('native_search_capability'))
+            try:
+                config = service.manager_config()
+            except ModelConfigurationError as exc:
+                return {'status': 'configuration_error', 'note': str(exc), 'checked_at': now()}
+            cached = native_search_status(config, store.meta('native_search_capability'))
             if cached.get('checked_at'):
                 age = (datetime.now(TZ) - datetime.fromisoformat(cached['checked_at'])).total_seconds()
                 if 0 <= age < 600:
                     return {**cached, 'cache_hit': True}
-            result = await probe_native_search(store.settings())
+            result = await probe_native_search(config)
             store.set_meta('native_search_capability', {**result, 'checked_at': now()})
             return result
 

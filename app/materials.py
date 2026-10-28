@@ -71,7 +71,7 @@ def source_key(body, account_id):
         url = urlunsplit((p.scheme.lower(), p.netloc.lower(), p.path, p.query, ""))
     except ValueError:
         pass
-    owner = (account_id or "") if body.get("scope") != "public" else ""
+    owner = (account_id or "") if body.get("scope") != "public" or representation_kind(body) in ('agent_extraction', 'generated_analysis') else ""
     return _hash([url or body.get("source_identifier") or _hash(material_text(body)),
                   body.get("scope", "account"), owner])
 
@@ -363,23 +363,34 @@ class MaterialStore:
                  LEFT JOIN material_representations r ON r.material_id=m.id
                  LEFT JOIN material_document_versions d ON d.id=r.document_version_id
                  LEFT JOIN material_stream_heads h ON h.stream_key=d.stream_key
-                 WHERE (?=0 OR c.scope='public') AND (? IS NULL OR c.scope='public' OR c.account_id=?
-                 OR EXISTS(SELECT 1 FROM material_uses u WHERE u.material_id=c.material_id AND u.account_id=?))
+                 WHERE (?=0 OR c.scope='public') AND
+                 ((c.scope='public' AND d.representation_kind NOT IN ('agent_extraction','generated_analysis'))
+                  OR (?<>'' AND c.account_id=?))
                  AND (?='' OR instr(lower(m.body),lower(?))>0)
                  ORDER BY m.created_at DESC,m.rowid DESC LIMIT ? OFFSET ?""",
-                 (int(public_only), account_id, account_id, account_id, query, query, min(max(int(limit), 1), 100), max(int(offset), 0))).fetchall()
+                 (int(public_only), account_id or '', account_id or '', query, query, min(max(int(limit), 1), 100), max(int(offset), 0))).fetchall()
         return [{**loads(r[0]), "is_latest_document_observation": r["head_id"] == r["document_version_id"] if r["head_id"] else None} for r in rows]
 
     def material_count(self):
         with self.connect() as db:
-            return db.execute("SELECT count(*) FROM material_catalog WHERE scope='public'").fetchone()[0]
+            return db.execute("""SELECT count(*) FROM material_catalog c
+                JOIN material_representations r ON r.material_id=c.material_id
+                JOIN material_document_versions d ON d.id=r.document_version_id
+                WHERE c.scope='public' AND d.representation_kind NOT IN ('agent_extraction','generated_analysis')""").fetchone()[0]
 
-    def material_accessible(self, material_id, account_id):
-        with self.connect() as db:
-            if not account_id:
-                return bool(db.execute("SELECT 1 FROM material_catalog WHERE material_id=? AND scope='public'", (material_id,)).fetchone())
-            return bool(db.execute("""SELECT 1 FROM material_catalog c WHERE material_id=? AND (scope='public' OR account_id=?
-               OR EXISTS(SELECT 1 FROM material_uses u WHERE u.material_id=c.material_id AND u.account_id=?))""", (material_id, account_id or "", account_id or "")).fetchone())
+    def material_accessible(self, material_id, account_id, db=None):
+        if db is None:
+            with self.connect() as conn:
+                return self.material_accessible(material_id, account_id, conn)
+        # A historical material_use is evidence of a past read, never a grant to
+        # another account's conclusions. Public generated material is also private
+        # to its generating account; global generated reports have no such owner.
+        return bool(db.execute("""SELECT 1 FROM material_catalog c
+            JOIN material_representations r ON r.material_id=c.material_id
+            JOIN material_document_versions d ON d.id=r.document_version_id
+            WHERE c.material_id=? AND ((c.scope='public' AND
+                (d.representation_kind NOT IN ('agent_extraction','generated_analysis') OR ?=''))
+                OR (?<>'' AND c.account_id=?))""", (material_id, account_id or '', account_id or '', account_id or '')).fetchone())
 
     def material_range(self, material_id, start=0, length=8000):
         body = self.material(material_id)

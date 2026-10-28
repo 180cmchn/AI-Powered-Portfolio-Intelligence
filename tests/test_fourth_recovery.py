@@ -1,3 +1,4 @@
+from tests.helpers_sixth import configure_test_team
 """Production Service + Runtime + SQLite recovery; only model HTTP is scripted."""
 import json
 from copy import deepcopy
@@ -22,6 +23,7 @@ def store(tmp_path, monkeypatch):
         "quote_provider": "manual", "debounce_seconds": 0, "model_retries": 0,
         "model_request_timeout_seconds": 1, "synthesis_request_timeout_seconds": 1,
         "agent_timeout_seconds": 3, "analysis_timeout_seconds": 5, "synthesis_max_calls": 2})
+    configure_test_team(store, store.settings())
     return store
 
 
@@ -60,7 +62,7 @@ async def test_failed_event_driven_research_manual_retry_resumes_only_synthesis(
             state["discovered"] = True
             return response({"type": "web_search_call", "id": "native-source-call", "status": "completed", "action": {
                 "type": "search", "query": "company disclosure", "sources": [{"url": "https://issuer.example/report", "title": "Discovered source"}]}},
-                call("spawn_research", {"task": "Inspect existing visible report"}))
+                call("spawn_research", {"role_id": "filing_researcher", "task": "Inspect existing visible report"}))
         if not state["child_done"]:
             return response(call("wait_agents", {"timeout_seconds": 0.05}))
         raise httpx.ReadTimeout("controlled synthesis failure", request=request)

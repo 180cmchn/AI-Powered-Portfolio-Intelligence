@@ -1553,3 +1553,16 @@ dialog::backdrop {
 .source-content { white-space: pre-wrap; }
 .source-meta { overflow-wrap: anywhere; }
 .button:disabled { cursor: default; opacity: .45; }
+
+/* Iteration six: use the existing local research visual language. */
+.model-list {display:flex;flex-wrap:wrap;gap:8px;padding:16px 0;max-height:340px;overflow:auto}
+.role-card .card-header {align-items:flex-start}
+.role-card .card-header p {max-width:700px}
+.role-card select {max-width:100%}
+.role-card textarea {width:100%;min-height:100px;font-family:inherit}
+.forecast-metrics {display:flex;gap:28px;flex-wrap:wrap;margin-bottom:16px}
+.forecast-metrics span {display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.forecast-metrics b {font-size:20px;color:var(--ink)}
+.forecast-accuracy {font-size:24px;color:var(--accent)}
+.error-text {color:#b7473e;padding:10px 0}
+@media (max-width: 700px) {.forecast-metrics {gap:16px}.forecast-accuracy {font-size:18px}}

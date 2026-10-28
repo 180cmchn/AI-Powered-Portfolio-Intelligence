@@ -1,3 +1,4 @@
+from tests.helpers_sixth import configure_test_team
 """Late child completion is durable and final updates stay within existing limits."""
 import asyncio
 import json
@@ -45,6 +46,7 @@ async def test_child_checkpoint_survives_parent_inflight_failure_and_manual_resu
     cfg = config(monkeypatch, quote_provider="manual", debounce_seconds=0, synthesis_max_calls=4)
     store = Store(tmp_path / "late-child.sqlite3")
     store.set_meta("settings", cfg)
+    configure_test_team(store, cfg)
     account = store.save_account(AccountInput(name="Late child recovery", holdings=[]))
     parent_started = asyncio.Event()
     manager_requests = 0
@@ -65,7 +67,7 @@ async def test_child_checkpoint_survives_parent_inflight_failure_and_manual_resu
             return response("submit_report", {"summary": "Completed while parent HTTP was pending", "open_questions": ["Source date remains unknown"]})
         manager_requests += 1
         if manager_requests == 1:
-            return response("spawn_research", {"task": "Inspect original source"})
+            return response("spawn_research", {"role_id": "filing_researcher", "task": "Inspect original source"})
         parent_started.set()
         for _ in range(100):
             if store.checkpoint_status(first["id"])["available"]:

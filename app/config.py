@@ -22,6 +22,7 @@ def reasoning_effort(config: dict) -> str:
 def model_config_summary(config: dict) -> dict:
     """Persist the request identity, never the credential or opaque model state."""
     summary = {key: config.get(key) for key in ("model_protocol", "model_base_url", "model_name", "model_native_search")}
+    summary.update({key: config.get(key) for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in config})
     summary['model_allow_no_key'] = config.get('model_allow_no_key', False)
     summary["reasoning_effort"] = config.get("reasoning_effort", "medium")
     if isinstance(config.get("reasoning"), dict):

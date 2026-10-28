@@ -37,6 +37,8 @@ def test_native_status_read_never_probes_and_explicit_probe_is_cached(tmp_path, 
     from app import model
     app = create_app(tmp_path / 'api.sqlite3', worker=False)
     store = app.state.store
+    from helpers_sixth import configure_test_team
+    configure_test_team(store, {**store.settings(), 'model_name': 'native-probe-fixture'})
     calls = []
     async def probe(config):
         calls.append(config)
@@ -51,6 +53,22 @@ def test_native_status_read_never_probes_and_explicit_probe_is_cached(tmp_path, 
     assert len(calls) == 1
     store.set_meta('settings', {**store.settings(), 'model_native_search': False})
     assert client.get('/api/status').json()['native_search']['status'] == 'disabled'
+
+
+def test_native_probe_missing_role_credentials_reports_configuration_error(tmp_path, monkeypatch):
+    from app import model
+    app = create_app(tmp_path / 'missing-native-key.sqlite3', worker=False)
+    called = []
+    async def forbidden(config):
+        called.append(config)
+        raise AssertionError('missing credentials must not reach a provider')
+    monkeypatch.setattr(model, 'probe_native_search', forbidden)
+    with TestClient(app) as client:
+        result = client.post('/api/settings/probe-native-search')
+    assert result.status_code == 200
+    assert result.json()['status'] == 'configuration_error'
+    assert 'Key' in result.json()['note']
+    assert called == []
 
 
 @pytest.mark.asyncio

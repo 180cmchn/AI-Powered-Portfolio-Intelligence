@@ -1,0 +1,174 @@
+{
+  "iteration": 6,
+  "verified_at": "2026-10-29T00:49:46.954660+08:00",
+  "source_sha256": "175b3570bee9601f054ba6ca5438137c0f85e56c4fd6da395985c0a4bd7f99f9",
+  "source_manifest": "sorted app/ and scripts/ files; excludes __pycache__; relative path + NUL + bytes",
+  "python_tests": {
+    "passed": 534,
+    "warnings": 1,
+    "command": ".venv/bin/python -m pytest -q",
+    "warning": "Existing Starlette TestClient httpx deprecation"
+  },
+  "browser_tests": {
+    "passed": [
+      "frontend_iteration.mjs",
+      "frontend_production.mjs"
+    ],
+    "engine": "Chromium / installed Google Chrome",
+    "data": "independent temporary SQLite and explicitly labeled HTTP/vault/probe doubles",
+    "final_manual_screenshot": "test-results/sixth-final-forecasts.png",
+    "console_errors": []
+  },
+  "real_external": {
+    "artifact": "data/evaluations/sixth-live-final-20261029/summary.json",
+    "configuration": {
+      "configured": true,
+      "protocol": "responses",
+      "model_name": "grok-4.7",
+      "model_host": "api.xxyapi.com",
+      "reasoning_effort": "medium",
+      "model_native_search": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "research_provider": "eastmoney",
+      "settings_origin": "project_environment_and_defaults"
+    },
+    "market_state": {
+      "timezone": "Asia/Shanghai",
+      "date": "2026-10-29",
+      "as_of": "2026-10-29T00:47:12.953663+08:00",
+      "trading_day": true,
+      "phase": "closed",
+      "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+      "coverage": {
+        "start": "2026-01-01",
+        "end": "2026-12-31"
+      },
+      "reason": "日历覆盖范围内的交易日"
+    },
+    "directory_status": "success",
+    "discovered_model_count": 3,
+    "selected_model_discovered": true,
+    "same_complete_role_directory": true,
+    "security": {
+      "symbol": "SZ:159278",
+      "name": "机器人ETF鹏华",
+      "source": "eastmoney:public-website",
+      "status": "ok",
+      "fetched_at": "2026-10-29T00:47:14.263968+08:00"
+    },
+    "history": {
+      "status": "unavailable",
+      "source": "eastmoney",
+      "as_of": null,
+      "returned_range": null,
+      "adjustment": "none"
+    },
+    "quote": {
+      "symbol": "SZ:159278",
+      "name": "机器人PH",
+      "price": "0.949",
+      "as_of": "2026-10-28T15:35:30+08:00",
+      "source": "sina:public-website",
+      "status": "closed"
+    },
+    "accounts": [
+      {
+        "state": "failed",
+        "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+        "events": {
+          "model_configuration_bound": 1,
+          "agent_started": 2,
+          "model_usage": 14,
+          "agent_message": 1,
+          "tool_started": 23,
+          "tool_result": 23,
+          "agent_created": 1,
+          "synthesis_checkpoint": 1,
+          "agent_completed": 1,
+          "budget_closeout": 1,
+          "model_error": 1,
+          "agent_failed": 1,
+          "failed": 1
+        },
+        "roles_called": [
+          "market_researcher"
+        ]
+      },
+      {
+        "state": "completed",
+        "error": null,
+        "events": {
+          "model_configuration_bound": 1,
+          "agent_started": 2,
+          "model_usage": 15,
+          "tool_started": 33,
+          "agent_created": 1,
+          "tool_result": 33,
+          "agent_message": 4,
+          "native_search": 1,
+          "material_saved": 1,
+          "budget_closeout": 1,
+          "synthesis_checkpoint": 1,
+          "agent_completed": 2,
+          "context_compacted": 1,
+          "published": 1
+        },
+        "roles_called": [
+          "market_researcher"
+        ]
+      }
+    ],
+    "forecast_states": {
+      "failed": 3,
+      "abstain": 3
+    },
+    "formal_expected": 0,
+    "a_edit_b_isolation": {
+      "a_new_version": 2,
+      "b_input_unchanged": true,
+      "b_team_unchanged": true,
+      "worker_stopped_before_edit": true
+    },
+    "requested_efforts": [
+      "medium"
+    ],
+    "reported_models": [
+      "grok-4.7"
+    ],
+    "reported_efforts": [
+      "medium"
+    ],
+    "limitation": "One real selected model combination only. Account A failed at final upstream transport; B published three exploratory abstentions. No real matured 5/20-day accuracy is claimed."
+  },
+  "first_integration_attempt": {
+    "artifact": "data/evaluations/sixth-live-integration-20261029/summary.json",
+    "result": "Two upstream final synthesis transport failures; source changed during this integration attempt; not final-code proof."
+  },
+  "dependency_sha256": {
+    "requirements.txt": "2a0cb45a1e8c9eade0d5700b9a49c4e5220817aded303112e3b05ce3727ce749",
+    "uv.lock": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+    "package-lock.json": "8e5ffcfdccd51976d453027fcd5189ff9f1d8f8d120d661d4edb5456c54caba3"
+  },
+  "remote_ci": {
+    "run_id": 40670587410,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "925e9855ba28fda10e9fd446aa2d692a1d709cee",
+    "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/40670587410",
+    "scope": "Existing remote main, no push of this iteration"
+  },
+  "daily_database_modified": false,
+  "dotenv_modified": false,
+  "push_performed": false,
+  "release_source_sha256": "b63510ccc52f6e424387cd0c029d75b1767fa46beb163bc279f27f42ede0346a",
+  "post_live_cleanup": {
+    "files": [
+      "scripts/verify_sixth_live.py",
+      "tests/test_sixth_repairs.py"
+    ],
+    "change": "trailing whitespace only; no production application changes",
+    "live_script_whitespace_normalized_sha256": "bc7c47f29ecfc6c208e04b35f8098b5e08610abfc9821e36231e77259d6f5de4",
+    "normalized_script_unchanged": true
+  }
+}

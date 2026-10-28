@@ -79,7 +79,8 @@ def test_suggestions_public_research_and_demand_traceability(api):
     result = client.get(f"/api/accounts/{account['id']}/recommendations").json()
     assert result[0]['state'] == 'expired' and result[0]['input_version'] == 1
     store.save_research_records([{'kind': 'candidate', 'security_id': 'SH:600519', 'title': '公共候选', 'reason': '可复用依据'}], 'global-fixture')
-    assert client.get('/api/research', params={'account_id': account['id']}).json()[0]['scope'] == 'public'
+    assert client.get('/api/research', params={'account_id': account['id']}).json() == []
+    assert client.get('/api/research').json()[0]['scope'] == 'public'  # User history view, never account inference input.
     store.request_analysis(account['id'], 'scheduled', event_key='test-scheduled')
     demands = client.get('/api/demands', params={'account_id': account['id']}).json()
     assert any(row['event_key'] == 'test-scheduled' and row['state'] == 'assigned' for row in demands)

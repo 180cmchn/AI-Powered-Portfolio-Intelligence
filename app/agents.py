@@ -29,6 +29,32 @@ class ResearchTimeout(ModelError):
     pass
 
 
+def _team_context(team):
+    """Model-visible attribution, not executable prompts or credential references."""
+    if not isinstance(team, dict):
+        return team
+    result = {key: copy.deepcopy(team[key]) for key in
+              ('team_id', 'catalog_version', 'override_revision', 'account_id', 'frozen_at') if key in team}
+    result['roles'] = {role_id: {key: copy.deepcopy(role[key]) for key in
+        ('role_id', 'version', 'prompt_version', 'tool_version', 'resolved') if key in role}
+        for role_id, role in team.get('roles', {}).items()}
+    result['connections'] = {provider_id: {key: provider[key] for key in
+        ('id', 'revision', 'credential_revision', 'protocol') if key in provider}
+        for provider_id, provider in team.get('connections', {}).items()}
+    return result
+
+
+def _research_context(value):
+    """Keep complete immutable snapshots in storage, compact their prompt projection."""
+    if isinstance(value, list):
+        return [_research_context(item) for item in value]
+    if not isinstance(value, dict):
+        return copy.deepcopy(value)
+    return {key: (_team_context(item) if key in
+        {'team_snapshot', '_agent_team', 'previous_team_snapshot', 'current_team_snapshot'} else _research_context(item))
+        for key, item in value.items() if key not in {'_model_api_key', 'credential_reference'}}
+
+
 class _CloseoutRequired(ModelBudgetExceeded):
     """No HTTP was sent: rebuild this request with the final-report tools."""
 
@@ -83,9 +109,12 @@ RESEARCH_TOOLS = [
             {"operation": {"type": "string", "enum": ["sum", "multiply", "product", "divide", "ratio", "percent", "subtract", "difference"]}, "values": {"type": "array", "items": {"type": ["string", "number"]}}}, ["operation", "values"]),
 ]
 MANAGER_TOOLS = [
+    _schema("list_agent_roles", "列出本轮冻结的全部系统角色、职责及账户绑定；配置错误不会删除角色。", {}),
+    _schema("list_business_demands", "按当前任务分页读取需求；只在最终报告 covered_demand_ids 中声明实际处理的需求。", {"limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}),
+    _schema("list_forecast_targets", "分页读取本轮固定预测证券与期限；每项明确预测或弃权，未覆盖会保留。", {"limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
     _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS}, ["summary"]),
     _schema("spawn_research", "创建有独立模型上下文和工具循环的子 Agent；按需要创建，不要求固定数量。",
-            {"task": STRING, "title": STRING, "context": {"type": "object", "additionalProperties": True}}, ["task"]),
+            {"role_id": STRING, "task": STRING, "title": STRING, "context": {"type": "object", "additionalProperties": True}}, ["role_id", "task"]),
     _schema("send_message", "给子 Agent 发送补充消息。运行中在下个安全边界接收；已完成则继续同一会话。",
             {"agent_id": STRING, "message": STRING}, ["agent_id", "message"]),
     _schema("follow_up", "在原子 Agent 的独立会话中继续研究，保留此前报告和材料。",
@@ -97,6 +126,11 @@ MANAGER_TOOLS = [
     _schema("finish_analysis", "提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
             {"report": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}}, "material_ids": STRINGS,
              "valid_until": {"type": ["string", "null"]}, "uncertainties": STRINGS,
+             "covered_demand_ids": {"type": "array", "items": {"type": "integer", "minimum": 1}},
+             "forecasts": {"type": "array", "items": {"type": "object", "properties": {
+                 "security_id": STRING, "horizon": {"type": "integer", "minimum": 1},
+                 "direction": {"type": "string", "enum": ["up", "sideways", "down", "abstain"]},
+                 "reason": STRING, "material_ids": STRINGS}, "required": ["security_id", "horizon", "direction", "reason"], "additionalProperties": False}},
              "suggestions": {"type": "array", "items": SUGGESTION, "maxItems": 100},
              "maintained_suggestion_ids": STRINGS,
              "review_suggestion_ids": STRINGS,
@@ -121,6 +155,9 @@ class AgentState:
     title: str
     task: str
     session: ModelSession
+    role_id: str = "researcher"
+    model_config: dict = field(default_factory=dict)
+    client: Any = None
     status: str = "queued"
     inbox: list[str] = field(default_factory=list)
     pending_messages: list[str] = field(default_factory=list)
@@ -131,7 +168,7 @@ class AgentState:
     round: int = 1
 
     def snapshot(self) -> dict:
-        return {"agent_id": self.id, "title": self.title, "task": self.task,
+        return {"agent_id": self.id, "role_id": self.role_id, "model_config": copy.deepcopy(self.model_config), "title": self.title, "task": self.task,
                 "status": self.status, "round": self.round, "reports": copy.deepcopy(self.reports),
                 "progress": copy.deepcopy(self.progress), "error": self.error}
 
@@ -139,7 +176,7 @@ class AgentState:
 class ResearchRuntime:
     def __init__(self, context: dict, config: dict, research_tools: Any,
                  emit: Callable[[dict], Awaitable[None]]) -> None:
-        self.context = copy.deepcopy(context)
+        self.context = _research_context(context)
         self.config = config = copy.deepcopy(config)
         from .config import model_config_summary
         self.model_config = model_config_summary(config)
@@ -155,7 +192,14 @@ class ResearchRuntime:
         self.budget_closing = False
         self.closeout_waited = False
         self.deadline: float | None = None
-        self.client = ModelClient(config, before_request=self._use_budget)
+        self.team = copy.deepcopy(config.get('_agent_team'))
+        manager_config = self._role_config('manager') if self.team else config
+        self.model_config = model_config_summary(manager_config)
+        self.context['model_config'] = copy.deepcopy(self.model_config)
+        if self.team:
+            self.context['agent_roles'] = self._role_index()
+            self.context['team_id'] = self.team['team_id']
+        self.client = ModelClient(manager_config, before_request=self._use_budget)
         self.semaphore = asyncio.Semaphore(max(1, int(config.get("max_concurrent_agents", 3))))
         self.children: dict[str, AgentState] = {}
         self.handles: set[asyncio.Task] = set()
@@ -170,7 +214,7 @@ class ResearchRuntime:
         self.checkpoint_signature = ""
         self.closed = False
         self.reference_feedback_sent = False
-        self.manager_session = self.client.session((PROMPTS / "manager.txt").read_text(), self.context)
+        self.manager_session = self.client.session(self.team["roles"]["manager"]["system_prompt"] if self.team else (PROMPTS / "manager.txt").read_text(), self.context)
         self.manager_session.task_id = self.task_id
         self.manager_session.agent_id = "manager"
         if self.synthesis_only:
@@ -178,13 +222,37 @@ class ResearchRuntime:
             self.manager_session.native_search = False
             self.client.add_user(self.manager_session, {"recovery": "基于已保存的可见研究成果完成最终汇总；不重复联网或创建子任务。当前持仓与版本以本次 context 为准。"})
 
+    def _role_index(self):
+        return [{key: copy.deepcopy(role.get(key)) for key in
+                 ('role_id', 'name', 'responsibility', 'enabled', 'version', 'tools', 'resolved', 'config_error')}
+                for role in (self.team or {}).get('roles', {}).values()]
+
+    def _role_config(self, role_id):
+        if not hasattr(self.tools, 'store'):
+            raise ModelConfigurationError('具名角色运行需要持久配置解析器')
+        try:
+            cfg = self.tools.store.runtime_role_config(self.team, role_id, self.config)
+        except ValueError as exc:
+            raise ModelConfigurationError(str(exc)) from exc
+        cfg['account_id'] = self.account_id
+        return cfg
+
+    def _client_for(self, agent_id):
+        return self.client if agent_id == 'manager' else (self.children[agent_id].client or self.client)
+
     async def _use_budget(self) -> None:
         async with self.budget_lock:
+            agent_id, final_request = self.request_owner.get()
+            if self.team:
+                role_id = 'manager' if agent_id == 'manager' else self.children[agent_id].role_id
+                try:
+                    self.tools.store.check_team_credentials(self.team, role_id)
+                except (ValueError, KeyError) as exc:
+                    raise ModelConfigurationError(str(exc)) from exc
             if self.synthesis_only and self.calls - self.synthesis_started_calls >= max(1, min(int(self.config.get("synthesis_max_calls", 4)), 8)):
                 raise ModelBudgetExceeded("汇总恢复达到有限调用预算；检查点保留，未发布半份最终报告")
             if self.calls >= int(self.config.get("max_model_calls", 40)):
                 raise ModelBudgetExceeded("已达到本轮模型调用预算；已保存持仓及材料保留，可调整预算后重试")
-            agent_id, final_request = self.request_owner.get()
             remaining = int(self.config.get("max_model_calls", 40)) - self.calls
             # This guard also runs before HTTP retries, under the shared lock.
             # A child must never consume the manager's final submission slot.
@@ -316,8 +384,9 @@ class ResearchRuntime:
                 result.update({"task_id": self.task_id, "account_id": self.account_id,
                                "input_version": self.input_version, "data_as_of": self.context.get("data_as_of"),
                                "agents": [child.snapshot() for child in self.children.values()],
-                               "model_calls": self.calls, "model_usage": self.client.usage_summary(self.client.requests),
+                               "model_calls": self.calls, "model_usage": self.client.usage_summary([r for client in {self.client, *[c.client or self.client for c in self.children.values()]} for r in client.requests]),
                                "model_config": copy.deepcopy(self.model_config),
+                               "team_snapshot": copy.deepcopy(self.team),
                                "synthesis_recovered": bool(self.context.get("synthesis_checkpoint")),
                                "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
@@ -339,7 +408,7 @@ class ResearchRuntime:
     async def close(self) -> None:
         self.closed = True
         await self._cancel_children()
-        await self.client.aclose()
+        await asyncio.gather(*[client.aclose() for client in {self.client, *[c.client or self.client for c in self.children.values()]}])
 
     async def _cancel_children(self) -> None:
         active = list(self.handles)
@@ -351,11 +420,13 @@ class ResearchRuntime:
 
     def _safe_error(self, exc: Exception) -> str:
         text = str(exc) or type(exc).__name__
-        if self.client.key:
-            text = text.replace(self.client.key, "[REDACTED]")
+        for client in [self.client, *[c.client or self.client for c in self.children.values()]]:
+            if client.key:
+                text = text.replace(client.key, "[REDACTED]")
         return text[:1200]
 
     async def _loop(self, agent_id: str, session: ModelSession, *, manager: bool) -> dict:
+        client = self._client_for(agent_id)
         session.task_id = self.task_id
         max_turns = int(self.config.get("max_agent_turns", 12))
         if not manager:
@@ -367,13 +438,17 @@ class ResearchRuntime:
         final_update_used = False
         for turn_index in range(max_turns):
             definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
+            if self.team:
+                role_id = 'manager' if manager else self.children[agent_id].role_id
+                permitted_tools = set(self.team['roles'][role_id]['tools'])
+                definitions = [tool for tool in definitions if tool['name'] in permitted_tools]
             if manager and self.synthesis_only:
-                permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "finish_analysis"}
+                permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "list_business_demands", "list_forecast_targets", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
             remaining_turns = max_turns - turn_index
             final_request = final_update_used or self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
             if max_turns >= 6 and remaining_turns <= 3:
-                self.client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
+                client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
                     "remaining_shared_model_calls": max(0, int(self.config.get("max_model_calls", 40)) - self.calls)},
                     "instruction": "本轮预算即将用完。整理已经取得的可见证据并及时提交完整结论，未知保持未知，不继续扩展研究。最后一轮仅提交报告；未完成的子任务和资料缺口须明确说明。"})
                 if remaining_turns == 1:
@@ -393,7 +468,7 @@ class ResearchRuntime:
             if manager:
                 events = self._new_child_events()
                 if events:
-                    self.client.add_user(session, {"research_events": events})
+                    client.add_user(session, {"research_events": events})
                 if not self.synthesis_only and self.children and all(child.status in {"completed", "failed", "cancelled"} for child in self.children.values()):
                     if any(child.reports for child in self.children.values()):
                         await self._save_checkpoint()
@@ -407,7 +482,7 @@ class ResearchRuntime:
                     request_report_counts = {child.id: len(child.reports) for child in self.children.values()}
                     token = self.request_owner.set((agent_id, final_request))
                     try:
-                        turn = await self.client.complete(session, definitions)
+                        turn = await client.complete(session, definitions)
                         break
                     except _CloseoutRequired:
                         # Concurrent requests or a retry reached the shared tail
@@ -421,7 +496,7 @@ class ResearchRuntime:
                             await self._wait_for_closeout()
                             events = self._new_child_events()
                             if events:
-                                self.client.add_user(session, {"research_events": events})
+                                client.add_user(session, {"research_events": events})
                             await self._save_checkpoint()
                     finally:
                         self.request_owner.reset(token)
@@ -433,7 +508,7 @@ class ResearchRuntime:
                 if partial is not None:
                     await self._record_native(agent_id, partial)
                 await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:]),
-                    "native_search": self.client.native_status()})
+                    "native_search": client.native_status()})
                 if isinstance(exc, ModelConfigurationError):
                     raise
                 if final_update_used:
@@ -444,13 +519,13 @@ class ResearchRuntime:
                         await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
                     return reference_candidate
                 raise
-            await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": self.client.usage_summary(session.requests)})
+            await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": client.usage_summary(session.requests)})
             native_materials = await self._record_native(agent_id, turn)
             if session.compactions > compactions:
                 await self._publish("context_compacted", agent_id, {"compactions": session.compactions, "archived_records": len(session.archive), "retrieval_tool": "recall_context"})
             if not turn.calls:
                 if native_materials:
-                    self.client.add_user(session, {"native_source_materials": native_materials})
+                    client.add_user(session, {"native_source_materials": native_materials})
                 if turn.continuation_required:
                     if final_update_used:
                         raise ModelError("最终补充汇总未提交报告；可见研究检查点保留")
@@ -493,15 +568,15 @@ class ResearchRuntime:
                     output = {"error": self._safe_error(exc), "failed": True}
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
-            self.client.add_results(session, results)
+            client.add_results(session, results)
             if manager and getattr(self, "_fresh_synthesis_context", None) is not None:
                 fresh = self._fresh_synthesis_context
                 session.history = fresh.history
                 session.archive = fresh.archive
                 self._fresh_synthesis_context = None
-                self.client.add_user(session, {"phase": "synthesis", "instruction": "研究已完成。使用检查点中的可见成果，必要时读取已有材料或重新计算，然后提交 finish_analysis；保持报告精炼。"})
+                client.add_user(session, {"phase": "synthesis", "instruction": "研究已完成。使用检查点中的可见成果，必要时读取已有材料或重新计算，然后提交 finish_analysis；保持报告精炼。"})
             if native_materials:
-                self.client.add_user(session, {"native_source_materials": native_materials})
+                client.add_user(session, {"native_source_materials": native_materials})
             if submitted is not None:
                 if manager and await self._defer_late_final(submitted, request_report_counts,
                         can_update=not final_update_used and remaining_turns > 1 and self._remaining_calls() > 0):
@@ -546,7 +621,8 @@ class ResearchRuntime:
         native_materials = []
         if turn.native_events or turn.sources or turn.annotations:
             if hasattr(self.tools, "record_native_search"):
-                native_materials = await self.tools.record_native_search(agent_id, turn.native_events, turn.sources, turn.annotations)
+                kwargs = {'model_config': self._client_for(agent_id).config} if hasattr(self.tools, 'store') else {}
+                native_materials = await self.tools.record_native_search(agent_id, turn.native_events, turn.sources, turn.annotations, **kwargs)
                 self.materials.extend(copy.deepcopy(native_materials or []))
             await self._publish("native_search", agent_id, {"events": turn.native_events, "sources": turn.sources,
                 "annotations": turn.annotations, "materials": native_materials, "capability": turn.native_status})
@@ -563,7 +639,7 @@ class ResearchRuntime:
                 if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
                     visible["summary"] = visible["summary"][:12000]
                     visible["summary_truncated"] = True
-                reports.append({"agent_id": child.id, "title": child.title, **visible})
+                reports.append({"agent_id": child.id, "role_id": child.role_id, "model_config": copy.deepcopy(child.model_config), "title": child.title, **visible})
         if not reports and not declaration:
             return {}
         unresolved_tasks = [{"agent_id": child.id, "title": child.title, "task": child.task,
@@ -573,7 +649,7 @@ class ResearchRuntime:
             if child.status != "completed" or child.pending_messages or child.inbox]
         material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
         checkpoint = {"phase": "synthesis", "task_id": self.task_id, "account_id": self.account_id,
-            "model_config": copy.deepcopy(self.model_config),
+            "model_config": copy.deepcopy(self.model_config), "team_snapshot": copy.deepcopy(self.team),
             "input_version": self.input_version, "scope": self.context.get("scope", "account"),
             "data_as_of": self.context.get("data_as_of"), "reports": reports,
             "materials": material_index, "material_ids": sorted({m["id"] for m in material_index if m.get("id")} |
@@ -605,7 +681,7 @@ class ResearchRuntime:
 
     def _deliver_inbox(self, child: AgentState) -> None:
         if child.inbox:
-            self.client.add_user(child.session, {"manager_messages": list(child.inbox)})
+            (child.client or self.client).add_user(child.session, {"manager_messages": list(child.inbox)})
             child.inbox.clear()
 
     def _new_child_events(self) -> list[dict]:
@@ -635,6 +711,12 @@ class ResearchRuntime:
         return self.children[agent_id]
 
     async def _dispatch(self, agent_id: str, name: str, args: dict) -> Any:
+        if name in {tool['name'] for tool in MANAGER_TOOLS} and agent_id != 'manager':
+            raise ValueError('只有主 Agent 可使用调度和正式发布工具')
+        if name == 'list_agent_roles':
+            return {'team_id': (self.team or {}).get('team_id'), 'roles': self._role_index()}
+        if name in {'list_business_demands', 'list_forecast_targets'}:
+            return await getattr(self.tools, name)(limit=min(100, max(1, int(args.get('limit', 30)))), offset=max(0, int(args.get('offset', 0))))
         if name == "read":
             return await self.tools.read(self._text(args, "url"), **{key: args[key] for key in ("start_page", "end_page", "page", "offset", "limit", "refresh") if key in args})
         if name in {"pdf_metadata", "search_pdf", "history", "sectors", "sector_members", "sector_history", "benchmark_history", "fundamentals"}:
@@ -689,7 +771,7 @@ class ResearchRuntime:
             await self._save_checkpoint(args)
             self.synthesis_only = True
             self.synthesis_started_calls = self.calls
-            fresh = self.client.session(self.manager_session.system, {**self.context, "synthesis_checkpoint": self.synthesis_checkpoint})
+            fresh = self.client.session(self.manager_session.system, {**self.context, "synthesis_checkpoint": _research_context(self.synthesis_checkpoint)})
             # This function's result is resolved by the ordinary tool loop first;
             # compacting the old session here would orphan its pending call.
             self.manager_session.phase = "synthesis"
@@ -732,7 +814,10 @@ class ResearchRuntime:
         if name in {"submit_report", "finish_analysis"}:
             self._text(args, "summary" if name == "submit_report" else "report")
             if name == "finish_analysis":
-                for key in ("suggestions", "research_records"):
+                if 'covered_demand_ids' in args and (not isinstance(args['covered_demand_ids'], list) or
+                        any(type(value) is not int or value < 1 for value in args['covered_demand_ids'])):
+                    raise ValueError('covered_demand_ids 需要分页需求中已实际处理的正整数 ID 数组')
+                for key in ("suggestions", "research_records", "forecasts"):
                     if key in args and (not isinstance(args[key], list) or not all(isinstance(item, dict) for item in args[key])):
                         raise ValueError(f"{key} 需要对象数组")
                 if len(args.get("suggestions") or []) > 100:
@@ -759,6 +844,12 @@ class ResearchRuntime:
             raise ValueError("共享预算已进入收尾；不再创建子任务，汇总已有证据并说明缺口")
         if len(self.children) >= int(self.config.get("max_total_agents", 16)):
             raise ValueError("已达到本轮子 Agent 数量上限；可继续已有子任务或直接分析")
+        if any(key not in {'role_id', 'task', 'title', 'context'} for key in args):
+            raise ValueError('主 Agent 只能选择 role_id 和任务，不能改写模型、供应商或思考强度')
+        role_id = self._text(args, 'role_id') if self.team else args.get('role_id', 'researcher')
+        role = (self.team or {}).get('roles', {}).get(role_id)
+        if self.team and (not role or not role.get('enabled') or role_id == 'manager'):
+            raise ValueError('只能派发已注册且全局启用的子角色，不能递归派发 manager')
         task = self._text(args, "task")
         child_id = "research-" + uuid.uuid4().hex[:12]
         context = {"task": task, "parent_task_id": self.task_id,
@@ -766,13 +857,19 @@ class ResearchRuntime:
                    "input_version": self.input_version, "metrics": copy.deepcopy(self.context.get("metrics")),
                    "scope": self.context.get("scope", "account"),
                    "data_as_of": self.context.get("data_as_of"), "task_context": copy.deepcopy(args.get("context", {}))}
-        session = self.client.session((PROMPTS / "researcher.txt").read_text(), context)
+        cfg = self._role_config(role_id) if self.team else self.config
+        client = ModelClient(cfg, before_request=self._use_budget) if self.team else self.client
+        from .config import model_config_summary
+        context['role_id'] = role_id
+        context['model_config'] = model_config_summary(cfg)
+        session = client.session(role['system_prompt'] if role else (PROMPTS / 'researcher.txt').read_text(), context)
         session.agent_id = child_id
-        child = AgentState(child_id, args.get("title") or task[:60], task, session)
+        child = AgentState(child_id, args.get("title") or task[:60], task, session,
+                           role_id=role_id, model_config=model_config_summary(cfg), client=client)
         self.children[child_id] = child
-        await self._publish("agent_created", child_id, {"title": child.title, "task": task, "status": "queued"})
+        await self._publish("agent_created", child_id, {"title": child.title, "task": task, "role_id": role_id, "model_config": child.model_config, "status": "queued"})
         self._launch(child)
-        return {"agent_id": child_id, "status": child.status}
+        return {"agent_id": child_id, "role_id": role_id, "status": child.status}
 
     def _launch(self, child: AgentState) -> None:
         task = asyncio.create_task(self._run_child(child), name=f"{self.task_id}:{child.id}:{child.round}")
@@ -809,17 +906,17 @@ class ResearchRuntime:
         except TimeoutError:
             child.status = "failed"
             child.error = "子任务超过配置时限；已保存材料和阶段报告保留"
-            self.client.resolve_pending(child.session, child.error)
+            (child.client or self.client).resolve_pending(child.session, child.error)
             await self._publish("agent_failed", child.id, {"error": child.error})
         except asyncio.CancelledError:
             child.status = "cancelled"
-            self.client.resolve_pending(child.session, "子任务已取消；此工具调用未完成")
+            (child.client or self.client).resolve_pending(child.session, "子任务已取消；此工具调用未完成")
             await self._publish("agent_cancelled", child.id, {"reason": "父任务结束、取消或账户版本更新"})
             raise
         except Exception as exc:
             child.status = "failed"
             child.error = self._safe_error(exc)
-            self.client.resolve_pending(child.session, child.error)
+            (child.client or self.client).resolve_pending(child.session, child.error)
             await self._publish("agent_failed", child.id, {"error": child.error})
 
     async def _wait(self, args: dict) -> dict:

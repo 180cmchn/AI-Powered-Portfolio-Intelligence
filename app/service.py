@@ -24,6 +24,9 @@ class ResearchTools:
         self.store, self.job, self.config = store, job, config
         self.context = context
 
+    async def list_forecast_targets(self, limit=30, offset=0):
+        return self.store.forecast_job_context(self.job['id'], limit=limit, offset=offset)
+
     async def save_checkpoint(self, checkpoint):
         if self.context is not None:
             self.store.save_synthesis_checkpoint(self.job, checkpoint, self.context)
@@ -41,13 +44,13 @@ class ResearchTools:
             if row[0] not in {m['id'] for m in pending}:
                 pending.append(index_of(self.store.material(row[0])))
 
-    async def record_native_search(self, agent_id, events, sources, annotations):
+    async def record_native_search(self, agent_id, events, sources, annotations, *, model_config=None):
         from .model import native_search_fingerprint
         from .native_sources import normalize_native_source
         if any(event.get('status') == 'completed' for event in events):
             self.store.set_meta('native_search_capability', {
                 'status': 'observed', 'checked_at': now(),
-                'fingerprint': native_search_fingerprint(self.config),
+                'fingerprint': native_search_fingerprint(model_config or self.config),
                 'evidence': {'event_types': list(dict.fromkeys(e.get('type') for e in events)),
                              'event_count': len(events), 'source_count': len(sources)},
                 'note': '服务返回了原生联网调用项；未返回的工具用量与访问范围保持未知'})
@@ -108,6 +111,11 @@ class ResearchTools:
         if not self.job.get('account_id'):
             return {'items': [], 'total': 0, 'has_more': False, 'next_offset': None}
         return self.store.recommendations_page(self.job['account_id'], limit, offset, view)
+
+    async def list_business_demands(self, limit=25, offset=0):
+        if not self.job.get('account_id'):
+            return {'items': [], 'total': 0, 'has_more': False, 'next_offset': None}
+        return self.store.task_demands(self.job['id'], self.job['account_id'], limit, offset)
 
     async def get_recommendation(self, recommendation_id):
         if not self.job.get('account_id'):
@@ -211,6 +219,8 @@ class Service:
         self.news_task = None
         self.quote_task = None
         self.last_recommendation_check = 0.0
+        self.forecast_task = None
+        self.last_forecast_tick = 0.0
 
     def record_model_event(self, job_id, event):
         self.store.event(job_id, event)
@@ -315,6 +325,11 @@ class Service:
             target_symbols = list(dict.fromkeys([*target_symbols, *self.store.recommendation_symbols(account['id'])]))
             if self.store.mode == "live" and self.runner is None:
                 try:
+                    if cfg.get('_agent_team'):
+                        try:
+                            cfg = {**self.store.runtime_role_config(cfg['_agent_team'], 'manager', cfg), '_agent_team': cfg['_agent_team']}
+                        except ValueError as exc:
+                            raise ModelConfigurationError(str(exc)) from exc
                     client = ModelClient(cfg)
                     await client.aclose()
                 except ModelConfigurationError:
@@ -330,6 +345,7 @@ class Service:
             quote_times = [p["quote"].get("as_of") for p in values["positions"] if p["quote"].get("as_of")]
             data_as_of = min(quote_times) if quote_times else None
             suggestion_context = self.store.recommendation_context(account['id'], job['id'], target=target)
+            demand_page = self.store.task_demands(job['id'], account['id'])
             scope = self.store.universe_snapshot()
             context = {"account": account, "metrics": values, "candidates": universe["candidates"],
                        "candidate_quotes": {s: q for s, q in self.quotes().items() if s in universe["candidates"]},
@@ -339,13 +355,18 @@ class Service:
                        "job_id": job["id"], "input_version": job["input_version"],
                        "model_config": model_config_summary(cfg),
                        "calendar": market_state(), "available_public_material_count": self.store.material_count(),
-                       "shared_research": self.store.research_records(limit=20),
+                       "shared_research": [],
                        "universe_version": scope['universe_version'],
                        "suggestions_to_review": suggestion_context['items'],
                        "suggestions_coverage": {k: v for k, v in suggestion_context.items() if k != 'items'},
                        "suggestion_index": {k: v for k, v in suggestion_context.items() if k != 'items'},
-                       "business_demands": [d for d in self.store.demands(account["id"], limit=100) if d["job_id"] == job["id"]],
+                       "business_demands": demand_page['items'],
+                       "business_demand_coverage": {k: v for k, v in demand_page.items() if k != 'items'},
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
+            context['_research_input_guard'] = self.store.research_guard(context)
+            context['team_id'] = (cfg.get('_agent_team') or {}).get('team_id')
+            self.store.prepare_exploratory_forecast_job(job['id'])
+            context['forecast_batch'] = self.store.forecast_job_context(job['id'])
             if self.store.mode == "demo":
                 result = {"report": f"演示模式 · 本地数值摘要\n\n账户：{account['name']} · 输入版本 v{account['version']}\n\n已知价格持仓市值：¥{values['known_priced_value']}。\n\n" + "\n\n".join(values["notes"]) + "\n\n这是固定样例数据和代码计算结果。未调用模型、搜索或多 Agent，不构成真实投资研究或买卖建议。",
                           "metrics": values, "demo": True, "model_calls": 0}
@@ -481,7 +502,7 @@ class Service:
                            (mid, run_id, dumps(plan), now(), now()))
             for account_id in selected:
                 self.store.request_analysis(account_id, 'public_information', f"news:{account_id}:{event}",
-                    reason=f'公共研究 {run_id} 关联材料 {mid}；复用公共结论并独立适配账户', delay=2)
+                    reason=f'来源索引关联原始材料 {mid}；请独立读取并研究，路由不代表投资结论', delay=2)
             self.store.review_recommendations(material_ids=[anchor], material_account_ids=selected)
             pending = unknown or bool(unresolved)
             with self.store.connect() as db:
@@ -502,6 +523,11 @@ class Service:
         snapshot = run.get('input_snapshot') or self.store.global_run(run['id']).get('input_snapshot')
         cfg = snapshot['config'] if snapshot else self.store.settings()
         try:
+            if cfg.get('_agent_team') and self.store.mode == 'live' and self.runner is None:
+                try:
+                    cfg = {**self.store.runtime_role_config(cfg['_agent_team'], 'manager', cfg), '_agent_team': cfg['_agent_team']}
+                except ValueError as exc:
+                    raise ModelConfigurationError(str(exc)) from exc
             if not snapshot:
                 self.store.finish_global(run['id'], 'superseded', error='旧任务没有保存候选范围快照，需按当前范围重新研究')
                 self.store.request_analysis(None, 'universe_changed', f"legacy-global:{run['id']}")
@@ -509,14 +535,15 @@ class Service:
             universe = snapshot['universe']
             context = {"scope": "global", "account": None, "input_version": None, "job_id": run["id"],
                        "model_config": model_config_summary(cfg),
-                       "universe_version": snapshot['universe_version'], "input_snapshot": snapshot,
+                       "universe_version": snapshot['universe_version'], "input_snapshot": {k: v for k, v in snapshot.items() if k != "config"},
                        "reason": run["reason"], "candidates": universe["candidates"], "watchlist": universe["watchlist"],
                        "quotes": {s: q for s, q in self.quotes().items() if s in set(universe['candidates'] + universe['watchlist'])},
-                       "shared_research": self.store.research_records(limit=30), "calendar": market_state(),
+                       "shared_research": [], "calendar": market_state(),
                        "pending_information": [index_of(self.store.material(mid)) for mid in self.store.public_information_for_run(run['id'])],
                        "news_topics": cfg.get('news_queries', []),
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
             self.store.bind_public_information(run['id'], [m['id'] for m in context['pending_information']])
+            context['_research_input_guard'] = self.store.research_guard(context)
             checkpoint = self.store.reusable_synthesis_checkpoint({**run, 'account_id': None}, context)
             if checkpoint:
                 context['synthesis_checkpoint'] = checkpoint
@@ -543,6 +570,22 @@ class Service:
     async def scheduler_tick(self, stamp=None):
         stamp = stamp or datetime.now(TZ)
         state, cfg = market_state(stamp), self.store.settings()
+        # Market maintenance and due prediction scoring are independent of LLM research.
+        trading = state['trading_day'] is True and state['phase'] in ('morning', 'afternoon')
+        if cfg.get('market_refresh_enabled', True) and trading:
+            bucket = int(stamp.timestamp() // cfg['quote_interval_seconds'])
+            if self.store.meta('schedule:quote') != bucket and not self.refresh_lock.locked() and (not self.quote_task or self.quote_task.done()):
+                async def refresh_market():
+                    await self.refresh_quotes()
+                    self.store.set_meta('schedule:quote', bucket)
+                self.quote_task = self.spawn(refresh_market())
+        if (cfg.get('forecast_evaluation_enabled', True) or cfg.get('scheduled_research_enabled', True)) and (not self.forecast_task or self.forecast_task.done()) and (not self.last_forecast_tick or stamp.timestamp() - self.last_forecast_tick >= 60):
+            self.last_forecast_tick = stamp.timestamp()
+            async def forecast_cycle():
+                batches = await self.store.forecast_tick(cfg, at=stamp, create_batches=cfg.get('scheduled_research_enabled', True))
+                for batch in batches['batches']:
+                    self.store.enqueue_forecast_batch(batch['id'], at=max(stamp, datetime.now(TZ)))
+            self.forecast_task = self.spawn(forecast_cycle())
         if not cfg.get('scheduled_research_enabled', True):
             return
         prior_seen = self.store.meta("schedule:last_seen")
@@ -572,7 +615,7 @@ class Service:
         trading = state["phase"] in ("morning", "afternoon")
         timestamp = stamp.timestamp()
         if trading:
-            for kind, seconds in (("quote", cfg["quote_interval_seconds"]), ("candidate_scan", cfg["scan_interval_minutes"] * 60), ("scheduled", cfg["analysis_interval_minutes"] * 60)):
+            for kind, seconds in (("candidate_scan", cfg["scan_interval_minutes"] * 60), ("scheduled", cfg["analysis_interval_minutes"] * 60)):
                 bucket = int(timestamp // seconds)
                 key = f"schedule:{kind}"
                 if self.store.meta(key) == bucket:
@@ -604,9 +647,12 @@ class Service:
         wall = time.time()
         if self.last_tick and (current - self.last_tick > 180 or wall - self.last_wall_tick > 180):
             self.store.set_meta("last_resume", now())
-            self.spawn(self.refresh_quotes())
-            for a in self.store.accounts():
-                self.store.request_analysis(a["id"], "resume_refresh", delay=2)
+            cfg = self.store.settings()
+            if cfg.get('market_refresh_enabled', True):
+                self.spawn(self.refresh_quotes())
+            if cfg.get('scheduled_research_enabled', True):
+                for a in self.store.accounts():
+                    self.store.request_analysis(a["id"], "resume_refresh", delay=2)
         self.last_tick = current
         self.last_wall_tick = wall
         for job_id, task in list(self.active.items()):
@@ -643,25 +689,44 @@ class Service:
                 log.error("worker tick failed: %s", type(e).__name__)
             await asyncio.sleep(0.5)
 
-    def model_configured(self):
+    def manager_config(self, account_id=None, *, credentials=True):
         cfg = self.store.settings()
-        from .config import reasoning_effort
+        team = self.store.freeze_agent_team(account_id)
+        if credentials:
+            try:
+                return self.store.runtime_role_config(team, 'manager', cfg)
+            except ValueError as exc:
+                from .model import ModelConfigurationError
+                raise ModelConfigurationError(str(exc)) from exc
+        role = team['roles']['manager']
+        binding = role['resolved']
+        provider = team['connections'].get(binding.get('provider_id'), {})
+        cfg.update(model_protocol=provider.get('protocol', cfg['model_protocol']),
+                   model_base_url=provider.get('base_url', cfg['model_base_url']),
+                   model_name=binding.get('model_id', ''), reasoning_effort=binding.get('reasoning_effort', 'medium'),
+                   provider_id=provider.get('id'), provider_revision=provider.get('revision'),
+                   credential_revision=provider.get('credential_revision'), role_id='manager',
+                   role_version=role['version'], prompt_version=role['prompt_version'], tool_version=role['tool_version'],
+                   team_id=team['team_id'], account_id=account_id, _credential_fingerprint=(provider.get('credential_reference') or {}).get('fingerprint'))
+        return cfg, role.get('config_error')
+
+    def model_configured(self):
+        if self.runner or self.store.mode == 'demo':
+            return True
         try:
-            reasoning_effort(cfg)
-        except ValueError:
+            cfg = self.store.settings()
+            team = self.store.freeze_agent_team()
+            self.store.runtime_role_config(team, 'manager', cfg)
+            return True
+        except (ValueError, KeyError):
             return False
-        local = urlsplit(cfg["model_base_url"]).hostname in ("localhost", "127.0.0.1", "::1")
-        return bool(self.runner or self.store.mode == "demo" or (cfg["model_name"] and (os.getenv(cfg["model_key_env"]) or (local and cfg.get("model_allow_no_key")))))
 
     def resume_waiting_config(self):
         ready = self.model_configured()
-        if ready:
-            with self.store.connect() as db:
-                db.execute("BEGIN IMMEDIATE")
-                # Only waiting work is touched; a settings save must not requeue
-                # active global studies or interrupt account research.
-                self.store.resume_configuration_waiters(db)
-                db.execute("UPDATE accounts SET analysis_state='pending' WHERE latest_job_id IN (SELECT id FROM jobs WHERE state='queued')")
+        with self.store.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self.store.resume_configuration_waiters(db)
+            db.execute("UPDATE accounts SET analysis_state='pending' WHERE latest_job_id IN (SELECT id FROM jobs WHERE state='queued')")
         return ready
 
     async def start(self):
@@ -671,13 +736,14 @@ class Service:
             expired = not last or (datetime.now(TZ) - datetime.fromisoformat(last)).total_seconds() > self.store.settings()["quote_stale_seconds"]
         except (ValueError, TypeError):
             expired = True
-        if expired:
+        if expired and self.store.settings().get('scheduled_research_enabled', True):
             for account in self.store.accounts():
                 if account["analysis_state"] == "current":
                     self.store.enqueue(account["id"], "service_restart_refresh", delay=2)
         self.running = True
         self.loop_task = asyncio.create_task(self.loop())
-        self.spawn(self.refresh_quotes())
+        if self.store.settings().get('market_refresh_enabled', True):
+            self.spawn(self.refresh_quotes())
 
     async def stop(self):
         self.running = False

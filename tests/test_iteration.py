@@ -23,7 +23,12 @@ def account(store, name='account', quantity='10'):
 
 
 def publish(store, job, **extra):
-    assert store.publish(job['id'], {'report':'deterministic report', **extra}, None)
+    covered, offset = [], 0
+    while offset is not None:
+        page = store.task_demands(job['id'], job['account_id'], limit=50, offset=offset)
+        covered.extend(row['id'] for row in page['items'])
+        offset = page['next_offset']
+    assert store.publish(job['id'], {'report':'deterministic report', 'covered_demand_ids': covered, **extra}, None)
 
 
 @pytest.mark.asyncio
@@ -98,6 +103,8 @@ def test_waiting_config_resume_only_latest_snapshot_and_no_job_churn(store, monk
     assert store.job(current['id'])['state']=='waiting_config'
     store.set_meta('settings', {**store.settings(), 'model_name':'fixture-name','model_key_env':'ROUND2_TEST_KEY'})
     monkeypatch.setenv('ROUND2_TEST_KEY','not-a-real-key')
+    from helpers_sixth import configure_test_team
+    configure_test_team(store, store.settings())  # Current product config selects a fixture-discovered role binding.
     store.recover(config_ready=Service(store).model_configured())
     assert store.job(old['id'])['state']=='superseded'
     assert store.claim_jobs()[0]['id']==changed['latest_job_id']
@@ -218,14 +225,15 @@ async def test_quote_reuse_and_preparation_timeout(store, monkeypatch):
     assert any(e['type']=='quote_timeout' for e in store.job(a['latest_job_id'],events=True)['events'])
 
 
-def test_shared_research_reused_account_fit_isolated(store):
+def test_generated_public_research_and_account_fit_are_isolated(store):
     a,b=account(store),account(store,'b','100')
     shared={'kind':'candidate','security_id':'SH:600519','title':'shared','reason':'public change','findings':[{'fact':'x'}]}
     store.save_research_records([shared],'global')
     store.save_research_records([{**shared,'account_fit':'A concentrated'}],'a',a['id'])
     assert any(r.get('account_fit')=='A concentrated' for r in store.research_records(a['id']))
     assert not any(r.get('account_fit') for r in store.research_records(b['id']))
-    assert store.research_records(b['id'])[0]['scope']=='public'
+    assert store.research_records(b['id']) == []  # Sixth iteration shares source data, not generated public findings.
+    assert store.research_records()[0]['scope'] == 'public'  # Public history remains viewable.
 
 
 def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
@@ -235,7 +243,7 @@ def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
         db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
         db.execute('DROP TABLE material_catalog')
     upgraded=Store(store.path)
-    assert upgraded.meta('schema_version')==5
+    assert upgraded.meta('schema_version')==6
     assert upgraded.account(a['id'])['version']==1
     assert upgraded.material(m['id'])['content']=='old text'
     assert store.path.with_name(store.path.name+'.before-v2.bak').exists()
@@ -374,7 +382,7 @@ async def test_global_runner_reused_by_two_accounts_with_independent_results(sto
     for job in store.claim_jobs():
         await svc.execute(job)
     assert len([c for c in contexts if c.get('scope')=='global'])==1
-    assert all(c['shared_research'][0]['scope']=='public' for c in contexts if c.get('account'))
+    assert all(c['shared_research'] == [] for c in contexts if c.get('account'))
     assert store.analyses(a['id'])[0]['report']=='10'
     assert store.analyses(b['id'])[0]['report']=='100'
     assert not any(r.get('account_fit')=='a' for r in store.research_records(b['id']))

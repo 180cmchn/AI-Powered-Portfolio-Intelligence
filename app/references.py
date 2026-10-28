@@ -43,9 +43,8 @@ class ReferenceStore:
                     JOIN material_representations r ON r.material_id=m.id
                     JOIN material_document_versions d ON d.id=r.document_version_id
                     WHERE d.representation_kind='native_search_source' AND
-                    (c.scope='public' OR (?<>'' AND (c.account_id=? OR EXISTS
-                    (SELECT 1 FROM material_uses u WHERE u.material_id=m.id AND u.account_id=?))))
-                    ORDER BY m.created_at DESC,m.rowid DESC""", (account_id or '', account_id or '', account_id or '')).fetchall()
+                    (c.scope='public' OR (?<>'' AND c.account_id=?))
+                    ORDER BY m.created_at DESC,m.rowid DESC""", (account_id or '', account_id or '')).fetchall()
                 for row in rows:
                     body = loads(row['body'])
                     stored_url = source_url(body.get('url'))
@@ -56,10 +55,7 @@ class ReferenceStore:
         def resolve(material_id, ancestry=()):
             if material_id in ancestry or len(ancestry) >= 5:
                 return {'material_id': material_id, 'status': 'unresolved', 'reason': 'reference_chain_not_resolved'}
-            row = db.execute("""SELECT m.body FROM materials m JOIN material_catalog c ON c.material_id=m.id
-                WHERE m.id=? AND (c.scope='public' OR (?<>'' AND (c.account_id=? OR EXISTS
-                (SELECT 1 FROM material_uses u WHERE u.material_id=m.id AND u.account_id=?))))""",
-                (material_id, account_id or '', account_id or '', account_id or '')).fetchone()
+            row = db.execute('SELECT body FROM materials WHERE id=?', (material_id,)).fetchone() if self.material_accessible(material_id, account_id, db) else None
             if row is None:
                 return {'material_id': material_id, 'status': 'unresolved', 'reason': 'unknown_or_inaccessible'}
             body = loads(row[0])

@@ -13,16 +13,32 @@ class RecoveryStore:
                 or (context.get('input_snapshot') or {}).get('config') or self.settings())
 
     def checkpoint_material_guard(self, material_ids, account_id):
+        """Bind actual immutable reads (and their parents), never label the head as read."""
+        from .materials import parent_material_ids
+        from .store import loads
         result = {}
         with self.connect() as db:
-            for mid in material_ids:
+            pending = list(material_ids)
+            while pending:
+                mid = pending.pop()
+                if mid in result:
+                    continue
                 if not isinstance(mid, str) or not self.material_accessible(mid, account_id) or not db.execute('SELECT 1 FROM materials WHERE id=?', (mid,)).fetchone():
                     continue  # Unknown references remain explicit gaps in the body.
-                row = db.execute('''SELECT d.stream_key FROM material_representations r
+                row = db.execute('''SELECT d.*,r.representation_hash,r.access_metadata FROM material_representations r
                     JOIN material_document_versions d ON d.id=r.document_version_id WHERE r.material_id=?''', (mid,)).fetchone()
-                latest = db.execute('''SELECT id FROM material_document_versions
-                    WHERE stream_key=? AND version>0 ORDER BY version DESC LIMIT 1''', (row[0],)).fetchone() if row else None
-                result[mid] = latest[0] if latest else None
+                if not row:
+                    continue
+                head = db.execute('SELECT document_version_id FROM material_stream_heads WHERE stream_key=?', (row['stream_key'],)).fetchone()
+                latest = head or db.execute('''SELECT id FROM material_document_versions
+                    WHERE stream_key=? AND version>0 ORDER BY version DESC LIMIT 1''', (row['stream_key'],)).fetchone()
+                body = loads(db.execute('SELECT body FROM materials WHERE id=?', (mid,)).fetchone()[0])
+                parents = parent_material_ids(body)
+                result[mid] = {'read_document_version_id': row['id'], 'read_document_version': row['version'],
+                    'representation_hash': row['representation_hash'], 'read_range': loads(row['access_metadata']),
+                    'representation_kind': row['representation_kind'], 'parent_material_ids': parents,
+                    'latest_available_document_version_id': latest[0] if latest else None}
+                pending.extend(parent for parent in parents if parent not in result)
         return result
 
     def research_guard(self, context):
@@ -52,6 +68,10 @@ class RecoveryStore:
         from .config import model_config_summary
         body = {**body, 'verified_material_versions': self.checkpoint_material_guard(
             body.get('material_ids', []), job.get('account_id')),
+            'material_guard_version': 2,
+            'covered_event_scope': context.get('_research_input_guard') or self.research_guard(context),
+            'latest_event_scope_at_save': self.research_guard(context),
+            'team_snapshot': body.get('team_snapshot') or context.get('team_snapshot'),
             'model_config': body.get('model_config') or context.get('model_config') or model_config_summary(self._checkpoint_config(job, context))}
         with self.connect() as db:
             db.execute('''INSERT INTO synthesis_checkpoints
@@ -59,7 +79,7 @@ class RecoveryStore:
                 VALUES(?,?,?,?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET
                 body=excluded.body,guard=excluded.guard,created_at=excluded.created_at''',
                 (job['id'], job.get('account_id') or '', job.get('input_version'),
-                 context['universe_version'], dumps(body), self.research_guard(context), now()))
+                 context['universe_version'], dumps(body), body['covered_event_scope'], now()))
 
     def reusable_synthesis_checkpoint(self, job, context):
         from .store import loads
@@ -81,7 +101,13 @@ class RecoveryStore:
                     continue
                 body = loads(row['body'])
                 verified = body.get('verified_material_versions', {})
-                if self.checkpoint_material_guard(list(verified), job.get('account_id')) != verified:
+                # Legacy checkpoints incorrectly recorded the database head as an
+                # observed version. They cannot establish this proof retrospectively.
+                if body.get('material_guard_version') != 2:
+                    continue
+                current_materials = self.checkpoint_material_guard(list(verified), job.get('account_id'))
+                if current_materials != verified or any(value.get('read_document_version_id') !=
+                        value.get('latest_available_document_version_id') for value in verified.values()):
                     continue
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=resume_count+1 WHERE job_id=?', (row['job_id'],))
                 from .config import model_config_summary
@@ -90,6 +116,8 @@ class RecoveryStore:
                 return {**body, 'checkpoint_job_id': row['job_id'],
                         'configuration_relation': {'strategy': 'reuse_visible_research_current_task_config',
                             'previous': previous, 'current': current,
+                            'previous_team_snapshot': body.get('team_snapshot'),
+                            'current_team_snapshot': context.get('team_snapshot') or config.get('_agent_team'),
                             'changed': previous != current if previous else None,
                             'note': '复用仍有效的可见研究；汇总使用本次任务配置，旧任务能力观测不作本次证明。'},
                         'checkpoint_created_at': row['created_at'], 'resume_attempt': row['resume_count'] + 1}

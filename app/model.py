@@ -86,7 +86,7 @@ _NATIVE_CAPABILITIES: dict[str, dict] = {}
 def native_search_fingerprint(config: dict) -> str:
     """Invalidate evidence on endpoint/model/credential/effort changes, without a key."""
     identity = [str(config.get(k, "")) for k in ("model_protocol", "model_base_url", "model_name", "model_key_env")]
-    identity.append(os.environ.get(config.get("model_key_env", "MODEL_API_KEY"), ""))
+    identity.append(config.get("_credential_fingerprint") or hashlib.sha256(str(config.get("_model_api_key", os.environ.get(config.get("model_key_env", "MODEL_API_KEY"), ""))).encode()).hexdigest())
     identity.append(model_config_summary(config)["fingerprint"])
     return hashlib.sha256(json.dumps(identity).encode()).hexdigest()
 
@@ -135,7 +135,7 @@ class ModelClient:
         if not self.model:
             raise ModelConfigurationError("请先配置 model_name；应用不会默认假定任何模型权限")
         self.key_env = str(config.get("model_key_env") or "MODEL_API_KEY")
-        self.key = os.environ.get(self.key_env, "")
+        self.key = config.get("_model_api_key", os.environ.get(self.key_env, ""))
         base_url = str(config.get("model_base_url") or "https://api.openai.com/v1").rstrip("/")
         parsed = urlsplit(base_url)
         if parsed.scheme not in {"https", "http"} or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
@@ -392,6 +392,22 @@ class ModelClient:
                 "failed_requests": sum(bool(r.get("error")) for r in requests),
                 "usage": usage or None, "usage_reported_requests": sum(r.get("usage") is not None for r in requests)}
 
+    def _safe_provider_identifier(self, value):
+        if not isinstance(value, str):
+            return None
+        return (value.replace(self.key, '[REDACTED]') if self.key else value)[:512]
+
+    def _reflects_credential(self, value):
+        if not self.key:
+            return False
+        if isinstance(value, str):
+            return value == self.key or (len(self.key) >= 8 and self.key in value)
+        if isinstance(value, list):
+            return any(self._reflects_credential(item) for item in value)
+        if isinstance(value, dict):
+            return any(self._reflects_credential(key) or self._reflects_credential(item) for key, item in value.items())
+        return False
+
     async def _post(self, endpoint: str, payload: dict, session: ModelSession | None = None) -> dict:
         retries = max(0, min(int(self.config.get("model_retries", 1)), 3))
         for attempt in range(retries + 1):
@@ -412,6 +428,7 @@ class ModelClient:
                            "output_bytes": 0, "request_id": None,
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None}
+            observation.update({key: self.config[key] for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in self.config})
             self.requests.append(observation)
             if session is not None:
                 session.requests.append(observation)
@@ -440,7 +457,7 @@ class ModelClient:
             observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
                                request_accepted=200 <= response.status_code < 300,
                                output_bytes=len(response.content),
-                               request_id=response.headers.get("x-request-id") or response.headers.get("request-id"))
+                               request_id=self._safe_provider_identifier(response.headers.get("x-request-id") or response.headers.get("request-id")))
             if response.status_code >= 400:
                 observation["error"] = f"HTTP {response.status_code}"
                 if response.status_code in {400, 404, 422} or (response.status_code >= 500 and any(
@@ -483,6 +500,9 @@ class ModelClient:
             if not isinstance(data, dict):
                 observation["error"] = "invalid_response_type"
                 raise ModelProtocolError("模型服务返回的 JSON 顶层必须为对象")
+            if self._reflects_credential(data):
+                observation['error'] = 'credential_reflected_by_provider'
+                raise ModelProtocolError('供应商响应包含凭据反射，已停止处理；未写入报告、日志或模型后续上下文')
             root_field = "output" if self.protocol == "responses" else "choices"
             if root_field not in data and ("success" in data or "data" in data):
                 # Support only the observed, explicit one-layer success/data
@@ -501,6 +521,8 @@ class ModelClient:
                     # counters. Keep them separate; never add or substitute them.
                     observation["forwarder_usage"] = _numeric_counters(data["usage"])
                 data = inner
+            if isinstance(data.get("model"), str):
+                observation["reported_model"] = self._safe_provider_identifier(data["model"])
             reported_effort = (data.get("reasoning") or {}).get("effort") if isinstance(data.get("reasoning"), dict) else data.get("reasoning_effort")
             if reported_effort in ("none", "minimal", "low", "medium", "high", "xhigh", "max"):
                 observation["reported_reasoning_effort"] = reported_effort
@@ -516,7 +538,7 @@ class ModelClient:
             if isinstance(data.get("server_side_tool_usage"), dict):
                 observation["server_side_tool_usage"] = _numeric_counters(data["server_side_tool_usage"])
             if isinstance(data.get("id"), str):
-                observation["response_id"] = data["id"]
+                observation["response_id"] = self._safe_provider_identifier(data["id"])
             return data
         raise ModelError("模型重试失败")
 

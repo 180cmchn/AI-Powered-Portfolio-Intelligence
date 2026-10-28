@@ -515,7 +515,7 @@ class RecommendationStore:
         from .store import loads
         with self.connect() as db:
             version = self.universe_snapshot(db)['universe_version']
-            rows = db.execute("""SELECT r.* FROM research_records r WHERE (r.account_id='' OR r.account_id=?)
+            rows = db.execute("""SELECT r.* FROM research_records r WHERE r.account_id=?
                 AND (?=0 OR (r.applicability='current' AND r.universe_version=? AND NOT EXISTS
                 (SELECT 1 FROM research_records n WHERE n.account_id=r.account_id
                  AND n.logical_identity=r.logical_identity AND n.universe_version=r.universe_version

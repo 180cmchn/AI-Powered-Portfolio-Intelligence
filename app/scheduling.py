@@ -31,6 +31,13 @@ CREATE TABLE IF NOT EXISTS research_demands(
  account_id TEXT NOT NULL, input_version INTEGER, kind TEXT NOT NULL, reason TEXT NOT NULL,
  state TEXT NOT NULL, job_id TEXT, detail TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS demands_pending ON research_demands(state,account_id,id);
+CREATE TABLE IF NOT EXISTS research_demand_scopes(
+ job_id TEXT PRIMARY KEY, account_id TEXT NOT NULL, max_demand_id INTEGER NOT NULL,
+ created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS research_demand_reads(
+ job_id TEXT NOT NULL, demand_id INTEGER NOT NULL, PRIMARY KEY(job_id,demand_id));
+CREATE TABLE IF NOT EXISTS research_demand_scope_items(
+ job_id TEXT NOT NULL, demand_id INTEGER NOT NULL, PRIMARY KEY(job_id,demand_id));
 CREATE TABLE IF NOT EXISTS global_runs(
  id TEXT PRIMARY KEY, kind TEXT NOT NULL, state TEXT NOT NULL, reason TEXT NOT NULL,
  result TEXT, error TEXT, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
@@ -132,11 +139,59 @@ class SchedulingStore:
             for account_id in ids:
                 self._dispatch_account(db, self.account(account_id, db))
 
-    def demands(self, account_id=None, limit=100, offset=0):
+    def demands(self, account_id=None, limit=100, offset=0, job_id=None):
         with self.connect() as db:
-            rows = db.execute("SELECT * FROM research_demands WHERE (? IS NULL OR account_id=?) ORDER BY id DESC LIMIT ? OFFSET ?",
-                              (account_id, account_id, min(max(limit, 1), 1000), max(offset, 0))).fetchall()
+            rows = db.execute("SELECT * FROM research_demands WHERE (? IS NULL OR account_id=?) AND (? IS NULL OR job_id=?) ORDER BY id DESC LIMIT ? OFFSET ?",
+                              (account_id, account_id, job_id, job_id, min(max(limit, 1), 1000), max(offset, 0))).fetchall()
         return [dict(r) for r in rows]
+
+    def task_demands(self, job_id, account_id, limit=25, offset=0):
+        """A stable, task-scoped page. Concurrent account demand arrivals cannot hide it."""
+        limit, offset = min(max(int(limit), 1), 50), max(int(offset), 0)
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            owner = db.execute('SELECT account_id FROM jobs WHERE id=?', (job_id,)).fetchone()
+            if not owner or owner[0] != account_id:
+                raise KeyError('研究需求不属于当前账户任务')
+            frozen = db.execute('SELECT 1 FROM research_demand_scopes WHERE job_id=?', (job_id,)).fetchone()
+            db.execute('''INSERT OR IGNORE INTO research_demand_scopes
+                SELECT ?,?,coalesce(max(id),0),? FROM research_demands WHERE job_id=? AND account_id=?''',
+                (job_id, account_id, now(), job_id, account_id))
+            if not frozen:
+                db.execute('''INSERT OR IGNORE INTO research_demand_scope_items
+                    SELECT ?,id FROM research_demands WHERE job_id=? AND account_id=?''', (job_id, job_id, account_id))
+            maximum = db.execute('SELECT max_demand_id FROM research_demand_scopes WHERE job_id=?', (job_id,)).fetchone()[0]
+            args = (job_id, account_id)
+            total = db.execute('''SELECT count(*) FROM research_demands d JOIN research_demand_scope_items s ON s.demand_id=d.id
+                WHERE s.job_id=? AND d.account_id=?''', args).fetchone()[0]
+            rows = [dict(row) for row in db.execute('''SELECT d.* FROM research_demands d
+                JOIN research_demand_scope_items s ON s.demand_id=d.id
+                WHERE s.job_id=? AND d.account_id=? ORDER BY d.id LIMIT ? OFFSET ?''', (*args, limit, offset))]
+            db.executemany('INSERT OR IGNORE INTO research_demand_reads VALUES(?,?)', [(job_id, row['id']) for row in rows])
+        return {'items': rows, 'total': total, 'offset': offset, 'limit': limit,
+                'has_more': offset + len(rows) < total,
+                'next_offset': offset + len(rows) if offset + len(rows) < total else None,
+                'scope_max_demand_id': maximum,
+                'coverage_policy': 'Only explicitly reported covered_demand_ids are completed; use list_business_demands for all pages.'}
+
+    def complete_task_demands(self, db, job_id, result):
+        """Publishing a report does not prove the entire assigned backlog was researched."""
+        claimed = result.get('covered_demand_ids', [])
+        claimed = {value for value in claimed if type(value) is int} if isinstance(claimed, list) else set()
+        readable = {row[0] for row in db.execute('SELECT demand_id FROM research_demand_reads WHERE job_id=?', (job_id,))}
+        allowed = claimed & readable
+        for demand_id in allowed:
+            db.execute("""UPDATE research_demands SET state='completed',detail='explicitly covered in published report',updated_at=?
+                WHERE id=? AND job_id=? AND state='assigned'""", (now(), demand_id, job_id))
+        db.execute("""UPDATE research_demands SET state='uncovered',
+            detail='报告未明确覆盖此项；保留待处理，手动重试时重新安排',updated_at=?
+            WHERE job_id=? AND state='assigned'""", (now(), job_id))
+        rows = db.execute('''SELECT id,state FROM research_demands WHERE job_id=? OR id IN
+            (SELECT demand_id FROM research_demand_scope_items WHERE job_id=?) ORDER BY id''', (job_id, job_id)).fetchall()
+        return {'expected': len(rows), 'completed': sum(row['state'] == 'completed' for row in rows),
+                'uncovered': sum(row['state'] == 'uncovered' for row in rows),
+                'unaccepted_claims': sorted(claimed - allowed),
+                'items': [{'id': row['id'], 'state': row['state']} for row in rows]}
 
     def bind_public_information(self, run_id, material_ids):
         """Own discovered inputs in this run without creating another execution.

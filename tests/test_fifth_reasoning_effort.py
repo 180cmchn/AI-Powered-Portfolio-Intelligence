@@ -18,6 +18,7 @@ from app.model import ModelClient, ModelConfigurationError, native_search_finger
 from app.store import Store
 from app.domain import AccountInput
 from app.service import Service
+from tests.helpers_sixth import configure_test_team
 
 EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
 
@@ -152,9 +153,11 @@ def test_claim_freezes_queue_start_settings_and_status_lists_all_scopes(tmp_path
     app = create_app(tmp_path / 'queue.sqlite3', worker=False)
     store = app.state.store
     store.set_meta('settings', {**config('low'), 'debounce_seconds': 0, 'quote_provider': 'manual'})
+    configure_test_team(store, config('low'))
     account = store.save_account(AccountInput(name='effort A'))
     assert store.job(account['latest_job_id'])['config_snapshot'] is None
     store.set_meta('settings', {**store.settings(), 'reasoning_effort': 'xhigh'})
+    store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'xhigh'}})
     job = store.claim_jobs()[0]
     assert job['config_snapshot']['reasoning_effort'] == 'xhigh'
     store.request_analysis(None, 'candidate_scan', 'test-global')
@@ -162,8 +165,10 @@ def test_claim_freezes_queue_start_settings_and_status_lists_all_scopes(tmp_path
     assert run['input_snapshot']['config']['reasoning_effort'] == 'xhigh'
     with TestClient(app) as client:
         assert client.put('/api/settings', json={'reasoning_effort': 'max'}).status_code == 200
+        store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'max'}})
         status = client.get('/api/status').json()
     assert status['settings']['reasoning_effort'] == 'max'
+    assert status['global_manager']['reasoning_effort'] == 'max'
     assert {r['id'] for r in status['running_model_configs']} == {job['id'], run['id']}
     assert {r['reasoning_effort'] for r in status['running_model_configs']} == {'xhigh'}
     assert Store(store.path).job(job['id'])['config_snapshot']['reasoning_effort'] == 'xhigh'
@@ -173,11 +178,13 @@ def test_claim_freezes_queue_start_settings_and_status_lists_all_scopes(tmp_path
 async def test_service_account_and_global_use_claimed_config_after_setting_change(tmp_path):
     store = Store(tmp_path / 'service.sqlite3')
     store.set_meta('settings', {**config('high'), 'debounce_seconds': 0, 'quote_provider': 'manual'})
+    configure_test_team(store, config('high'))
     account = store.save_account(AccountInput(name='A'))
     job = store.claim_jobs()[0]
     store.request_analysis(None, 'candidate_scan', 'one')
     run = store.claim_global()
     store.set_meta('settings', {**store.settings(), 'reasoning_effort': 'max'})
+    store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'max'}})
     seen = []
     async def runner(context, cfg, tools, emit):
         seen.append((context['job_id'], cfg['reasoning_effort'], context['model_config']['reasoning_effort']))
@@ -199,7 +206,7 @@ def test_v5_migration_backup_is_repeatable_and_never_persists_effort_default(tmp
     with original.connect() as db:
         db.execute('ALTER TABLE jobs DROP COLUMN config_snapshot')
     updated = Store(path)
-    assert updated.meta('schema_version') == 5
+    assert updated.meta('schema_version') == 6
     assert updated.account(account['id']) == account
     assert updated.settings()['reasoning_effort'] == 'xhigh'
     assert 'reasoning_effort' not in updated.meta('settings')
@@ -279,12 +286,14 @@ def test_recovery_records_old_and_current_config_without_claiming_old_effort(tmp
     from app.config import model_config_summary
     store = Store(tmp_path / 'recovery.sqlite3')
     store.set_meta('settings', {**config('high'), 'debounce_seconds': 0})
+    configure_test_team(store, config('high'))
     account = store.save_account(AccountInput(name='recovery'))
     job = store.claim_jobs()[0]
     context = {'account': account, 'universe_version': 1, 'model_config': model_config_summary(job['config_snapshot'])}
     store.save_synthesis_checkpoint(job, {'reports': [{'summary': 'visible evidence'}], 'material_ids': []}, context)
     store.set_job_state(job['id'], 'failed', 'controlled timeout')
     store.set_meta('settings', {**store.settings(), 'reasoning_effort': 'xhigh'})
+    store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'xhigh'}})
     store.enqueue(account['id'], 'manual')
     current = store.claim_jobs()[0]
     restored = store.reusable_synthesis_checkpoint(current, {**context, 'model_config': model_config_summary(current['config_snapshot'])})
@@ -353,10 +362,15 @@ def test_status_invalidates_function_probe_after_environment_effort_changes(tmp_
     monkeypatch.setenv('REASONING_EFFORT', 'medium')
     app = create_app(tmp_path / 'probe.sqlite3', worker=False)
     store = app.state.store
-    store.set_meta('model_probe', {'ok': True, 'fingerprint': native_search_fingerprint(store.settings())})
+    configure_test_team(store, config('medium'))
+    effective, _ = app.state.service.manager_config(credentials=False)
+    store.set_meta('model_probe', {'ok': True, 'fingerprint': native_search_fingerprint(effective)})
     with TestClient(app) as client:
         assert client.get('/api/status').json()['model_probe']['ok'] is True
+        # An environment change no longer overrides an explicit global role.
         monkeypatch.setenv('REASONING_EFFORT', 'max')
+        assert client.get('/api/status').json()['model_probe']['ok'] is True
+        store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'max'}})
         result = client.get('/api/status').json()['model_probe']
         assert result['ok'] is False and result['status'] == 'unverified'
 
@@ -367,6 +381,7 @@ async def test_rejected_same_config_not_retried_on_unrelated_save_or_restart(tmp
     app = create_app(tmp_path / 'rejection.sqlite3', worker=False)
     store = app.state.store
     store.set_meta('settings', {**config('max'), 'quote_provider': 'manual', 'debounce_seconds': 0})
+    configure_test_team(store, config('max'))
     account = store.save_account(AccountInput(name='no repeat'))
     store.request_analysis(None, 'candidate_scan', 'public-rejection')
     requests = []
@@ -387,8 +402,9 @@ async def test_rejected_same_config_not_retried_on_unrelated_save_or_restart(tmp
     assert store.global_run(run['id'])['state'] == 'waiting_config'
     assert store.claim_jobs() == [] and store.claim_global() is None
     assert len(store.jobs(account['id'])) == 1
-    with TestClient(app) as client:
-        assert client.put('/api/settings', json={'reasoning_effort': 'high'}).status_code == 200
+    # The sixth iteration binds effort at the role, not the connection/settings.
+    store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'high'}})
+    assert service.resume_waiting_config()
     assert store.job(job['id'])['state'] == 'queued'
     assert store.global_run(run['id'])['state'] == 'superseded'
 
@@ -396,9 +412,11 @@ async def test_rejected_same_config_not_retried_on_unrelated_save_or_restart(tmp
 def test_restart_attempt_preserves_old_and_new_configuration_relation(tmp_path):
     store = Store(tmp_path / 'restart.sqlite3')
     store.set_meta('settings', {**config('high'), 'debounce_seconds': 0})
+    configure_test_team(store, config('high'))
     account = store.save_account(AccountInput(name='restart'))
     first = store.claim_jobs()[0]
     store.set_meta('settings', {**store.settings(), 'reasoning_effort': 'max'})
+    store.update_agent_definition('manager', {'default_binding': {'reasoning_effort': 'max'}})
     store.recover(config_ready=True)
     second = store.claim_jobs()[0]
     assert first['id'] == second['id'] and second['attempts'] == 2
@@ -432,14 +450,21 @@ def test_recovery_age_uses_current_task_claim_snapshot(tmp_path, scope):
 
 @pytest.mark.parametrize('source,bad', [('env', ''), ('saved', None), ('saved', 'unknown')])
 def test_invalid_effective_effort_is_visible_in_status_without_breaking_accounts(tmp_path, monkeypatch, source, bad):
-    app = create_app(tmp_path / 'invalid-visible.sqlite3', worker=False)
+    path = tmp_path / 'invalid-visible.sqlite3'
     cfg = config()
     cfg.pop('reasoning_effort')
     if source == 'env':
         monkeypatch.setenv('REASONING_EFFORT', bad)
     else:
         cfg['reasoning_effort'] = bad
-    app.state.store.set_meta('settings', cfg)
+    # A real pre-upgrade settings row migrates to the role without silently
+    # replacing an explicit invalid effort with medium.
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+        db.execute("INSERT INTO meta VALUES('schema_version','5')")
+        db.execute("INSERT INTO meta VALUES('settings',?)", (json.dumps(cfg),))
+    app = create_app(path, worker=False)
+    assert app.state.store.list_agent_roles()[0]['resolved']['reasoning_effort'] == bad
     with TestClient(app) as client:
         status = client.get('/api/status').json()
         assert status['model_configured'] is False
@@ -450,15 +475,21 @@ def test_invalid_effective_effort_is_visible_in_status_without_breaking_accounts
 def test_credential_or_local_authorization_change_can_resume_configuration_waiter(tmp_path, monkeypatch):
     store = Store(tmp_path / 'auth-change.sqlite3')
     store.set_meta('settings', {**config(), 'model_allow_no_key': False, 'debounce_seconds': 0})
+    provider = configure_test_team(store, config())
+    asyncio.run(store.clear_provider_credential(provider['id']))
     account = store.save_account(AccountInput(name='authorization'))
     job = store.claim_jobs()[0]
     store.set_job_state(job['id'], 'waiting_config', 'missing key')
-    store.set_meta('settings', {**store.settings(), 'model_allow_no_key': True})
+    # Explicitly provision the replacement through provider discovery. Legacy
+    # local no-key flags no longer mutate a role's authoritative connection.
+    monkeypatch.setenv('FIFTH_TEST_EMPTY_KEY', 'synthetic-first-replacement-key')
+    configure_test_team(store, config())
     assert Service(store).resume_waiting_config()
     assert store.job(job['id'])['state'] == 'queued'
     claimed = store.claim_jobs()[0]
     store.set_job_state(claimed['id'], 'waiting_config', 'credential configuration test')
     monkeypatch.setenv('FIFTH_TEST_EMPTY_KEY', 'synthetic-replacement-key')
+    configure_test_team(store, config())
     store.recover(config_ready=True)
     assert store.job(job['id'])['state'] == 'queued'
     assert 'synthetic-replacement-key' not in json.dumps(store.job(job['id'], events=True))
@@ -469,6 +500,7 @@ def test_failed_explicit_function_probe_replaces_previous_success_with_request_d
     app = create_app(tmp_path / 'probe-failed.sqlite3', worker=False)
     store = app.state.store
     store.set_meta('settings', config('max'))
+    configure_test_team(store, config('max'))
     store.set_meta('model_probe', {'ok': True, 'fingerprint': native_search_fingerprint(store.settings())})
     monkeypatch.setattr(model, 'ModelClient', lambda cfg, transport=None: ModelClient(cfg, transport=httpx.MockTransport(
         lambda req: httpx.Response(400, json={'error': {'param': 'reasoning.effort', 'message': 'unsupported value'}}))))

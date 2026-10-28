@@ -67,7 +67,9 @@ def test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bou
     store.dispatch_demands()
     follow = store.claim_jobs()[0]
     assert 'manual_security:' not in follow['reason']
-    store.publish(follow['id'], {'report': '全账户复核已完成', 'maintained_suggestion_ids': list(ids.values())}, None)
+    covered = [row['id'] for row in store.task_demands(follow['id'], account['id'])['items']]
+    store.publish(follow['id'], {'report': '全账户复核已完成', 'maintained_suggestion_ids': list(ids.values()),
+                                'covered_demand_ids': covered}, None)
     for _ in range(3):
         store.dispatch_demands()
         store.review_recommendations()

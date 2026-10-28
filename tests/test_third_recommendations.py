@@ -294,7 +294,9 @@ def test_inflight_price_event_is_not_consumed_by_an_older_research_context(store
     follow = store.claim_jobs()[0]
     linked = store.recommendation_context(account["id"], follow["id"])["event_linked_items"]
     assert active["id"] in {item["id"] for item in linked}
-    assert store.publish(follow["id"], {"report": "已处理本轮新价格事件", "maintained_suggestion_ids": [active["id"]]}, None)
+    covered = [row['id'] for row in store.task_demands(follow['id'], account['id'])['items']]
+    assert store.publish(follow["id"], {"report": "已处理本轮新价格事件", "maintained_suggestion_ids": [active["id"]],
+                                      'covered_demand_ids': covered}, None)
     assert store.recommendation(account["id"], active["id"])["review_status"] == "valid"
     assert all(d["state"] == "completed" for d in store.demands(account["id"]))
     store.review_recommendations(quote, stamp)

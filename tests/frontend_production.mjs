@@ -75,8 +75,9 @@ try {
   await page.getByText('已登记复核需求，处理状态可在建议与 Agent 工作台查看。',{exact:true}).waitFor();
   assert.ok((await page.locator('#active-recommendations').textContent()).includes('已安排研究'));
   await page.locator('nav a[href="#market"]').click();
-  await page.locator("article .research-version").getByText(`候选范围 v${fixture.universe_version}`,{exact:true}).waitFor();
+  assert.equal(await page.getByText('当前范围结论',{exact:true}).count(),0,'public generated research does not become selected-account research');
   await page.locator('details[data-key="global-runs"] > summary').click();
+  await page.getByText(`候选范围 v${fixture.universe_version}`,{exact:true}).first().waitFor();
   await page.getByText('历史研究范围 · 不作为当前公共结论',{exact:true}).waitFor();
   assert.equal(await page.getByText('历史范围结论',{exact:true}).count(),0);
   await page.locator('nav a[href="#holdings"]').click();
@@ -219,12 +220,10 @@ try {
   assert.ok((await page.locator('#lookup-results').textContent()).includes('新查询结果'));
   assert.equal(await page.getByText('过时证券结果 · etf',{exact:true}).count(),0);
   await page.unroute('**/api/securities?*');
-  // Actual migration + settings writes: an old independent-provider disable does
-  // not switch native search off; an explicit user disable survives Store reopen.
+  // Current UI: connection-only providers, discovered model choices and global roles.
   await page.locator('nav a[href="#settings"]').click();
   await page.locator('#model_native_search').waitFor();
-  assert.deepEqual(await page.locator('#reasoning_effort option').evaluateAll(options=>options.map(option=>option.value)),['low','medium','high','xhigh','max']);
-  assert.equal(await page.locator('#reasoning_effort').inputValue(),'medium');
+  assert.equal(await page.locator('#settings-form #model_name, #settings-form #model_protocol, #settings-form #reasoning_effort, #settings-form #model_key_env').count(),0);
   assert.equal(await page.locator('#model_native_search').inputValue(),'true');
   assert.equal(await page.locator('#search_provider, #search_key_env').count(),0);
   const waitCapability=async label=>page.waitForFunction(text=>document.body.textContent.includes('原生联网：'+text),label);
@@ -237,16 +236,90 @@ try {
     assert.equal((await saved).status(),200);
     await page.locator('.loading-line').waitFor({state:'hidden'});
   };
+  const openRoles=async()=>{
+    await page.locator('nav a[href="#roles"]').click();
+    await page.locator('.role-model-form[data-role-id="manager"][data-account-id=""]').waitFor();
+    await page.locator('.loading-line').waitFor({state:'hidden'});
+    assert.equal(await page.locator('.role-card').count(),6);
+  };
+  const saveManager=async({effort,model}={})=>{
+    const form=page.locator('.role-model-form[data-role-id="manager"]');
+    if(effort)await form.locator('[name="reasoning_effort"]').selectOption(effort);
+    if(model)await form.locator('[name="model_id"]').selectOption(model);
+    const saved=page.waitForResponse(response=>response.url().endsWith('/api/agent-roles/manager') && response.request().method()==='PUT');
+    await form.locator('button[type="submit"]').click();
+    const response=await saved;assert.equal(response.status(),200);
+    await page.locator('.loading-line').waitFor({state:'hidden'});
+    return response.json();
+  };
+  await openRoles();
+  const manager=page.locator('.role-model-form[data-role-id="manager"]');
+  assert.deepEqual(await manager.locator('[name="reasoning_effort"] option').evaluateAll(options=>options.map(option=>option.value)),['low','medium','high','xhigh','max']);
+  assert.equal(await manager.locator('[name="model_id"]').inputValue(),'browser-native-observed');
+  await manager.locator('[data-model-filter]').fill('does-not-exist');
+  assert.deepEqual(await manager.locator('[name="model_id"] option').evaluateAll(options=>options.map(option=>option.value)),['']);
+  await manager.locator('[data-model-filter]').fill('');
+  await manager.locator('[name="model_id"]').selectOption('browser-native-observed');
   for (const effort of ['low','medium','high','xhigh','max']) {
-    await page.locator('#reasoning_effort').selectOption(effort);
-    await saveSettings();
-    assert.equal((await (await fetch(base+'/api/settings')).json()).reasoning_effort,effort);
+    const role=await saveManager({effort});
+    assert.equal(role.resolved.reasoning_effort,effort);
     assert.equal((await (await fetch(base+'/__fixture/reopen')).json()).reasoning_effort,effort);
   }
   await page.reload();
-  await page.locator('#reasoning_effort').waitFor();
-  assert.equal(await page.locator('#reasoning_effort').inputValue(),'max');
-  assert.ok((await page.locator('#inflight-model-settings').textContent()).includes('reasoning_effort：medium（旧配置；当前已保存 max）'));
+  await page.locator('.role-model-form[data-role-id="manager"]').waitFor();
+  assert.equal(await manager.locator('[name="reasoning_effort"]').inputValue(),'max');
+  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  await page.locator('nav a[href="#account-models"]').click();
+  await page.locator(`.role-model-form[data-role-id="manager"][data-account-id="${fixture.other_id}"]`).waitFor();
+  await page.locator('.role-card').last().waitFor();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(await page.locator('.role-card').count(),6);
+  assert.equal(await page.locator('.role-model-form [name="enabled"], .role-model-form [name="system_prompt"], .role-model-form [name="tools"]').count(),0);
+  const accountManager=page.locator('.role-model-form[data-role-id="manager"]');
+  await accountManager.locator('[name="reasoning_effort"]').selectOption('low');
+  const overrideSaved=page.waitForResponse(response=>response.url().endsWith(`/api/accounts/${fixture.other_id}/agent-models/manager`) && response.request().method()==='PUT');
+  await accountManager.locator('button[type="submit"]').click();
+  assert.equal((await overrideSaved).status(),200);
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  const globalManager=(await (await fetch(base+'/api/agent-roles')).json()).find(row=>row.role_id==='manager');
+  assert.equal(globalManager.resolved.reasoning_effort,'max');
+  const reset=page.waitForResponse(response=>response.url().endsWith(`/api/accounts/${fixture.other_id}/agent-models/manager`) && response.request().method()==='DELETE');
+  await accountManager.locator('[data-sixth-action="role-reset"]').click();
+  assert.equal((await reset).status(),200);
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(await page.locator('.role-card').count(),6);
+  await page.locator('nav a[href="#providers"]').click();
+  await page.locator('#provider-connection-form').waitFor();
+  assert.deepEqual(await page.locator('#provider-connection-form [name]').evaluateAll(nodes=>nodes.map(node=>node.name).sort()),['api_key','base_url','protocol']);
+  await page.locator('#provider-connection-form [name="api_key"]').fill('browser-form-only-fixture-secret');
+  await page.locator('#provider-connection-form [name="base_url"]').fill('https://new.fixture.invalid/v1/responses');
+  const created=page.waitForResponse(response=>response.url().endsWith('/api/providers') && response.request().method()==='POST');
+  await page.locator('#provider-connection-form button[type="submit"]').click();
+  const newProvider=await (await created).json();
+  assert.equal(newProvider.catalog.status,'success');
+  assert.equal(newProvider.base_url,'https://new.fixture.invalid/v1');
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(await page.locator('#provider-connection-form [name="api_key"]').inputValue(),'');
+  assert.ok(!JSON.stringify(await (await fetch(base+'/api/providers')).json()).includes('browser-form-only-fixture-secret'));
+  const changeProtocol=async protocol=>{
+    await page.locator('nav a[href="#providers"]').click();
+    await page.locator(`[data-sixth-action="provider-edit"][data-id="${fixture.provider_id}"]`).click();
+    const form=page.locator('#dialog #provider-connection-form');
+    await form.locator('[name="protocol"]').selectOption(protocol);
+    assert.equal(await form.locator('[name="api_key"]').inputValue(),'');
+    const saved=page.waitForResponse(response=>response.url().endsWith('/api/providers/'+fixture.provider_id) && response.request().method()==='PUT');
+    await form.locator('button[type="submit"]').click();
+    assert.equal((await saved).status(),200);
+    await page.locator('#dialog').waitFor({state:'hidden'});
+    await page.locator('.loading-line').waitFor({state:'hidden'});
+    await page.locator('nav a[href="#settings"]').click();
+    await page.locator('#model_native_search').waitFor();
+    await page.locator('.loading-line').waitFor({state:'hidden'});
+  };
+  await page.locator('nav a[href="#settings"]').click();
+  await page.locator('#model_native_search').waitFor();
+  assert.ok((await page.locator('#inflight-model-settings').textContent()).includes('reasoning_effort：medium'));
   await mkdir('test-results',{recursive:true});
   await page.screenshot({path:'test-results/frontend-production-settings.png',fullPage:true});
   await page.locator('#model_native_search').selectOption('false');
@@ -259,11 +332,10 @@ try {
   assert.equal(reopened.model_native_search,false);
   assert.equal(reopened.legacy_search_provider,'disabled');
   await page.locator('#model_native_search').selectOption('true');
-  await page.locator('#model_protocol').selectOption('chat_completions');
   await saveSettings();
+  await changeProtocol('chat_completions');
   await waitCapability('当前协议或端点不支持');
-  await page.locator('#model_protocol').selectOption('responses');
-  await saveSettings();
+  await changeProtocol('responses');
   await waitCapability('尚未验证');
   const probe=async()=>{
     const response=page.waitForResponse(item=>item.url().endsWith('/api/settings/probe-native-search') && item.request().method()==='POST');
@@ -278,13 +350,15 @@ try {
   await waitCapability('已观察到原生搜索');
   assert.equal((await probe()).cache_hit,true,'refreshing the capability should reuse its bounded probe result');
   assert.equal((await (await fetch(base+'/__fixture/reopen')).json()).probe_calls,1);
-  await page.locator('#model_name').fill('browser-native-auth');
-  await saveSettings();
+  await openRoles();await saveManager({model:'browser-native-auth'});
+  await page.locator('nav a[href="#settings"]').click();
+  await page.locator('#model_native_search').waitFor();
   await waitCapability('尚未验证');
   assert.equal((await probe()).status,'authentication_failed');
   await waitCapability('认证失败');
-  await page.locator('#model_name').fill('browser-native-failure');
-  await saveSettings();
+  await openRoles();await saveManager({model:'browser-native-failure'});
+  await page.locator('nav a[href="#settings"]').click();
+  await page.locator('#model_native_search').waitFor();
   assert.equal((await probe()).status,'request_failed');
   await waitCapability('请求失败');
   let releaseProbe, observeProbe;
@@ -303,7 +377,7 @@ try {
   assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));
   await page.locator('#dialog .dialog-header button').click();
   assert.deepEqual(errors,[]);
-  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, five reasoning_effort values/save/reopen and old in-flight snapshots, settings migration, six capability states and probe caching.');
+  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.');
 } catch(error) {
   await mkdir('test-results',{recursive:true});
   if(page) await page.screenshot({path:'test-results/frontend-production-failure.png',fullPage:true});

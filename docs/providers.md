@@ -4,6 +4,14 @@
 
 适配代码位于 `app/providers.py`。证券身份使用交易所加六位代码，例如 `SH:600519`、`SZ:000001`、`SH:510300`。名称不作为身份键。数量由账户模块保存为股或份，行情价格为每股或每份人民币价格。价格与涨跌幅返回十进制字符串，避免二进制浮点误差。
 
+## 第六轮当前入口
+
+模型供应商和行情数据源是不同配置。模型连接在“模型供应商”页面只填写 Key、Base URL、协议，后端自动发现目录；在统一角色或账户模型矩阵选择模型及 effort。供应商安全存储、前缀规范化、分页、缓存、重定向和凭据边界见[供应商与统一角色](sixth-provider-roles.md)。正常使用不再要求手填模型名或密钥环境变量名。
+
+基础行情自动刷新由 `market_refresh_enabled` 独立控制，已发布预测评分由 `forecast_evaluation_enabled` 独立控制；暂停 `scheduled_research_enabled` 不停掉它们。预测评分采用证券精确基准日/目标日的历史收盘和同源可比调整证据，不复用当前报价缓存冒充历史价格。规则及不可评估情况见[预测评估口径](forecast-evaluation.md)。
+
+默认日历仍是已核实的 `calendar_2026.json`；`STOCK_CALENDAR_PATH` 支持一个文件或包含 `calendar_*.json` 的目录。每年文件必须有明确覆盖区间与来源，跨年缺口保持未知。Mac 启停、升级前备份和换机说明见[运行说明](mac-operations.md)。以下真实网络观察均保留其当时日期与结论，不表示第六轮供应商目录或模型调用已经通过。
+
 ## 第三轮实测（2026-10-25，Asia/Shanghai）
 
 本轮重新执行 `PYTHONPATH=. .venv/bin/python tests/provider_smoke.py`。受限进程首次返回 ConnectError/gaierror；获准联网后于 **01:02:09–01:02:11 +08:00** 完成实际应用适配器访问。原始观察摘要见 [third-network-observations.json](third-network-observations.json)。
@@ -88,7 +96,7 @@ PDF 工具共用下载缓存：
 
 `data/calendar_2026.json` 根据[上交所](https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml)、[深交所](https://investor.szse.cn/disclosure/notice/general/t20251222_618087.html)、[北交所](https://www.bse.cn/important_news/200027428.html)发布的 2026 年休市安排录入，已核对三所年度安排一致。调休周末仍休市；不采用国务院工作日替代交易日。
 
-`market_state()` 统一转换为 Asia/Shanghai，调度时段为 09:30–11:30、13:00–15:00，不把集合竞价视为常规扫描窗口。日历覆盖范围外返回 `trading_day=null, phase=unknown`，而不是仅按周一至周五猜测。`STOCK_CALENDAR_PATH` 可指向更新后的 JSON，支持 `overrides: {"YYYY-MM-DD": false}` 处理临时休市；`coverage` 必须与已核实日期一致。当前并未自动下载后续年度日历，进入 2027 年前需要更新。日历不是单证券停牌信息。
+`market_state()` 统一转换为 Asia/Shanghai，调度时段为 09:30–11:30、13:00–15:00，不把集合竞价视为常规扫描窗口。日历覆盖范围外返回 `trading_day=null, phase=unknown`，而不是仅按周一至周五猜测。`STOCK_CALENDAR_PATH` 可指向更新后的 JSON 或包含 `calendar_*.json` 的目录，支持 `overrides: {"YYYY-MM-DD": false}` 处理临时休市；`coverage` 必须与已核实日期一致。当前并未自动下载后续年度日历，进入 2027 年前需要更新。日历不是单证券停牌信息。
 
 ## 配置键
 
@@ -97,8 +105,11 @@ PDF 工具共用下载缓存：
 | quote_provider | eastmoney | eastmoney 或 manual |
 | network_timeout_seconds | 12 | 每次外部 HTTP 连接/读写超时 |
 | quote_stale_seconds | 180 | 行情时间距当前超过该值标为 stale |
-| model_native_search | true | 同模型原生联网；能力需真实观察 |
-| search_max_results | 6 | 搜索每次返回上限，1–20 |
+| model_native_search | true | 当前角色模型会话原生联网；能力需真实观察 |
+| market_refresh_enabled | true | 基础行情自动刷新，独立于模型定时研究 |
+| forecast_evaluation_enabled | true | 已发布预测的到期评估，独立于模型凭据与研究 |
+| scheduled_research_enabled | true | 新定时研究；账户正式批次另需明确启用 |
+| search_max_results（历史） | 不再进入当前运行设置 | 早期独立搜索适配参数；本轮不恢复 Tavily/Brave |
 | read_timeout_seconds | 30 | 原文读取总时限 |
 | read_max_bytes | 5000000 | 响应字节上限 |
 | read_max_chars | 40000 | 可见正文字符上限 |

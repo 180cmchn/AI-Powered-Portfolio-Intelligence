@@ -15,6 +15,8 @@ from .recommendations import RecommendationStore, SCHEMA as RECOMMENDATION_SCHEM
 from .scheduling import SchedulingStore, SCHEMA as SCHEDULING_SCHEMA
 from .references import ReferenceStore
 from .recovery import RecoveryStore
+from .agent_config import AgentConfigStore, SCHEMA as AGENT_CONFIG_SCHEMA
+from .forecasts import ForecastStore, SCHEMA as FORECAST_SCHEMA
 
 
 def uid() -> str:
@@ -33,7 +35,7 @@ class Conflict(Exception):
     pass
 
 
-class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore):
+class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
@@ -44,7 +46,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 5:
+                if version and int(loads(version[0])) > 6:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -66,6 +68,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 5:
                     backup = self.path.with_name(self.path.name + ".before-v5.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 6:
+                    backup = self.path.with_name(self.path.name + ".before-v6.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -117,7 +125,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 raise ValueError("演示与真实运行必须使用不同数据库")
             db.execute("INSERT OR IGNORE INTO meta VALUES('mode',?)", (dumps(mode),))
             db.execute("INSERT OR IGNORE INTO meta VALUES('schema_version','1')")
-            db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA)
+            db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA + AGENT_CONFIG_SCHEMA + FORECAST_SCHEMA)
             db.execute("BEGIN IMMEDIATE")
             self.migrate_material_catalog(db)
             self.migrate_research_versions(db)
@@ -136,7 +144,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                     "model_native_search": saved_settings["model_native_search"], "reason": "independent_model_tool_setting"}),))
             # Do not persist a reasoning_effort default here: saved explicit
             # values > environment > medium is resolved on each settings read.
-            db.execute("UPDATE meta SET value='5' WHERE key='schema_version'")
+            self.migrate_agent_config(db, {**defaults(), **saved_settings})
+            self.migrate_forecasts(db)
+            db.execute("UPDATE meta SET value='6' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -186,23 +196,39 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                            **(model_config_summary(cfg) if cfg else {'reasoning_effort': None, 'note': '历史任务未记录模型配置'})})
         return result
 
-    def task_config_snapshot(self, db):
+    def task_config_snapshot(self, db, account_id=None):
         """Resolve settings once and record credential-sensitive evidence identity."""
         from .model import native_search_fingerprint
         saved = db.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
         config = {**defaults(), **loads(saved[0] if saved else None, {})}
-        config['_model_configuration_fingerprint'] = native_search_fingerprint(config)
+        config['_agent_team'] = self.freeze_agent_team(account_id, db=db)
+        team = config['_agent_team']
+        role = team['roles']['manager']
+        binding = role['resolved']
+        provider = team['connections'].get(binding.get('provider_id'), {})
+        config.update(model_name=binding.get('model_id', ''), reasoning_effort=binding.get('reasoning_effort', 'medium'),
+            model_base_url=provider.get('base_url', ''), model_protocol=provider.get('protocol', 'responses'),
+            provider_id=provider.get('id'), provider_revision=provider.get('revision'),
+            credential_revision=provider.get('credential_revision'), role_id='manager', role_version=role['version'],
+            prompt_version=role['prompt_version'], tool_version=role['tool_version'], team_id=team['team_id'],
+            account_id=account_id, _credential_fingerprint=(provider.get('credential_reference') or {}).get('fingerprint'))
+        request_options = {k: config.get(k) for k in ('model_native_search', 'model_allow_no_key', 'reasoning',
+            'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds')}
+        config['_model_configuration_fingerprint'] = hashlib.sha256(
+            dumps({'team_id': team['team_id'], 'request_options': request_options}).encode()).hexdigest()
         return config
 
     def resume_configuration_waiters(self, db):
         """Do not automatically repeat a rejected request under identical settings."""
         current = self.task_config_snapshot(db)['_model_configuration_fingerprint']
-        jobs = db.execute("""SELECT id,config_snapshot FROM jobs WHERE state='waiting_config'
+        jobs = db.execute("""SELECT id,account_id,config_snapshot FROM jobs WHERE state='waiting_config'
             AND EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)""").fetchall()
         for row in jobs:
+            current = self.task_config_snapshot(db, row['account_id'])['_model_configuration_fingerprint']
             previous = (loads(row['config_snapshot']) or {}).get('_model_configuration_fingerprint')
             if previous != current:  # Legacy work without evidence can resume once.
                 db.execute("UPDATE jobs SET state='queued',error=NULL,due_at=?,updated_at=? WHERE id=?", (now(), now(), row['id']))
+        current = self.task_config_snapshot(db)['_model_configuration_fingerprint']
         runs = db.execute("SELECT id,input_snapshot FROM global_runs WHERE state='waiting_config'").fetchall()
         for row in runs:
             previous = ((loads(row['input_snapshot']) or {}).get('config') or {}).get('_model_configuration_fingerprint')
@@ -267,6 +293,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         due = (datetime.now(TZ) + timedelta(seconds=delay)).isoformat()
         db.execute("INSERT INTO jobs(id,account_id,input_version,reason,state,mode,due_at,created_at,updated_at,event_key) VALUES(?,?,?,?,'queued',?,?,?,?,?)",
                    (job_id, account["id"], account["version"], reason, self.mode, due, stamp, stamp, event_key))
+        self.reconcile_forecast_jobs(db, account["id"], job_id, account["version"])
         db.execute("UPDATE accounts SET latest_job_id=?,analysis_state='pending' WHERE id=?", (job_id, account["id"]))
         db.execute("UPDATE research_demands SET state='assigned',job_id=?,detail='included in latest account execution',updated_at=? WHERE account_id=? AND state='pending'", (job_id, stamp, account["id"]))
         return dict(db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone())
@@ -274,6 +301,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
     def enqueue(self, account_id, reason="manual", event_key=None, delay=0):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if reason in ('manual', 'retry', 'manual_retry'):
+                db.execute("""UPDATE research_demands SET state='pending',job_id=NULL,
+                    detail='explicit user retry of unfinished research',updated_at=?
+                    WHERE account_id=? AND state IN ('uncovered','failed')""", (now(), account_id))
             return self._enqueue(db, self.account(account_id, db), reason, delay, event_key)
 
     def delete_account(self, account_id):
@@ -341,8 +372,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             # Queued work adopts the configuration at claim/start. This same
             # immutable value drives all HTTP retries and child sessions. A new
             # claim after restart explicitly starts a new attempt/configuration.
-            cfg = self.task_config_snapshot(db)
             for r in rows:
+                cfg = self.task_config_snapshot(db, r["account_id"])
                 from .config import model_config_summary
                 previous = loads(r['config_snapshot'])
                 before = model_config_summary(previous) if previous else None
@@ -376,6 +407,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             db.execute("UPDATE jobs SET state=?,error=?,updated_at=? WHERE id=?", (state, error, now(), job_id))
             db.execute("UPDATE accounts SET analysis_state=? WHERE id=? AND latest_job_id=?", (state, row["account_id"], job_id))
             if state in ("failed", "cancelled"):
+                db.execute("UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')", (error or state, job_id))
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'", (state, error or state, now(), job_id))
 
     def publish(self, job_id, result, data_as_of):
@@ -391,19 +423,23 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             valid = bool(acc and acc["version"] == job["input_version"] and acc["latest_job_id"] == job_id and job["state"] == "running")
             result = self.resolve_result_references(result, job['account_id'], db)
             # Retain late results as explicitly stale history, never the current recommendation.
+            analysis_id = uid()
             db.execute("INSERT OR IGNORE INTO analyses VALUES(?,?,?,?,?,?,?,?,?,?)",
-                       (uid(), job_id, job["account_id"], job["input_version"], "current" if valid else "stale", self.mode,
+                       (analysis_id, job_id, job["account_id"], job["input_version"], "current" if valid else "stale", self.mode,
                         result.get("report", ""), dumps(result), data_as_of, now()))
             terminal = "completed" if valid else ("cancelled" if job["state"] == "cancelled" else "superseded")
             db.execute("UPDATE jobs SET state=?,result=?,data_as_of=?,updated_at=? WHERE id=?", (terminal, dumps(result), data_as_of, now(), job_id))
             if valid:
+                self.publish_forecasts(db, dict(job), result, analysis_id)
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id=? AND input_version=?',
                            (result.get('synthesis_checkpoint_job_id'), job['account_id'], job['input_version']))
                 db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND job_id<>? AND status='current'", (job["account_id"], job_id))
                 db.execute("UPDATE accounts SET analysis_state='current' WHERE id=?", (job["account_id"],))
                 self._save_suggestions(db, job, result)
                 self.save_research_records(result.get("research_records", []), job_id, job["account_id"], db)
-                db.execute("UPDATE research_demands SET state='completed',detail='account research completed',updated_at=? WHERE job_id=? AND state='assigned'", (now(), job_id))
+                result['demand_coverage'] = self.complete_task_demands(db, job_id, result)
+                db.execute('UPDATE analyses SET result=? WHERE job_id=?', (dumps(result), job_id))
+                db.execute('UPDATE jobs SET result=? WHERE id=?', (dumps(result), job_id))
             return valid
 
     def analyses(self, account_id, limit=100, offset=0, summary=False):
