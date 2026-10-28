@@ -50,3 +50,23 @@ async def test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deductio
 def test_quote_trigger_requires_real_open_session_and_valid_source_time(source,received,expected):
     state=quote_time_state(source,{},stamp=datetime.fromisoformat(received))
     assert state['fresh_for_triggers'] is expected
+
+async def test_registered_etf_identity_retains_exact_source_alias_and_quote_precision(tmp_path, monkeypatch):
+    from app import providers
+    from app.domain import quote_display_identity
+    store=Store(tmp_path/'identity.sqlite3')
+    identity={'symbol':'SZ:159278','name':'机器人ETF鹏华','canonical_name':'机器人ETF鹏华','kind':'etf',
+              'identity_source':{'url':'https://www.szse.cn/disclosure/notice/t20250807_615378.html'}}
+    store.put_cache('securities','SZ:159278',identity)
+    raw={'symbol':'SZ:159278','name':'机器人PH','price':'0.965','as_of':now(),'source':'sina:controlled-test',
+         'status':'ok','fresh_for_triggers':False}
+    async def quote(self, symbol):return dict(raw)
+    monkeypatch.setattr(providers.MarketProvider,'quote',quote)
+    service=Service(store)
+    await service.refresh_quotes(['SZ:159278'],force=True)
+    saved=store.cache('quotes')['SZ:159278']
+    assert saved['name']=='机器人ETF鹏华' and saved['source_name']=='机器人PH'
+    assert {k:saved[k] for k in ('price','as_of','source','fresh_for_triggers')}=={k:raw[k] for k in ('price','as_of','source','fresh_for_triggers')}
+    a=store.save_account(AccountInput(name='A identity',holdings=[{'symbol':'SZ:159278','quantity':'10000'}]))
+    assert service.account(a['id'])['metrics']['positions'][0]['name']=='机器人ETF鹏华'
+    assert quote_display_identity({**raw,'symbol':'SZ:159770'},identity)['name']=='机器人PH'

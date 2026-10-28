@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 from . import providers
 from .calendar import market_state
 from .config import model_config_summary
-from .domain import TZ, metrics, now
+from .domain import TZ, metrics, now, quote_display_identity
 from .store import Store, dumps
 from .materials import index_of, material_text
 
@@ -272,6 +272,7 @@ class Service:
                         q = await provider.quote(s)
                         if q.get("price") is None and previous.get("price") is not None:
                             q = {**previous, "status": "error_cached", "last_error": q.get("error", "行情更新失败"), "last_attempt_at": now()}
+                        q = quote_display_identity(q, self.store.cache("securities").get(s, {}))
                         self.store.put_cache("quotes", s, q)
                         if q.get("name"):
                             existing = self.store.cache("securities").get(s, {})

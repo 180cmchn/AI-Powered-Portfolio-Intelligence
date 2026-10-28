@@ -1,0 +1,32 @@
+{
+  "files": {
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/agents.py": "078df51eebe6d2233e2a6bc282c22e628b255b0ced2cf1bc23a6a7567095a674",
+    "app/calendar.py": "68e7a9be5f2c88559c971a54174d2f7118370cc1e5b15d9ecd6ee680b5352cab",
+    "app/config.py": "d64f2f043984ca4b8a07c21fb8fae976a448be78865275e24c65d8dd4d5215ef",
+    "app/context.py": "3f01e70b06aaa7bef76b54f02d08983dc3197afbb174e02fe5fffa738a6ab659",
+    "app/domain.py": "db4f3e5dd86392174296f284801212f4a077996c1bf10fdfc6bffc7b0f255637",
+    "app/main.py": "a1a1bb4725f1718132cbd9959a0a380c53f16955d81710fb5df8a51db9810055",
+    "app/materials.py": "1d8090ca1615590d45765b23db92d415c74bf3a222737abd4df39860b3e2e0de",
+    "app/model.py": "e94b770c68761c46cf97ff95cf2fc0435bb0d03fa0b75faff0795f7c08d7a4fa",
+    "app/native_sources.py": "870896bee984b004b514f5517884994247c927ac0b85fdbeae91514b12a7a52c",
+    "app/prompts/manager.txt": "c8f43c2e924595a12efd9bde4bc7d76022b3a44d05b6eafd04a99cfc16e111c6",
+    "app/prompts/researcher.txt": "766609b8b0a0e1b93d573990c45c02c06c45d9556f69bbc306a0244d4cfd698c",
+    "app/providers.py": "0c859f71950fe624a21d88ecd056cbc2937dc577784db31b8078d1882613e62a",
+    "app/recommendations.py": "dfd803ba48470085c0328e52a83c41943c741b82bb8286fbd1f647884891ae31",
+    "app/recovery.py": "1c3b1d4aef051f4a0f7cc8632d7d3ba223efae6a28ea9c049a942a3ce54bbac7",
+    "app/references.py": "0d2c5e3c6d6a9de8b98b115f99c3aae32828a46a3aee855cdd6dc1c917986e4e",
+    "app/scheduling.py": "af60970f5fb2322a6fe5bbe19bb9955d6b8672673e0ae47642d4f5c594edb4a9",
+    "app/service.py": "6415a9896f82ffdc5e9693d68bbb16bc9e210770ec914e596d8e8f03b34c4258",
+    "app/static/app.js": "906c22af0dd28c0b16b28265912fa9ad730d5c9b9bcc56df3206541430a829de",
+    "app/static/index.html": "04b6782cd8d3f4fe60115fd2d8c4216e4a683dd00deee875cc8bd75112e3fb11",
+    "app/static/style.css": "9ed5089cac21b46d1f62d3a5f40d77d7b1c056339c1fb187ff63b7b190917e9b",
+    "app/store.py": "c00ff96dc57bc11583e7ff4b3668fd2d06341bbc88f492715780ccbdc8786c76"
+  },
+  "manifest_sha256": "e0bd212be7d76dbe9a311ecbf4c8ee7cf1837895c1faeb08a68c95d4c4fdc788",
+  "verified_at": "2026-10-28T12:04:38+08:00",
+  "git_head": "e0049cd2111ec20402d6752a7dc0a879202e3050",
+  "working_tree": "uncommitted iteration-5 changes",
+  "backend_manifest_sha256": "4cb7864c6dcd2c22eaa7e246286957eb4a128b9cd0e32c60300a0d26992fb39f",
+  "validation": "Both npm run test:browser suites passed; application manifest unchanged before/after execution"
+}

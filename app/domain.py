@@ -114,6 +114,19 @@ def money(n: Decimal) -> str:
     return format(n.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP), "f")
 
 
+def quote_display_identity(quote: dict, security: dict) -> dict:
+    """Use a registered exact-symbol display name, retaining the provider alias.
+
+    This does not validate evidence or change prices, source times, or freshness.
+    A same-name record for a different symbol cannot rename the quote.
+    """
+    name = security.get("canonical_name")
+    if quote.get("symbol") != security.get("symbol") or not isinstance(name, str) or not name.strip():
+        return quote
+    return {**quote, "source_name": quote.get("source_name", quote.get("name")),
+            "name": name, "identity_source": security.get("identity_source")}
+
+
 def metrics(account: dict, quotes: dict, securities: dict) -> dict:
     positions, missing, notes, sectors = [], [], [], {}
     value, pnl, known_cost_value = Decimal(0), Decimal(0), Decimal(0)

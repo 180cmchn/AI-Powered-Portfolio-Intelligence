@@ -18,6 +18,7 @@ directory = Path(sys.argv[1]).resolve()
 os.environ['APP_DB_PATH'] = str(directory / 'browser.sqlite3')
 os.environ['APP_MODE'] = 'live'
 os.environ['PYTHON_DOTENV_DISABLED'] = '1'
+os.environ['REASONING_EFFORT'] = 'medium'  # Isolate fixtures from the operator's saved shell preference.
 
 from app.store import Store
 legacy = Store(os.environ['APP_DB_PATH'])

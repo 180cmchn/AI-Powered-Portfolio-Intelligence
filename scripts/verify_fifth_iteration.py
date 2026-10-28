@@ -22,19 +22,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import httpx
 from app.calendar import market_state
-from app.config import db_path, model_config_summary
-from app.domain import TZ, now
+from app.config import db_path, defaults, model_config_summary
+from app.domain import TZ, now, quote_display_identity
 from app.store import Store
 from scripts.verify_live_chain import configuration, public_config, observation, write_json
 
 SYMBOL = 'SZ:159278'
+IDENTITY = {'symbol':SYMBOL, 'canonical_name':'机器人ETF鹏华', 'name':'机器人ETF鹏华', 'kind':'etf',
+    'full_name':'鹏华国证机器人产业交易型开放式指数证券投资基金', 'quantity_unit':'份',
+    'identity_source':{'url':'https://www.szse.cn/disclosure/notice/t20250807_615378.html',
+        'checked_at':'2026-10-28', 'kind':'official_listing_identity_checked_by_developer'}}
 PURPOSE = ('仅研究 SZ:159278 机器人ETF鹏华（鹏华国证机器人产业交易型开放式指数证券投资基金）。'
- '从证券代码和问题出发自主原生搜索，不预给资料URL。核对基金和跟踪指数身份、实际取得的费用、披露持仓或行业敞口、'
- '流动性与跟踪表现，缺失则说明。基金不是上市公司；基金持仓、指数成分权重各自注明时点。'
- '公开链接、检索片段、本地原文、模型推论分开表达，市场交易价格与净值/IOPV分开。'
- '把一个独立且实际必要的基金资料核对问题交给子Agent，主Agent整合可见成果；无需为凑数量追问。'
- '证据足够或存在明确缺口时及时prepare_synthesis并提交简洁中文报告。'
- '记录主要反向因素与可复查条件，没有充分依据可不新增建议，不设强制买入。')
+ '从代码和问题自主原生搜索，不预给URL；核对基金/指数身份及实际可得的费用、披露持仓、行业敞口、流动性和跟踪表现，缺项说明。'
+ '基金不是公司；基金持仓/指数权重各注时点。区分链接、可见片段、本地原文和推论，价格与NAV/IOPV分开。'
+ '把必要的独立核对问题交子Agent并整合其报告；不为凑数追问。及时prepare_synthesis后交简洁中文报告，写反向因素和复查条件，无充分依据可不新增建议。')
 TERMINAL = {'completed','failed','waiting_config','cancelled','superseded'}
 
 
@@ -69,6 +70,46 @@ def account_payload(label, quantity, cash, risk):
     return {'name':'第五轮 ETF 验收 '+label, 'cash':cash,
         'preferences':{'risk':risk,'horizon':'长期；只研究159278机器人ETF鹏华，复用公共研究并核算本账户敞口。按实际需要补查，报告注明资料时点与可见范围、反向因素及条件，可不新增建议。'},
         'holdings':[{'symbol':SYMBOL,'quantity':quantity}] if quantity!='0' else []}
+
+
+def evaluation_config(config, timeout):
+    """Use settings-API-valid bounds without importing the app or changing model identity."""
+    if isinstance(timeout, bool) or not isinstance(timeout, int) or not 10 <= timeout <= 3600:
+        raise ValueError('evaluation timeout must be an integer from 10 to 3600 seconds')
+    return {**config, 'debounce_seconds':0, 'model_retries':min(1,config.get('model_retries',1)),
+        'max_model_calls':min(30,config.get('max_model_calls',40)), 'max_job_attempts':1,
+        'analysis_timeout_seconds':min(timeout,config.get('analysis_timeout_seconds',600)),
+        'scan_interval_minutes':240,
+        'news_queries':[PURPOSE], 'news_interval_minutes':1440,'news_start_hour':0,'news_end_hour':24,
+        'scheduled_research_enabled':True}
+
+
+def safe_http_failure(response):
+    """Retain routing/status and known validation fields, never echoed inputs or response prose."""
+    result = {'method':response.request.method, 'path':response.request.url.path,
+              'status_code':response.status_code, 'field_errors':[]}
+    fields = set(defaults()) | {'body','query','path','name','cash','preferences','risk','horizon',
+        'holdings','symbol','quantity','cost_price','expected_version','max_position_pct','max_sector_pct',
+        'model_allow_no_key','max_context_chars','max_total_agents','chat_use_max_completion_tokens',
+        'read_timeout_seconds','read_max_bytes','read_max_chars','read_max_pdf_pages','read_cache_max_bytes','read_search_max_pages'}
+    error_types = {'missing','value_error','extra_forbidden','less_than_equal','greater_than_equal',
+        'less_than','greater_than','string_too_long','string_too_short','string_type','list_type',
+        'int_parsing','int_type','float_parsing','bool_parsing','literal_error','finite_number'}
+    try:
+        body = response.json()
+        detail = body.get('detail') if isinstance(body,dict) else None
+    except ValueError:
+        detail = None
+    if isinstance(detail,list):
+        for item in detail[:20]:
+            if not isinstance(item,dict) or not isinstance(item.get('loc'),(list,tuple)):
+                continue
+            path = [str(part) if isinstance(part,int) or (isinstance(part,str) and part in fields)
+                    else 'unrecognized_field' for part in item['loc'][:8]]
+            error_type = item.get('type')
+            result['field_errors'].append({'field':'.'.join(path),
+                'error':error_type if isinstance(error_type,str) and error_type in error_types else 'validation_error'})
+    return result
 
 
 def collect_executions(store, selected_rounds):
@@ -133,16 +174,11 @@ def summarize_acceptance(summary, cfg):
 async def verify(args):
     cfg, origin = configuration(args.settings_db)
     # No effort/model override: explicit persisted > env > project medium.
-    cfg = {**cfg, 'debounce_seconds':0, 'model_retries':min(1,cfg.get('model_retries',1)),
-        'max_model_calls':min(30,cfg.get('max_model_calls',40)), 'max_job_attempts':1,
-        'analysis_timeout_seconds':min(args.timeout,cfg.get('analysis_timeout_seconds',600)),
-        'scan_interval_minutes':1440,
-        'news_queries':[PURPOSE], 'news_interval_minutes':1440,'news_start_hour':0,'news_end_hour':24,
-        'scheduled_research_enabled':True}
+    cfg = evaluation_config(cfg,args.timeout)
     output=args.output.resolve(); output.mkdir(parents=True,exist_ok=False); output.chmod(0o700)
     summary={'test_kind':'real_159278_native_model_http_scheduler_worker','started_at':now(),
         'code':code_identity(),'configuration':{**public_config(cfg,origin),**model_config_summary(cfg)},
-        'security':{'symbol':SYMBOL,'name':'机器人ETF鹏华','full_name':'鹏华国证机器人产业交易型开放式指数证券投资基金','quantity_unit':'份'},
+        'security':IDENTITY,
         'budget':{'max_model_calls_per_round':cfg['max_model_calls'],'planned_rounds':4,
             'note':'计划四轮不是费用硬上限；所有实际启动执行另计。HTTP请求上限不限制一次请求内多次原生搜索；未返回计费金额保持未知。'},
         'account_ids':{},'steps':{},'rounds':[],'quote_samples':[],
@@ -155,6 +191,7 @@ async def verify(args):
         summary['blocked']='model_not_configured';save();return 78
     store=Store(output/'evaluation.sqlite3'); store.set_meta('settings',cfg)
     store.set_meta('universe',{'watchlist':[SYMBOL],'candidates':[SYMBOL]})
+    store.put_cache('securities',SYMBOL,IDENTITY)
     store.set_meta('schedule:candidate_scan',int(time.time() // (cfg['scan_interval_minutes'] * 60)))
     with socket.socket() as sock: sock.bind(('127.0.0.1',0)); port=sock.getsockname()[1]
     env={**os.environ,'APP_DB_PATH':str(store.path),'APP_MODE':'live','APP_HOST':'127.0.0.1','APP_PORT':str(port)}
@@ -163,7 +200,10 @@ async def verify(args):
     summary['server']={'pid':process.pid,'port':port,'normal_worker':True};save()
     async with httpx.AsyncClient(base_url=f'http://127.0.0.1:{port}',timeout=60,trust_env=False) as http:
         async def request(method,path,payload=None):
-            response=await http.request(method,path,json=payload);response.raise_for_status();return response.json()
+            response=await http.request(method,path,json=payload)
+            if response.is_error:
+                summary.setdefault('http_failures',[]).append(safe_http_failure(response));save()
+            response.raise_for_status();return response.json()
         async def wait_account(aid):
             deadline=time.monotonic()+cfg['analysis_timeout_seconds']+90
             while time.monotonic()<deadline:
@@ -178,7 +218,7 @@ async def verify(args):
             from app.providers import MarketProvider
             for i in range(3):
                 if i: await asyncio.sleep(max(60,cfg.get('quote_interval_seconds',60)))
-                quote=await MarketProvider(cfg).quote(SYMBOL)
+                quote=quote_display_identity(await MarketProvider(cfg).quote(SYMBOL),IDENTITY)
                 summary['quote_samples'].append(sample_record(quote));save()
                 print(json.dumps({'stage':'quote','sample':i+1,'phase':summary['quote_samples'][-1]['session'],'fresh':quote.get('fresh_for_triggers')}),flush=True)
         async def record(job,label,public=False):
