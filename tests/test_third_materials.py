@@ -26,6 +26,11 @@ def collected(store, material, **options):
     return store.save_material(material, observation_id=token, **options)
 
 
+def market_impacts(material_ids):
+    return {"information_impacts": [{"material_id": mid, "status": "relevant", "market_wide": True,
+        "explanation": "Controlled explicit market-wide relevance judgment"} for mid in material_ids]}
+
+
 def test_read_lengths_share_document_version_and_preserve_representations(store):
     short = store.save_material(document("x" * 12000), notify=True)
     long = store.save_material(document("x" * 40000), notify=True)
@@ -55,7 +60,7 @@ def test_existing_material_can_register_one_notification_after_agent_read(store)
     assert store.pending_material_notifications() == [one["id"]]
     Service(store).notify_material_changes()
     assert store.pending_material_notifications() == [one["id"]]
-    Service(store).route_material_changes("controlled-public-report", {}, [one["id"]])
+    Service(store).route_material_changes("controlled-public-report", market_impacts([one["id"]]), [one["id"]])
     for _ in range(3):
         store.save_material(document("agent-read"), notify=True)
     assert not store.pending_material_notifications()
@@ -103,12 +108,12 @@ def test_notification_partial_delivery_recovers_without_duplicate_demands(store,
     monkeypatch.setattr(store, "request_analysis", interrupt)
     Service(store).notify_material_changes()
     with pytest.raises(RuntimeError, match="controlled interruption"):
-        Service(store).route_material_changes("controlled-public-report", {}, [saved["id"]])
+        Service(store).route_material_changes("controlled-public-report", market_impacts([saved["id"]]), [saved["id"]])
     assert store.pending_material_notifications() == [saved["id"]]
     restarted = Store(store.path)
     Service(restarted).notify_material_changes()
-    Service(restarted).route_material_changes("controlled-public-report", {}, [saved["id"]])
-    Service(restarted).route_material_changes("controlled-public-report", {}, [saved["id"]])
+    Service(restarted).route_material_changes("controlled-public-report", market_impacts([saved["id"]]), [saved["id"]])
+    Service(restarted).route_material_changes("controlled-public-report", market_impacts([saved["id"]]), [saved["id"]])
     demands = [d for d in restarted.demands() if d["kind"] == "public_information"]
     assert sorted(d["account_id"] for d in demands) == sorted(["", first["id"], second["id"]])
     assert not restarted.pending_material_notifications()
@@ -136,7 +141,8 @@ async def test_agent_then_scan_real_service_path_reuses_original_and_backfills(s
         {"url": document("")["url"], "snippet": "controlled search summary"}], [])
     service.notify_material_changes()
     assert len(store.pending_material_notifications()) == 2
-    service.route_material_changes("controlled-public-report", {}, store.pending_material_notifications())
+    pending = store.pending_material_notifications()
+    service.route_material_changes("controlled-public-report", market_impacts(pending), pending)
     second = await tools.read(document("")["url"])
     assert second["material_id"] == first["material_id"]
     original_reads = [m for m in store.material_index() if m["representation_kind"] == "original_document"]

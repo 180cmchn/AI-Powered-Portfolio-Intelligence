@@ -131,8 +131,9 @@ def test_malformed_routing_is_uncertain_and_reprint_event_is_idempotent(tmp_path
     mids = [store.save_material({'scope': 'public', 'url': 'https://example.test/'+str(i), 'content': 'source'}, notify=True)['id'] for i in range(3)]
     service.notify_material_changes()
     service.route_material_changes('r', {'information_impacts': [{'material_id': mids[0], 'status': 'irrelevant', 'symbols': [{}], 'explanation': 'malformed'}]}, [mids[0]])
-    assert any(d['kind'] == 'public_information' for d in store.demands(account['id']))
+    assert not any(d['kind'] == 'public_information' for d in store.demands(account['id']))
+    assert mids[0] in store.pending_material_notifications()
     impacts = [{'material_id': mid, 'status': 'relevant', 'market_wide': True, 'explanation': 'same disclosed event', 'event_key': 'controlled-report-v1'} for mid in mids[1:]]
     service.route_material_changes('r', {'information_impacts': impacts}, mids[1:])
-    assert len([d for d in store.demands(account['id']) if d['kind'] == 'public_information']) == 2
-    assert not store.pending_material_notifications()
+    assert len([d for d in store.demands(account['id']) if d['kind'] == 'public_information']) == 1
+    assert store.pending_material_notifications() == [mids[0]]

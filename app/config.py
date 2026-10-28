@@ -1,11 +1,33 @@
 from __future__ import annotations
 
 import os
+import hashlib
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
+
+REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
+
+
+def reasoning_effort(config: dict) -> str:
+    value = config.get("reasoning_effort", "medium")
+    if not isinstance(value, str) or value not in REASONING_EFFORTS:
+        raise ValueError("reasoning_effort 必须为 low、medium、high、xhigh、max 中的一个小写字符串；空值无效")
+    return value
+
+
+def model_config_summary(config: dict) -> dict:
+    """Persist the request identity, never the credential or opaque model state."""
+    summary = {key: config.get(key) for key in ("model_protocol", "model_base_url", "model_name", "model_native_search")}
+    summary['model_allow_no_key'] = config.get('model_allow_no_key', False)
+    summary["reasoning_effort"] = config.get("reasoning_effort", "medium")
+    if isinstance(config.get("reasoning"), dict):
+        summary["reasoning"] = {key: config["reasoning"][key] for key in ("mode", "summary") if key in config["reasoning"]}
+    summary["fingerprint"] = hashlib.sha256(json.dumps(summary, sort_keys=True).encode()).hexdigest()
+    return summary
 
 
 def defaults() -> dict:
@@ -15,6 +37,7 @@ def defaults() -> dict:
         "model_name": os.getenv("MODEL_NAME", ""),
         "model_key_env": os.getenv("MODEL_KEY_ENV", "MODEL_API_KEY"),
         "model_native_search": os.getenv("MODEL_NATIVE_SEARCH", "true").lower() not in {"0", "false", "off"},
+        "reasoning_effort": os.getenv("REASONING_EFFORT", "medium"),
         "model_request_timeout_seconds": 90,
         "synthesis_request_timeout_seconds": 120,
         "synthesis_max_calls": 4, "synthesis_checkpoint_max_age_seconds": 1800,

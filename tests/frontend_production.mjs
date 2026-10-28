@@ -3,7 +3,7 @@
 // protocol double. It never starts model/provider workers or real network research.
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdtemp, rm, mkdir } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
 const directory = await mkdtemp(join(tmpdir(), 'guanlan-browser-'));
 const child = spawn(process.env.PYTHON || 'python', ['tests/browser_app_server.py', directory], {env:{...process.env, PYTHON_DOTENV_DISABLED:'1'}, stdio:['ignore','pipe','pipe']});
 let diagnostic = '', browser, page;
+const requestTrace=[];
 child.stderr.on('data', data => {diagnostic += data.toString();});
 try {
   const fixture = await new Promise((resolve, reject) => {
@@ -30,6 +31,9 @@ try {
   }
   browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE ? {executablePath:process.env.BROWSER_EXECUTABLE} : {})});
   page=await browser.newPage();
+  await page.context().tracing.start({screenshots:true,snapshots:true});
+  page.on('request',request=>{if(request.url().includes('/api/')) requestTrace.push({event:'request',method:request.method(),path:new URL(request.url()).pathname});});
+  page.on('response',response=>{if(response.url().includes('/api/')) requestTrace.push({event:'response',status:response.status(),path:new URL(response.url()).pathname});});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.addInitScript(accountId=>localStorage.setItem('guanlan.account',accountId),fixture.account_id);
   await page.goto(base+'/#research');
@@ -95,14 +99,24 @@ try {
   assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id,'account selection during navigation must not be silently discarded');
   await page.getByText('当前没有仍需关注的结构化建议。',{exact:true}).waitFor();
   assert.equal(await page.locator('#active-recommendations .recommendation').count(),0);
+  // The card can render before navigation's reads finish. This is a real usable
+  // button: its retry POST must not be dropped by a global loading flag.
+  let releaseAgentsNavigation, observeAgentsNavigation;
+  const agentsNavigationGate=new Promise(resolve=>{releaseAgentsNavigation=resolve;});
+  const agentsNavigationStarted=new Promise(resolve=>{observeAgentsNavigation=resolve;});
+  await page.route('**/api/status',async route=>{observeAgentsNavigation();await agentsNavigationGate;await route.continue();},{times:1});
   await page.locator('nav a[href="#agents"]').click();
+  await agentsNavigationStarted;
   const checkpointCard=page.locator('.job-card').filter({has:page.locator(`[data-action="retry-job"][data-id="${fixture.checkpoint_job_id}"]`)});
   await checkpointCard.locator('.synthesis-checkpoint').waitFor();
   assert.ok((await checkpointCard.textContent()).includes('重试时优先恢复汇总'));
   assert.ok((await checkpointCard.textContent()).includes('不会将子报告当作最终分析'));
-  const retried=page.waitForResponse(response=>response.url().endsWith(`/api/jobs/${fixture.checkpoint_job_id}/retry`) && response.request().method()==='POST');
-  await checkpointCard.locator('[data-action="retry-job"]').click();
-  const retryResult=await (await retried).json();
+  const retried=page.waitForResponse(response=>response.url().endsWith(`/api/jobs/${fixture.checkpoint_job_id}/retry`) && response.request().method()==='POST', {timeout:3000});
+  let retryResult;
+  try {
+    await checkpointCard.locator('[data-action="retry-job"]').click();
+    retryResult=await (await retried).json();
+  } finally {releaseAgentsNavigation();}
   assert.notEqual(retryResult.id,fixture.checkpoint_job_id);
   assert.equal(retryResult.account_id,fixture.other_id);
   assert.equal(retryResult.state,'queued');
@@ -113,20 +127,128 @@ try {
   await page.locator('#account-switch').selectOption(fixture.account_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#account-form #name').inputValue(),draftName,'account A draft survives the deferred switch');
+  // Writes proceed while GET navigation is paused, keep the clicked account and
+  // version, coalesce rapid repeats, and preserve edits made before the response.
+  const pauseRoute=async(pattern, method='GET', afterServer=false)=>{
+    let release, observe;
+    const gate=new Promise(resolve=>{release=resolve;});
+    const started=new Promise(resolve=>{observe=resolve;});
+    const handler=async route=>{
+      if(route.request().method()!==method) return route.fallback();
+      const response=afterServer ? await route.fetch() : null;
+      observe(route.request());
+      await gate;
+      if(response) await route.fulfill({response}); else await route.continue();
+    };
+    await page.route(pattern,handler,{times:1});
+    return {started,release};
+  };
+  const beforeB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
+  await page.locator('nav a[href="#research"]').click();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  const saveNavigation=await pauseRoute('**/api/status');
+  await page.locator('nav a[href="#holdings"]').click();
+  await saveNavigation.started;
+  const versionAtClick=Number(await page.locator('#account-form').getAttribute('data-version'));
+  await page.locator('#name').fill('账户 A 提交时输入');
+  const saveGate=await pauseRoute(`**/api/accounts/${fixture.account_id}`,'PUT',true);
+  await page.locator('#account-form button[type="submit"]').click();
+  const saveRequest=await saveGate.started;
+  await page.locator('#account-form button[type="submit"]').click();
+  await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
+  await page.locator('#name').fill('账户 A 保存后继续输入');
+  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await page.waitForFunction(other=>document.querySelector('#account-form')?.dataset.accountId===other,fixture.other_id);
+  assert.equal(saveRequest.postDataJSON().name,'账户 A 提交时输入');
+  assert.equal(saveRequest.postDataJSON().expected_version,versionAtClick);
+  saveGate.release();saveNavigation.release();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='PUT' && item.path===`/api/accounts/${fixture.account_id}`).length,1);
+  const savedA=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
+  const afterB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
+  assert.equal(savedA.name,'账户 A 提交时输入');
+  assert.equal(savedA.version,versionAtClick+1);
+  assert.deepEqual([afterB.name,afterB.version,afterB.holdings,afterB.preferences],[beforeB.name,beforeB.version,beforeB.holdings,beforeB.preferences]);
+  await page.locator('#account-switch').selectOption(fixture.account_id);
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入','late success must retain newer draft');
+  assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),savedA.version);
+  await page.route(`**/api/accounts/${fixture.account_id}`,async route=>{
+    if(route.request().method()!=='PUT') return route.fallback();
+    await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({detail:'受控保存冲突，草稿应保留'})});
+  },{times:1});
+  await page.locator('#account-form button[type="submit"]').click();
+  await page.getByText('受控保存冲突，草稿应保留',{exact:true}).waitFor();
+  assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入');
+  await page.locator('#account-form button[type="submit"]').click();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal((await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json()).name,'账户 A 保存后继续输入');
+  const analyzeNavigation=await pauseRoute('**/api/status');
+  await page.locator('nav a[href="#overview"]').click();
+  await analyzeNavigation.started;
+  const analyzeGate=await pauseRoute(`**/api/accounts/${fixture.account_id}/analyze`,'POST',true);
+  await page.locator('.page-heading [data-action="analyze"]').click();
+  const analyzeRequest=await analyzeGate.started;
+  await page.locator('.page-heading [data-action="analyze"]').click();
+  await page.getByText('立即分析仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
+  await page.locator('#account-switch').selectOption(fixture.other_id);
+  assert.equal(new URL(analyzeRequest.url()).pathname,`/api/accounts/${fixture.account_id}/analyze`);
+  analyzeGate.release();analyzeNavigation.release();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id);
+  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='POST' && item.path===`/api/accounts/${fixture.account_id}/analyze`).length,1);
+  await page.locator('nav a[href="#holdings"]').click();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  await page.getByText('查找证券代码与基础资料',{exact:true}).click();
+  let releaseLookup, observeLookup;
+  const lookupGate=new Promise(resolve=>{releaseLookup=resolve;});
+  const lookupStarted=new Promise(resolve=>{observeLookup=resolve;});
+  await page.route('**/api/securities?*',async route=>{
+    const old=new URL(route.request().url()).searchParams.get('q')==='old';
+    if(old) {observeLookup();await lookupGate;}
+    await route.fulfill({contentType:'application/json',body:JSON.stringify([{symbol:old?'SH:600519':'SZ:159278',name:old?'过时证券结果':'新查询结果',kind:'etf'}])});
+  });
+  await page.locator('#security-query').fill('old');
+  await page.locator('[data-action="lookup"]').click();
+  await lookupStarted;
+  await page.locator('#security-query').fill('new');
+  await page.locator('[data-action="lookup"]').click();
+  await page.getByText('新查询结果 · etf',{exact:true}).waitFor();
+  releaseLookup();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
+  assert.ok((await page.locator('#lookup-results').textContent()).includes('新查询结果'));
+  assert.equal(await page.getByText('过时证券结果 · etf',{exact:true}).count(),0);
+  await page.unroute('**/api/securities?*');
   // Actual migration + settings writes: an old independent-provider disable does
   // not switch native search off; an explicit user disable survives Store reopen.
   await page.locator('nav a[href="#settings"]').click();
   await page.locator('#model_native_search').waitFor();
+  assert.deepEqual(await page.locator('#reasoning_effort option').evaluateAll(options=>options.map(option=>option.value)),['low','medium','high','xhigh','max']);
+  assert.equal(await page.locator('#reasoning_effort').inputValue(),'medium');
   assert.equal(await page.locator('#model_native_search').inputValue(),'true');
   assert.equal(await page.locator('#search_provider, #search_key_env').count(),0);
   const waitCapability=async label=>page.waitForFunction(text=>document.body.textContent.includes('原生联网：'+text),label);
   await waitCapability('尚未验证');
+  const inFlightFixture=await (await fetch(base+'/__fixture/start_model_snapshot',{method:'POST'})).json();
+  assert.ok(inFlightFixture.jobs.length>0);
   const saveSettings=async()=>{
     const saved=page.waitForResponse(response=>response.url().endsWith('/api/settings') && response.request().method()==='PUT');
     await page.locator('#settings-form button[type="submit"]').click();
     assert.equal((await saved).status(),200);
     await page.locator('.loading-line').waitFor({state:'hidden'});
   };
+  for (const effort of ['low','medium','high','xhigh','max']) {
+    await page.locator('#reasoning_effort').selectOption(effort);
+    await saveSettings();
+    assert.equal((await (await fetch(base+'/api/settings')).json()).reasoning_effort,effort);
+    assert.equal((await (await fetch(base+'/__fixture/reopen')).json()).reasoning_effort,effort);
+  }
+  await page.reload();
+  await page.locator('#reasoning_effort').waitFor();
+  assert.equal(await page.locator('#reasoning_effort').inputValue(),'max');
+  assert.ok((await page.locator('#inflight-model-settings').textContent()).includes('reasoning_effort：medium（旧配置；当前已保存 max）'));
+  await mkdir('test-results',{recursive:true});
+  await page.screenshot({path:'test-results/frontend-production-settings.png',fullPage:true});
   await page.locator('#model_native_search').selectOption('false');
   await saveSettings();
   await waitCapability('已关闭');
@@ -165,11 +287,28 @@ try {
   await saveSettings();
   assert.equal((await probe()).status,'request_failed');
   await waitCapability('请求失败');
+  let releaseProbe, observeProbe;
+  const localProbeGate=new Promise(resolve=>{releaseProbe=resolve;});
+  const localProbeStarted=new Promise(resolve=>{observeProbe=resolve;});
+  await page.route('**/api/settings/probe',async route=>{
+    observeProbe();await localProbeGate;
+    await route.fulfill({contentType:'application/json',body:JSON.stringify({note:'受控本地工具续接结果'})});
+  },{times:1});
+  await page.locator('[data-action="probe"]').click();
+  await localProbeStarted;
+  await page.locator('nav a[href="#holdings"]').click();
+  await page.locator('#account-form').waitFor();
+  releaseProbe();
+  await page.locator('#dialog').getByText('本地工具续接实测结果',{exact:true}).waitFor();
+  assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));
+  await page.locator('#dialog .dialog-header button').click();
   assert.deepEqual(errors,[]);
-  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, history pages, price/review separation, evidence scope, native link/excerpt display, checkpoint retry, settings migration and explicit disable persistence, six capability states and probe caching, late global versions, draft preservation and account isolation.');
+  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, five reasoning_effort values/save/reopen and old in-flight snapshots, settings migration, six capability states and probe caching.');
 } catch(error) {
   await mkdir('test-results',{recursive:true});
   if(page) await page.screenshot({path:'test-results/frontend-production-failure.png',fullPage:true});
+  if(page) await page.context().tracing.stop({path:'test-results/frontend-production-trace.zip'});
+  await writeFile('test-results/frontend-production-requests.json', JSON.stringify({error:String(error),requests:requestTrace,server:diagnostic},null,2));
   throw error;
 } finally {
   await browser?.close();

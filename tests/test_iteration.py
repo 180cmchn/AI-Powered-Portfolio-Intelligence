@@ -149,7 +149,9 @@ async def test_news_same_url_and_published_at_corrected_body_triggers_review(sto
             'content': content, 'access': 'full_text', 'published_at': '2026-10-22'}, notify=True)
         service.notify_material_changes()
         assert material['id'] in store.pending_material_notifications()
-        service.route_material_changes('controlled-public-report', {}, [material['id']])
+        service.route_material_changes('controlled-public-report', {'information_impacts': [{
+            'material_id': material['id'], 'status': 'relevant', 'market_wide': True,
+            'explanation': 'Controlled explicit market-wide relevance'}]}, [material['id']])
     assert material['version'] == 2 and material['previous_id']
     assert len([d for d in store.demands(a['id']) if d['kind'] == 'public_information']) == 2
 
@@ -233,7 +235,7 @@ def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
         db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
         db.execute('DROP TABLE material_catalog')
     upgraded=Store(store.path)
-    assert upgraded.meta('schema_version')==4
+    assert upgraded.meta('schema_version')==5
     assert upgraded.account(a['id'])['version']==1
     assert upgraded.material(m['id'])['content']=='old text'
     assert store.path.with_name(store.path.name+'.before-v2.bak').exists()
@@ -335,7 +337,9 @@ def test_source_update_notification_survives_interruption_before_dispatch(store)
     svc=Service(reopened)
     svc.notify_material_changes()
     assert reopened.pending_material_notifications() == [material['id']]
-    svc.route_material_changes('controlled-public-report', {}, [material['id']])
+    svc.route_material_changes('controlled-public-report', {'information_impacts': [{
+        'material_id': material['id'], 'status': 'relevant', 'market_wide': True,
+        'explanation': 'Controlled explicit market-wide relevance'}]}, [material['id']])
     assert not reopened.pending_material_notifications()
     assert any(material['id'] in d['reason'] for d in reopened.demands(a['id']))
     before=len(reopened.demands())

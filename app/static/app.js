@@ -21,7 +21,9 @@ const state = {
   settings: {},
   accountId: localStorage.getItem("guanlan.account"),
   busy: false,
-  pendingAccountId: null,
+  operations: new Map(),
+  accountRead: 0,
+  refreshRead: 0,
   error: null,
   loaded: false,
   materialFilter: "all",
@@ -287,26 +289,33 @@ function toast(message, error = false) {
   $("#toast-region").append(node);
   setTimeout(() => node.remove(), error ? 11000 : 5500);
 }
-async function operation(callback) {
-  if (state.busy) return;
+async function operation(callback, { key = Symbol(), label = "正在加载" } = {}) {
+  // Reads never lock writes. Only the same in-flight user intent is coalesced.
+  // Callers capture their account, target and form values before entering here.
+  if (state.operations.has(key)) {
+    toast(`${state.operations.get(key)}仍在处理中，请勿重复提交；当前输入会保留。`);
+    return;
+  }
+  state.operations.set(key, label);
   state.busy = true;
-  const active = document.activeElement;
-  if (active?.tagName === "BUTTON") active.disabled = true;
-  const line = document.createElement("div");
-  line.className = "loading-line";
-  document.body.append(line);
+  if (!$(".loading-line")) {
+    const line = document.createElement("div");
+    line.className = "loading-line";
+    document.body.append(line);
+  }
+  const feedback = document.createElement("div");
+  feedback.className = "toast operation-status";
+  feedback.textContent = `${label}中…可继续浏览，重复提交将合并。`;
+  $("#toast-region").append(feedback);
   try {
     await callback();
   } catch (error) {
     toast(error.message, true);
   } finally {
-    state.busy = false;
-    if (active?.isConnected) active.disabled = false;
-    line.remove();
-    const pendingAccountId = state.pendingAccountId;
-    state.pendingAccountId = null;
-    if (pendingAccountId && pendingAccountId !== state.accountId)
-      requestAccountSwitch(pendingAccountId);
+    state.operations.delete(key);
+    state.busy = state.operations.size > 0;
+    if (!state.busy) $(".loading-line")?.remove();
+    feedback.remove();
   }
 }
 async function loadJobEvents(jobId) {
@@ -319,6 +328,8 @@ async function loadJobEvents(jobId) {
   };
 }
 async function loadAccount() {
+  const read = ++state.accountRead, route = state.route;
+  const current = () => read === state.accountRead && route === state.route;
   if (!state.accountId) {
     state.account = null;
     state.analyses = [];
@@ -342,8 +353,7 @@ async function loadAccount() {
     state.route === "research" && state.showRecommendationHistory ? api(`/api/accounts/${id}/recommendations?view=history&envelope=true&limit=${size}&offset=${state.pages.recommendationHistory * size}`) : Promise.resolve(null),
   ]);
   if (results[0].status === "rejected") throw results[0].reason;
-  if (id !== encodeURIComponent(state.accountId)) return;
-  state.account = results[0].value;
+  if (!current() || id !== encodeURIComponent(state.accountId)) return;
   const failures = results.slice(1).filter((r) => r.status === "rejected");
   if (results[1].status === "fulfilled") {
     const headers = array(results[1].value, "analyses");
@@ -356,10 +366,11 @@ async function loadAccount() {
       }
       return { ...report, ...header };
     }));
-    if (id !== encodeURIComponent(state.accountId)) return;
+    if (!current() || id !== encodeURIComponent(state.accountId)) return;
     state.analyses = reports.filter((r) => r.status === "fulfilled").map((r) => r.value);
     failures.push(...reports.filter((r) => r.status === "rejected"));
   }
+  state.account = results[0].value;
   if (results[2].status === "fulfilled") state.jobs = array(results[2].value, "jobs");
   if (results[3].status === "fulfilled" && results[3].value) state.materials = array(results[3].value, "materials");
   if (results[4].status === "fulfilled") {
@@ -387,6 +398,7 @@ async function loadAccount() {
     : null;
 }
 async function refresh(full = false) {
+  const read = ++state.refreshRead, route = state.route, accountId = state.accountId;
   const loadUniverse = full || state.route === "market";
   const results = await Promise.allSettled([
     api("/api/status"),
@@ -394,6 +406,7 @@ async function refresh(full = false) {
     loadUniverse ? api("/api/universe") : Promise.resolve(null),
     full ? api("/api/settings") : Promise.resolve(null),
   ]);
+  if (read !== state.refreshRead || route !== state.route || accountId !== state.accountId) return;
   if (results[0].status === "fulfilled") state.status = results[0].value;
   if (results[1].status === "rejected") throw results[1].reason;
   state.accounts = array(results[1].value, "accounts");
@@ -425,10 +438,12 @@ function notice() {
     html += `<div class="notice error">${icon("info")}<div>本地服务连接中断。页面保留最近一次结果。<p>${e(state.error)}</p></div>${button("重新连接", "refresh", "compact")}</div>`;
   if (state.partialError)
     html += `<div class="notice warning">${icon("info")}<div>${e(state.partialError)}</div></div>`;
+  if (state.status.configuration_errors?.length)
+    html += `<div class="notice error" id="configuration-errors">${icon("info")}<div><strong>模型配置需要修正</strong>${state.status.configuration_errors.map(message => `<p>${e(message)}</p>`).join("")}</div><a class="button compact" href="#settings">查看配置</a></div>`;
   if (state.status.mode === "demo")
     html += `<div class="notice warning">${icon("info")}<div><strong>演示空间</strong> · 使用明确标识的固定样例数据，与真实研究历史隔离。示例行情不代表当前价格；没有模型配置时不会模拟 Agent 研究。</div></div>`;
   else if (!state.status.model_configured)
-    html += `<div class="notice">${icon("info")}<div><strong>基础功能已就绪</strong> · 尚未配置运行时模型。可管理账户、刷新行情并计算持仓指标；联网 Agent 研究需要在系统设置中接入模型${!state.status.search_configured ? "与搜索服务" : ""}。</div><a class="button compact" href="#settings">配置服务 ${icon("arrow")}</a></div>`;
+    html += `<div class="notice">${icon("info")}<div><strong>基础功能已就绪</strong> · 尚未配置可用的运行时模型。可管理账户、刷新行情并计算持仓指标；联网 Agent 研究需要在系统设置中接入支持原生联网的模型端点。</div><a class="button compact" href="#settings">配置服务 ${icon("arrow")}</a></div>`;
   return html;
 }
 function shell() {
@@ -476,6 +491,8 @@ function empty(
   return `<div class="empty"><div class="empty-icon">${icon(glyph)}</div><h3>${e(title)}</h3><p>${e(description)}</p>${action ? button(label, action, "compact") : ""}</div>`;
 }
 function noAccount() {
+  if (state.accountId && state.accounts.some(account => account.id === state.accountId))
+    return `<section class="card">${empty("正在加载所选账户", "账户资料加载后即可操作；已有草稿会按账户保留。")}</section>`;
   return `<section class="card">${empty("从一个虚拟账户开始", "创建账户后，可录入持仓股数或份数，计算证券市值，并让 Agent 结合账户偏好开展研究。", "new-account", "创建第一个账户", "wallet")}</section>`;
 }
 const latestAnalysis = () =>
@@ -572,7 +589,7 @@ function holdings() {
   if (!state.account) return noAccount();
   const a = state.account,
     p = a.preferences || {};
-  return `<form id="account-form" data-draft-key="account:${e(a.id)}" data-version="${a.version}"><section class="card"><div class="card-header"><h2>账户信息</h2>${badge(`已保存 v${a.version}`, "neutral")}</div><div class="card-body form-grid">${field("账户名称", "name", a.name, { required: true })}${field("现金余额（元，可留空）", "cash", a.cash, { type: "number", min: 0, step: "any", placeholder: "留空表示未录入，0 表示现金为零", help: "现金未知时只展示证券市值，不推断账户总资产。" })}</div></section><section class="card"><div class="card-header"><h2>持仓快照</h2><span class="small muted">保存后自动更新账户研究</span></div><div class="card-body"><div class="notice">${icon("info")}<div>证券身份由代码与交易所确定。未填写成本时不计算该证券的成本收益；修改数量只维护快照，不生成成交记录。</div></div><div id="holding-rows" class="holdings-edit">${(a.holdings || []).map(holdingRow).join("")}</div>${button("添加持仓证券", "add-holding", "add-row", "plus")}<details class="section-gap"><summary class="small muted">查找证券代码与基础资料</summary><div class="search-field section-gap"><input class="input" id="security-query" aria-label="证券代码或名称" placeholder="输入名称或代码，例如 沪深300 / 510300"><button type="button" class="button" data-action="lookup">${icon("search")}查找</button></div><div id="lookup-results" class="lookup-results" aria-live="polite"></div></details></div></section><section class="card"><div class="card-header"><h2>投资偏好</h2><span class="small muted">用于研究上下文，不替代 Agent 判断</span></div><div class="card-body form-grid">${selectField(
+  return `<form id="account-form" data-account-id="${e(a.id)}" data-draft-key="account:${e(a.id)}" data-version="${a.version}"><section class="card"><div class="card-header"><h2>账户信息</h2>${badge(`已保存 v${a.version}`, "neutral")}</div><div class="card-body form-grid">${field("账户名称", "name", a.name, { required: true })}${field("现金余额（元，可留空）", "cash", a.cash, { type: "number", min: 0, step: "any", placeholder: "留空表示未录入，0 表示现金为零", help: "现金未知时只展示证券市值，不推断账户总资产。" })}</div></section><section class="card"><div class="card-header"><h2>持仓快照</h2><span class="small muted">保存后自动更新账户研究</span></div><div class="card-body"><div class="notice">${icon("info")}<div>证券身份由代码与交易所确定。未填写成本时不计算该证券的成本收益；修改数量只维护快照，不生成成交记录。</div></div><div id="holding-rows" class="holdings-edit">${(a.holdings || []).map(holdingRow).join("")}</div>${button("添加持仓证券", "add-holding", "add-row", "plus")}<details class="section-gap"><summary class="small muted">查找证券代码与基础资料</summary><div class="search-field section-gap"><input class="input" id="security-query" aria-label="证券代码或名称" placeholder="输入名称或代码，例如 沪深300 / 510300"><button type="button" class="button" data-action="lookup">${icon("search")}查找</button></div><div id="lookup-results" class="lookup-results" aria-live="polite"></div></details></div></section><section class="card"><div class="card-header"><h2>投资偏好</h2><span class="small muted">用于研究上下文，不替代 Agent 判断</span></div><div class="card-body form-grid">${selectField(
     "风险偏好",
     "risk",
     p.risk || "balanced",
@@ -712,7 +729,9 @@ function sourceCard(material) {
   return `<article class="source-item" id="material-${e(material.id)}"><div class="split-heading">${badge(`${generated ? "提取者分类 · " : ""}${classificationNames[category] || category}`, generated || category.includes("opinion") ? "warning" : "neutral")}${material.id ? materialReference(material.id) : ""}</div><div class="source-title">${link(url, title)}</div>${generated ? `<p class="small muted">${material.representation_kind === "agent_extraction" ? "已定位 Agent 提取 · 不是外部原文" : "已定位生成报告 · 不是外部原文"}</p>${originReferences(material)}` : ""}<p class="source-content">${e(summary ? String(summary).slice(0, 900) : (material.access === "source_link" ? "仅保存服务返回的来源链接，本地没有网页正文。" : "索引暂无摘要，可按需打开已保存内容。"))}${String(summary || "").length > 900 ? "…" : ""}</p><div class="source-meta"><span>发布者：${e(material.publisher || sources.publisher || "未知")}</span><span>发布时间：${material.published_at ? date(material.published_at) : "未知"}</span><span>事件 / 报告期：${e(material.event_period || "未知")}</span><span>采集：${material.fetched_at ? date(material.fetched_at) : "未知"}</span></div><div class="source-meta"><span>访问范围：${e(generated ? "已保存生成内容，不代表已保存外部原文" : accessLabel(material))}</span>${material.page_count ? `<span>${generated ? "提取者标注文档" : "PDF 共"} ${e(material.page_count)} 页${generated ? "" : "（物理页码）"}</span>` : ""}${range?.start_page ? `<span>${generated ? "提取者标注页码" : "已保存页码"} ${e(range.start_page)}–${e(range.end_page || range.start_page)}；${link(`${url?.split("#")[0]}#page=${range.start_page}`, generated ? "查看提取者提供的来源位置" : "定位原 PDF")}</span>` : requested?.start_page ? `<span>请求 / 提取页码 ${e(requested.start_page)}–${e(requested.end_page || requested.start_page)} · 实际保存页码未知</span>` : ""}${array(material.symbols || material.security_ids).length ? `<span>关联：${e((material.symbols || material.security_ids).join("、"))}</span>` : ""}</div>${pages.length ? `<div class="source-meta">${pages.map((page) => link(page.source_url || `${url?.split("#")[0]}#page=${page.page}`, `${generated ? "提取者标注第" : "第"} ${page.page} 页${page.truncated ? "（部分）" : ""}`)).join(" · ")}</div>` : ""}${materialVersion(material)}${material.error || material.uncertainties || material.conflicts ? `<p class="error-detail">${e(material.error || material.uncertainties || material.conflicts)}</p>` : ""}${material.id ? `<button class="button compact section-gap" data-action="open-material" data-id="${e(material.id)}">按段查看已保存${savedContentLabel}</button>` : ""}</article>`;
 }
 async function openMaterial(id, start = 0) {
+  const accountId = state.accountId, route = state.route;
   const material = await api(`/api/materials/${encodeURIComponent(id)}/range?start=${start}&length=6000${state.accountId ? `&account_id=${encodeURIComponent(state.accountId)}` : ""}`);
+  if (accountId !== state.accountId || route !== state.route) return;
   const text = material.text || material.content || material.claim || "此材料没有可读取的正文；请查看访问状态。";
   const total = material.total_chars ?? material.total_length ?? text.length;
   const end = material.end ?? start + text.length;
@@ -797,10 +816,24 @@ function eventHTML(event) {
   const p = event.payload;
   return `<div class="event"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", budget_closeout: "正在整理最终报告", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${p && typeof p === "object" && Object.keys(p).length ? `<details><summary>查看事件与来源详情</summary><pre>${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
 }
+function jobModelSettings(job) {
+  const config = job.model_config || job.config_snapshot || job.result?.model_config;
+  const effort = config?.reasoning_effort;
+  if (!effort) return `<div class="small muted">模型思考强度：${["queued", "waiting_config", "pending"].includes(job.state) ? "启动时采用届时已保存配置" : "此历史任务未记录"}</div>`;
+  const current = state.settings.reasoning_effort ?? state.status.settings?.reasoning_effort ?? "medium";
+  const older = job.state === "running" && effort !== current;
+  return `<div class="small muted" data-job-effort="${e(effort)}">本轮 reasoning_effort：${e(effort)}${older ? ` · 在途旧配置；当前已保存 ${e(current)}` : ""} · 上游实际采用值以服务回报为准</div>`;
+}
+function inFlightModelSettings() {
+  const running = state.status.running_model_configs || state.jobs.filter(job => job.state === "running").map(job => ({...job, ...(job.model_config || job.config_snapshot || {})}));
+  if (!running.length) return "";
+  const current = state.settings.reasoning_effort ?? "medium";
+  return `<div class="notice section-gap" id="inflight-model-settings"><div><strong>在途任务保持启动时配置</strong>${running.map(job => `<p class="small">${e(job.scope === "global" ? "公共研究" : "账户研究")} ${e(job.id)} · reasoning_effort：${e(job.reasoning_effort || "未记录")}${job.reasoning_effort && job.reasoning_effort !== current ? `（旧配置；当前已保存 ${e(current)}）` : ""}</p>`).join("")}</div></div>`;
+}
 function jobCard(job) {
   const events = state.events[job.id];
   const explanation = { waiting_config: "等待模型配置。补齐环境变量并重启服务，或保存可用设置后，最新持仓版本的任务会恢复。", running: "正在研究。工具与子任务事件按增量更新。", failed: "本次研究失败，已保存的账户数据不受影响。可查看原因后重试最新版本。" }[job.state];
-  return `<article class="job-card"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(reasonLabel(job.reason))}</h3><div class="job-meta">输入 v${job.input_version} · ${date(job.created_at || job.updated_at)} · <span class="mono">${e(job.id)}</span></div></div>${stateBadge(job.state)}</div>${job.synthesis_checkpoint?.available ? `<div class="card-body synthesis-checkpoint"><p>已保存研究检查点 · 重试时优先恢复汇总</p><p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。</p></div>` : ""}${explanation || job.error ? `<div class="card-body"><div class="notice ${job.state === "failed" ? "error" : ""}"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}</div></div></div>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.id)}" ${state.openedJobs.has(job.id) ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${events?.items.length ? events.items.map(eventHTML).join("") : '<p class="small muted">展开后按需读取事件。尚无事件时等待工作器更新。</p>'}${events?.more ? `<button class="button compact" data-action="more-events" data-id="${e(job.id)}">继续读取后续事件</button>` : ""}</div></details><div class="job-actions">${["running", "pending", "queued", "waiting_config"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed", "cancelled", "blocked", "waiting_config", "superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
+  return `<article class="job-card"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(reasonLabel(job.reason))}</h3><div class="job-meta">输入 v${job.input_version} · ${date(job.created_at || job.updated_at)} · <span class="mono">${e(job.id)}</span>${jobModelSettings(job)}</div></div>${stateBadge(job.state)}</div>${job.synthesis_checkpoint?.available ? `<div class="card-body synthesis-checkpoint"><p>已保存研究检查点 · 重试时优先恢复汇总</p><p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。</p></div>` : ""}${explanation || job.error ? `<div class="card-body"><div class="notice ${job.state === "failed" ? "error" : ""}"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}</div></div></div>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.id)}" ${state.openedJobs.has(job.id) ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${events?.items.length ? events.items.map(eventHTML).join("") : '<p class="small muted">展开后按需读取事件。尚无事件时等待工作器更新。</p>'}${events?.more ? `<button class="button compact" data-action="more-events" data-id="${e(job.id)}">继续读取后续事件</button>` : ""}</div></details><div class="job-actions">${["running", "pending", "queued", "waiting_config"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed", "cancelled", "blocked", "waiting_config", "superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
 }
 function agents() {
   if (!state.account) return noAccount();
@@ -832,7 +865,7 @@ function settings() {
       ["responses", "OpenAI Responses"],
     ],
     "“兼容”声明不代表已通过工具调用与状态续接验证。",
-  )}${field("模型名称", "model_name", s.model_name || "", { placeholder: "填写服务商实际提供的模型 ID" })}${field("模型基础 URL", "model_base_url", s.model_base_url || "", { placeholder: "https://api.openai.com/v1" })}${field("密钥环境变量名称", "model_key_env", s.model_key_env || "MODEL_API_KEY", { placeholder: "MODEL_API_KEY", help: "只填写变量名，不填写密钥值。请在本机 .env 配置密钥并重启服务。" })}${selectField(
+  )}${selectField("模型思考强度（reasoning_effort）", "reasoning_effort", s.reasoning_effort ?? "medium", [["low", "low"], ["medium", "medium"], ["high", "high"], ["xhigh", "xhigh"], ["max", "max"]], "项目默认 medium。保存后供尚未启动的任务使用；在途任务保持启动时的配置。端点是否接受该档位需实际验证，不会自动降档。")}${field("模型名称", "model_name", s.model_name || "", { placeholder: "填写服务商实际提供的模型 ID" })}${field("模型基础 URL", "model_base_url", s.model_base_url || "", { placeholder: "https://api.openai.com/v1" })}${field("密钥环境变量名称", "model_key_env", s.model_key_env || "MODEL_API_KEY", { placeholder: "MODEL_API_KEY", help: "只填写变量名，不填写密钥值。请在本机 .env 配置密钥并重启服务。" })}${selectField(
     "本机无密钥模型服务",
     "model_allow_no_key",
     String(s.model_allow_no_key || false),
@@ -856,7 +889,7 @@ function settings() {
       ["manual", "仅使用已录入行情 / 禁止联网刷新"],
     ],
     "公开接口可能限流、延迟或变更；刷新失败会保留实际错误。",
-  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更保存后生效。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">模型：${state.status.model_configured ? "已配置密钥（需实测能力）" : "尚未配置"}<br>原生联网：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div></div></div><div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
+  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更供尚未启动的任务使用；在途任务保持启动时配置。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">模型：${state.status.model_configured ? "已配置密钥（需实测能力）" : "尚未配置"}<br>已保存思考强度：${e(s.reasoning_effort ?? "medium")}<br>原生联网：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div></div></div>${inFlightModelSettings()}<div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
 }
 function rememberDrafts() {
   $$('form[data-draft-key]').forEach((form) => {
@@ -867,6 +900,22 @@ function rememberDrafts() {
 function clearDraft(form) {
   form.dataset.discard = "true";
   state.drafts.delete(form.dataset.draftKey);
+}
+function finishSave(form, submittedValues, savedVersion) {
+  // Saving an earlier edit must not erase what was typed while it was in flight.
+  const unchanged = JSON.stringify([...new FormData(form)]) === submittedValues;
+  if (unchanged) clearDraft(form);
+  else {
+    form.dataset.dirty = "true";
+    state.drafts.set(form.dataset.draftKey, form);
+    if (savedVersion !== undefined) {
+      form.dataset.version = savedVersion;
+      const versionBadge = form.querySelector(".pill");
+      if (versionBadge) versionBadge.textContent = `已保存 v${savedVersion} · 仍有新草稿`;
+      const status = form.querySelector(".form-status");
+      if (status) status.textContent = `当前草稿未保存，后台分析仍以版本 v${savedVersion} 为准。`;
+    }
+  }
 }
 function render() {
   rememberDrafts();
@@ -909,12 +958,7 @@ function parseSymbols(text) {
   ];
 }
 function requestAccountSwitch(id) {
-  // Navigation and writes may still be settling; retain the latest user choice.
-  if (state.busy) {
-    state.pendingAccountId = id;
-    return;
-  }
-  return operation(() => switchAccount(id));
+  return operation(() => switchAccount(id), { label: "切换账户" });
 }
 async function switchAccount(id) {
   rememberDrafts();
@@ -923,17 +967,24 @@ async function switchAccount(id) {
   state.recommendationHistory = [];
   state.recommendationCoverage = {};
   state.accountId = id;
+  state.account = null;
+  state.analyses = [];
+  state.jobs = [];
+  state.materials = [];
+  state.recommendations = [];
+  state.demands = [];
   localStorage.setItem("guanlan.account", id);
-  await loadAccount();
   render();
+  await loadAccount();
+  if (state.accountId === id) render();
 }
-async function analyze(symbol) {
-  if (!state.account) {
+async function analyze(symbol, accountId) {
+  if (!accountId) {
     createAccountDialog();
     return;
   }
   const job = await api(
-    `/api/accounts/${encodeURIComponent(state.accountId)}/analyze`,
+    `/api/accounts/${encodeURIComponent(accountId)}/analyze`,
     { method: "POST", body: JSON.stringify(symbol ? { symbol } : {}) },
   );
   toast(`已创建${symbol ? "证券" : "账户"}研究任务，绑定当前输入版本。`);
@@ -951,6 +1002,7 @@ document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
   const action = target.dataset.action;
+  const accountId = target.dataset.accountId || state.accountId;
   if (action === "new-account") return createAccountDialog();
   if (action === "close-dialog") return $("#dialog").close();
   if (action === "add-holding") {
@@ -969,7 +1021,7 @@ document.addEventListener("click", (event) => {
     dialog(
       "删除当前虚拟账户",
       `<p>将删除「${e(state.account.name)}」及其账户专属数据。其他账户与公共证券监控不受影响。此操作无法直接撤销，可先备份本地数据。</p>`,
-      `${button("取消", "close-dialog")}${button("确认删除账户", "confirm-delete", "danger")}`,
+      `${button("取消", "close-dialog")}${button("确认删除账户", "confirm-delete", "danger").replace("data-action=", `data-account-id="${e(accountId)}" data-action=`)}`,
     );
     return;
   }
@@ -981,7 +1033,7 @@ document.addEventListener("click", (event) => {
       await loadAccount();
       render();
     } else if (action === "retry-recommendation") {
-      await api(`/api/accounts/${encodeURIComponent(state.accountId)}/recommendations/${encodeURIComponent(target.dataset.id)}/retry`, { method: "POST", body: "{}" });
+      await api(`/api/accounts/${encodeURIComponent(accountId)}/recommendations/${encodeURIComponent(target.dataset.id)}/retry`, { method: "POST", body: "{}" });
       await loadAccount();
       render();
       toast("已登记复核需求，处理状态可在建议与 Agent 工作台查看。");
@@ -1006,14 +1058,14 @@ document.addEventListener("click", (event) => {
       toast("状态已更新");
     } else if (action === "switch-account")
       await switchAccount(target.dataset.id);
-    else if (action === "analyze") await analyze();
-    else if (action === "analyze-symbol") await analyze(target.dataset.symbol);
+    else if (action === "analyze") await analyze(undefined, accountId);
+    else if (action === "analyze-symbol") await analyze(target.dataset.symbol, accountId);
     else if (action === "confirm-delete") {
-      await api(`/api/accounts/${encodeURIComponent(state.accountId)}`, {
+      await api(`/api/accounts/${encodeURIComponent(accountId)}`, {
         method: "DELETE",
       });
       $("#dialog").close();
-      state.accountId = null;
+      if (state.accountId === accountId) state.accountId = null;
       await refresh(true);
       render();
       toast("虚拟账户已删除");
@@ -1038,11 +1090,13 @@ document.addEventListener("click", (event) => {
         ),
       );
     } else if (action === "lookup") {
-      const q = $("#security-query").value.trim();
+      const input = $("#security-query"), results = $("#lookup-results");
+      const q = input.value.trim();
       if (!q) return;
       const result = await api(`/api/securities?q=${encodeURIComponent(q)}`);
+      if (!results.isConnected || input.value.trim() !== q || state.accountId !== accountId) return;
       const securities = array(result, "securities");
-      $("#lookup-results").innerHTML = securities.length
+      results.innerHTML = securities.length
         ? securities
             .map(
               (s) =>
@@ -1090,8 +1144,7 @@ document.addEventListener("click", (event) => {
         method: "POST",
         body: "{}",
       });
-      $("#probe-result").innerHTML =
-        `<div class="divider"></div><h3>已保存配置的实测结果</h3><pre class="json-block">${e(JSON.stringify(result, null, 2))}</pre>`;
+      dialog("本地工具续接实测结果", `<pre class="json-block">${e(JSON.stringify(result, null, 2))}</pre>`);
       toast("能力测试已返回，请查看真实结果。");
     } else if (action === "demo-seed") {
       await api("/api/demo/seed", { method: "POST", body: "{}" });
@@ -1099,7 +1152,7 @@ document.addEventListener("click", (event) => {
       render();
       toast("固定演示账户已创建；行情不代表当前价格。");
     }
-  });
+  }, { key: `${action}:${accountId || "global"}:${target.dataset.id || target.dataset.symbol || target.dataset.kind || (action === "lookup" ? $("#security-query")?.value.trim() : "")}`, label: target.textContent.trim() || "执行操作" });
 });
 document.addEventListener("submit", (event) => {
   const form = event.target;
@@ -1124,8 +1177,12 @@ document.addEventListener("submit", (event) => {
   )
     return;
   event.preventDefault();
+  const values = new FormData(form);
+  const submittedValues = JSON.stringify([...values]);
+  const accountId = form.dataset.accountId || state.account?.id;
+  const preferences = { ...state.account?.preferences };
+  const savedSettings = { ...state.settings };
   operation(async () => {
-    const values = new FormData(form);
     if (form.id === "new-account-form") {
       const created = await api("/api/accounts", {
         method: "POST",
@@ -1153,7 +1210,7 @@ document.addEventListener("submit", (event) => {
         cash: values.get("cash") || null,
         holdings,
         preferences: {
-          ...state.account.preferences,
+          ...preferences,
           risk: values.get("risk"),
           horizon: values.get("horizon") || "",
           max_position_pct: values.get("max_position_pct") || null,
@@ -1161,15 +1218,15 @@ document.addEventListener("submit", (event) => {
         },
         expected_version: Number(form.dataset.version),
       };
-      await api(`/api/accounts/${encodeURIComponent(state.accountId)}`, {
+      const saved = await api(`/api/accounts/${encodeURIComponent(accountId)}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-      clearDraft(form);
       await refresh(true);
+      finishSave(form, submittedValues, saved.version);
       render();
       toast(
-        `账户已保存为 v${state.account.version}，指标已更新，新分析已排队。`,
+        `账户已保存为 v${saved.version}，指标已更新，新分析已排队。`,
       );
     } else if (form.id === "universe-form") {
       state.universe = await api("/api/universe", {
@@ -1179,12 +1236,12 @@ document.addEventListener("submit", (event) => {
           candidates: parseSymbols(values.get("candidates")),
         }),
       });
-      clearDraft(form);
       await refresh(true);
+      finishSave(form, submittedValues);
       render();
       toast("自选与候选范围已保存");
     } else if (form.id === "settings-form") {
-      const payload = { ...state.settings };
+      const payload = { ...savedSettings };
       for (const [key, value] of values.entries()) payload[key] = value;
       for (const key of [
         "max_concurrent_agents",
@@ -1217,12 +1274,12 @@ document.addEventListener("submit", (event) => {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-      clearDraft(form);
       await refresh(true);
+      finishSave(form, submittedValues);
       render();
       toast("运行配置已保存，密钥环境变量修改后需重启后端。");
     }
-  });
+  }, { key: `save:${form.dataset.draftKey || form.id}`, label: form.id === "account-form" ? "保存账户" : "保存配置" });
 });
 document.addEventListener("toggle", (event) => {
   const details = event.target;
@@ -1281,7 +1338,7 @@ function changeSignature() {
     demands: state.demands,
     globalRuns: state.globalRuns,
     events: Object.entries(state.events).map(([id, events]) => [id, events.cursor]),
-    runtime: [state.status.model_configured, state.status.worker?.running],
+    runtime: [state.status.model_configured, state.status.worker?.running, state.status.configuration_errors, state.status.running_model_configs],
     error: state.error,
     partial: state.partialError,
   });

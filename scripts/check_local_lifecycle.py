@@ -30,9 +30,9 @@ def main():
                "MODEL_NAME": "", "SEARCH_PROVIDER": "disabled", "QUOTE_PROVIDER": "manual"}
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
-        def request(path, payload=None):
+        def request(path, payload=None, method=None):
             data = json.dumps(payload).encode() if payload is not None else None
-            req = urllib.request.Request(f"http://127.0.0.1:{port}" + path, data=data, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(f"http://127.0.0.1:{port}" + path, data=data, method=method, headers={"Content-Type": "application/json"})
             with opener.open(req, timeout=2) as response:
                 return json.load(response)
 
@@ -61,6 +61,7 @@ def main():
 
         process = launch()
         try:
+            assert request("/api/settings", {"reasoning_effort": "max"}, method="PUT")["reasoning_effort"] == "max"
             account = request("/api/accounts", {"name": "生命周期验证", "cash": "100", "holdings": []})
             for _ in range(100):
                 current = request("/api/accounts/" + account["id"])
@@ -72,6 +73,7 @@ def main():
             stop(process)
         process = launch()
         try:
+            assert request("/api/settings")["reasoning_effort"] == "max"
             recovered = request("/api/accounts/" + account["id"])
             assert recovered["version"] == 1 and recovered["cash"] == "100"
         finally:
@@ -85,7 +87,7 @@ def main():
         with sqlite3.connect(restored) as result:
             assert result.execute("SELECT cash FROM accounts WHERE id=?", (account["id"],)).fetchone()[0] == "100"
             assert result.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-        print("PASS: temporary demo HTTP service start, background analysis, graceful stop, restart, schema-v3 restore; no model or external data called")
+        print("PASS: temporary demo HTTP service start, background analysis, graceful stop, restart, schema-v5 restore, reasoning_effort persistence; no model or external data called")
 
 
 if __name__ == "__main__":

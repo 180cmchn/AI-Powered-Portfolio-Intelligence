@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable
 from zoneinfo import ZoneInfo
 
-from .model import ModelBudgetExceeded, ModelClient, ModelError, ModelSession, ToolCall
+from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelSession, ToolCall
 from .context import archive, recall
 
 PROMPTS = Path(__file__).with_name("prompts")
@@ -140,7 +140,10 @@ class ResearchRuntime:
     def __init__(self, context: dict, config: dict, research_tools: Any,
                  emit: Callable[[dict], Awaitable[None]]) -> None:
         self.context = copy.deepcopy(context)
-        self.config = config
+        self.config = config = copy.deepcopy(config)
+        from .config import model_config_summary
+        self.model_config = model_config_summary(config)
+        self.context['model_config'] = copy.deepcopy(self.model_config)
         self.tools = research_tools
         self.emit = emit
         self.account_id = (context.get("account") or {}).get("id")
@@ -168,6 +171,7 @@ class ResearchRuntime:
         self.closed = False
         self.reference_feedback_sent = False
         self.manager_session = self.client.session((PROMPTS / "manager.txt").read_text(), self.context)
+        self.manager_session.task_id = self.task_id
         self.manager_session.agent_id = "manager"
         if self.synthesis_only:
             self.manager_session.phase = "synthesis"
@@ -299,9 +303,10 @@ class ResearchRuntime:
 
     async def run(self) -> dict:
         self.deadline = time.monotonic() + float(self.config.get("analysis_timeout_seconds", 600))
-        await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason")})
+        await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason"), "model_config": self.model_config})
         if self.synthesis_only:
-            await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4)})
+            await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4),
+                "configuration_relation": self.synthesis_checkpoint.get("configuration_relation"), "model_config": self.model_config})
         try:
             async with asyncio.timeout(float(self.config.get("analysis_timeout_seconds", 600))):
                 result = await self._loop("manager", self.manager_session, manager=True)
@@ -312,6 +317,7 @@ class ResearchRuntime:
                                "input_version": self.input_version, "data_as_of": self.context.get("data_as_of"),
                                "agents": [child.snapshot() for child in self.children.values()],
                                "model_calls": self.calls, "model_usage": self.client.usage_summary(self.client.requests),
+                               "model_config": copy.deepcopy(self.model_config),
                                "synthesis_recovered": bool(self.context.get("synthesis_checkpoint")),
                                "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
@@ -350,6 +356,7 @@ class ResearchRuntime:
         return text[:1200]
 
     async def _loop(self, agent_id: str, session: ModelSession, *, manager: bool) -> dict:
+        session.task_id = self.task_id
         max_turns = int(self.config.get("max_agent_turns", 12))
         if not manager:
             # A follow-up is a new bounded research round; the previous round
@@ -427,6 +434,8 @@ class ResearchRuntime:
                     await self._record_native(agent_id, partial)
                 await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:]),
                     "native_search": self.client.native_status()})
+                if isinstance(exc, ModelConfigurationError):
+                    raise
                 if final_update_used:
                     raise  # A failed final update does not make the earlier report current.
                 if reference_candidate is not None:
@@ -564,6 +573,7 @@ class ResearchRuntime:
             if child.status != "completed" or child.pending_messages or child.inbox]
         material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
         checkpoint = {"phase": "synthesis", "task_id": self.task_id, "account_id": self.account_id,
+            "model_config": copy.deepcopy(self.model_config),
             "input_version": self.input_version, "scope": self.context.get("scope", "account"),
             "data_as_of": self.context.get("data_as_of"), "reports": reports,
             "materials": material_index, "material_ids": sorted({m["id"] for m in material_index if m.get("id")} |

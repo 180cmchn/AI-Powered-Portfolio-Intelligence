@@ -44,7 +44,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 4:
+                if version and int(loads(version[0])) > 5:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -60,6 +60,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 4:
                     backup = self.path.with_name(self.path.name + ".before-v4.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 5:
+                    backup = self.path.with_name(self.path.name + ".before-v5.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -116,6 +122,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             self.migrate_material_catalog(db)
             self.migrate_research_versions(db)
             self.migrate_recommendations(db)
+            if "config_snapshot" not in {r[1] for r in db.execute("PRAGMA table_info(jobs)")}:
+                db.execute("ALTER TABLE jobs ADD COLUMN config_snapshot TEXT")
             settings_row = db.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
             saved_settings = loads(settings_row[0], {}) if settings_row else {}
             # Independent settings: an old search-provider disable never disables
@@ -126,7 +134,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 db.execute("INSERT OR IGNORE INTO meta VALUES('native_search_migration',?)", (dumps({
                     "at": now(), "from_schema": 3, "legacy_search_provider": saved_settings.get("search_provider"),
                     "model_native_search": saved_settings["model_native_search"], "reason": "independent_model_tool_setting"}),))
-            db.execute("UPDATE meta SET value='4' WHERE key='schema_version'")
+            # Do not persist a reasoning_effort default here: saved explicit
+            # values > environment > medium is resolved on each settings read.
+            db.execute("UPDATE meta SET value='5' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -159,6 +169,46 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         for key in ("search_provider", "search_key_env", "search_max_results", "news_read_sources"):
             settings.pop(key, None)
         return settings
+
+    def running_model_configs(self):
+        from .config import model_config_summary
+        with self.connect() as db:
+            jobs = db.execute("SELECT id,account_id,config_snapshot FROM jobs WHERE state='running' ORDER BY created_at").fetchall()
+            runs = db.execute("SELECT id,input_snapshot FROM global_runs WHERE state='running' ORDER BY created_at").fetchall()
+        result = []
+        for row in jobs:
+            cfg = loads(row['config_snapshot'])
+            result.append({'id': row['id'], 'scope': 'account', 'account_id': row['account_id'],
+                           **(model_config_summary(cfg) if cfg else {'reasoning_effort': None, 'note': '历史任务未记录模型配置'})})
+        for row in runs:
+            cfg = (loads(row['input_snapshot']) or {}).get('config')
+            result.append({'id': row['id'], 'scope': 'global', 'account_id': None,
+                           **(model_config_summary(cfg) if cfg else {'reasoning_effort': None, 'note': '历史任务未记录模型配置'})})
+        return result
+
+    def task_config_snapshot(self, db):
+        """Resolve settings once and record credential-sensitive evidence identity."""
+        from .model import native_search_fingerprint
+        saved = db.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
+        config = {**defaults(), **loads(saved[0] if saved else None, {})}
+        config['_model_configuration_fingerprint'] = native_search_fingerprint(config)
+        return config
+
+    def resume_configuration_waiters(self, db):
+        """Do not automatically repeat a rejected request under identical settings."""
+        current = self.task_config_snapshot(db)['_model_configuration_fingerprint']
+        jobs = db.execute("""SELECT id,config_snapshot FROM jobs WHERE state='waiting_config'
+            AND EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)""").fetchall()
+        for row in jobs:
+            previous = (loads(row['config_snapshot']) or {}).get('_model_configuration_fingerprint')
+            if previous != current:  # Legacy work without evidence can resume once.
+                db.execute("UPDATE jobs SET state='queued',error=NULL,due_at=?,updated_at=? WHERE id=?", (now(), now(), row['id']))
+        runs = db.execute("SELECT id,input_snapshot FROM global_runs WHERE state='waiting_config'").fetchall()
+        for row in runs:
+            previous = ((loads(row['input_snapshot']) or {}).get('config') or {}).get('_model_configuration_fingerprint')
+            if previous != current:
+                db.execute("UPDATE research_demands SET state='pending',job_id=NULL,detail='model configuration changed' WHERE job_id=? AND state='assigned'", (row['id'],))
+                db.execute("UPDATE global_runs SET state='superseded',updated_at=? WHERE id=?", (now(), row['id']))
 
     def account(self, account_id, db=None):
         if db is None:
@@ -245,6 +295,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 raise KeyError("任务不存在")
             r = dict(row)
             r["result"] = loads(r["result"])
+            r["config_snapshot"] = loads(r["config_snapshot"])
             r["synthesis_checkpoint"] = self.checkpoint_status(job_id)
             if events:
                 r["events"] = [loads(e[0]) for e in db.execute("SELECT body FROM events WHERE job_id=? ORDER BY seq", (job_id,))]
@@ -258,6 +309,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         result = []
         for r in rows:
             item = dict(r)
+            item["config_snapshot"] = loads(item["config_snapshot"])
             item["synthesis_checkpoint"] = self.checkpoint_status(item['id'])
             if summary:
                 item.pop("result", None)
@@ -286,9 +338,25 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             rows = db.execute("SELECT j.* FROM jobs j JOIN accounts a ON a.latest_job_id=j.id WHERE j.state='queued' AND j.due_at<=? AND (? IS NULL OR j.account_id=?) ORDER BY j.created_at LIMIT ?", (now(), account_id, account_id, limit)).fetchall()
+            # Queued work adopts the configuration at claim/start. This same
+            # immutable value drives all HTTP retries and child sessions. A new
+            # claim after restart explicitly starts a new attempt/configuration.
+            cfg = self.task_config_snapshot(db)
             for r in rows:
-                db.execute("UPDATE jobs SET state='running',attempts=attempts+1,updated_at=? WHERE id=?", (now(), r["id"]))
+                from .config import model_config_summary
+                previous = loads(r['config_snapshot'])
+                before = model_config_summary(previous) if previous else None
+                current = model_config_summary(cfg)
+                db.execute("UPDATE jobs SET state='running',attempts=attempts+1,updated_at=?,config_snapshot=? WHERE id=?", (now(), dumps(cfg), r["id"]))
                 db.execute("UPDATE accounts SET analysis_state='running' WHERE id=?", (r["account_id"],))
+                # Each restart attempt keeps an audit relation, even when the
+                # latest configuration snapshot on the job is replaced.
+                db.execute("INSERT INTO events(job_id,body) VALUES(?,?)", (r['id'], dumps({
+                    'type': 'model_configuration_bound', 'at': now(), 'agent': 'system',
+                    'message': '已按任务领取时设置绑定本轮模型配置；尚不代表请求已发送',
+                    'payload': {'attempt': r['attempts'] + 1, 'policy': 'claim_time',
+                        'previous': before, 'current': current,
+                        'changed': before != current if before else None}})))
         return [self.job(r["id"]) for r in rows]
 
     def event(self, job_id, event):

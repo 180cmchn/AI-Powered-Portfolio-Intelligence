@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const id = 'a'.repeat(32), mid = 'b'.repeat(32), rid = 'c'.repeat(32), unknownId = 'd'.repeat(32), privateId = 'e'.repeat(32);
 let price = '10', version = 1, eventSeq = 1, detailFetches = 0, materialBodyFetches = 0, activeCount = 2;
+let configurationErrors=[];
 const requests = [];
 const extractionId = 'f'.repeat(32), generatedId = '1'.repeat(32), failedId = '2'.repeat(32);
 const material = { id: mid, title: '长财报', text: '原文来自 text 字段', access: 'full_text', truncated: true, page_count: 32, returned_range: {start_page: 25, end_page: 26}, url: 'https://example.com/report.pdf', fetched_at: '2026-10-22T15:00:00+08:00', document_version: 1, representation_kind: 'original_document' };
@@ -21,7 +22,7 @@ function account() { return { id, name: '测试账户', version, analysis_state:
 function recommendation(n, historical = false) { return {id:`${historical ? 'history' : 'active'}-${n}`, symbol:n === 0 ? 'SH:600519' : 'SZ:000001', action:'hold', state:historical ? 'expired' : 'needs_review', review_status:historical ? 'expired' : 'needs_review', price_state:historical ? 'not_met' : 'met', observed_price:'120', input_version:1, valid_until:historical ? '2020-01-01T00:00:00+08:00' : null, references:n === 0 ? [reference] : [], review_followup:historical ? null : {state:'pending',job_id:null}, basis:historical ? `历史记录 ${n}` : `活跃记录 ${n}`}; }
 function json(url) {
   const path = url.pathname;
-  if(path === '/api/status') return {mode: 'demo', model_configured: true, worker: {running: true}, settings: {quote_provider: 'manual'}};
+  if(path === '/api/status') return {mode: 'demo', model_configured: true, configuration_errors:configurationErrors, worker: {running: true}, settings: {quote_provider: 'manual'}};
   if(path === '/api/settings') return {quote_provider: 'manual'};
   if(path === '/api/accounts') return [account()];
   if(path === `/api/accounts/${id}`) return account();
@@ -168,6 +169,10 @@ try {
   assert.ok(requests.filter(url => url.startsWith('/api/materials?')).every(url => url.includes('index=true') && url.includes('limit=10')));
   assert.equal(detailFetches, 1, 'unchanged reports must not be re-downloaded every poll');
   assert.equal(materialBodyFetches, 0, 'material details use bounded ranges');
+  configurationErrors=['reasoning_effort 非法值：unexpected；允许 low、medium、high、xhigh、max'];
+  await page.clock.fastForward(4000);
+  await page.locator('#configuration-errors').waitFor();
+  assert.ok((await page.locator('#configuration-errors').textContent()).includes(configurationErrors[0]));
   assert.deepEqual(errors, []);
   console.log('PASS (deterministic HTTP fixtures + Chromium): polling, protected drafts/focus/version, active/history pagination (106 rows, 12 active), price/review separation, resolved/source-only/unresolved evidence, selected PDF ranges, scope version labels, extraction/report provenance and unresolved origins, failed-source links, incremental events.');
 } catch (error) {

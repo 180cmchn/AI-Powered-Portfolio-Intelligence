@@ -5,6 +5,7 @@ protocol double; all resulting capability claims are explicitly marked fixtures.
 The parent supplies a new temporary directory; importing app.main also uses that DB.
 """
 import json
+import asyncio
 import os
 from pathlib import Path
 import socket
@@ -52,8 +53,14 @@ model.probe_native_search = controlled_native_probe
 async def reopen_fixture():
     reopened = Store(store.path)
     return {'model_native_search': reopened.settings()['model_native_search'],
+            'reasoning_effort': reopened.settings()['reasoning_effort'],
             'legacy_search_provider': reopened.meta('settings')['search_provider'],
             'probe_calls': probe_calls}
+
+@app.post('/__fixture/start_model_snapshot')
+async def start_model_snapshot_fixture():
+    # Freeze a production claim snapshot without invoking any model worker.
+    return {'jobs': store.claim_jobs(10)}
 store.save_universe({'watchlist': ['SH:600519'], 'candidates': []})
 old = store.claim_global()
 store.save_universe({'watchlist': ['SH:600519'], 'candidates': ['SZ:000001']})
@@ -73,9 +80,12 @@ private = store.save_material({'scope': 'account', 'text': '账户 B 私有原�
 unknown = 'd'*32
 native_link = store.save_material({'scope': 'public', 'title': '受控原生来源链接',
     'url': 'https://example.test/native-link', 'access': 'source_link', 'representation': 'native_search_source'})
-native_excerpt = store.save_material({'scope': 'public', 'title': '受控原生来源片段',
-    'url': 'https://example.test/native-excerpt', 'access': 'search_excerpt',
-    'representation': 'native_search_source', 'text': '受控服务端返回的可见片段，不是全文'})
+from app.service import ResearchTools
+description_materials = asyncio.run(ResearchTools(store, {'id': 'browser-native-description',
+    'account_id': account['id']}, store.settings()).record_native_search('browser-fixture', [],
+    [{'title': '受控原生来源片段', 'url': 'https://example.test/native-excerpt',
+      'description': '受控服务端返回的可见片段，不是全文'}], []))
+native_excerpt = store.material(description_materials[0]['id'])
 
 def suggestion(symbol, index):
     return {'security_id': symbol, 'action': 'watch', 'basis': f'受控建议 {symbol} {index}',

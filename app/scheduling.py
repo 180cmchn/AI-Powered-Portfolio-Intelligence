@@ -8,7 +8,7 @@ import re
 def information_impact(value, material_id):
     """Malformed relevance output is uncertainty, never an instruction or a lost event."""
     fallback = {'material_id': material_id, 'status': 'uncertain', 'symbols': [], 'sectors': [],
-                'market_wide': False, 'explanation': '关联判断缺失或格式不完整，保守扩大复核'}
+                'market_wide': False, 'explanation': '关联判断缺失或格式不完整，保留待查，不自动广播'}
     if not isinstance(value, dict) or value.get('status') not in ('relevant', 'irrelevant', 'uncertain'):
         return fallback
     if not isinstance(value.get('explanation'), str) or not value['explanation'].strip():
@@ -184,7 +184,7 @@ class SchedulingStore:
         from .store import uid, dumps
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            snapshot = {**self.universe_snapshot(db), 'config': self.settings()}
+            snapshot = {**self.universe_snapshot(db), 'config': self.task_config_snapshot(db)}
             version = snapshot['universe_version']
             if db.execute("SELECT 1 FROM global_runs WHERE state IN ('running','waiting_config') AND universe_version=?", (version,)).fetchone():
                 # A missing configuration must not create a new failed job every scan.
@@ -283,7 +283,4 @@ class SchedulingStore:
         db.execute("UPDATE research_demands SET state='pending',detail='recovered interrupted global work' WHERE job_id IN (SELECT id FROM global_runs WHERE state='running')")
         db.execute("UPDATE global_runs SET state='interrupted',updated_at=? WHERE state='running'", (now(),))
         if config_ready:
-            db.execute("UPDATE research_demands SET state='pending',job_id=NULL,detail='configuration restored' WHERE job_id IN (SELECT id FROM global_runs WHERE state='waiting_config')")
-            db.execute("UPDATE global_runs SET state='superseded',updated_at=? WHERE state='waiting_config'", (now(),))
-            db.execute("""UPDATE jobs SET state='queued',error=NULL,due_at=?,updated_at=? WHERE state='waiting_config'
-                       AND EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)""", (now(), now()))
+            self.resume_configuration_waiters(db)

@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 from . import providers
 from .calendar import market_state
+from .config import model_config_summary
 from .domain import TZ, metrics, now
 from .store import Store, dumps
 from .materials import index_of, material_text
@@ -42,7 +43,7 @@ class ResearchTools:
 
     async def record_native_search(self, agent_id, events, sources, annotations):
         from .model import native_search_fingerprint
-        from .references import source_url
+        from .native_sources import normalize_native_source
         if any(event.get('status') == 'completed' for event in events):
             self.store.set_meta('native_search_capability', {
                 'status': 'observed', 'checked_at': now(),
@@ -51,16 +52,20 @@ class ResearchTools:
                              'event_count': len(events), 'source_count': len(sources)},
                 'note': '服务返回了原生联网调用项；未返回的工具用量与访问范围保持未知'})
         saved = []
-        for item in sources:
-            if not isinstance(item, dict) or not source_url(item.get('url')):
+        for raw in sources:
+            item = normalize_native_source(raw)
+            if item is None:
                 continue
-            snippet = item.get('snippet') or item.get('excerpt') or ''
+            snippet = item.get('visible_excerpt', '')
             # A hosted citation never proves a local download or full document hash.
             material = self.store.save_material({
                 'url': item['url'], 'source_title': item.get('title'), 'scope': 'public',
                 'content': snippet, 'source': 'model_native_search', 'classification': 'uncertain',
                 'access': 'search_excerpt' if snippet else 'source_link',
                 'representation': 'native_search_source', 'fetched_at': now(),
+                'truncated': item.get('excerpt_truncated', False), 'returned_chars': len(snippet),
+                'returned_range': {'start': 0, 'end': len(snippet), 'unit': 'character',
+                                   'basis': 'merged_visible_search_text'},
                 'native_search': {'agent_id': agent_id, 'visible_metadata': item,
                                   'annotations': [a for a in annotations if a.get('url') == item['url']],
                                   'local_document_downloaded': False}},
@@ -299,7 +304,7 @@ class Service:
     async def execute(self, job):
         from .agents import run_research
         from .model import ModelClient, ModelConfigurationError
-        cfg = self.store.settings()
+        cfg = job.get("config_snapshot") or self.store.settings()
         started = time.monotonic()
         try:
             account = self.store.snapshot(job["account_id"], job["input_version"])
@@ -331,6 +336,7 @@ class Service:
                        "previous_analysis": self.store.previous_analysis(account["id"]),
                        "target_security": {"symbol": target, "quote": self.quotes().get(target), "metadata": self.store.cache("securities").get(target)} if target else None,
                        "job_id": job["id"], "input_version": job["input_version"],
+                       "model_config": model_config_summary(cfg),
                        "calendar": market_state(), "available_public_material_count": self.store.material_count(),
                        "shared_research": self.store.research_records(limit=20),
                        "universe_version": scope['universe_version'],
@@ -355,6 +361,7 @@ class Service:
                 result = await asyncio.wait_for(research(context, cfg, ResearchTools(self.store, job, cfg, context), emit), timeout=max(0.01, cfg["analysis_timeout_seconds"] - (time.monotonic() - started)))
                 result["metrics"] = values
             result.update(input_version=job["input_version"], data_as_of=data_as_of,
+                          model_config=model_config_summary(cfg),
                           synthesis_checkpoint_job_id=(context.get('synthesis_checkpoint') or {}).get('checkpoint_job_id'),
                           account_id=account["id"], job_id=job["id"], mode=self.store.mode,
                           universe_version=scope['universe_version'],
@@ -413,11 +420,28 @@ class Service:
         decisions = {d.get('material_id'): d for d in (result.get('information_impacts') or [])
                      if isinstance(d, dict) and isinstance(d.get('material_id'), str)} if isinstance(result.get('information_impacts', []), list) else {}
         securities = self.store.cache('securities')
+        scope = self.store.universe_snapshot()
+        # The product currently has one global candidate pool and no structured
+        # per-account exclusions. Watchlists alone do not grant candidate scope.
+        candidates = set(scope['universe'].get('candidates') or [])
         for mid in material_ids:
+            with self.store.connect() as db:
+                prior = db.execute("SELECT state FROM information_routes WHERE material_id=?", (mid,)).fetchone()
+            if prior and prior['state'] == 'routed':
+                # Every downstream demand was committed before this state. A
+                # crash before acknowledgement must not re-evaluate a new scope.
+                self.store.complete_material_notifications([mid])
+                continue
             decision = information_impact(decisions.get(mid), mid)
             # Semantic event identity comes from the public manager, with its
             # explanation retained for inspection; unknown identity keeps mid.
             event = 'event:' + hashlib.sha256(decision['event_key'].encode()).hexdigest() if decision.get('event_key') else mid
+            delivery_key = 'information_delivery_event:' + mid
+            semantic_key = 'information_semantic_event:' + event if decision.get('event_key') else None
+            # A partially resolved material may return through a later public
+            # run with a refined semantic event_key. Keep its first delivery
+            # identity so already-covered accounts do not receive a second job.
+            event = self.store.meta(delivery_key) or (self.store.meta(semantic_key) if semantic_key else None) or event
             anchor_key = 'information_event_anchor:' + event
             anchor = self.store.meta(anchor_key)
             if not anchor:
@@ -425,27 +449,51 @@ class Service:
                 self.store.set_meta(anchor_key, anchor)
             relevant = set(decision.get('symbols') or [])
             sectors = set(decision.get('sectors') or [])
-            selected = []
+            selected, unresolved = [], []
+            unknown = decision['status'] == 'uncertain' or (
+                decision['status'] == 'relevant' and not (relevant or sectors or decision['market_wide']))
             for account in self.store.accounts():
-                symbols = {h['symbol'] for h in account['holdings']} | set(self.store.recommendation_symbols(account['id']))
+                symbols = ({h['symbol'] for h in account['holdings'] if Decimal(h['quantity']) > 0}
+                           | set(self.store.recommendation_symbols(account['id'])) | candidates)
                 known_sectors = {securities.get(s, {}).get('sector') for s in symbols}
-                broad = decision.get('status') != 'irrelevant' and (
-                    decision.get('status') != 'relevant' or decision.get('market_wide') or
-                    not (relevant or sectors) or (sectors and None in known_sectors))
-                if broad or (decision.get('status') != 'irrelevant' and (symbols & relevant or known_sectors & sectors)):
+                if unknown:
+                    unresolved.append(account['id'])
+                elif decision['status'] == 'relevant' and (
+                        decision['market_wide'] or symbols & relevant or (known_sectors - {None, ''}) & sectors):
                     selected.append(account['id'])
-                    self.store.request_analysis(account['id'], 'public_information', f"news:{account['id']}:{event}",
-                        reason=f'公共研究 {run_id} 关联材料 {mid}；复用公共结论并独立适配账户', delay=2)
-            self.store.review_recommendations(material_ids=[anchor], material_account_ids=selected)
+                elif decision['status'] == 'relevant' and sectors and known_sectors & {None, ''}:
+                    # Missing classification is a research gap, not evidence
+                    # that an unrelated sector affects every account.
+                    unresolved.append(account['id'])
+            if selected:
+                self.store.set_meta(delivery_key, event)
+                # A semantic identity learned after partial delivery also needs
+                # to point future reprints to that original demand identity.
+                if semantic_key and not self.store.meta(semantic_key):
+                    self.store.set_meta(semantic_key, event)
+            plan = {**decision, 'material_id': mid, 'account_ids': selected, 'delivery_event': event,
+                    'unresolved_account_ids': unresolved, 'universe_version': scope['universe_version']}
             with self.store.connect() as db:
-                db.execute("""INSERT INTO information_routes VALUES(?,?,'routed',?,?,?)
-                    ON CONFLICT(material_id) DO UPDATE SET state='routed',public_run_id=excluded.public_run_id,
+                db.execute("""INSERT INTO information_routes VALUES(?,?,'ready',?,?,?)
+                    ON CONFLICT(material_id) DO UPDATE SET state='ready',public_run_id=excluded.public_run_id,
                     decision=excluded.decision,updated_at=excluded.updated_at""",
-                           (mid, run_id, dumps({**decision, 'material_id': mid, 'account_ids': selected}), now(), now()))
-                db.execute("UPDATE research_demands SET state='completed',detail='covered by public research',updated_at=? WHERE event_key=?",
-                           (now(), 'public_information:' + mid))
+                           (mid, run_id, dumps(plan), now(), now()))
+            for account_id in selected:
+                self.store.request_analysis(account_id, 'public_information', f"news:{account_id}:{event}",
+                    reason=f'公共研究 {run_id} 关联材料 {mid}；复用公共结论并独立适配账户', delay=2)
+            self.store.review_recommendations(material_ids=[anchor], material_account_ids=selected)
+            pending = unknown or bool(unresolved)
+            with self.store.connect() as db:
+                db.execute("UPDATE information_routes SET state=?,updated_at=? WHERE material_id=?",
+                           ('awaiting_retry' if pending else 'routed', now(), mid))
+                db.execute("UPDATE research_demands SET state='completed',detail=?,updated_at=? WHERE event_key=?",
+                           ('relevance unresolved; retained for later public research' if pending else 'covered by public research',
+                            now(), 'public_information:' + mid))
             # The selected account demands are durable before acknowledgement.
-            self.store.complete_material_notifications([mid])
+            # Unknown relevance remains available to a later explicit/new-event
+            # public run, without broadcasting or polling itself into a loop.
+            if not pending:
+                self.store.complete_material_notifications([mid])
 
     async def execute_global(self, run):
         from .agents import run_research
@@ -459,6 +507,7 @@ class Service:
                 return
             universe = snapshot['universe']
             context = {"scope": "global", "account": None, "input_version": None, "job_id": run["id"],
+                       "model_config": model_config_summary(cfg),
                        "universe_version": snapshot['universe_version'], "input_snapshot": snapshot,
                        "reason": run["reason"], "candidates": universe["candidates"], "watchlist": universe["watchlist"],
                        "quotes": {s: q for s, q in self.quotes().items() if s in set(universe['candidates'] + universe['watchlist'])},
@@ -477,6 +526,7 @@ class Service:
             else:
                 result = await asyncio.wait_for((self.runner or run_research)(context, cfg,
                          ResearchTools(self.store, {**run, "account_id": None}, cfg, context), emit), cfg["analysis_timeout_seconds"])
+            result['model_config'] = model_config_summary(cfg)
             result['_information_material_ids'] = [m['id'] for m in context['pending_information']]
             result['synthesis_checkpoint_job_id'] = (context.get('synthesis_checkpoint') or {}).get('checkpoint_job_id')
             published = self.store.finish_global(run["id"], "completed", result)
@@ -594,6 +644,11 @@ class Service:
 
     def model_configured(self):
         cfg = self.store.settings()
+        from .config import reasoning_effort
+        try:
+            reasoning_effort(cfg)
+        except ValueError:
+            return False
         local = urlsplit(cfg["model_base_url"]).hostname in ("localhost", "127.0.0.1", "::1")
         return bool(self.runner or self.store.mode == "demo" or (cfg["model_name"] and (os.getenv(cfg["model_key_env"]) or (local and cfg.get("model_allow_no_key")))))
 
@@ -604,10 +659,8 @@ class Service:
                 db.execute("BEGIN IMMEDIATE")
                 # Only waiting work is touched; a settings save must not requeue
                 # active global studies or interrupt account research.
-                db.execute("UPDATE jobs SET state='queued',error=NULL,due_at=?,updated_at=? WHERE state='waiting_config' AND EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)", (now(), now()))
+                self.store.resume_configuration_waiters(db)
                 db.execute("UPDATE accounts SET analysis_state='pending' WHERE latest_job_id IN (SELECT id FROM jobs WHERE state='queued')")
-                db.execute("UPDATE research_demands SET state='pending',job_id=NULL,detail='configuration restored' WHERE job_id IN (SELECT id FROM global_runs WHERE state='waiting_config')")
-                db.execute("UPDATE global_runs SET state='superseded' WHERE state='waiting_config'")
         return ready
 
     async def start(self):

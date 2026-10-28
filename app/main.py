@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 from urllib.parse import urlsplit
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -30,6 +31,7 @@ class Settings(BaseModel):
     model_allow_no_key: bool = False
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
     model_native_search: bool = True
+    reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
     synthesis_request_timeout_seconds: int = Field(default=120, ge=5, le=600)
     synthesis_max_calls: int = Field(default=4, ge=1, le=8)
     synthesis_checkpoint_max_age_seconds: int = Field(default=1800, ge=60, le=86400)
@@ -201,15 +203,26 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.get("/api/status")
     async def status():
-        from .model import native_search_status
+        from .model import native_search_status, native_search_fingerprint
         cfg = store.settings()
+        from .config import reasoning_effort
+        configuration_errors = []
+        try:
+            reasoning_effort(cfg)
+        except ValueError as exc:
+            configuration_errors.append(str(exc))
         p = urlsplit(cfg["model_base_url"])
         key_ready = bool(os.getenv(cfg["model_key_env"])) or (cfg.get("model_allow_no_key", False) and p.hostname in ("localhost", "127.0.0.1", "::1"))
-        return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and key_ready),
+        probe = store.meta("model_probe")
+        if probe and probe.get('fingerprint') != native_search_fingerprint(cfg):
+            probe = {"ok": False, "status": "unverified", "note": "配置已变化，历史协议探测不适用于当前模型、端点或思考强度。"}
+        return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and key_ready and not configuration_errors),
+                "configuration_errors": configuration_errors,
                 "native_search": native_search_status(cfg, store.meta('native_search_capability')),
                 "calendar": market_state(), "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
                 "last_resume": store.meta("last_resume")}, "settings": cfg, "time": now(),
-                "model_probe": store.meta("model_probe"), "last_quote_refresh": store.meta("last_quote_refresh")}
+                "model_probe": probe, "running_model_configs": store.running_model_configs(),
+                "last_quote_refresh": store.meta("last_quote_refresh")}
 
     @app.get("/api/accounts")
     async def accounts():
@@ -389,7 +402,9 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.put("/api/settings")
     async def update_settings(data: Settings):
         # Preserve deprecated values for audit; they are never exposed to runtime.
-        store.set_meta("settings", {**store.meta('settings', {}), **data.model_dump()})
+        # Missing fields are not explicit choices. In particular, do not write
+        # medium over REASONING_EFFORT or an earlier explicitly saved value.
+        store.set_meta("settings", {**store.meta('settings', {}), **data.model_dump(exclude_unset=True)})
         store.set_meta("model_probe", None)
         service.resume_waiting_config()
         for a in store.accounts():
@@ -398,15 +413,19 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.post("/api/settings/probe")
     async def probe():
-        from .model import probe_model, ModelError
+        from .model import probe_model, ModelError, native_search_fingerprint
         if mode == "demo":
             return {"ok": False, "message": "演示数据库不调用真实模型；请切换 live 服务进行能力探测"}
+        config = store.settings()
         try:
-            result = await probe_model(store.settings())
+            result = await probe_model(config)
             store.set_meta("model_probe", {**result, "checked_at": now()})
             return result
         except ModelError as e:
-            return {"ok": False, "error": str(e)}
+            result = getattr(e, 'probe_diagnostics', {"ok": False, "error": str(e),
+                "fingerprint": native_search_fingerprint(config), "requests": []})
+            store.set_meta('model_probe', {**result, 'checked_at': now()})
+            return result
 
     @app.post('/api/settings/probe-native-search')
     async def probe_native():

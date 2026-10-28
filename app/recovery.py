@@ -7,6 +7,11 @@ from .domain import TZ, now
 
 
 class RecoveryStore:
+    def _checkpoint_config(self, job, context):
+        # Global tasks already retain their full configuration in input_snapshot.
+        return (job.get('config_snapshot') or (job.get('input_snapshot') or {}).get('config')
+                or (context.get('input_snapshot') or {}).get('config') or self.settings())
+
     def checkpoint_material_guard(self, material_ids, account_id):
         result = {}
         with self.connect() as db:
@@ -44,8 +49,10 @@ class RecoveryStore:
 
     def save_synthesis_checkpoint(self, job, body, context):
         from .store import dumps
+        from .config import model_config_summary
         body = {**body, 'verified_material_versions': self.checkpoint_material_guard(
-            body.get('material_ids', []), job.get('account_id'))}
+            body.get('material_ids', []), job.get('account_id')),
+            'model_config': body.get('model_config') or context.get('model_config') or model_config_summary(self._checkpoint_config(job, context))}
         with self.connect() as db:
             db.execute('''INSERT INTO synthesis_checkpoints
                 (job_id,account_id,input_version,universe_version,body,guard,created_at)
@@ -57,6 +64,7 @@ class RecoveryStore:
     def reusable_synthesis_checkpoint(self, job, context):
         from .store import loads
         guard = self.research_guard(context)
+        config = self._checkpoint_config(job, context)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             rows = db.execute('''SELECT c.* FROM synthesis_checkpoints c
@@ -67,7 +75,7 @@ class RecoveryStore:
                 (job.get('account_id') or '', job.get('input_version'), context['universe_version'])).fetchall()
             for row in rows:
                 age = (datetime.now(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
-                if row['guard'] != guard or not 0 <= age <= self.settings()['synthesis_checkpoint_max_age_seconds']:
+                if row['guard'] != guard or not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
                     continue
                 if row['resume_count'] >= 2:
                     continue
@@ -76,7 +84,14 @@ class RecoveryStore:
                 if self.checkpoint_material_guard(list(verified), job.get('account_id')) != verified:
                     continue
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=resume_count+1 WHERE job_id=?', (row['job_id'],))
+                from .config import model_config_summary
+                current = context.get('model_config') or model_config_summary(config)
+                previous = body.get('model_config')
                 return {**body, 'checkpoint_job_id': row['job_id'],
+                        'configuration_relation': {'strategy': 'reuse_visible_research_current_task_config',
+                            'previous': previous, 'current': current,
+                            'changed': previous != current if previous else None,
+                            'note': '复用仍有效的可见研究；汇总使用本次任务配置，旧任务能力观测不作本次证明。'},
                         'checkpoint_created_at': row['created_at'], 'resume_attempt': row['resume_count'] + 1}
         return None
 

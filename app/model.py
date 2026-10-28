@@ -13,6 +13,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -23,6 +24,7 @@ from urllib.parse import urlsplit
 import httpx
 
 from .context import bounded_result, compact
+from .config import reasoning_effort, model_config_summary
 
 
 class ModelError(RuntimeError):
@@ -31,6 +33,10 @@ class ModelError(RuntimeError):
 
 class ModelConfigurationError(ModelError):
     pass
+
+
+class ReasoningEffortUnsupported(ModelConfigurationError):
+    """A deterministic endpoint rejection; never retry with a different effort."""
 
 
 class ModelProtocolError(ModelError):
@@ -71,15 +77,17 @@ class ModelSession:
     agent_id: str = "unknown"
     phase: str = "research"
     native_search: bool = True
+    task_id: str | None = None
 
 
 _NATIVE_CAPABILITIES: dict[str, dict] = {}
 
 
 def native_search_fingerprint(config: dict) -> str:
-    """Invalidate evidence on endpoint/model/credential changes without exposing a key."""
+    """Invalidate evidence on endpoint/model/credential/effort changes, without a key."""
     identity = [str(config.get(k, "")) for k in ("model_protocol", "model_base_url", "model_name", "model_key_env")]
     identity.append(os.environ.get(config.get("model_key_env", "MODEL_API_KEY"), ""))
+    identity.append(model_config_summary(config)["fingerprint"])
     return hashlib.sha256(json.dumps(identity).encode()).hexdigest()
 
 
@@ -113,7 +121,13 @@ class ModelClient:
         before_request: Callable[[], Awaitable[None]] | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        self.config = config
+        self.config = config = copy.deepcopy(config)
+        try:
+            self.reasoning_effort = reasoning_effort(config)
+        except ValueError as exc:
+            raise ModelConfigurationError(str(exc)) from exc
+        if 'reasoning' in config and not isinstance(config['reasoning'], dict):
+            raise ModelConfigurationError('Responses reasoning 配置必须为对象')
         self.protocol = config.get("model_protocol", "responses")
         if self.protocol not in {"responses", "chat_completions"}:
             raise ModelConfigurationError("model_protocol 必须为 responses 或 chat_completions")
@@ -131,6 +145,7 @@ class ModelClient:
             raise ModelConfigurationError("远程模型端点需要 HTTPS；本机模型可以使用 HTTP")
         if not self.key and not (local and config.get("model_allow_no_key", False)):
             raise ModelConfigurationError(f"缺少环境变量 {self.key_env}；请在后端环境配置密钥")
+        self.base_url = base_url
         headers = {"Content-Type": "application/json"}
         if self.key:
             headers["Authorization"] = f"Bearer {self.key}"
@@ -144,6 +159,7 @@ class ModelClient:
 
     def session(self, system: str, context: Any) -> ModelSession:
         session = ModelSession(system=system)
+        session.task_id = (context.get("task_id") or context.get("job_id")) if isinstance(context, dict) else None
         budget = int(self.config.get("max_context_chars", 240_000))
         initial = bounded_result(session, context, max(1000, budget // 3))
         if initial is not context and isinstance(context, dict):
@@ -197,6 +213,7 @@ class ModelClient:
                 "max_output_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", **tool, "strict": False} for tool in tools],
                 "include": ["reasoning.encrypted_content"],
+                "reasoning": {**copy.deepcopy(self.config.get("reasoning") or {}), "effort": self.reasoning_effort},
             }
             if self.config.get("model_native_search", True) and session.native_search:
                 # The documented Responses boundary shared by OpenAI and xAI.
@@ -210,6 +227,7 @@ class ModelClient:
         else:
             payload = {
                 "model": self.model,
+                "reasoning_effort": self.reasoning_effort,
                 "messages": [{"role": "system", "content": session.system}, *history],
                 "max_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", "function": {**tool, "strict": False}} for tool in tools],
@@ -222,6 +240,9 @@ class ModelClient:
             data = await self._post(endpoint, payload, session)
         except ModelBudgetExceeded:
             # A local limit stops before HTTP and says nothing about endpoint capability.
+            raise
+        except ReasoningEffortUnsupported:
+            # This rejection says nothing about web_search support.
             raise
         except ModelError:
             if self.config.get("model_native_search", True) and session.native_search and self.protocol == "responses":
@@ -325,16 +346,8 @@ class ModelClient:
 
     @staticmethod
     def _source(value: Any) -> dict | None:
-        if not isinstance(value, dict) or not isinstance(value.get("url"), str):
-            return None
-        url = value["url"]
-        try:
-            parsed = urlsplit(url)
-            if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
-                return None
-        except ValueError:
-            return None
-        return {"url": url, **{k: value[k] for k in ("title", "snippet", "description") if isinstance(value.get(k), str)}}
+        from .native_sources import normalize_native_source
+        return normalize_native_source(value)
 
     @classmethod
     def _native_outputs(cls, output: list[dict]) -> tuple[list[dict], list[dict]]:
@@ -386,6 +399,12 @@ class ModelClient:
                 await self.before_request()
             started = time.perf_counter()
             observation = {"attempt": attempt + 1, "endpoint": endpoint, "model": self.model,
+                           "base_url": self.base_url, "protocol": self.protocol,
+                           "task_id": session.task_id if session else None,
+                           "reasoning_effort": self.reasoning_effort,
+                           "reasoning_effort_path": "reasoning.effort" if self.protocol == "responses" else "reasoning_effort",
+                           "reasoning_effort_sent": (payload.get("reasoning") or {}).get("effort") if self.protocol == "responses" else payload.get("reasoning_effort"),
+                           "request_accepted": None, "reported_reasoning_effort": None,
                            "agent_id": session.agent_id if session else "probe",
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
@@ -419,10 +438,33 @@ class ModelClient:
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="cancelled")
                 raise
             observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
+                               request_accepted=200 <= response.status_code < 300,
                                output_bytes=len(response.content),
                                request_id=response.headers.get("x-request-id") or response.headers.get("request-id"))
             if response.status_code >= 400:
                 observation["error"] = f"HTTP {response.status_code}"
+                if response.status_code in {400, 404, 422} or (response.status_code >= 500 and any(
+                    code in response.text.lower() for code in ('unsupported_parameter', 'unsupported_value', 'invalid_parameter', 'invalid_value'))):
+                    # Read only for classification; never log server bodies or
+                    # trust them as proof that another effort would work.
+                    message = response.text.lower()
+                    effort_rejected = any(field in message for field in ("reasoning_effort", "reasoning.effort", "reasoning effort"))
+                    # Some compatible endpoints identify only the rejected
+                    # Responses object in their plain-text error, without param.
+                    if re.search(r"\breasoning\b", message) and any(term in message for term in (
+                        'unrecognized', 'unsupported', 'not supported', 'unknown parameter', 'unknown field', 'not allowed')):
+                        effort_rejected = True
+                    try:
+                        error_body = response.json().get("error", {})
+                    except (ValueError, AttributeError):
+                        error_body = {}
+                    if isinstance(error_body, dict):
+                        effort_rejected = effort_rejected or error_body.get("param") in {"reasoning", "reasoning.effort", "reasoning_effort"}
+                    if effort_rejected:
+                        observation.update(reasoning_effort_rejected=True, error="reasoning_effort_rejected")
+                        raise ReasoningEffortUnsupported(
+                            f"模型端点 {self.base_url}（{self.protocol}）拒绝 {observation['reasoning_effort_path']}={self.reasoning_effort} "
+                            f"（HTTP {response.status_code}）；请在设置中选择此端点支持的档位或更换端点。没有降档、删参或重试。")
                 if response.status_code in {400, 404, 422} and observation["native_search_requested"]:
                     # Only use the body for classification; never emit it.
                     message = response.text.lower()
@@ -441,6 +483,9 @@ class ModelClient:
             if not isinstance(data, dict):
                 observation["error"] = "invalid_response_type"
                 raise ModelProtocolError("模型服务返回的 JSON 顶层必须为对象")
+            reported_effort = (data.get("reasoning") or {}).get("effort") if isinstance(data.get("reasoning"), dict) else data.get("reasoning_effort")
+            if reported_effort in ("none", "minimal", "low", "medium", "high", "xhigh", "max"):
+                observation["reported_reasoning_effort"] = reported_effort
             if isinstance(data.get("usage"), dict):
                 # Preserve only numeric usage counters, never raw provider fields.
                 observation["usage"] = _numeric_counters(data["usage"])
@@ -481,10 +526,19 @@ async def probe_model(config: dict[str, Any], *, transport: httpx.AsyncBaseTrans
         if second.calls or nonce not in second.text:
             raise ModelProtocolError("能力检查失败：模型未正确续接函数返回值")
         return {"ok": True, "protocol": client.protocol, "model": client.model,
+                "fingerprint": native_search_fingerprint(config), "model_config": model_config_summary(config),
                 "checks": ["function_call", "function_result_continuation"],
                 "model_usage": client.usage_summary(client.requests),
                 "requests": copy.deepcopy(client.requests),
                 "note": "已实测此端点和模型的两轮工具协议；不等于研究质量验收。"}
+    except ModelError as exc:
+        # Keep the existing exception contract for CLI callers while exposing
+        # paid failed-attempt diagnostics to the settings API.
+        exc.probe_diagnostics = {"ok": False, "error": str(exc),
+            "status": "configuration_error" if isinstance(exc, ModelConfigurationError) else "request_failed",
+            "fingerprint": native_search_fingerprint(config), "model_config": model_config_summary(config),
+            "requests": copy.deepcopy(client.requests), "model_usage": client.usage_summary(client.requests)}
+        raise
     finally:
         await client.aclose()
 
@@ -505,7 +559,7 @@ async def probe_native_search(config: dict[str, Any], *, transport: httpx.AsyncB
     try:
         client = ModelClient(cfg, transport=transport)
     except ModelConfigurationError as exc:
-        return {"ok": False, "status": "authentication_failed" if "缺少环境变量" in str(exc) else "request_failed",
+        return {"ok": False, "status": "authentication_failed" if "缺少环境变量" in str(exc) else "configuration_error",
                 "fingerprint": native_search_fingerprint(config), "error": str(exc), "requests": []}
     session = client.session("Use the native web_search tool once to discover an official Kweichow Moutai investor financial report. Return one discovered official URL and its title. Do not use memory or claim local download.",
                              "Bounded native search capability check; only the company is provided, no source URL.")
@@ -521,6 +575,10 @@ async def probe_native_search(config: dict[str, Any], *, transport: httpx.AsyncB
         return {**state, "ok": state["status"] == "observed", "protocol": client.protocol,
                 "model": client.model, "native_events": turn.native_events, "sources": turn.sources,
                 "annotations": turn.annotations, "text": turn.text,
+                "requests": copy.deepcopy(client.requests), "model_usage": client.usage_summary(client.requests)}
+    except ReasoningEffortUnsupported as exc:
+        return {"status": "configuration_error", "fingerprint": native_search_fingerprint(config),
+                "ok": False, "error": str(exc), "native_search_status": client.native_status()["status"],
                 "requests": copy.deepcopy(client.requests), "model_usage": client.usage_summary(client.requests)}
     except ModelError as exc:
         state = client.native_status()
