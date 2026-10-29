@@ -32,7 +32,7 @@ def main():
                 raise SystemExit("备份数据库完整性检查失败")
             mode = source.execute("SELECT value FROM meta WHERE key='mode'").fetchone()
             schema = source.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
-            if not mode or json.loads(mode[0]) != args.mode or not schema or json.loads(schema[0]) not in (1, 2, 3, 4, 5, 6, 7):
+            if not mode or json.loads(mode[0]) != args.mode or not schema or json.loads(schema[0]) not in (1, 2, 3, 4, 5, 6, 7, 8):
                 raise SystemExit("备份模式或数据库版本不匹配")
             if target.exists():
                 prior = ROOT / "data" / "backups" / f"before-restore-{datetime.now().strftime('%Y%m%d%H%M%S')}.sqlite3"

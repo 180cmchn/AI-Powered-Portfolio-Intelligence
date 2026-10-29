@@ -43,6 +43,32 @@ const state = {
   reportCache: new Map(),
   drafts: new Map(),
 };
+// Opt in per tab. Diagnostics contain route templates and anonymous numeric
+// identities, never query strings, form values, response bodies or credentials.
+const diagnosticsEnabled = sessionStorage.getItem("guanlan.diagnostics") === "1";
+const lifecycleEvents = [], lifecycleCounts = {}, pendingRequests = new Map(), operationIds = new Map();
+const diagnosticAccounts = new Map();
+function diagnosticAccount(id) {
+  if (!id || !diagnosticsEnabled) return null;
+  if (!diagnosticAccounts.has(id)) diagnosticAccounts.set(id, diagnosticAccounts.size + 1);
+  return diagnosticAccounts.get(id);
+}
+let lifecycleSequence = 0, navigationGeneration = 0, pageReads = new AbortController();
+function lifecycle(event, detail = {}) {
+  if (!diagnosticsEnabled) return;
+  lifecycleCounts[event] = (lifecycleCounts[event] || 0) + 1;
+  lifecycleEvents.push({event, time: Math.round(performance.now()), generation: navigationGeneration, ...detail});
+  if (lifecycleEvents.length > 600) lifecycleEvents.shift();
+}
+if (diagnosticsEnabled) window.__guanlanDiagnostics = {
+  snapshot: () => ({events: [...lifecycleEvents], counts: {...lifecycleCounts}, operations: [...operationIds.values()], requests: [...pendingRequests.values()], generation: navigationGeneration}),
+};
+function invalidatePageReads() {
+  navigationGeneration++;
+  pageReads.abort("superseded_read");
+  pageReads = new AbortController();
+  lifecycle("navigation", {route: state.route, account: diagnosticAccount(state.accountId)});
+}
 const routes = {
   overview: ["账户总览", "overview", "PORTFOLIO OVERVIEW"],
   holdings: ["持仓管理", "wallet", "ACCOUNT & HOLDINGS"],
@@ -259,33 +285,72 @@ function objectView(value) {
     .join("");
 }
 async function api(path, options = {}) {
-  const response = await fetch(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options.headers },
-  });
-  let body;
+  const method = (options.method || "GET").toUpperCase(), reading = method === "GET";
+  const id = ++lifecycleSequence, controller = new AbortController();
+  const parentSignal = options.signal || (reading ? pageReads.signal : null);
+  const abort = () => controller.abort(parentSignal.reason);
+  if (parentSignal?.aborted) abort();
+  else parentSignal?.addEventListener("abort", abort, {once: true});
+  // Local API reads must settle even if a response body never completes. A
+  // navigation cancels only reads; writes retain their captured target/input.
+  const timer = reading ? setTimeout(() => controller.abort("read_timeout"), 15000) : null;
+  const request = {id, method, path: path.split("?")[0].replace(/\b[a-f0-9]{32}\b/g, ":id"), account: diagnosticAccount(path.match(/^\/api\/accounts\/([a-f0-9]{32})\b/)?.[1])};
+  pendingRequests.set(id, request);
+  lifecycle("request_started", request);
   try {
-    body = await response.json();
-  } catch {
-    body = null;
-  }
-  if (!response.ok) {
-    const detail =
-      body?.detail || body?.error || `请求失败 (${response.status})`;
-    throw new Error(
-      typeof detail === "string"
-        ? detail
-        : Array.isArray(detail)
+    const response = await fetch(path, {
+      ...options, signal: controller.signal,
+      headers: { "Content-Type": "application/json", ...options.headers },
+    });
+    lifecycle("response_headers", {id, status: response.status});
+    let body;
+    try {
+      body = await response.json();
+    } catch (error) {
+      if (controller.signal.aborted) throw error;
+      if (response.ok && response.status !== 204) {
+        if (!reading) throw new TypeError("incomplete_write_response");
+        throw new Error("读取响应不完整；保留已有内容，可刷新重试。");
+      }
+      body = null;
+    }
+    if (!response.ok) {
+      const detail =
+        body?.detail || body?.error || `请求失败 (${response.status})`;
+      throw new Error(
+        typeof detail === "string"
           ? detail
-              .map(
-                (d) =>
-                  `${(d.loc || []).filter((x) => x !== "body").join(" / ")}：${d.msg || JSON.stringify(d)}`,
-              )
-              .join("；")
-          : JSON.stringify(detail),
-    );
+          : Array.isArray(detail)
+            ? detail
+                .map(
+                  (d) =>
+                    `${(d.loc || []).filter((x) => x !== "body").join(" / ")}：${d.msg || JSON.stringify(d)}`,
+                )
+                .join("；")
+            : JSON.stringify(detail),
+      );
+    }
+    return body;
+  } catch (error) {
+    if (controller.signal.aborted) {
+      const cancelled = new Error(controller.signal.reason === "read_timeout" ? "读取超时，保留已有内容；可刷新重试。" : "旧页面读取已取消。");
+      cancelled.code = controller.signal.reason;
+      lifecycle("request_cancelled", {id, reason: cancelled.code});
+      if (cancelled.code === "read_timeout") lifecycle("read_timeout", {id});
+      throw cancelled;
+    }
+    if (!reading && error instanceof TypeError) {
+      const uncertain = new Error("写入响应中断，服务端可能已提交；请核对结果后再操作，当前草稿已保留。");
+      uncertain.code = "write_outcome_unknown";
+      throw uncertain;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    parentSignal?.removeEventListener("abort", abort);
+    pendingRequests.delete(id);
+    lifecycle("request_finished", {id});
   }
-  return body;
 }
 function toast(message, error = false) {
   const node = document.createElement("div");
@@ -302,6 +367,9 @@ async function operation(callback, { key = Symbol(), label = "正在加载" } = 
     return;
   }
   state.operations.set(key, label);
+  const operationId = ++lifecycleSequence;
+  operationIds.set(key, operationId);
+  lifecycle("operation_registered", {id: operationId, kind: typeof key === "string" ? key.split(":")[0] : "read"});
   state.busy = true;
   if (!$(".loading-line")) {
     const line = document.createElement("div");
@@ -315,9 +383,11 @@ async function operation(callback, { key = Symbol(), label = "正在加载" } = 
   try {
     await callback();
   } catch (error) {
-    toast(error.message, true);
+    if (error.code !== "superseded_read") toast(error.message, true);
   } finally {
     state.operations.delete(key);
+    operationIds.delete(key);
+    lifecycle("operation_finished", {id: operationId});
     state.busy = state.operations.size > 0;
     if (!state.busy) $(".loading-line")?.remove();
     feedback.remove();
@@ -333,9 +403,10 @@ async function loadJobEvents(jobId) {
   };
 }
 async function loadAccount() {
-  await sixth.load();
   const read = ++state.accountRead, route = state.route;
   const current = () => read === state.accountRead && route === state.route;
+  await sixth.load();
+  if (!current()) return;
   if (!state.accountId) {
     state.account = null;
     state.analyses = [];
@@ -358,8 +429,8 @@ async function loadAccount() {
     state.route === "market" ? api("/api/global-research?limit=10") : Promise.resolve(null),
     state.route === "research" && state.showRecommendationHistory ? api(`/api/accounts/${id}/recommendations?view=history&envelope=true&limit=${size}&offset=${state.pages.recommendationHistory * size}`) : Promise.resolve(null),
   ]);
-  if (results[0].status === "rejected") throw results[0].reason;
   if (!current() || id !== encodeURIComponent(state.accountId)) return;
+  if (results[0].status === "rejected") throw results[0].reason;
   const failures = results.slice(1).filter((r) => r.status === "rejected");
   if (results[1].status === "fulfilled") {
     const headers = array(results[1].value, "analyses");
@@ -769,7 +840,7 @@ function recommendations() {
 }
 function reportCard(report, index) {
   const a = state.account, expired = report.result?.valid_until && new Date(report.result.valid_until).getTime() <= Date.now();
-  return `<article class="card"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span>适用至 ${date(report.result.valid_until)}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${index === 0 ? markdown(report.report || report.result?.report || report.result || "报告正文为空") : `<details data-key="report:${e(report.id)}"><summary class="small">展开历史报告</summary><div class="section-gap">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>`}${reportResearchScope(report)}${evidenceReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
+  return `<article class="card"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span>适用至 ${date(report.result.valid_until)}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${index === 0 ? markdown(report.report || report.result?.report || report.result || "报告正文为空") : `<details data-key="report:${e(report.id)}"><summary class="small">展开历史报告</summary><div class="section-gap">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>`}${jobModelSettings({result:report.result,state:"completed",account_id:report.account_id})}${reportAccessView(report.result?.report_access)}${reportResearchScope(report)}${evidenceReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
 }
 function research() {
   if (!state.account) return noAccount();
@@ -832,7 +903,7 @@ function jobModelSettings(job) {
   if (!effort) return `<div class="small muted">模型思考强度：${["queued", "waiting_config", "pending"].includes(job.state) ? "启动时采用届时已保存配置" : "此历史任务未记录"}</div>`;
   const current = job.account_id ? null : state.status.global_manager?.reasoning_effort;
   const older = current && job.state === "running" && effort !== current;
-  return `<div class="small muted" data-job-effort="${e(effort)}">本轮 reasoning_effort：${e(effort)}${older ? ` · 在途旧配置；当前已保存 ${e(current)}` : ""} · 上游实际采用值以服务回报为准</div>`;
+  return `<div class="small muted" data-job-effort="${e(effort)}">角色：${e(config.role_id || "历史角色未知")} · 模型：${e(config.model_name || "历史模型未知")} · 供应商：${e(config.provider_id || "历史供应商未知")}<br>本轮 reasoning_effort：${e(effort)}${older ? ` · 在途旧配置；当前已保存 ${e(current)}` : ""} · 上游实际采用值以服务回报为准</div>`;
 }
 function inFlightModelSettings() {
   const running = state.status.running_model_configs || state.jobs.filter(job => job.state === "running").map(job => ({...job, ...(job.model_config || job.config_snapshot || {})}));
@@ -840,10 +911,31 @@ function inFlightModelSettings() {
   const current = state.status.global_manager?.reasoning_effort;
   return `<div class="notice section-gap" id="inflight-model-settings"><div><strong>在途任务保持启动时配置</strong>${running.map(job => `<p class="small">${e(job.scope === "global" ? "公共研究" : "账户研究")} ${e(job.id)} · reasoning_effort：${e(job.reasoning_effort || "未记录")}${job.scope === "global" && current && job.reasoning_effort && job.reasoning_effort !== current ? `（旧配置；当前已保存 ${e(current)}）` : ""}</p>`).join("")}</div></div>`;
 }
+function reportAccessView(access) {
+  if (!Array.isArray(access) || !access.length) return "";
+  return `<div class="report-delivery-scope">${access.map(item => `<p class="small muted">${e(item.role_id || item.source_agent_id)} · 第 ${e(item.research_round)} 轮：${item.access === "full_report" ? "收到完整子报告（非主 Agent 亲读原文）" : "仅收到子报告摘要"}${item.summary_truncated ? " · 摘要已截断" : ""}</p>`).join("")}</div>`;
+}
+function checkpointView(checkpoint) {
+  if (!checkpoint?.available) return "";
+  const reasons = {
+    delegated_report_not_delivered: "子报告尚未完整交付",
+    visible_report_source_not_received: "引用仅有索引或未取得内容",
+    research_round_pending: "子任务补查尚未完成",
+    visible_report_has_unprocessed_correction: "真实更正尚未处理",
+    correction_review_pending: "最新更正仍待补查",
+    latest_content_not_delivered: "最新来源正文尚未取得",
+    historical_comparison_not_processed: "历史材料比较尚未处理",
+    source_index_not_claimed_as_read: "可见来源索引，尚未阅读正文",
+  };
+  const gaps = [...new Set(Object.values(checkpoint.source_coverage || {}).filter(item => item.status !== "covered").map(item => reasons[item.reason] || item.reason).filter(Boolean))];
+  const access = reportAccessView(checkpoint.report_access);
+  const label = checkpoint.recovery_state === "needs_research" ? "研究成果或资料仍有未解决范围 · 重试需补充" : checkpoint.recovery_state === "synthesis_ready" ? "已保存研究检查点 · 重试时优先恢复汇总" : "历史检查点缺少读取证明 · 重试需要继续研究";
+  return `<div class="card-body synthesis-checkpoint"><p>${label}</p>${gaps.map(reason => `<p class="small muted">${e(reason)}</p>`).join("")}${access}<p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。</p></div>`;
+}
 function jobCard(job) {
   const events = state.events[job.id];
   const explanation = { waiting_config: "等待模型配置。在模型供应商中保存有效连接，并在 Agent 角色或账户模型页修复绑定后，最新持仓版本的任务会恢复。", running: "正在研究。工具与子任务事件按增量更新。", failed: "本次研究失败，已保存的账户数据不受影响。可查看原因后重试最新版本。" }[job.state];
-  return `<article class="job-card"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(reasonLabel(job.reason))}</h3><div class="job-meta">输入 v${job.input_version} · ${date(job.created_at || job.updated_at)} · <span class="mono">${e(job.id)}</span>${jobModelSettings(job)}</div></div>${stateBadge(job.state)}</div>${job.synthesis_checkpoint?.available ? `<div class="card-body synthesis-checkpoint"><p>${job.synthesis_checkpoint.recovery_state === 'needs_research' ? '材料更正仍待处理 · 重试需要继续研究' : job.synthesis_checkpoint.recovery_state === 'synthesis_ready' ? '已保存研究检查点 · 重试时优先恢复汇总' : '历史检查点缺少读取证明 · 重试需要继续研究'}</p><p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。</p></div>` : ""}${explanation || job.error ? `<div class="card-body"><div class="notice ${job.state === "failed" ? "error" : ""}"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}</div></div></div>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.id)}" ${state.openedJobs.has(job.id) ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${events?.items.length ? events.items.map(eventHTML).join("") : '<p class="small muted">展开后按需读取事件。尚无事件时等待工作器更新。</p>'}${events?.more ? `<button class="button compact" data-action="more-events" data-id="${e(job.id)}">继续读取后续事件</button>` : ""}</div></details><div class="job-actions">${["running", "pending", "queued", "waiting_config"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed", "cancelled", "blocked", "waiting_config", "superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
+  return `<article class="job-card"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(reasonLabel(job.reason))}</h3><div class="job-meta">输入 v${job.input_version} · ${date(job.created_at || job.updated_at)} · <span class="mono">${e(job.id)}</span>${jobModelSettings(job)}</div></div>${stateBadge(job.state)}</div>${checkpointView(job.synthesis_checkpoint)}${explanation || job.error ? `<div class="card-body"><div class="notice ${job.state === "failed" ? "error" : ""}"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}</div></div></div>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.id)}" ${state.openedJobs.has(job.id) ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${events?.items.length ? events.items.map(eventHTML).join("") : '<p class="small muted">展开后按需读取事件。尚无事件时等待工作器更新。</p>'}${events?.more ? `<button class="button compact" data-action="more-events" data-id="${e(job.id)}">继续读取后续事件</button>` : ""}</div></details><div class="job-actions">${["running", "pending", "queued", "waiting_config"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed", "cancelled", "blocked", "waiting_config", "superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
 }
 function agents() {
   if (!state.account) return noAccount();
@@ -858,7 +950,12 @@ function runtimeStatus() {
     c = state.status.calendar || {};
   if (typeof w !== "object" || typeof c !== "object")
     return e(String(w) + " · " + String(c));
-  return `后台服务：${w.running ? "运行中" : "未启动"} · 当前任务 ${e(w.active ?? 0)}<br>市场：${{ closed: "已收盘", preopen: "开盘前", morning: "上午交易时段", afternoon: "下午交易时段", lunch: "午间休市", unknown: "日历状态未知", non_trading: "非交易日", open: "交易时段" }[c.phase] || e(c.phase || "未知")} · ${c.trading_day === true ? "交易日" : c.trading_day === false ? "非交易日" : "交易日待确认"}<br>日历覆盖：${e(c.coverage?.start || "未知")} — ${e(c.coverage?.end || "未知")}${c.reason ? `<br>${e(c.reason)}` : ""}${c.source ? `<br>${link(c.source, "查看日历来源")}` : ""}${w.last_error ? `<p class="error-detail">最近错误：${e(w.last_error)}</p>` : ""}`;
+  return `后台服务：${w.running ? "运行中" : "未启动"} · 当前任务 ${e(w.active ?? 0)}<br>市场：${{ closed: "非连续交易时段（旧状态）", pre_open: "开盘前", lunch_break: "午间休市", after_close: "收盘后", non_trading_day: "非交易日", preopen: "开盘前", morning: "上午交易时段", afternoon: "下午交易时段", lunch: "午间休市", unknown: "日历状态未知", non_trading: "非交易日", open: "交易时段" }[c.session || c.phase] || e(c.session || c.phase || "未知")} · ${c.trading_day === true ? "交易日" : c.trading_day === false ? "非交易日" : "交易日待确认"}<br>日历覆盖：${e(c.coverage?.start || "未知")} — ${e(c.coverage?.end || "未知")}${c.reason ? `<br>${e(c.reason)}` : ""}${c.source ? `<br>${link(c.source, "查看日历来源")}` : ""}${w.last_error ? `<p class="error-detail">最近错误：${e(w.last_error)}</p>` : ""}`;
+}
+function runtimeVersionDetails() {
+  const version = state.status.runtime_version;
+  if (!version) return '<p class="small muted">此服务未提供启动版本信息；不能用当前仓库版本替它署名。</p>';
+  return `<details id="runtime-version"><summary>当前服务启动版本</summary><p class="small muted">启动于 ${date(version.started_at)} · schema ${e(version.schema_version)} · ${e(version.database_mode)}<br>启动提交：${e(version.commit_at_start || "未知")}${version.working_tree_dirty_at_start ? "（含未提交修改）" : ""}<br>启动源码摘要：<span class="mono">${e(version.source_sha256_at_start || "未知")}</span><br>记录的是创建此服务时的版本；修改源码后需要手动重启才会加载。</p></details>`;
 }
 function nativeSearchStatus() {
   const status = state.status.native_search || {status: "unverified"};
@@ -881,7 +978,7 @@ function settings() {
       ["manual", "仅使用已录入行情 / 禁止联网刷新"],
     ],
     "公开接口可能限流、延迟或变更；刷新失败会保留实际错误。",
-  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${selectField("基础行情刷新", "market_refresh_enabled", String(s.market_refresh_enabled ?? true), [["true", "启用"], ["false", "暂停自动行情刷新"]])}${selectField("已发布预测的评估", "forecast_evaluation_enabled", String(s.forecast_evaluation_enabled ?? true), [["true", "独立启用"], ["false", "暂停到期评估"]], "恢复后补算全部待评记录；暂停研究不会暂停评分。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更供尚未启动的任务使用；在途任务保持启动时配置。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">模型：${state.status.model_configured ? "已配置密钥（需实测能力）" : "尚未配置"}<br>全局主 Agent 默认强度：${e(state.status.global_manager?.reasoning_effort ?? "未绑定")}；账户实际值以角色配置及本轮快照为准<br>原生联网：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div></div></div>${inFlightModelSettings()}<div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
+  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${selectField("基础行情刷新", "market_refresh_enabled", String(s.market_refresh_enabled ?? true), [["true", "启用"], ["false", "暂停自动行情刷新"]])}${selectField("已发布预测的评估", "forecast_evaluation_enabled", String(s.forecast_evaluation_enabled ?? true), [["true", "独立启用"], ["false", "暂停到期评估"]], "恢复后补算全部待评记录；暂停研究不会暂停评分。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更供尚未启动的任务使用；在途任务保持启动时配置。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">模型：${state.status.model_configured ? "已配置密钥（需实测能力）" : "尚未配置"}<br>全局主 Agent 默认强度：${e(state.status.global_manager?.reasoning_effort ?? "未绑定")}；账户实际值以角色配置及本轮快照为准<br>原生联网：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div>${runtimeVersionDetails()}</div></div>${inFlightModelSettings()}<div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
 }
 function rememberDrafts() {
   $$('form[data-draft-key]').forEach((form) => {
@@ -908,6 +1005,23 @@ function finishSave(form, submittedValues, savedVersion) {
       if (status) status.textContent = `当前草稿未保存，后台分析仍以版本 v${savedVersion} 为准。`;
     }
   }
+}
+function matchesSavedAccount(saved, payload) {
+  // Do not round financial strings through JavaScript Number during identity
+  // reconciliation. Conservative mismatch is safer than an imprecise match.
+  const amount = value => {
+    if (value === null || value === "" || value === undefined) return null;
+    const text = String(value).trim();
+    if (!/^\+?\d+(\.\d*)?$/.test(text)) return text;
+    const [whole, fraction = ""] = text.replace(/^\+/, "").split(".");
+    const digits = whole.replace(/^0+(?=\d)/, ""), tail = fraction.replace(/0+$/, "");
+    return tail ? `${digits}.${tail}` : digits;
+  };
+  const holdings = rows => rows.map(row => [row.symbol, amount(row.quantity), amount(row.cost_price)]).sort((a,b) => a[0].localeCompare(b[0]));
+  return saved.version === payload.expected_version + 1 && saved.name === payload.name
+    && amount(saved.cash) === amount(payload.cash)
+    && JSON.stringify(holdings(saved.holdings || [])) === JSON.stringify(holdings(payload.holdings))
+    && Object.entries(payload.preferences).every(([key,value]) => String(saved.preferences?.[key] ?? "") === String(value ?? ""));
 }
 function render() {
   rememberDrafts();
@@ -959,6 +1073,7 @@ async function switchAccount(id) {
   state.recommendationHistory = [];
   state.recommendationCoverage = {};
   state.accountId = id;
+  invalidatePageReads();
   state.account = null;
   state.analyses = [];
   state.jobs = [];
@@ -1210,12 +1325,24 @@ document.addEventListener("submit", (event) => {
         },
         expected_version: Number(form.dataset.version),
       };
-      const saved = await api(`/api/accounts/${encodeURIComponent(accountId)}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      await refresh(true);
+      let saved;
+      try {
+        saved = await api(`/api/accounts/${encodeURIComponent(accountId)}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } catch (error) {
+        if (error.code !== "write_outcome_unknown") throw error;
+        // Read-only reconciliation of the exact clicked account/version/input.
+        // Never repeat a PUT to discover whether its first attempt committed.
+        const observed = await api(`/api/accounts/${encodeURIComponent(accountId)}`).catch(() => null);
+        if (!observed || !matchesSavedAccount(observed, payload)) throw error;
+        saved = observed;
+        lifecycle("save_reconciled", {version: saved.version});
+        toast("保存响应中断；已核对目标账户的版本和输入，确认保存成功，未重复写入。");
+      }
       finishSave(form, submittedValues, saved.version);
+      await refresh(true);
       render();
       toast(
         `账户已保存为 v${saved.version}，指标已更新，新分析已排队。`,
@@ -1303,6 +1430,7 @@ document.addEventListener("change", (event) => {
 });
 window.addEventListener("hashchange", () => {
   state.route = location.hash.slice(1) || "overview";
+  invalidatePageReads();
   if (state.route !== "research") state.pages.analyses = 0;
   if (state.route !== "agents") state.pages.jobs = 0;
   render();

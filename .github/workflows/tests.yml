@@ -17,10 +17,28 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - name: Browser fixture group
+        id: browser-fixtures
+        continue-on-error: true
+        run: npm run test:browser:iteration
+      - name: Browser production group
+        id: browser-production
+        continue-on-error: true
+        run: npm run test:browser:production
+      - name: Browser forecast group
+        id: browser-forecast
+        continue-on-error: true
+        run: npm run test:browser:seventh
+      - name: Require all browser groups
+        if: always()
+        env:
+          FIXTURES: ${{ steps.browser-fixtures.outcome }}
+          PRODUCTION: ${{ steps.browser-production.outcome }}
+          FORECAST: ${{ steps.browser-forecast.outcome }}
+        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: browser-failure-evidence
+          name: browser-evidence
           path: test-results/
           if-no-files-found: ignore

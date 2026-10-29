@@ -107,7 +107,10 @@ def _checkpoint_context(value):
     result['unresolved_source_coverage'] = [{key: entry[key] for key in
         ('status', 'reason', 'latest_material_ids', 'historical_material_ids', 'unresolved_report_agents') if key in entry}
         for entry in coverage.values() if isinstance(entry, dict) and entry.get('status') != 'covered']
-    result['checkpoint_note'] = '可见研究成果及原模型归属；材料列表是索引，恢复校验收据不作为新阅读或新结论。'
+    result['delegated_research_access'] = [{key: item['body'].get(key) for key in
+        ('report_id', 'source_agent_id', 'research_round', 'role_id', 'access', 'summary_truncated', 'note')}
+        for item in value.get('report_deliveries', [])]
+    result['checkpoint_note'] = '可见子研究成果保留原实例、轮次、模型和来源范围；主 Agent 收到报告不等于亲读原文。材料列表仅为索引。'
     return result
 
 
@@ -166,6 +169,13 @@ RESEARCH_TOOLS = [
             {"material": {"type": "object", "additionalProperties": True}}, ["material"]),
     _schema("list_materials", "分页列出轻量材料索引（不包含全文）；用 ID 按需读取。", {"query": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}),
     _schema("search_materials", "检索已有公开材料并分页返回索引、片段及位置，不代表已读完整原文。", {"query": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}, ["query"]),
+    _schema("query_market_rows", "按已保存结构化行情材料查询行；默认日期倒序最近30行，精确日期用相同start/end。按next_offset分页，保留复权、来源和实际访问范围。",
+            {"material_id": STRING, "start": STRING, "end": STRING, "fields": STRINGS,
+             "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER,
+             "order": {"type": "string", "enum": ["asc", "desc"]}, "symbol": STRING}, ["material_id"]),
+    _schema("market_indicators", "对已保存同口径行情计算可复算的收益、均线、区间波动及可选基准比较；按交易日期对齐，返回输入日期与样本，不以缺失值补零。",
+            {"material_id": STRING, "start": STRING, "end": STRING,
+             "window": {"type": "integer", "minimum": 2, "maximum": 252}, "benchmark_material_id": STRING}, ["material_id"]),
     _schema("get_material", "按材料 ID 读取元数据与有限首段；正文较长时按 next_start 继续。", {"material_id": STRING}, ["material_id"]),
     _schema("read_material_range", "读取指定材料字符范围，保留来源、页码、访问限制及范围信息。", {"material_id": STRING, "start": INTEGER, "length": {"type": "integer", "minimum": 1, "maximum": 12000}}, ["material_id"]),
     _schema("list_recommendations", "分页取得当前账户建议，先按业务状态筛选。active 包含所有仍需关注的建议；按 next_offset 继续读取，不能将价格满足视为判断有效。公共研究不能读取账户建议。",
@@ -283,6 +293,8 @@ class ResearchRuntime:
         self.delivered_sequence = 0
         self.materials: list[dict] = []
         self.material_delivery_ids: dict[str, list[int]] = {}
+        self.report_delivery_seen: set[str] = set()
+        self.report_tool_messages: dict[str, str] = {}
         self.calculations: list[dict] = []
         self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
         self.synthesis_only = bool(self.synthesis_checkpoint)
@@ -337,6 +349,13 @@ class ResearchRuntime:
             if self._shared_closeout() and not final_request:
                 raise _CloseoutRequired("共享预算进入收尾；本次尚未发送 HTTP")
             self.calls += 1
+            if agent_id == 'manager':
+                # ModelClient invokes this after final context compaction and
+                # credential/budget checks, immediately before the HTTP attempt.
+                # An archived or merely queued child report is not a delivery.
+                delivered = self._record_visible_report_deliveries()
+                if delivered and self.children and not self.context.get('synthesis_checkpoint'):
+                    await self._save_checkpoint()
 
     def _shared_closeout(self) -> bool:
         remaining = self._remaining_calls()
@@ -385,7 +404,7 @@ class ResearchRuntime:
             if child.reports:
                 report = child.reports[-1]
                 summary = str(report.get("summary") or "")
-                item["latest_report"] = {"research_round": report.get("research_round"), "summary": summary[:summary_limit],
+                item["latest_report"] = {"report_id": report.get("report_id"), "research_round": report.get("research_round"), "summary": summary[:summary_limit],
                     "summary_truncated": len(summary) > summary_limit,
                     "material_ids": report.get("material_ids", []), "open_questions": report.get("open_questions", [])}
             if child.progress:
@@ -414,7 +433,7 @@ class ResearchRuntime:
                 item.pop("latest_progress", None)
                 if item.get("latest_report"):
                     report = item["latest_report"]
-                    item["latest_report"] = {"research_round": report["research_round"], "summary": report["summary"][:160],
+                    item["latest_report"] = {"report_id": report.get("report_id"), "research_round": report["research_round"], "summary": report["summary"][:160],
                         "summary_truncated": True, "material_ids": [str(mid)[:120] for mid in report["material_ids"][:2]],
                         "open_question_count": len(report["open_questions"])}
             # Preserve every child ID/status/round and unresolved flag even when
@@ -467,6 +486,10 @@ class ResearchRuntime:
                                "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
                                "materials": copy.deepcopy(self.materials)})
+                if hasattr(self.tools, 'store'):
+                    result['report_access'] = [{key: item['body'].get(key) for key in
+                        ('report_id', 'source_agent_id', 'research_round', 'role_id', 'access', 'summary_truncated', 'note')}
+                        for item in self.tools.store.checkpoint_report_deliveries(self.task_id)]
                 await self._publish("agent_completed", "manager", {"report": result["report"], "model_calls": self.calls, "model_usage": result["model_usage"]})
                 return json.loads(json.dumps(result, ensure_ascii=False, default=str, allow_nan=False))
         except TimeoutError as exc:
@@ -519,7 +542,7 @@ class ResearchRuntime:
                 permitted_tools = set(self.team['roles'][role_id]['tools'])
                 definitions = [tool for tool in definitions if tool['name'] in permitted_tools]
             if manager and self.synthesis_only:
-                permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "list_business_demands", "list_forecast_targets", "finish_analysis"}
+                permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "query_market_rows", "market_indicators", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "list_business_demands", "list_forecast_targets", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
             remaining_turns = max_turns - turn_index
             final_request = final_update_used or self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
@@ -664,6 +687,8 @@ class ResearchRuntime:
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
             client.add_results(session, results)
+            if manager:
+                self._remember_report_results(results, session.history[-len(results):] if results else [])
             # Inspect the bounded, visible tool results, never the unabridged
             # provider/body object that may have been put into the context archive.
             if hasattr(self.tools, 'store'):
@@ -880,6 +905,91 @@ class ResearchRuntime:
                 "annotations": turn.annotations, "materials": native_materials, "capability": turn.native_status})
         return native_materials
 
+    @staticmethod
+    def _report_message_key(message):
+        return json.dumps({key: message.get(key) for key in
+            ('role', 'type', 'call_id', 'tool_call_id', 'output', 'content')}, sort_keys=True, default=str)
+
+    def _remember_report_results(self, results, messages):
+        # Remember provenance of the actual bounded function outputs; a model
+        # echo via save_material is not an agent_status/wait_agents delivery.
+        for (call, _), message in zip(results, messages):
+            if call.name in {'agent_status', 'wait_agents', 'cancel_agent'}:
+                self.report_tool_messages[self._report_message_key(message)] = call.name
+
+    def _record_visible_report_deliveries(self):
+        """Record report content only through Runtime-owned delivery channels.
+
+        Tool archives, model arguments, authored material echoes and child
+        completion alone are not receipts. Truncated JSON is not parsed as a
+        full report. The hook runs after final request-context compaction.
+        """
+        if not hasattr(self.tools, 'store'):
+            return []
+        reports = {report['report_id']: (report, self.task_id)
+            for child in self.children.values() for report in child.reports if report.get('report_id')}
+        checkpoint = self.context.get('synthesis_checkpoint') or {}
+        reports.update({report['report_id']: (report, checkpoint.get('checkpoint_job_id') or checkpoint.get('task_id'))
+            for report in checkpoint.get('reports', []) if report.get('report_id')})
+        receipts = []
+        channel = 'restored_synthesis' if checkpoint else 'manager_context'
+        def report(value):
+            if not isinstance(value, dict) or value.get('truncated_for_context') or value.get('truncated_for_synthesis'):
+                return
+            reference = reports.get(value.get('report_id'))
+            if not reference or not isinstance(value.get('summary'), str):
+                return
+            original, source_job_id = reference
+            signature = json.dumps([source_job_id, original['report_id'], value], sort_keys=True, default=str)
+            if signature in self.report_delivery_seen:
+                return
+            receipt = self.tools.store.record_report_delivery(self.task_id, self.account_id,
+                original, value, channel=channel, source_job_id=source_job_id)
+            if receipt:
+                self.report_delivery_seen.add(signature)
+                receipts.append(receipt)
+        def snapshots(items):
+            for item in items if isinstance(items, list) else []:
+                if isinstance(item, dict):
+                    for value in item.get('reports') or []:
+                        report(value)
+        def events(items):
+            for item in items if isinstance(items, list) else []:
+                if isinstance(item, dict) and item.get('type') == 'agent_completed':
+                    report((item.get('payload') or {}).get('report'))
+        def tool_result(tool, value):
+            if isinstance(value, dict) and (value.get('truncated_for_context') or value.get('truncated_for_synthesis')):
+                return
+            if tool == 'agent_status':
+                snapshots(value)
+            elif tool == 'cancel_agent':
+                snapshots([value])
+            elif tool == 'wait_agents' and isinstance(value, dict):
+                snapshots(value.get('agents'))
+                events(value.get('events'))
+        for message in self.manager_session.history:
+            if message.get('_context_checkpoint'):
+                continue
+            try:
+                value = json.loads(message.get('output', message.get('content', '{}')))
+            except (TypeError, ValueError):
+                continue
+            if message.get('role') == 'tool' or message.get('type') == 'function_call_output':
+                tool_result(self.report_tool_messages.get(self._report_message_key(message)), value)
+                continue
+            if message.get('role') != 'user' or not isinstance(value, dict) or value.get('truncated_for_context'):
+                continue
+            # These wrappers are created by Runtime, not by model-authored tool
+            # data. Do not recursively interpret arbitrary findings as reports.
+            saved = value.get('synthesis_checkpoint') or {}
+            for item in saved.get('reports') or []:
+                report(item)
+            for child in (value.get('runtime_status') or {}).get('children') or []:
+                report(child.get('latest_report'))
+            events(value.get('research_events'))
+            snapshots(value.get('late_completed_child_reports'))
+        return sorted(set(receipts))
+
     async def _save_checkpoint(self, declaration: dict | None = None) -> dict:
         """Persist only visible, finished research; service enforces freshness/CAS."""
         if declaration is None:
@@ -887,12 +997,13 @@ class ResearchRuntime:
         else:
             declaration = copy.deepcopy(declaration)
             declaration.pop('material_delivery_ids', None)
+            declaration.pop('report_delivery_ids', None)
             if self.material_delivery_ids.get('manager'):
                 declaration['material_delivery_ids'] = list(self.material_delivery_ids['manager'])
         reports = []
         for child in self.children.values():
             for report in child.reports:
-                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates") if key in report}
+                visible = {key: copy.deepcopy(report[key]) for key in ("report_id", "summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates") if key in report}
                 if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
                     visible["summary"] = visible["summary"][:12000]
                     visible["summary_truncated"] = True
@@ -918,6 +1029,8 @@ class ResearchRuntime:
             "unresolved_tasks": unresolved_tasks,
             "unresolved_tasks_note": "旧子报告不代表后续补查已完成；最终汇总须保留这些未决任务及其影响。" if unresolved_tasks else None,
             "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
+        if hasattr(self.tools, 'store'):
+            checkpoint['report_deliveries'] = self.tools.store.checkpoint_report_deliveries(self.task_id)
         signature = json.dumps(checkpoint, sort_keys=True, default=str)
         if signature != self.checkpoint_signature:
             self.checkpoint_signature = signature
@@ -1000,8 +1113,10 @@ class ResearchRuntime:
             result = await getattr(self.tools, name)(self._text(args, "query", required=name == "search_materials"), limit=limit, offset=offset)
             if isinstance(result, list):
                 return {"items": result, "offset": offset, "limit": limit, "next_offset": offset + limit if len(result) == limit else None,
-                        "note": "轻量索引；使用 get_material 或 read_material_range 获取正文。"}
+                        "note": "轻量索引；使用 get_material/read_material_range 获取正文，行情材料可用 query_market_rows 按日期取行。"}
             return result
+        if name in {"query_market_rows", "market_indicators"}:
+            return await getattr(self.tools, name)(**args)
         if name == "get_material":
             return await self.tools.get_material(self._text(args, "material_id"))
         if name == "read_material_range":
@@ -1053,7 +1168,7 @@ class ResearchRuntime:
             return {"accepted": True, "agent_id": child.id, "status": child.status, "round": child.round}
         if name == "agent_status":
             selected = [self._child(args["agent_id"])] if args.get("agent_id") else list(self.children.values())
-            return [child.snapshot() for child in selected]
+            return [{**child.snapshot(), 'delivery_note': '这是子实例的专题成果，不是主 Agent 亲读原文。可在预算内 follow_up 缩小问题或追问，也可明确不采用；已完成仅表示提交结束。'} for child in selected]
         if name == "wait_agents":
             return await self._wait(args)
         if name == "cancel_agent":
@@ -1142,7 +1257,10 @@ class ResearchRuntime:
                 async with asyncio.timeout(float(self.config.get("agent_timeout_seconds", 120))):
                     while True:
                         report = await self._loop(child.id, child.session, manager=False)
-                        report["research_round"] = child.round
+                        # Runtime identity cannot be supplied by the model.
+                        report.update(report_id=uuid.uuid4().hex, agent_id=child.id,
+                            role_id=child.role_id, model_config=copy.deepcopy(child.model_config),
+                            research_round=child.round)
                         child.reports.append(report)
                         # Messages delivered before this completed report have
                         # been covered; messages received during the request are

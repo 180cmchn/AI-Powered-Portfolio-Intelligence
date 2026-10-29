@@ -103,12 +103,12 @@ class _QuoteFailure(ValueError):
         self.diagnostics = diagnostics
 
 
-def _last_completed_session(stamp: datetime) -> datetime | None:
+def _last_completed_session(stamp: datetime, calendar_path=None) -> datetime | None:
     for days in range(15):
         day = (stamp - timedelta(days=days)).replace(hour=15, minute=0, second=0, microsecond=0)
         if day > stamp:
             continue
-        trading = market_state(day)["trading_day"]
+        trading = market_state(day, calendar_path)["trading_day"]
         if trading is None:
             return None
         if trading:
@@ -120,9 +120,10 @@ def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None 
                      source_precision: str = "timestamp") -> dict:
     """Re-evaluate cached timestamps without presenting a close as a live tick."""
     stamp = stamp or datetime.now(SHANGHAI)
-    calendar = market_state(stamp)
+    calendar = market_state(stamp, config.get("calendar_path"))
     result = {"status": "unknown_time", "delay_seconds": None,
-              "market_phase": calendar["phase"], "quote_kind": "unknown",
+              "market_phase": calendar["phase"], "market_session": calendar["session"],
+              "has_closed_today": calendar["has_closed_today"], "quote_kind": "unknown",
               "fresh_for_triggers": False}
     if source_precision == "date":
         try:
@@ -131,7 +132,7 @@ def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None 
             source_date = datetime.strptime(as_of, "%Y-%m-%d").date()
         except ValueError:
             return result
-        latest = _last_completed_session(stamp) if calendar["phase"] == "closed" else None
+        latest = _last_completed_session(stamp, config.get("calendar_path")) if calendar["session"] in ("after_close", "non_trading_day", "pre_open", "lunch_break") else None
         result.update(status="closed" if latest and source_date == latest.date() else
                       "future_timestamp" if source_date > stamp.date() else "stale", quote_kind="last_close")
         return result
@@ -147,8 +148,8 @@ def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None 
     if age < -60:
         return result
     # Calendar coverage is required: an unknown holiday cannot certify a close.
-    if calendar["phase"] == "closed":
-        latest = _last_completed_session(stamp)
+    if calendar["session"] in ("after_close", "non_trading_day", "pre_open", "lunch_break"):
+        latest = _last_completed_session(stamp, config.get("calendar_path"))
         if latest and observed.date() == latest.date() and observed.hour >= 15:
             result.update(status="closed", quote_kind="last_close",
                           valuation_note="休市估值使用最近交易日收盘后数据源报价；源时间为供应商更新时间，不是逐笔成交时间。")
@@ -156,7 +157,7 @@ def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None 
             return result
     if age <= int(config.get("quote_stale_seconds", 180)):
         result.update(status="ok", quote_kind="session_snapshot",
-                      fresh_for_triggers=age >= 0 and calendar["phase"] in ("morning", "afternoon"))
+                      fresh_for_triggers=age >= 0 and calendar["quote_trigger_eligible"])
     return result
 
 
@@ -227,9 +228,10 @@ class MarketProvider:
     async def _closed_quote(self, symbol: str) -> dict | None:
         """Same public provider, unadjusted daily close; never an intraday feed."""
         stamp = datetime.now(SHANGHAI)
-        if self.provider != "eastmoney" or market_state(stamp)["phase"] != "closed":
+        calendar = market_state(stamp, self.config.get("calendar_path"))
+        if self.provider != "eastmoney" or calendar["session"] not in ("after_close", "non_trading_day", "pre_open", "lunch_break"):
             return None
-        latest = _last_completed_session(stamp)
+        latest = _last_completed_session(stamp, self.config.get("calendar_path"))
         if latest is None:
             return None
         exchange, code = symbol.split(":")
@@ -248,7 +250,8 @@ class MarketProvider:
                   "source_time_precision": "date", "fetched_at": meta["fetched_at"],
                   "source": "eastmoney:daily-unadjusted-close", "source_url": f"https://quote.eastmoney.com/{symbol.replace(':', '').lower()}.html",
                   "status": "closed", "quote_kind": "last_close", "fresh_for_triggers": False,
-                  "delay_seconds": None, "market_phase": "closed", "security_status": "unknown",
+                  "delay_seconds": None, "market_phase": "closed", "market_session": calendar["session"],
+                  "has_closed_today": calendar["has_closed_today"], "security_status": "unknown",
                   "cache_hit": meta.get("cache_hit", False), "cache_age_seconds": meta.get("cache_age_seconds", 0),
                   "session_close_at": latest.isoformat(), "session_close_time_basis": "exchange_calendar_not_supplier_timestamp",
                   "valuation_note": "即时接口失败，休市估值改用同供应商最近已完成交易日的未复权日线收盘价。源时间仅精确到日期；不构造秒级行情时间，不触发新鲜行情条件。",
@@ -857,6 +860,12 @@ async def search(query: str, config: dict) -> dict:
     return result
 
 
+class DocumentAccessError(ValueError):
+    def __init__(self, kind, stage, message, action):
+        super().__init__(message)
+        self.kind, self.stage, self.action = kind, stage, action
+
+
 async def _resolve_public_url(url: str) -> tuple[str, str]:
     """Resolve once and pin a public IP, preventing DNS rebinding/redirect SSRF."""
     parts = urlsplit(url)
@@ -867,10 +876,14 @@ async def _resolve_public_url(url: str) -> tuple[str, str]:
     hostname = parts.hostname.encode("idna").decode("ascii")
     if hostname.lower() in ("localhost", "localhost.localdomain") or hostname.lower().endswith((".localhost", ".local", ".internal")):
         raise ValueError("研究工具不能访问本机或内网地址")
-    entries = await asyncio.get_running_loop().getaddrinfo(hostname, parts.port or (443 if parts.scheme == "https" else 80), type=socket.SOCK_STREAM)
+    try:
+        entries = await asyncio.get_running_loop().getaddrinfo(hostname, parts.port or (443 if parts.scheme == "https" else 80), type=socket.SOCK_STREAM)
+    except OSError as exc:
+        raise DocumentAccessError('dns_failure', 'dns', '公开原文域名解析失败', '可稍后重试，或用原生搜索找同份文档的其他公开发布地址') from exc
     addresses = list(dict.fromkeys(item[4][0] for item in entries))
     if not addresses or any(not ipaddress.ip_address(address).is_global for address in addresses):
-        raise ValueError("研究工具不能访问本机、内网或保留地址")
+        raise DocumentAccessError('non_public_dns', 'address_validation', '研究工具不能访问本机、内网或保留地址',
+                                  '域名解析含非公网地址，可能受本地DNS/代理影响；未发出正文请求。可核对本机网络配置或寻找其他公开来源，不绕过地址校验')
     return hostname, addresses[0]
 
 
@@ -887,7 +900,7 @@ async def _fetch_public(url: str, config: dict) -> tuple[bytes, str, str]:
                 if response.is_redirect:
                     location = response.headers.get("location")
                     if not location:
-                        raise ValueError("原文重定向缺少目标地址")
+                        raise DocumentAccessError('invalid_redirect', 'redirect', '原文重定向缺少目标地址', '原生搜索其他公开发布入口')
                     url = urljoin(url, location)
                     continue
                 response.raise_for_status()
@@ -896,10 +909,10 @@ async def _fetch_public(url: str, config: dict) -> tuple[bytes, str, str]:
                 async for chunk in response.aiter_bytes():
                     length += len(chunk)
                     if length > max_bytes:
-                        raise ValueError(f"原文超过读取上限 {max_bytes} 字节")
+                        raise DocumentAccessError('document_too_large', 'download', f"原文超过读取上限 {max_bytes} 字节", '寻找较小的公开分册或网页披露；不能假定分页会减少下载大小')
                     parts.append(chunk)
                 return b"".join(parts), response.headers.get("content-type", ""), url
-        raise ValueError("原文重定向次数超过上限")
+        raise DocumentAccessError('redirect_limit', 'redirect', '原文重定向次数超过上限', '原生搜索公开直接文档地址')
 
 
 # Cached responses are immutable document versions. Each new fetch receives its
@@ -978,9 +991,11 @@ async def _download_document(url: str, config: dict, refresh: bool = False) -> d
 
 
 def _pdf_reader(body: bytes) -> PdfReader:
+    if not body.lstrip().startswith(b'%PDF-'):
+        raise DocumentAccessError('non_pdf_response', 'content_type', '响应不是PDF文档', '读取发布入口的附件链接，或搜索同份文档的公开直接地址')
     reader = PdfReader(io.BytesIO(body))
     if reader.is_encrypted and not reader.decrypt(""):
-        raise ValueError("PDF 已加密，无法读取正文")
+        raise DocumentAccessError('encrypted_pdf', 'extraction', 'PDF 已加密，无法读取正文', '使用无需登录和密码的公开版本')
     return reader
 
 
@@ -1011,7 +1026,7 @@ def _extract_document(body: bytes, mime: str, config: dict, *, url: str = "", st
         start = int(page if page is not None else (1 if start_page is None else start_page))
         end = int(page if page is not None else (end_page if end_page is not None else min(total, start + max_pages - 1)))
         if start < 1 or end < start or start > total:
-            raise ValueError("PDF 页码范围无效或超过总页数")
+            raise DocumentAccessError('page_out_of_range', 'page_selection', 'PDF 页码范围无效或超过总页数', '先用pdf_metadata核对物理总页数，再读取有效页码')
         bounded_end = min(total, end, start + max_pages - 1)
         segments, pages, cursor = [], [], 0
         deadline = time.monotonic() + max(1, float(config.get("read_timeout_seconds", 30)))
@@ -1083,7 +1098,7 @@ def _extract_document(body: bytes, mime: str, config: dict, *, url: str = "", st
     else:
         raise ValueError(f"不支持读取的原文格式：{mime[:100] or '未知'}")
     if not text.strip() or (info.get("pages") and not any(p["text"].strip() for p in info["pages"])):
-        raise ValueError("未提取到所选范围的原文文字；可能超出正文范围或需要扫描件 OCR，当前未读取全文")
+        raise DocumentAccessError('no_extractable_text', 'extraction', '未提取到所选范围的原文文字；可能超出正文范围或需要扫描件 OCR，当前未读取全文', '尝试其他页或公开文字版；本工具不进行OCR')
     info.update(text=text, access="excerpt" if truncated else "full_text", truncated=truncated,
                 offset=offset, returned_chars=len(text), requested_chars=max_chars,
                 extraction_note="仅包含本次 HTTP 响应的可提取文字；不执行网页脚本，不进行 OCR；页码为 PDF 物理页")
@@ -1092,6 +1107,7 @@ def _extract_document(body: bytes, mime: str, config: dict, *, url: str = "", st
 
 async def _document_operation(url: str, config: dict, operation, refresh: bool) -> dict:
     result = {"url": url, "title": None, "text": None, "published_at": None, "fetched_at": now_iso(), "access": "failed", "error": None}
+    document = None
     try:
         async with asyncio.timeout(float(config.get("read_timeout_seconds", 30))):
             document = await _download_document(url, config, refresh)
@@ -1100,6 +1116,21 @@ async def _document_operation(url: str, config: dict, operation, refresh: bool) 
         result.update(extracted)
     except Exception as exc:
         result["error"] = _error(exc)
+        if isinstance(exc, DocumentAccessError):
+            kind, stage, action = exc.kind, exc.stage, exc.action
+        elif isinstance(exc, httpx.HTTPStatusError):
+            code = exc.response.status_code
+            kind = 'access_denied' if code in (401,403) else 'not_found' if code == 404 else 'rate_limited' if code == 429 else 'http_error'
+            stage, action = 'http', '可稍后重试或用原生搜索寻找其他公开发布地址；不得绕过登录或访问控制'
+            result['http_status'] = code
+        elif isinstance(exc, (httpx.TimeoutException, TimeoutError)):
+            kind, stage, action = 'timeout', 'extraction' if document else 'download', '缩小提取页数或稍后有界重试；下载超时可尝试其他公开地址'
+        elif isinstance(exc, (httpx.RequestError, OSError)):
+            kind, stage, action = _quote_failure_kind(exc), 'connection', '核对网络或原生搜索其他公开地址；正文未取得'
+        else:
+            kind, stage, action = ('extraction_failed', 'extraction', '尝试其他页、公开文本版或另一发布地址') if document else ('invalid_request', 'validation', '检查URL与读取范围')
+        result.update(error_kind=kind, failure_stage=stage, next_action=action, returned_chars=0,
+                      returned_range=None, alternative_source_status='not_searched')
         if getattr(exc, "_material_observation_id", None) is not None:
             result["_observation_id"] = exc._material_observation_id
     return result
@@ -1107,9 +1138,29 @@ async def _document_operation(url: str, config: dict, operation, refresh: bool) 
 
 async def read_url(url: str, config: dict, *, start_page: int | None = None, end_page: int | None = None,
                    page: int | None = None, offset: int = 0, limit: int | None = None, refresh: bool = False) -> dict:
-    return await _document_operation(url, config, lambda doc: _extract_document(
-        doc["body"], doc["content_type"], config, url=doc["final_url"], start_page=start_page,
-        end_page=end_page, page=page, offset=offset, limit=limit), refresh)
+    def extract(doc):
+        expected_pdf = page is not None or start_page is not None or end_page is not None or urlsplit(url).path.lower().endswith('.pdf')
+        if expected_pdf and not doc['body'].lstrip().startswith(b'%PDF-'):
+            links = []
+            if 'html' in doc['content_type']:
+                web = _extract_document(doc['body'], doc['content_type'], config, url=doc['final_url'], offset=offset, limit=limit)
+                links = web.get('attachments', [])
+                if page is None and start_page is None and end_page is None:
+                    # The visible HTML remains usable evidence of that webpage,
+                    # never evidence that the expected PDF itself was read.
+                    return {**web, 'document_format': 'html', 'pdf_available': False,
+                            'error_kind': 'non_pdf_response', 'failure_stage': 'content_type',
+                            'next_action': '已取得的是网页文字，不是PDF正文；可按附件链接继续读取并核对文档身份和时期',
+                            'alternative_source_status': 'attachment_links_only' if links else 'not_searched'}
+            return {'access': 'failed', 'text': None, 'error': '响应为网页或非PDF数据，未读取PDF正文',
+                    'error_kind': 'non_pdf_response', 'failure_stage': 'content_type', 'returned_chars': 0,
+                    'returned_range': None, 'attachments': links, 'alternative_source_status': 'attachment_links_only' if links else 'not_searched',
+                    'next_action': '可读取返回的附件地址；链接不是已读正文。也可用原生搜索寻找同份公开文档，核对时期和身份。'}
+        return _extract_document(doc['body'], doc['content_type'], config, url=doc['final_url'], start_page=start_page,
+                                 end_page=end_page, page=page, offset=offset, limit=limit)
+    result = await _document_operation(url, config, extract, refresh)
+    result['requested_access_range'] = {'page': page, 'start_page': start_page, 'end_page': end_page, 'offset': offset, 'limit': limit}
+    return result
 
 
 async def pdf_metadata(url: str, config: dict, *, refresh: bool = False) -> dict:

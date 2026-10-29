@@ -98,6 +98,10 @@ def test_old_child_report_requires_visible_update_or_manager_supersession(case):
     store, _, job, context = case
     old, new = source(store, 'v1'), source(store, 'v2')
     old_report = report([old], deliver(case, old))
+    # The manager compares the actually delivered old specialist result with
+    # its direct correction read; naming an unread historical ID is insufficient.
+    old_report.update(report_id='fixture-old-specialist', role_id='filing_researcher', research_round=1)
+    store.record_report_delivery(job['id'], job['account_id'], old_report, old_report, channel='unit-visible-report')
     reads = deliver(case, new, 'manager')
     manager = report([new], reads, 'manager')
     save(case, [old_report], manager)

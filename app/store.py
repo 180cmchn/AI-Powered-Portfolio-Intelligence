@@ -47,7 +47,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 7:
+                if version and int(loads(version[0])) > 8:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -81,6 +81,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 7:
                     backup = self.path.with_name(self.path.name + ".before-v7.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 8:
+                    backup = self.path.with_name(self.path.name + ".before-v8.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -136,6 +142,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             db.execute("BEGIN IMMEDIATE")
             self.migrate_material_catalog(db)
             self.migrate_research_versions(db)
+            self.migrate_recovery_deliveries(db)
             self.migrate_recommendations(db)
             if "config_snapshot" not in {r[1] for r in db.execute("PRAGMA table_info(jobs)")}:
                 db.execute("ALTER TABLE jobs ADD COLUMN config_snapshot TEXT")
@@ -152,9 +159,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             # Do not persist a reasoning_effort default here: saved explicit
             # values > environment > medium is resolved on each settings read.
             self.migrate_agent_config(db, {**defaults(), **saved_settings})
+            self.migrate_eighth_roles(db)
             self.migrate_forecasts(db)
             self.migrate_forecast_windows(db)
-            db.execute("UPDATE meta SET value='7' WHERE key='schema_version'")
+            db.execute("UPDATE meta SET value='8' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager

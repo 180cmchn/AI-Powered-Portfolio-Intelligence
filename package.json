@@ -2,7 +2,10 @@
   "name": "guanlan-browser-regressions",
   "private": true,
   "scripts": {
-    "test:browser": "node tests/frontend_iteration.mjs && node tests/frontend_production.mjs && node tests/frontend_seventh.mjs"
+    "test:browser": "node tests/run_browser.mjs",
+    "test:browser:iteration": "node tests/frontend_iteration.mjs",
+    "test:browser:production": "node tests/frontend_production.mjs",
+    "test:browser:seventh": "node tests/frontend_seventh.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

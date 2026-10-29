@@ -1,0 +1,66 @@
+{
+  "kind": "engineering_isolated_production_modules",
+  "app_source_sha256_before": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+  "app_source_sha256_after": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+  "hash_implementation": "app.runtime_version.source_digest",
+  "hash_scope": "sorted app relative path and file SHA256 tuples repr hash; excludes tests/scripts/docs",
+  "source_unchanged": true,
+  "os": "Ubuntu 24.04.4 LTS",
+  "architecture": "aarch64",
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "node": "v22.23.4",
+  "dependencies": {
+    "fastapi": "0.159.1",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "pypdf": "6.21.2",
+    "pytest": "9.1.1"
+  },
+  "network": "none",
+  "container_cpus": 1,
+  "results": [
+    {
+      "group": "python",
+      "command": [
+        "/opt/guanlan-venv/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 42.353,
+      "log": "test-results/iteration8-final-linux/iteration-8-final-linux-python.log"
+    },
+    {
+      "group": "browser",
+      "command": [
+        "node",
+        "tests/run_browser.mjs"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 26.939,
+      "log": "test-results/iteration8-final-linux/iteration-8-final-linux-browser.log"
+    }
+  ],
+  "browser_groups": [
+    {
+      "group": "iteration",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 2081
+    },
+    {
+      "group": "production",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 19899
+    },
+    {
+      "group": "seventh",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 4876
+    }
+  ]
+}

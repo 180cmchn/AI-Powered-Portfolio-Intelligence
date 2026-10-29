@@ -1,0 +1,342 @@
+{
+  "kind": "engineering_production_FastAPI_temporary_SQLite_and_browser_HTTP_protocol_doubles",
+  "remote": {
+    "checked_at": "2026-10-29T23:47:49+08:00",
+    "id": 40862236837,
+    "head_sha": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_attempt": 1,
+    "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/40862236837",
+    "artifact_id": 12891837688,
+    "artifact_sha256": "963612711a42b0286268dc25bd53dceab6e430c7968c98c174f4e0b05b990afe",
+    "artifact_reviewed": [
+      "request log",
+      "Playwright trace",
+      "network snapshots",
+      "screenshot"
+    ],
+    "new_push": false
+  },
+  "baseline_linux": {
+    "app_commit": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+    "rounds": [
+      {
+        "round": 1,
+        "exit_code": 0,
+        "duration_seconds": 15.844
+      },
+      {
+        "round": 2,
+        "exit_code": 1,
+        "duration_seconds": 34.712
+      },
+      {
+        "round": 3,
+        "exit_code": 0,
+        "duration_seconds": 14.159
+      }
+    ],
+    "failed_location": "tests/frontend_production.mjs:174:39",
+    "failed_request": "post-save GET /api/status: no response, trace status -1",
+    "save_response": 200,
+    "test_only_fix_rounds": [
+      {
+        "round": 1,
+        "exit_code": 0,
+        "duration_seconds": 14.545
+      },
+      {
+        "round": 2,
+        "exit_code": 0,
+        "duration_seconds": 14.6
+      },
+      {
+        "round": 3,
+        "exit_code": 0,
+        "duration_seconds": 14.082
+      }
+    ],
+    "test_only_changes": [
+      "wait actual route aria-current before idle check",
+      "persistent API passthrough route",
+      "do not unroute consumed pause gates while responses can start follow-up requests"
+    ],
+    "product_app_changed_in_test_only_control": false
+  },
+  "runs": [
+    {
+      "environment": "mac",
+      "kind": "engineering_production_FastAPI_temporary_SQLite",
+      "os": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+      "python": "3.14.4",
+      "node": "v25.9.0",
+      "playwright": "1.62.1",
+      "app_source_sha256_before": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "hash_implementation": "app.runtime_version.source_digest",
+      "frontend_sha256": {
+        "app/static/app.js": "0ddca595e4a3fde5a514bb145a6061e1ec3c5e43c3ca7b1feaf2243ed337b99e",
+        "app/static/sixth.js": "a339ef352e66514ac4a12d5d393268ff718a3133ea5bd75ae92635609a9ba9f5",
+        "tests/frontend_production.mjs": "603b4f7d40e1a4c12bcd0f18460ce468dacb981f8f7561f4c1bd096b7ba81542",
+        "tests/frontend_iteration.mjs": "6c4bb8d9f5debb85249ceab47c28a6aa4c24cf7196f5efb94d303ba808a639fc",
+        "tests/frontend_seventh.mjs": "8545657d64bdca120a9b82e2f971fb8b79572da623074029bf965954e4235cea",
+        "tests/run_browser.mjs": "363e93014c53d43e4b8e82bcd3576db71145a00e61fbaecb415eded041b43977"
+      },
+      "app_source_sha256_after": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "source_unchanged": true,
+      "browser": "156.0.8078.48",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 20956
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 21945
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 15923
+        }
+      ],
+      "app_source_sha256_tested": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "race_counts": {
+        "request_started": 234,
+        "response_headers": 217,
+        "request_finished": 234,
+        "operation_registered": 43,
+        "operation_finished": 43,
+        "navigation": 28,
+        "request_cancelled": 16,
+        "save_reconciled": 1,
+        "read_timeout": 1
+      },
+      "pending_operations": [],
+      "pending_requests": [],
+      "gate_counts": {
+        "gate_matched": 9,
+        "gate_released": 9,
+        "gate_finished": 9
+      }
+    },
+    {
+      "environment": "linux",
+      "os": "Ubuntu 24.04.4 LTS",
+      "architecture": "aarch64",
+      "python": "3.12.3",
+      "sqlite": "3.45.1",
+      "node": "v22.23.4",
+      "network": "none",
+      "container_cpus": 1,
+      "dependencies": {
+        "fastapi": "0.159.1",
+        "httpx": "0.28.1",
+        "pydantic": "2.14.1",
+        "pypdf": "6.21.2",
+        "pytest": "9.1.1"
+      },
+      "app_source_sha256_before": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "app_source_sha256_after": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "source_unchanged": true,
+      "browser": "151.0.7922.34",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2081
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 19899
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4876
+        }
+      ],
+      "app_source_sha256_tested": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+      "race_counts": {
+        "request_started": 240,
+        "response_headers": 224,
+        "request_finished": 240,
+        "operation_registered": 43,
+        "operation_finished": 43,
+        "navigation": 28,
+        "request_cancelled": 16,
+        "save_reconciled": 1,
+        "read_timeout": 1
+      },
+      "pending_operations": [],
+      "pending_requests": [],
+      "gate_counts": {
+        "gate_matched": 9,
+        "gate_released": 9,
+        "gate_finished": 9
+      }
+    }
+  ],
+  "frontend_sha256": {
+    "app/static/app.js": "0ddca595e4a3fde5a514bb145a6061e1ec3c5e43c3ca7b1feaf2243ed337b99e",
+    "app/static/sixth.js": "a339ef352e66514ac4a12d5d393268ff718a3133ea5bd75ae92635609a9ba9f5",
+    "tests/frontend_production.mjs": "603b4f7d40e1a4c12bcd0f18460ce468dacb981f8f7561f4c1bd096b7ba81542",
+    "tests/frontend_iteration.mjs": "6c4bb8d9f5debb85249ceab47c28a6aa4c24cf7196f5efb94d303ba808a639fc",
+    "tests/frontend_seventh.mjs": "8545657d64bdca120a9b82e2f971fb8b79572da623074029bf965954e4235cea",
+    "tests/run_browser.mjs": "363e93014c53d43e4b8e82bcd3576db71145a00e61fbaecb415eded041b43977"
+  },
+  "environment_preparation_issue": {
+    "linux_first_attempt": [
+      "iteration passed",
+      "production passed",
+      "seventh did not start: packaging omitted tracked data/calendar_2026.json"
+    ],
+    "resolved": "copied only the tracked public calendar; reran all groups; no daily database or .env copied"
+  },
+  "limits": [
+    "Linux container arm64/Python3.12.3 differs from remote x86_64/Python3.12.15; Chromium151 and Node22.23.4 match",
+    "Tests and injected clock/errors do not establish real model availability, forecasting quality or real recovery",
+    "No remote CI success claim without a new pushed revision",
+    "Intermediate125c snapshot preserved separately; final5dbd snapshot reran all three groups on Mac and Linux after last backend and UI fixes"
+  ],
+  "digest_definitions": {
+    "app_source_sha256_tested": {
+      "implementation": "app.runtime_version.source_digest",
+      "scope": "app/** files with suffix .py/.js/.html/.css/.txt, excluding __pycache__",
+      "algorithm": "Sort paths; entries=[(str(path.relative_to(repo_root)), SHA256(file_bytes).hexdigest())]; SHA256(repr(entries).encode()).hexdigest()",
+      "excludes": [
+        "scripts",
+        "tests",
+        "docs",
+        ".env",
+        "databases"
+      ],
+      "not_comparable_to": "verify_sixth_live.source_digest (different app+scripts/raw-byte algorithm)"
+    },
+    "frontend_sha256": {
+      "algorithm": "SHA256(file_bytes).hexdigest()",
+      "scope": "each explicitly named file"
+    }
+  },
+  "pre_final_cross_review_runs": [
+    {
+      "environment": "mac",
+      "kind": "engineering",
+      "os": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+      "python": "3.14.4",
+      "node": "v25.9.0",
+      "playwright": "1.62.1",
+      "source_sha256": "125c982f93b6c687e4d00a99895709370afbed8d4f01576c957d8f2109b2f45c",
+      "browser": "156.0.8078.48",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 12196
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 24016
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 15334
+        }
+      ],
+      "app_source_sha256_tested": "125c982f93b6c687e4d00a99895709370afbed8d4f01576c957d8f2109b2f45c",
+      "race_counts": {
+        "request_started": 240,
+        "response_headers": 223,
+        "request_finished": 240,
+        "operation_registered": 43,
+        "operation_finished": 43,
+        "navigation": 28,
+        "request_cancelled": 16,
+        "save_reconciled": 1,
+        "read_timeout": 1
+      },
+      "pending_operations": [],
+      "pending_requests": [],
+      "gate_counts": {
+        "gate_matched": 9,
+        "gate_released": 9,
+        "gate_finished": 9
+      }
+    },
+    {
+      "environment": "linux",
+      "os": "Ubuntu24.04.4 LTS",
+      "architecture": "aarch64",
+      "python": "3.12.3",
+      "node": "v22.23.4",
+      "playwright": "1.62.1",
+      "network": "none",
+      "container_cpus": 1,
+      "browser": "151.0.7922.34",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2071
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 19617
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 5008
+        }
+      ],
+      "app_source_sha256_tested": "125c982f93b6c687e4d00a99895709370afbed8d4f01576c957d8f2109b2f45c",
+      "race_counts": {
+        "request_started": 234,
+        "response_headers": 217,
+        "request_finished": 234,
+        "operation_registered": 43,
+        "operation_finished": 43,
+        "navigation": 28,
+        "request_cancelled": 16,
+        "save_reconciled": 1,
+        "read_timeout": 1
+      },
+      "pending_operations": [],
+      "pending_requests": [],
+      "gate_counts": {
+        "gate_matched": 9,
+        "gate_released": 9,
+        "gate_finished": 9
+      }
+    }
+  ],
+  "pre_final_frontend_sha256": {
+    "app/static/app.js": "0ddca595e4a3fde5a514bb145a6061e1ec3c5e43c3ca7b1feaf2243ed337b99e",
+    "app/static/sixth.js": "0be8342f6f0e8811de570b847d1c7665c53300d72abbb74d7af3e9ad8b9cdc87",
+    "tests/frontend_production.mjs": "603b4f7d40e1a4c12bcd0f18460ce468dacb981f8f7561f4c1bd096b7ba81542",
+    "tests/frontend_iteration.mjs": "6c4bb8d9f5debb85249ceab47c28a6aa4c24cf7196f5efb94d303ba808a639fc",
+    "tests/frontend_seventh.mjs": "8545657d64bdca120a9b82e2f971fb8b79572da623074029bf965954e4235cea",
+    "tests/run_browser.mjs": "363e93014c53d43e4b8e82bcd3576db71145a00e61fbaecb415eded041b43977"
+  },
+  "final_verified_at": "2026-10-29T23:34:10.150349+08:00",
+  "final_base_commit": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+  "final_working_tree_dirty": true
+}

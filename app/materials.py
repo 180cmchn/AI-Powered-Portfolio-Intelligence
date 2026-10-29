@@ -112,7 +112,9 @@ def index_of(body):
             "page_range", "pages_read", "start_page", "end_page", "access_range", "range", "requested_range", "returned_range", "extracted_range", "version", "previous_id", "source_id", "changed_at", "content_hash", "change_summary",
             "offset", "returned_chars", "requested_chars", "text_length", "extraction_method", "extraction_note", "document_version_id",
             "document_version", "document_identity_kind", "representation_kind", "read_completeness", "change_kind", "legacy_version", "material_ids", "source_material_ids",
-            "observation_status", "observation_sequence", "observation_started_at", "is_latest_document_observation")
+            "observation_status", "observation_sequence", "observation_started_at", "is_latest_document_observation",
+            "error_kind", "failure_stage", "next_action", "alternative_source_status", "requested_access_range",
+            "document_format", "pdf_available", "source_identifier")
     result = {k: v for k, v in body.items() if k in keys}
     # Metadata authored by a model/source is also untrusted in size.
     for k, v in list(result.items()):
@@ -188,6 +190,16 @@ class MaterialStore:
             stream.append({k: body.get(k) for k in ("access", "requested_range", "page_range", "offset")})
         stream_key = _hash(stream)
         identity = str(body["document_id"]) if raw else _hash(material_text(body))
+        if body.get('access') == 'structured_data' and kind == 'text_representation':
+            try:
+                payload = json.loads(material_text(body))
+                if isinstance(payload, dict) and isinstance(payload.get('rows'), list):
+                    # Fetch/cache timestamps describe delivery, not a correction
+                    # to unchanged prices. Each representation still retains them.
+                    identity = _hash({k:v for k,v in payload.items() if k not in
+                        ('fetched_at','retrieved_at','cache_hit','cache_age_seconds','cache_ttl_seconds','cache_stale')})
+            except (ValueError, TypeError):
+                pass
         if kind == "native_search_source" and not material_text(body):
             identity = _hash({key: body.get(key) for key in ("url", "source_title", "title", "publisher")})
         if raw:

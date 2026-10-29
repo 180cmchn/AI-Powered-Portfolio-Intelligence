@@ -344,4 +344,10 @@ async def test_late_baseline_does_not_rewrite_published_batch(tmp_path, clock):
     before = store.forecast_batches(a["id"])[0]["baseline_evidence"]
     release.set(); await task
     after = store.forecast_batches(a["id"])[0]["baseline_evidence"]
-    assert after == before and "SZ:159278" not in after
+    # Iteration 8 keeps the original per-security evidence and published ledger,
+    # while allowing another still-unpublished security to finish preparation.
+    assert after["SH:600519"] == before["SH:600519"]
+    assert after["SZ:159278"]["status"] == "ready"
+    with store.connect() as db:
+        saved = db.execute("SELECT citations FROM forecasts WHERE batch_id=?", (batch["id"],)).fetchone()
+    assert json.loads(saved[0])["baseline_at_publication"] == before["SH:600519"]

@@ -26,7 +26,7 @@ function account() { return { id, name: '测试账户', version, analysis_state:
 function recommendation(n, historical = false) { return {id:`${historical ? 'history' : 'active'}-${n}`, symbol:n === 0 ? 'SH:600519' : 'SZ:000001', action:'hold', state:historical ? 'expired' : 'needs_review', review_status:historical ? 'expired' : 'needs_review', price_state:historical ? 'not_met' : 'met', observed_price:'120', input_version:1, valid_until:historical ? '2020-01-01T00:00:00+08:00' : null, references:n === 0 ? [reference] : [], review_followup:historical ? null : {state:'pending',job_id:null}, basis:historical ? `历史记录 ${n}` : `活跃记录 ${n}`}; }
 function json(url) {
   const path = url.pathname;
-  if(path === '/api/status') return {mode: 'demo', model_configured: true, configuration_errors:configurationErrors, worker: {running: true}, settings: {quote_provider: 'manual'}};
+  if(path === '/api/status') return {mode: 'demo', model_configured: true, configuration_errors:configurationErrors, worker: {running: true}, calendar:{phase:'closed',session:'lunch_break',trading_day:true,has_closed_today:false}, settings: {quote_provider: 'manual'}};
   if(path === '/api/settings') return {quote_provider: 'manual'};
   if(path === '/api/providers') return [providerFixture];
   if(path === `/api/providers/${providerId}/models`) return providerFixture.catalog;
@@ -35,7 +35,7 @@ function json(url) {
   if(path === `/api/accounts/${id}`) return account();
   if(path === `/api/accounts/${id}/analyses`) return [{id: rid, status: 'current', input_version: 1}];
   if(path === `/api/analyses/${rid}`) { detailFetches++; return report; }
-  if(path === `/api/accounts/${id}/jobs`) return [{id: 'job-1', input_version: 1, state: 'running', reason: 'scheduled', event_count: eventSeq, last_event_seq: eventSeq}];
+  if(path === `/api/accounts/${id}/jobs`) return [{id: 'job-1', input_version: 1, state: 'running', reason: 'scheduled', synthesis_checkpoint:{available:true,recovery_state:'needs_research',source_coverage:{fixture:{status:'needs_research',reason:'delegated_report_not_delivered'}},report_access:[{source_agent_id:'named-child',role_id:'filing_researcher',research_round:1,access:'full_report'},{source_agent_id:'summary-child',role_id:'market_researcher',research_round:2,access:'report_summary',summary_truncated:true}]}, event_count: eventSeq, last_event_seq: eventSeq}];
   if(path === `/api/accounts/${id}/recommendations`) {
     assert.equal(url.searchParams.get('envelope'), 'true');
     const history = url.searchParams.get('view') === 'history', total = history ? 104 : activeCount;
@@ -168,6 +168,13 @@ try {
   await page.locator('#dialog .dialog-header button').click();
   await page.locator('nav a[href="#agents"]').click();
   await page.getByText('事件 1', {exact:true}).waitFor();
+  const checkpoint=page.locator('.synthesis-checkpoint');
+  assert.ok((await checkpoint.textContent()).includes('研究成果或资料仍有未解决范围'));
+  assert.ok((await checkpoint.textContent()).includes('子报告尚未完整交付'));
+  assert.ok((await checkpoint.textContent()).includes('收到完整子报告（非主 Agent 亲读原文）'));
+  assert.ok((await checkpoint.textContent()).includes('仅收到子报告摘要 · 摘要已截断'));
+  assert.ok(!(await checkpoint.textContent()).includes('材料更正仍待处理'));
+
   eventSeq = 2;
   await page.clock.fastForward(4000);
   await page.getByText('事件 2', {exact:true}).waitFor();
@@ -182,6 +189,8 @@ try {
   assert.ok((await page.locator('#configuration-errors').textContent()).includes(configurationErrors[0]));
   await page.locator('nav a[href="#settings"]').click();
   await page.locator('#settings-form').waitFor();
+  assert.ok((await page.locator('main').textContent()).includes('市场：午间休市 · 交易日'));
+  assert.ok(!(await page.locator('main').textContent()).includes('市场：已收盘'));
   assert.equal(await page.locator('#settings-form #model_name, #settings-form #model_key_env, #settings-form #model_protocol, #settings-form #reasoning_effort').count(),0);
   await page.locator('nav a[href="#providers"]').click();
   await page.locator('#provider-connection-form').waitFor();

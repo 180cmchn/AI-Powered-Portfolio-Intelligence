@@ -1,0 +1,289 @@
+{
+  "iteration": 8,
+  "baseline_commit": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+  "commit": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+  "pushed": false,
+  "committed_by_task": false,
+  "source_sha256": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+  "source_digest_definition": "app.runtime_version.source_digest; SHA256(repr(sorted(relative app file path,SHA256(bytes)) pairs)); excludes pycache and non-source suffixes",
+  "application_manifest": {
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/agent_config.py": "cb60abad9568000faef3fa270b96bf88d9b42eaf91c9998ce6edfd25aa556f68",
+    "app/agents.py": "f83e4f39e760dbe48d57f831af8f59a80bddd547c85d7c1fc46aa3871ae3ad51",
+    "app/calendar.py": "2d136fa5f300b76f939b938c2f63749963e73851ebdcc53836fe79441c9af883",
+    "app/config.py": "5fccdf4f2ed0ce868b99819ffffcf012005f4d2a6628b920b9504640df17b21d",
+    "app/context.py": "3f01e70b06aaa7bef76b54f02d08983dc3197afbb174e02fe5fffa738a6ab659",
+    "app/credentials.py": "16505501bd2a2facef89ca7a75dec5062b333de3ee68144c11b1c372a855ee46",
+    "app/domain.py": "db4f3e5dd86392174296f284801212f4a077996c1bf10fdfc6bffc7b0f255637",
+    "app/forecast_identity.py": "b06ca204d2ccc2862fce6bc362422c72902637c4dcc954f63a5dddb3d2e8d14c",
+    "app/forecast_prices.py": "3ccca61522fd211048e9c25c34138c8bb4170bb20d39516c8ddf69aa61041197",
+    "app/forecast_windows.py": "c6c4f4226b78a0f731fc68f391dcf4ba69caca6e9caa4fde2be4da3d9dd170d1",
+    "app/forecasts.py": "72972646ea72adbdf9d4dcda583e7879299008c06b8f78920fca76fbffb285bf",
+    "app/main.py": "c815ddb7ef693b122b89131f92bd5f0dd8123d83d5880136e92a9d1395508184",
+    "app/market_materials.py": "4a8bf036ffd51dfbb3a6f6d562c7dce63b5d9701a4cc7779e29240e14f3fed03",
+    "app/materials.py": "64de74fd78917b84502b444cda7c978e6ec7c69e692cf63bfae2d5d71c5b61c1",
+    "app/model.py": "3b9a748f2ebfe519c8edc9d79fca3a0077637550f6f00fc3245d7eacda20136e",
+    "app/native_sources.py": "870896bee984b004b514f5517884994247c927ac0b85fdbeae91514b12a7a52c",
+    "app/prompts/etf_researcher.txt": "b624924a292ae280441d2faddd871437acc6d16fd6fe0f8806bc65b8f464c554",
+    "app/prompts/filing_researcher.txt": "da2832d2fb20d785d3b52c5b77eb3a745ea2521bc1d114125ebbf71796be2afb",
+    "app/prompts/industry_researcher.txt": "ef7560563e43a8922f5702a6da0495f30bfeae263184425b08e617dd86377d9d",
+    "app/prompts/manager.txt": "7744b22dd0ce824a2917b0de7a312b865cf73c1c1408e2ba77154dadc0f9fda8",
+    "app/prompts/market_researcher.txt": "cc40b5c4b01cc409c16c77640454a514728be3469f519821da531446dae95f8f",
+    "app/prompts/portfolio_researcher.txt": "92c188f9655bb19fe84860ce51c4c8a9021e50e4559a58ddc0c394a3e67aa50e",
+    "app/prompts/researcher.txt": "31b26b26bcea756930e2fa14d33ef9d8ba848bd048b5fd3b7db94c92ec145bc0",
+    "app/providers.py": "c5281c19cbe4ff3026a84001691cd23658718a928e1e2723652dc9280c1f77fe",
+    "app/recommendations.py": "8a3f15e5f261f4c4fa84b09cca8ea11ffe4d094617bb527fea5f5501e4fc5f92",
+    "app/recovery.py": "25cb426b42a878bdbe41acf156fea1c51c850b7f9571d97719fe5660d16a083e",
+    "app/references.py": "850250248913e881ea1abf2cca9cb08512eab6d129aa90ad968262ef9415335f",
+    "app/runtime_version.py": "bcac10585aeeb16fc01b255fd7d64d5c605dfcab143227a6be5c3fbd4e447886",
+    "app/scheduling.py": "3d681f15800a362b53ebc0ed561a3b0cff634d5d9a0cc85773719105708392ce",
+    "app/service.py": "2bc348047d49b70d02442acba9ba32461dda3c446ebc797d2ca20ded2553cdf0",
+    "app/sixth_api.py": "8ef5d7104fb9ebb790c3a601e02aaa1157b4b2c504aeef9e6ea1f969f1b0bc9d",
+    "app/static/app.js": "0ddca595e4a3fde5a514bb145a6061e1ec3c5e43c3ca7b1feaf2243ed337b99e",
+    "app/static/index.html": "04b6782cd8d3f4fe60115fd2d8c4216e4a683dd00deee875cc8bd75112e3fb11",
+    "app/static/sixth.js": "a339ef352e66514ac4a12d5d393268ff718a3133ea5bd75ae92635609a9ba9f5",
+    "app/static/style.css": "2e300f0fa0f57d1d7c78ed9460c2ae960c53d85d5a064b60b2f4ca86c7f427d8",
+    "app/store.py": "118c922ee1cf0ec7d0a8dbf81a969dee39a97ac410e463e845d59e5101eaf6bb"
+  },
+  "git_status": [
+    " M .github/workflows/tests.yml",
+    " M README.md",
+    " M app/agent_config.py",
+    " M app/agents.py",
+    " M app/calendar.py",
+    " M app/forecast_identity.py",
+    " M app/forecast_windows.py",
+    " M app/forecasts.py",
+    " M app/main.py",
+    " M app/materials.py",
+    " M app/prompts/manager.txt",
+    " M app/prompts/researcher.txt",
+    " M app/providers.py",
+    " M app/recovery.py",
+    " M app/service.py",
+    " M app/static/app.js",
+    " M app/static/sixth.js",
+    " M app/store.py",
+    " M docs/mac-operations.md",
+    " M package.json",
+    " M scripts/restore.py",
+    " M tests/frontend_iteration.mjs",
+    " M tests/frontend_production.mjs",
+    " M tests/test_fifth_reasoning_effort.py",
+    " M tests/test_iteration.py",
+    " M tests/test_seventh_recovery.py",
+    " M tests/test_seventh_windows_scheduler.py",
+    " M tests/test_third_consistency.py",
+    "?? app/market_materials.py",
+    "?? app/runtime_version.py",
+    "?? deliverables/",
+    "?? docs/eighth-live-evidence.json",
+    "?? docs/eighth-live-recovery-review.md",
+    "?? docs/eighth-live-reports.md",
+    "?? docs/eighth-live-research-review.md",
+    "?? docs/iteration-8-browser-evidence.json",
+    "?? docs/iteration-8-browser.md",
+    "?? docs/iteration-8-ci.Dockerfile",
+    "?? docs/iteration-8-forecast.md",
+    "?? docs/iteration-8-linux-validation.json",
+    "?? docs/iteration-8-recovery.md",
+    "?? docs/iteration-8-validation.json",
+    "?? docs/iteration-8.md",
+    "?? scripts/inspect_eighth_live_page.mjs",
+    "?? scripts/inspect_runtime.py",
+    "?? scripts/verify_eighth_live.py",
+    "?? scripts/verify_eighth_preflight.py",
+    "?? tests/run_browser.mjs",
+    "?? tests/test_eighth_data_calendar.py",
+    "?? tests/test_eighth_delegation.py",
+    "?? tests/test_eighth_forecast_preparation.py",
+    "?? tests/test_eighth_market_audit.py"
+  ],
+  "preexisting_untracked_preserved": [
+    "deliverables/"
+  ],
+  "python": {
+    "command": ".venv/bin/python -m pytest -q",
+    "result": "763 passed, 1 existing Starlette/httpx deprecation warning",
+    "seconds": 26.39,
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "version": "3.14.4",
+    "sqlite": "3.53.0",
+    "log": "../test-results/iteration-8-python-final.log"
+  },
+  "browser_evidence": "iteration-8-browser-evidence.json",
+  "additional_production_regressions": [
+    "tests/test_eighth_forecast_preparation.py",
+    "tests/test_eighth_delegation.py",
+    "tests/test_eighth_data_calendar.py",
+    "tests/test_eighth_market_audit.py"
+  ],
+  "real_evidence": "eighth-live-evidence.json",
+  "real_reports": "eighth-live-reports.md",
+  "real_validation_status": "completed_with_external_and_research_quality_limits",
+  "formal_window_verified": false,
+  "naturally_mature_forward_samples": 0,
+  "daily_service": {
+    "repository_source_sha256": "5dbd45dbf0f8a36386e2cbb6c86f311c8f89e179f486f755df4cef72b537b315",
+    "running_process_version": "legacy_service_does_not_report_loaded_version",
+    "database_access": "read_only",
+    "database_schema_version": 3,
+    "service_http_status": 200,
+    "worker": {
+      "running": true,
+      "active": 0,
+      "last_error": null,
+      "last_resume": "2026-10-29T17:21:28.108332+08:00"
+    },
+    "service_time": "2026-10-29T23:47:52.073722+08:00"
+  },
+  "protected_state": {
+    "daily_database_migrated": false,
+    "daily_service_restarted": false,
+    "env_modified": false,
+    "credentials_exported": false,
+    "test_collection_uses_temporary_database": true,
+    "application_import_does_not_create_store": true
+  },
+  "migration": {
+    "schema": 8,
+    "backup_suffix": ".before-v8.bak",
+    "restore_supported_schemas": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "ledger_immutable_triggers_retained": true
+  },
+  "constraints": {
+    "provider_fields_unchanged": true,
+    "global_roles_account_binding_only": true,
+    "efforts": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "chat_native_search_adapter_added": false,
+    "runtime_report_quality_gate_added": false,
+    "permanent_read_all_requirements_added": false
+  },
+  "linux_evidence": "iteration-8-linux-validation.json",
+  "linux_python": {
+    "result": "763 passed, 1 existing Starlette/httpx warning",
+    "pytest_seconds": 41.89,
+    "platform": "Ubuntu 24.04.4 LTS aarch64",
+    "python": "3.12.3",
+    "network": "none"
+  },
+  "real_results": {
+    "business_reports": 3,
+    "business_requests": 40,
+    "native_probe_requests": 1,
+    "complete_sse_terminals": 41,
+    "formal_records": 0,
+    "exploratory_abstentions": 9,
+    "directional_records": 0,
+    "naturally_mature_forward_samples": 0,
+    "real_fault_recoveries": 0,
+    "b_candidate_researched": true,
+    "a_old_report_stale_on_update": true,
+    "b_input_and_bindings_unchanged": true,
+    "read_only_browser_pages": 6,
+    "browser_errors": 0,
+    "manual_review": [
+      "eighth-live-research-review.md",
+      "eighth-live-recovery-review.md"
+    ],
+    "external_limits": [
+      "Intermittent Eastmoney RemoteProtocolError; successful later history and configured Sina fallback are separately recorded.",
+      "PDF address validation rejected non-public DNS answers before fetching; SSRF and TLS retained."
+    ],
+    "quality_limits": [
+      "A reported some calculations unavailable despite successful prior tool delivery; final retention/adoption is not proven.",
+      "B research includes reproducible numbers from the actually delivered market summary, but disclosure gaps remain.",
+      "No directional or formal-window acceptance; abstentions do not validate accuracy."
+    ]
+  },
+  "real_commands": [
+    ".venv/bin/python scripts/verify_eighth_live.py --output data/evaluations/eighth-final-v3-20261029",
+    "node scripts/inspect_eighth_live_page.mjs data/evaluations/eighth-final-v3-20261029",
+    ".venv/bin/python scripts/inspect_runtime.py"
+  ],
+  "evidence_notes": [
+    "The earlier intentionally cancelled run is not final-code acceptance or a real recovery.",
+    "The identity-preflight failure used no paid model call.",
+    "All real reports, including weaknesses, are preserved verbatim; manual review does not create a runtime content gate."
+  ],
+  "all_real_attempts": {
+    "model_requests": 58,
+    "completed_sse_requests": 57,
+    "deliberately_cancelled_requests": 1,
+    "native_probe_requests_included": 2,
+    "note": "Includes preliminary non-final-code run; only final 41 completed requests belong to final-code acceptance. Public-only preflight did not make model requests."
+  },
+  "remote_ci": {
+    "checked_at": "2026-10-29T23:47:49+08:00",
+    "run_id": 40862236837,
+    "status": "completed",
+    "conclusion": "failure",
+    "head_sha": "85c530c8cb83727c87ddf6edc2df447fbbf980d9",
+    "new_push": false,
+    "detail": "iteration-8-browser-evidence.json"
+  },
+  "validation_file_sha256": {
+    ".github/workflows/tests.yml": "27e1ad3adce5bc890d3443ccafa0abc1355fee707d4165c6dffc3c1bfdacc875",
+    "package.json": "bc9faa6d47f9bfafbe83feec5b80b826bab7a54d15d0673341470474bc7af70e",
+    "scripts/restore.py": "318e8f6bf29024471dc6899621c6335adcfc51426fc8fd2927cf30c2f8633665",
+    "tests/frontend_iteration.mjs": "6c4bb8d9f5debb85249ceab47c28a6aa4c24cf7196f5efb94d303ba808a639fc",
+    "tests/frontend_production.mjs": "603b4f7d40e1a4c12bcd0f18460ce468dacb981f8f7561f4c1bd096b7ba81542",
+    "tests/test_fifth_reasoning_effort.py": "9fe46bd8d64c8be79a178c3a5f2bc4cfeab74eca7c6a59dad4acb5caaf012924",
+    "tests/test_iteration.py": "05ef5a054db2054337e4efd60e2b33a3cbf0a9b1fdd3ac4b6161d11aa78c5e31",
+    "tests/test_seventh_recovery.py": "23ef5d947eefc0fc1370413b937f3ece6a0afe8a64b7b59fe448a1c30b882465",
+    "tests/test_seventh_windows_scheduler.py": "629a3c44702e396d08c54c8e041c580154aeae8b7434c1b06559cbb257326156",
+    "tests/test_third_consistency.py": "5dc932fb1cb0e5b3b14bce1903bd5bea19508f9f88d6dff896ba270b858ea49f",
+    "scripts/inspect_eighth_live_page.mjs": "8f5df20a4c1cfa1fbdf0d69fc62f7b0b5b24e79ecee12d8b3a899f6b136dd180",
+    "scripts/inspect_runtime.py": "82d3a73e5834ded617ce577678443dd0288f81de9b6771d1e9817b444fb92d4b",
+    "scripts/verify_eighth_live.py": "e44e8139ceb9911a0cfaebf7b7ae61539e1640e59926919af60b39f70eb344a3",
+    "scripts/verify_eighth_preflight.py": "b5e8f996f1415547e52e26935d2669e245a5414a46de7d698025c7cc1dfc2d01",
+    "tests/run_browser.mjs": "363e93014c53d43e4b8e82bcd3576db71145a00e61fbaecb415eded041b43977",
+    "tests/test_eighth_data_calendar.py": "4638c71e5d395a8bdfd046d7bd2c9e46b127531713fd09ef063e0044a1ba948e",
+    "tests/test_eighth_delegation.py": "9d7d82cd740422eff68d85d301eab53a4ad6c526f03f5210d68396f8c09a7248",
+    "tests/test_eighth_forecast_preparation.py": "8950cbed3999ba233e4dc492cf7873d78a3626f8965e5cdec9d623d0cca80e13",
+    "tests/test_eighth_market_audit.py": "7d6e631e530f43f8e9832cfd50155723909b60a6ad191683cc09ea6db518687e"
+  },
+  "secret_scan": {
+    "scope": "tracked diff files and newly created project files; preexisting deliverables excluded",
+    "actual_env_credential_values_found": false,
+    "credential_reference_names_allowed": true
+  },
+  "final_sanity": {
+    "git_diff_check": "passed",
+    "application_digest_matches_mac_linux_and_final_live_run": true,
+    "daily_service_loaded_version_claimed": false
+  },
+  "manual_review_completed": {
+    "research": "eighth-live-research-review.md",
+    "delivery": "eighth-live-recovery-review.md",
+    "scope": "Evidence-driven model-assisted review and independent arithmetic, not external investment certification or runtime content gate"
+  },
+  "final_evidence_sha256": {
+    "docs/eighth-live-evidence.json": "76d4d58294c83f798c9c9f624ee80b2b144fdae764b3adc1e78bd4a4f8f46113",
+    "docs/eighth-live-reports.md": "cc8c75785d37b4f396ec6da74ec4edef2289dbb8ac2e01faa92c70010e0905e6",
+    "docs/eighth-live-research-review.md": "0239995d1eeae0b4bf5cffa5c6a2cabe9991c145e1f1f87b70f6c89b4b77d884",
+    "docs/eighth-live-recovery-review.md": "184830792a5b03d685f2f4914df392582e7d77e39db2d130cfcc037478e2ce6b"
+  },
+  "cleanup": {
+    "independent_live_service_exited": true,
+    "browser_test_processes_remaining": 0,
+    "ci_containers_remaining": 0,
+    "test_image_and_evidence_retained": true,
+    "daily_service_untouched": true
+  }
+}

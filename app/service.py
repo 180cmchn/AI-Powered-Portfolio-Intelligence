@@ -156,12 +156,40 @@ class ResearchTools:
     async def _market_data(self, method, **kwargs):
         result = await getattr(providers.MarketProvider(self.config), method)(**kwargs)
         saved = self.store.save_material({"scope": "public", "content": dumps(result), "source_title": method,
+                                         "source_identifier": 'market:' + dumps([method, result.get('source'),
+                                             result.get('symbol') or result.get('benchmark') or result.get('sector_id'),
+                                             result.get('interval'), result.get('adjustment'), result.get('requested_range')]),
+                                         "symbol": result.get('symbol') or result.get('benchmark') or result.get('sector_id'),
                                          "source": result.get("source"), "classification": "source_data",
+                                         "fetched_at": result.get('fetched_at'), "truncated": result.get('truncated', False),
                                          "published_at": result.get("as_of"), "access": "structured_data"}, self.job["id"], self.job.get("account_id"))
+        if method in ('history', 'benchmark_history', 'sector_history'):
+            # Keep the entire returned snapshot. Deliver a recent, navigable row
+            # view instead of an arbitrary JSON prefix from its oldest dates.
+            return await self.query_market_rows(saved['id'], limit=min(30, int(kwargs.get('limit', 30))))
         if len(dumps(result)) > 16000:
             return {"material_id": saved["id"], "source": result.get("source"), "status": result.get("status"),
                     "note": "数据已保存，按材料字符范围逐段读取", **self.store.material_range(saved["id"], length=10000)}
         return {**result, "material_id": saved["id"]}
+
+    def _market_material(self, material_id):
+        if not self.store.material_accessible(material_id, self.job.get('account_id')):
+            raise KeyError('材料不属于当前账户或公开研究范围')
+        material = self.store.material(material_id)
+        self.store.save_material(material, self.job['id'], self.job.get('account_id'))
+        return material
+
+    async def query_market_rows(self, material_id, start=None, end=None, fields=None, limit=30, offset=0, order='desc', symbol=None):
+        from .market_materials import query_rows
+        return query_rows(self._market_material(material_id), start=start, end=end, fields=fields, limit=limit,
+                          offset=offset, order=order, symbol=symbol,
+                          max_chars=self.config.get('max_tool_result_chars', 6000))
+
+    async def market_indicators(self, material_id, start=None, end=None, window=20, benchmark_material_id=None):
+        from .market_materials import indicators
+        return indicators(self._market_material(material_id), start=start, end=end, window=window,
+                          benchmark=self._market_material(benchmark_material_id) if benchmark_material_id else None,
+                          max_chars=self.config.get('max_tool_result_chars', 6000))
 
     async def history(self, symbol, **options):
         return await self._market_data("history", symbol=symbol, **options)
@@ -290,7 +318,7 @@ class Service:
                             if not existing or not existing.get("kind"):
                                 existing = await provider.security(s)
                             self.store.put_cache("securities", s, {**existing, "symbol": s, "name": q["name"]})
-                        if q.get("price") and previous.get("price") and q.get('status') == 'ok' and q.get('fresh_for_triggers') is not False and market_state()['phase'] in ('morning', 'afternoon'):
+                        if q.get("price") and previous.get("price") and q.get('status') == 'ok' and q.get('fresh_for_triggers') is not False and market_state(calendar_path=cfg.get('calendar_path'))['quote_trigger_eligible']:
                             baseline = self.store.meta(f"price_baseline:{s}", previous["price"])
                             p, b = Decimal(q["price"]), Decimal(baseline)
                             if b and abs(p / b - 1) * 100 >= Decimal(str(cfg["price_trigger_pct"])):
@@ -320,7 +348,7 @@ class Service:
         started = time.monotonic()
         try:
             # Bind planned identity before resolving secrets, clients or prices.
-            self.store.prepare_exploratory_forecast_job(job['id'])
+            self.store.prepare_exploratory_forecast_job(job['id'], calendar_path=cfg.get('calendar_path'))
             self.store.ensure_forecast_attempt(job['id'])
             account = self.store.snapshot(job["account_id"], job["input_version"])
             universe = self.store.meta("universe", {"watchlist": [], "candidates": []})
@@ -358,7 +386,7 @@ class Service:
                        "target_security": {"symbol": target, "quote": self.quotes().get(target), "metadata": self.store.cache("securities").get(target)} if target else None,
                        "job_id": job["id"], "input_version": job["input_version"],
                        "model_config": model_config_summary(cfg),
-                       "calendar": market_state(), "available_public_material_count": self.store.material_count(),
+                       "calendar": market_state(calendar_path=cfg.get("calendar_path")), "available_public_material_count": self.store.material_count(),
                        "shared_research": [],
                        "universe_version": scope['universe_version'],
                        "suggestions_to_review": suggestion_context['items'],
@@ -367,9 +395,9 @@ class Service:
                        "business_demands": demand_page['items'],
                        "business_demand_coverage": {k: v for k, v in demand_page.items() if k != 'items'},
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
-            context['_research_input_guard'] = self.store.research_guard(context)
             context['team_id'] = (cfg.get('_agent_team') or {}).get('team_id')
             context['forecast_batch'] = self.store.forecast_job_context(job['id'])
+            context['_research_input_guard'] = self.store.research_guard(context)
             if self.store.mode == "demo":
                 result = {"report": f"演示模式 · 本地数值摘要\n\n账户：{account['name']} · 输入版本 v{account['version']}\n\n已知价格持仓市值：¥{values['known_priced_value']}。\n\n" + "\n\n".join(values["notes"]) + "\n\n这是固定样例数据和代码计算结果。未调用模型、搜索或多 Agent，不构成真实投资研究或买卖建议。",
                           "metrics": values, "demo": True, "model_calls": 0}
@@ -541,7 +569,7 @@ class Service:
                        "universe_version": snapshot['universe_version'], "input_snapshot": {k: v for k, v in snapshot.items() if k != "config"},
                        "reason": run["reason"], "candidates": universe["candidates"], "watchlist": universe["watchlist"],
                        "quotes": {s: q for s, q in self.quotes().items() if s in set(universe['candidates'] + universe['watchlist'])},
-                       "shared_research": [], "calendar": market_state(),
+                       "shared_research": [], "calendar": market_state(calendar_path=cfg.get("calendar_path")),
                        "pending_information": [index_of(self.store.material(mid)) for mid in self.store.public_information_for_run(run['id'])],
                        "news_topics": cfg.get('news_queries', []),
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
@@ -572,9 +600,10 @@ class Service:
 
     async def scheduler_tick(self, stamp=None):
         stamp = stamp or datetime.now(TZ)
-        state, cfg = market_state(stamp), self.store.settings()
+        cfg = self.store.settings()
+        state = market_state(stamp, cfg.get('calendar_path'))
         # Market maintenance and due prediction scoring are independent of LLM research.
-        trading = state['trading_day'] is True and state['phase'] in ('morning', 'afternoon')
+        trading = state['is_continuous_trading']
         if cfg.get('market_refresh_enabled', True) and trading:
             bucket = int(stamp.timestamp() // cfg['quote_interval_seconds'])
             if self.store.meta('schedule:quote') != bucket and not self.refresh_lock.locked() and (not self.quote_task or self.quote_task.done()):
@@ -598,7 +627,7 @@ class Service:
         prior_seen = self.store.meta("schedule:last_seen")
         if prior_seen:
             prior = datetime.fromisoformat(prior_seen)
-            if prior.date() < stamp.date() and market_state(prior)["trading_day"] is True:
+            if prior.date() < stamp.date() and market_state(prior, cfg.get("calendar_path"))["trading_day"] is True:
                 for acc in self.store.accounts():
                     self.store.request_analysis(acc["id"], "close_summary", f"close:{acc['id']}:{prior.date()}",
                                                 reason=f"close_summary:服务恢复补充 {prior.date()} 收盘复核，使用当前可得资料并注明时点")
@@ -619,7 +648,7 @@ class Service:
                 self.news_task = self.spawn(scan())
         if state["trading_day"] is not True:
             return
-        trading = state["phase"] in ("morning", "afternoon")
+        trading = state["is_continuous_trading"]
         timestamp = stamp.timestamp()
         if trading:
             for kind, seconds in (("candidate_scan", cfg["scan_interval_minutes"] * 60), ("scheduled", cfg["analysis_interval_minutes"] * 60)):

@@ -35,10 +35,27 @@ try {
   }
   browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE ? {executablePath:process.env.BROWSER_EXECUTABLE} : {})});
   page=await browser.newPage();
+  // Keep browser interception enabled for the whole test. Removing the last
+  // matching route while a response starts follow-up fetches can strand a CDP
+  // paused request. Gates below consume by method once, without live teardown.
+  await page.route('**/api/**',route=>route.continue());
+  const navigate=async name=>{
+    await page.locator(`nav a[href="#${name}"]`).click();
+    await page.locator(`nav a[href="#${name}"][aria-current="page"]`).waitFor();
+  };
+  const assertIdle=async()=>{
+    await page.locator('.loading-line').waitFor({state:'hidden'});
+    const snapshot=await page.evaluate(()=>window.__guanlanDiagnostics.snapshot());
+    assert.deepEqual(snapshot.operations,[],'all registered operations must finish');
+    assert.equal(snapshot.counts.operation_registered, snapshot.counts.operation_finished);
+  };
   await page.context().tracing.start({screenshots:true,snapshots:true});
   page.on('request',request=>{if(request.url().includes('/api/')) requestTrace.push({event:'request',method:request.method(),path:new URL(request.url()).pathname});});
   page.on('response',response=>{if(response.url().includes('/api/')) requestTrace.push({event:'response',status:response.status(),path:new URL(response.url()).pathname});});
+  page.on('requestfinished',request=>{if(request.url().includes('/api/'))requestTrace.push({event:'finished',method:request.method(),path:new URL(request.url()).pathname});});
+  page.on('requestfailed',request=>{if(request.url().includes('/api/'))requestTrace.push({event:'failed',method:request.method(),path:new URL(request.url()).pathname,error:request.failure()?.errorText});});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.addInitScript(()=>sessionStorage.setItem('guanlan.diagnostics','1'));
   await page.addInitScript(accountId=>localStorage.setItem('guanlan.account',accountId),fixture.account_id);
   await page.goto(base+'/#research');
   await page.locator('#active-recommendations .recommendation').first().waitFor();
@@ -78,13 +95,13 @@ try {
   await page.locator('[data-action="retry-recommendation"]').first().click();
   await page.getByText('已登记复核需求，处理状态可在建议与 Agent 工作台查看。',{exact:true}).waitFor();
   assert.ok((await page.locator('#active-recommendations').textContent()).includes('已安排研究'));
-  await page.locator('nav a[href="#market"]').click();
+  await navigate('market');
   assert.equal(await page.getByText('当前范围结论',{exact:true}).count(),0,'public generated research does not become selected-account research');
   await page.locator('details[data-key="global-runs"] > summary').click();
   await page.getByText(`候选范围 v${fixture.universe_version}`,{exact:true}).first().waitFor();
   await page.getByText('历史研究范围 · 不作为当前公共结论',{exact:true}).waitFor();
   assert.equal(await page.getByText('历史范围结论',{exact:true}).count(),0);
-  await page.locator('nav a[href="#holdings"]').click();
+  await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   const draftName='账户 A 未保存草稿';
   await page.locator('#account-form #name').fill(draftName);
@@ -94,7 +111,7 @@ try {
   const navigationGate=new Promise(resolve=>{releaseNavigation=resolve;});
   const navigationStarted=new Promise(resolve=>{observeNavigation=resolve;});
   await page.route('**/api/status',async route=>{observeNavigation();await navigationGate;await route.continue();},{times:1});
-  await page.locator('nav a[href="#research"]').click();
+  await navigate('research');
   await waitGate(navigationStarted,'navigationStarted');
   await page.locator('#account-switch').selectOption(fixture.other_id);
   await page.locator('#account-switch').selectOption(fixture.account_id);
@@ -110,7 +127,7 @@ try {
   const agentsNavigationGate=new Promise(resolve=>{releaseAgentsNavigation=resolve;});
   const agentsNavigationStarted=new Promise(resolve=>{observeAgentsNavigation=resolve;});
   await page.route('**/api/status',async route=>{observeAgentsNavigation();await agentsNavigationGate;await route.continue();},{times:1});
-  await page.locator('nav a[href="#agents"]').click();
+  await navigate('agents');
   await waitGate(agentsNavigationStarted,'agentsNavigationStarted');
   const checkpointCard=page.locator('.job-card').filter({has:page.locator(`[data-action="retry-job"][data-id="${fixture.checkpoint_job_id}"]`)});
   await checkpointCard.locator('.synthesis-checkpoint').waitFor();
@@ -126,7 +143,7 @@ try {
   assert.equal(retryResult.account_id,fixture.other_id);
   assert.equal(retryResult.state,'queued');
   assert.equal((await (await fetch(base+`/api/jobs/${fixture.checkpoint_job_id}`)).json()).synthesis_checkpoint.available,true);
-  await page.locator('nav a[href="#holdings"]').click();
+  await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.notEqual(await page.locator('#account-form #name').inputValue(),draftName,'account A draft must not appear in account B');
   await page.locator('#account-switch').selectOption(fixture.account_id);
@@ -134,29 +151,36 @@ try {
   assert.equal(await page.locator('#account-form #name').inputValue(),draftName,'account A draft survives the deferred switch');
   // Writes proceed while GET navigation is paused, keep the clicked account and
   // version, coalesce rapid repeats, and preserve edits made before the response.
+  const gates=[];
   const pauseRoute=async(pattern, method='GET', afterServer=false)=>{
-    let release, observe, matched=false;
+    let release, observe, complete, matched=false;
+    const gateId=gates.length+1;
+    const finished=new Promise(resolve=>{complete=resolve;});
     const gate=new Promise(resolve=>{release=resolve;});
     const started=new Promise(resolve=>{observe=resolve;});
     const handler=async route=>{
       if(route.request().method()!==method || matched) return route.fallback();
       matched=true;
+      requestTrace.push({event:'gate_matched',gate:gateId,method});
       const response=afterServer ? await route.fetch() : null;
       observe(route.request());
       await gate;
       if(response) await route.fulfill({response}); else await route.continue();
-      await page.unroute(pattern,handler);
+      requestTrace.push({event:'gate_finished',gate:gateId});complete();
+      // Retain a consumed handler until browser teardown; subsequent traffic falls through.
     };
     // Playwright counts a fallback GET toward times:1; remove only after
     // the intended method matches, so navigation cannot consume a PUT gate.
     await page.route(pattern,handler);
-    return {started,release};
+    const item={started,finished,release:()=>{requestTrace.push({event:'gate_released',gate:gateId});release();}};
+    gates.push(item);return item;
   };
+  for (let raceRound=0; raceRound<3; raceRound++) {
   const beforeB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
-  await page.locator('nav a[href="#research"]').click();
+  await navigate('research');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   const saveNavigation=await pauseRoute('**/api/status');
-  await page.locator('nav a[href="#holdings"]').click();
+  await navigate('holdings');
   await waitGate(saveNavigation.started,'saveNavigation.started');
   const versionAtClick=Number(await page.locator('#account-form').getAttribute('data-version'));
   await page.locator('#name').fill('账户 A 提交时输入');
@@ -164,15 +188,17 @@ try {
   await page.locator('#account-form button[type="submit"]').click();
   const saveRequest=await waitGate(saveGate.started,'saveGate.started');
   await page.locator('#account-form button[type="submit"]').click();
-  await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
+  await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).last().waitFor();
   await page.locator('#name').fill('账户 A 保存后继续输入');
   await page.locator('#account-switch').selectOption(fixture.other_id);
   await page.waitForFunction(other=>document.querySelector('#account-form')?.dataset.accountId===other,fixture.other_id);
   assert.equal(saveRequest.postDataJSON().name,'账户 A 提交时输入');
   assert.equal(saveRequest.postDataJSON().expected_version,versionAtClick);
-  saveGate.release();saveNavigation.release();
+  if (raceRound===0) {saveGate.release();saveNavigation.release();}
+  else if (raceRound===1) {saveGate.release();await page.waitForResponse(r=>r.request()===saveRequest);saveNavigation.release();}
+  else {saveNavigation.release();await page.waitForTimeout(35);saveGate.release();}
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='PUT' && item.path===`/api/accounts/${fixture.account_id}`).length,1);
+  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='PUT' && item.path===`/api/accounts/${fixture.account_id}`).length,raceRound+1);
   const savedA=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
   const afterB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
   assert.equal(savedA.name,'账户 A 提交时输入');
@@ -182,6 +208,8 @@ try {
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入','late success must retain newer draft');
   assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),savedA.version);
+  await assertIdle();
+  }
   await page.route(`**/api/accounts/${fixture.account_id}`,async route=>{
     if(route.request().method()!=='PUT') return route.fallback();
     await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({detail:'受控保存冲突，草稿应保留'})});
@@ -192,8 +220,50 @@ try {
   await page.locator('#account-form button[type="submit"]').click();
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal((await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json()).name,'账户 A 保存后继续输入');
+  // A transport failure after the server commits is reconciled by GET of the
+  // clicked account, never by resending the write. Later draft/B remain intact.
+  const beforeUncertain=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
+  const putsBefore=requestTrace.filter(x=>x.event==='request' && x.method==='PUT').length;
+  await page.locator('#name').fill('账户 A 已提交但响应丢失');
+  let failCommitted, observedCommitted;
+  const committedGate=new Promise(resolve=>{failCommitted=resolve;});
+  const committedStarted=new Promise(resolve=>{observedCommitted=resolve;});
+  let committedMatched=false;
+  await page.route(`**/api/accounts/${fixture.account_id}`,async route=>{
+    if(route.request().method()!=='PUT' || committedMatched)return route.fallback();
+    committedMatched=true;
+    assert.equal((await route.fetch()).status(),200);
+    observedCommitted();await committedGate;await route.abort('connectionreset');
+  });
+  await page.locator('#account-form button[type="submit"]').click();
+  await waitGate(committedStarted,'committed write before lost response');
+  await page.locator('#name').fill('账户 A 响应丢失后新草稿');
+  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await page.waitForFunction(id=>document.querySelector('#account-form')?.dataset.accountId===id,fixture.other_id);
+  failCommitted();
+  await page.getByText('保存响应中断；已核对目标账户的版本和输入，确认保存成功，未重复写入。',{exact:true}).waitFor();
+  await assertIdle();
+  assert.equal(requestTrace.filter(x=>x.event==='request' && x.method==='PUT').length,putsBefore+1);
+  const uncertainSaved=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
+  assert.equal(uncertainSaved.version,beforeUncertain.version+1);
+  assert.equal(uncertainSaved.name,'账户 A 已提交但响应丢失');
+  assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id);
+  await page.locator('#account-switch').selectOption(fixture.account_id);
+  await assertIdle();
+  assert.equal(await page.locator('#name').inputValue(),'账户 A 响应丢失后新草稿');
+  assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),uncertainSaved.version);
+  // Exercise the real bounded GET lifecycle without a 15-second test sleep.
+  await page.clock.install();
+  const timeoutNavigation=await pauseRoute('**/api/status');
+  await navigate('research');
+  await waitGate(timeoutNavigation.started,'timeout navigation');
+  await page.clock.fastForward(15001);
+  await page.getByText('读取超时，保留已有内容；可刷新重试。',{exact:false}).first().waitFor();
+  await assertIdle();
+  timeoutNavigation.release();
+  await navigate('holdings');await assertIdle();
   const analyzeNavigation=await pauseRoute('**/api/status');
-  await page.locator('nav a[href="#overview"]').click();
+  await navigate('overview');
   await waitGate(analyzeNavigation.started,'analyzeNavigation.started');
   const analyzeGate=await pauseRoute(`**/api/accounts/${fixture.account_id}/analyze`,'POST',true);
   await page.locator('.page-heading [data-action="analyze"]').click();
@@ -206,7 +276,7 @@ try {
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id);
   assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='POST' && item.path===`/api/accounts/${fixture.account_id}/analyze`).length,1);
-  await page.locator('nav a[href="#holdings"]').click();
+  await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   await page.getByText('查找证券代码与基础资料',{exact:true}).click();
   let releaseLookup, observeLookup;
@@ -228,11 +298,21 @@ try {
   assert.ok((await page.locator('#lookup-results').textContent()).includes('新查询结果'));
   assert.equal(await page.getByText('过时证券结果 · etf',{exact:true}).count(),0);
   await page.unroute('**/api/securities?*');
+  await Promise.all(gates.map((gate,index)=>waitGate(gate.finished,`gate ${index+1} finished`)));
+  const raceLifecycle=await page.evaluate(()=>window.__guanlanDiagnostics.snapshot());
+  assert.ok(raceLifecycle.counts.request_cancelled>0);
+  assert.equal(raceLifecycle.counts.read_timeout,1,'only the explicitly injected timeout is allowed');
+  assert.ok(raceLifecycle.events.some(x=>x.event==='request_cancelled' && x.reason==='read_timeout'));
+  assert.equal(raceLifecycle.counts.save_reconciled,1);
+  assert.deepEqual(raceLifecycle.operations,[]);
+  assert.deepEqual(raceLifecycle.requests,[]);
+  assert.equal(raceLifecycle.counts.request_started,raceLifecycle.counts.request_finished);
   // Current UI: connection-only providers, discovered model choices and global roles.
-  await page.locator('nav a[href="#settings"]').click();
+  await navigate('settings');
   await page.locator('#model_native_search').waitFor();
   assert.equal(await page.locator('#settings-form #model_name, #settings-form #model_protocol, #settings-form #reasoning_effort, #settings-form #model_key_env').count(),0);
   assert.equal(await page.locator('#model_native_search').inputValue(),'true');
+  await page.locator('#runtime-version').waitFor();
   assert.equal(await page.locator('#search_provider, #search_key_env').count(),0);
   const waitCapability=async label=>page.waitForFunction(text=>document.body.textContent.includes('原生联网：'+text),label);
   await waitCapability('尚未验证');
@@ -245,7 +325,7 @@ try {
     await page.locator('.loading-line').waitFor({state:'hidden'});
   };
   const openRoles=async()=>{
-    await page.locator('nav a[href="#roles"]').click();
+    await navigate('roles');
     await page.locator('.role-model-form[data-role-id="manager"][data-account-id=""]').waitFor();
     await page.locator('.loading-line').waitFor({state:'hidden'});
     assert.equal(await page.locator('.role-card').count(),6);
@@ -278,7 +358,7 @@ try {
   assert.equal(await manager.locator('[name="reasoning_effort"]').inputValue(),'max');
   await page.locator('#account-switch').selectOption(fixture.other_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  await page.locator('nav a[href="#account-models"]').click();
+  await navigate('account-models');
   await page.locator(`.role-model-form[data-role-id="manager"][data-account-id="${fixture.other_id}"]`).waitFor();
   await page.locator('.role-card').last().waitFor();
   await page.locator('.loading-line').waitFor({state:'hidden'});
@@ -297,7 +377,7 @@ try {
   assert.equal((await reset).status(),200);
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('.role-card').count(),6);
-  await page.locator('nav a[href="#providers"]').click();
+  await navigate('providers');
   await page.locator('#provider-connection-form').waitFor();
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.deepEqual(await page.locator('#provider-connection-form [name]').evaluateAll(nodes=>nodes.map(node=>node.name).sort()),['api_key','base_url','protocol']);
@@ -314,7 +394,7 @@ try {
   assert.equal(await page.locator('#provider-connection-form [name="api_key"]').inputValue(),'');
   assert.ok(!JSON.stringify(await (await fetch(base+'/api/providers')).json()).includes('browser-form-only-fixture-secret'));
   const changeProtocol=async protocol=>{
-    await page.locator('nav a[href="#providers"]').click();
+    await navigate('providers');
     await page.locator(`[data-sixth-action="provider-edit"][data-id="${fixture.provider_id}"]`).click();
     const form=page.locator('#dialog #provider-connection-form');
     await form.locator('[name="protocol"]').selectOption(protocol);
@@ -324,11 +404,11 @@ try {
     assert.equal((await saved).status(),200);
     await page.locator('#dialog').waitFor({state:'hidden'});
     await page.locator('.loading-line').waitFor({state:'hidden'});
-    await page.locator('nav a[href="#settings"]').click();
+    await navigate('settings');
     await page.locator('#model_native_search').waitFor();
     await page.locator('.loading-line').waitFor({state:'hidden'});
   };
-  await page.locator('nav a[href="#settings"]').click();
+  await navigate('settings');
   await page.locator('#model_native_search').waitFor();
   assert.ok((await page.locator('#inflight-model-settings').textContent()).includes('reasoning_effort：medium'));
   await mkdir('test-results',{recursive:true});
@@ -362,13 +442,13 @@ try {
   assert.equal((await probe()).cache_hit,true,'refreshing the capability should reuse its bounded probe result');
   assert.equal((await (await fetch(base+'/__fixture/reopen')).json()).probe_calls,1);
   await openRoles();await saveManager({model:'browser-native-auth'});
-  await page.locator('nav a[href="#settings"]').click();
+  await navigate('settings');
   await page.locator('#model_native_search').waitFor();
   await waitCapability('尚未验证');
   assert.equal((await probe()).status,'authentication_failed');
   await waitCapability('认证失败');
   await openRoles();await saveManager({model:'browser-native-failure'});
-  await page.locator('nav a[href="#settings"]').click();
+  await navigate('settings');
   await page.locator('#model_native_search').waitFor();
   assert.equal((await probe()).status,'request_failed');
   await waitCapability('请求失败');
@@ -381,19 +461,24 @@ try {
   },{times:1});
   await page.locator('[data-action="probe"]').click();
   await waitGate(localProbeStarted,'localProbeStarted');
-  await page.locator('nav a[href="#holdings"]').click();
+  await navigate('holdings');
   await page.locator('#account-form').waitFor();
   releaseProbe();
   await page.locator('#dialog').getByText('本地工具续接实测结果',{exact:true}).waitFor();
   assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));
   await page.locator('#dialog .dialog-header button').click();
+  await assertIdle();
+  const lifecycle=await page.evaluate(()=>window.__guanlanDiagnostics.snapshot());
+
+  await mkdir('test-results',{recursive:true});
+  await writeFile('test-results/frontend-production-lifecycle.json',JSON.stringify({browser:browser.version(),raceLifecycle,gates:requestTrace.filter(x=>x.event.startsWith('gate_')),operations:lifecycle.operations,requests:lifecycle.requests,counts:lifecycle.counts,events:lifecycle.events},null,2));
   assert.deepEqual(errors,[]);
-  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.');
+  console.log('PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save (3 release orders), cancelled/timeout reads, lost-write-response reconciliation without resend, empty operation/request sets, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.');
 } catch(error) {
   await mkdir('test-results',{recursive:true});
   if(page) await page.screenshot({path:'test-results/frontend-production-failure.png',fullPage:true});
   if(page) await page.context().tracing.stop({path:'test-results/frontend-production-trace.zip'});
-  await writeFile('test-results/frontend-production-requests.json', JSON.stringify({error:String(error),requests:requestTrace,server:diagnostic},null,2));
+  await writeFile('test-results/frontend-production-requests.json', JSON.stringify({error:String(error),requests:requestTrace,lifecycle:page?await page.evaluate(()=>window.__guanlanDiagnostics?.snapshot()).catch(()=>null):null,server:diagnostic},null,2));
   throw error;
 } finally {
   await browser?.close();

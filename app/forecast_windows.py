@@ -10,7 +10,7 @@ from datetime import date, datetime, time, timedelta
 import hashlib
 import json
 
-from .calendar import SHANGHAI, trading_date
+from .calendar import SHANGHAI, trading_date, calendar_revision
 from .domain import now
 
 SCHEMA = """
@@ -24,6 +24,18 @@ CREATE TABLE IF NOT EXISTS forecast_window_runs(
  scope_status TEXT NOT NULL, expected_count INTEGER, detail TEXT NOT NULL,
  PRIMARY KEY(account_id,planned_date));
 CREATE INDEX IF NOT EXISTS forecast_window_runs_date ON forecast_window_runs(planned_date DESC,account_id);
+CREATE TABLE IF NOT EXISTS forecast_window_checks(
+ account_id TEXT NOT NULL, planned_date TEXT NOT NULL, calendar_revision TEXT NOT NULL,
+ checked_at TEXT NOT NULL, next_check TEXT NOT NULL, attempts INTEGER NOT NULL,
+ PRIMARY KEY(account_id,planned_date));
+CREATE INDEX IF NOT EXISTS forecast_window_checks_due ON forecast_window_checks(account_id,next_check,planned_date);
+CREATE TABLE IF NOT EXISTS forecast_window_revisions(
+ id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, planned_date TEXT NOT NULL,
+ observed_at TEXT NOT NULL, previous_status TEXT, status TEXT NOT NULL,
+ reason TEXT NOT NULL, calendar_revision TEXT NOT NULL, evidence TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS forecast_window_revisions_day ON forecast_window_revisions(account_id,planned_date,id);
+CREATE TRIGGER IF NOT EXISTS forecast_window_revisions_immutable BEFORE UPDATE ON forecast_window_revisions
+ BEGIN SELECT RAISE(ABORT,'window revisions are immutable'); END;
 CREATE TABLE IF NOT EXISTS forecast_shared_price_evidence(
  id TEXT PRIMARY KEY, request_key TEXT NOT NULL, data_version TEXT NOT NULL,
  observed_at TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(request_key,data_version));
@@ -83,8 +95,14 @@ class ForecastWindowStore:
         """
         at = _local(at)
         stamp = at.isoformat()
+        revision_id = calendar_revision(calendar_path)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            old_revision = db.execute("SELECT value FROM meta WHERE key='window_calendar_revision'").fetchone()
+            if old_revision and json.loads(old_revision[0]) != revision_id:
+                db.execute("""UPDATE forecast_evaluation_tasks SET state='recheck_requested',next_attempt=?,updated_at=?,
+                    last_error='calendar_revalidation_pending' WHERE forecast_id IN (SELECT id FROM forecasts WHERE direction<>'abstain')""", (stamp, stamp))
+            db.execute("INSERT OR REPLACE INTO meta VALUES('window_calendar_revision',?)", (_dump(revision_id),))
             self.record_window_configuration(db, at=at, scheduled_enabled=scheduled_enabled)
             for account in db.execute("SELECT id,created_at FROM accounts").fetchall():
                 revisions = [dict(r) for r in db.execute("SELECT * FROM forecast_window_configurations WHERE account_id=? AND effective_at<=? ORDER BY effective_at,id", (account["id"], stamp))]
@@ -97,10 +115,25 @@ class ForecastWindowStore:
                 # changes; older completed observations remain historical facts.
                 history_row = db.execute("SELECT value FROM meta WHERE key='forecast_windows_history_started_at'").fetchone()
                 history_day = _local(json.loads(history_row[0])).date() if history_row else _local(revisions[0]["effective_at"]).date()
-                first = date.fromisoformat(previous) if previous else min(history_day, _local(revisions[0]["effective_at"]).date())
+                cursor_key = 'window_scan_cursor:' + account['id']
+                cursor_row = db.execute('SELECT value FROM meta WHERE key=?', (cursor_key,)).fetchone()
+                cursor = json.loads(cursor_row[0]) if cursor_row else previous
+                first = date.fromisoformat(cursor) if cursor else min(history_day, _local(revisions[0]["effective_at"]).date())
                 first = min(first, at.date())
-                for n in range((at.date() - first).days + 1):
-                    day = first + timedelta(days=n)
+                # The forward cursor is independent from max(planned_date): today's
+                # observation must not skip a large sleep gap still being drained.
+                forward_end = min(at.date(), first + timedelta(days=127))
+                days = {first + timedelta(days=n) for n in range((forward_end - first).days + 1)}
+                days.add(at.date())
+                old_days = db.execute('''SELECT r.planned_date FROM forecast_window_runs r
+                    LEFT JOIN forecast_window_checks c USING(account_id,planned_date)
+                    WHERE r.account_id=? AND r.planned_date<? AND
+                    (c.calendar_revision IS NULL OR c.calendar_revision<>? OR
+                     (r.status IN ('calendar_unknown','history_unknown','pending','batch_created') AND c.next_check<=?))
+                    ORDER BY COALESCE(c.checked_at,''),r.planned_date LIMIT 32''',
+                    (account['id'], first.isoformat(), revision_id, stamp)).fetchall()
+                days.update(date.fromisoformat(r[0]) for r in old_days)
+                for day in sorted(days):
                     day_start = datetime.combine(day, time.min, SHANGHAI)
                     day_end = day_start + timedelta(days=1)
                     try:
@@ -143,6 +176,13 @@ class ForecastWindowStore:
                             status = "failed" if counts.get("failed") else "incomplete"
                         else:
                             status = "batch_created"
+                        detail["batch_execution_status"] = status
+                        if calendar["trading_day"] is None:
+                            status = "calendar_unknown"
+                            detail["calendar_issue"] = "已有批次的当前日历覆盖缺失；保留原执行事实与样本，不按未知日历新增预测"
+                        elif calendar["trading_day"] is False:
+                            status = "calendar_conflict"
+                            detail["calendar_issue"] = "日历更正为非交易日，与已有批次冲突；保留原账本，评分另行重核"
                     elif created >= day_end:
                         status = "not_created"
                     elif calendar["trading_day"] is None:
@@ -171,15 +211,39 @@ class ForecastWindowStore:
                             status = "history_unknown"
                         else:
                             status = "disabled" if disabled or (latest and not latest["body"]["rule"]["enabled"]) else "outside_enabled_window"
-                    prior_run = db.execute("SELECT status,detail FROM forecast_window_runs WHERE account_id=? AND planned_date=?", (account["id"], day.isoformat())).fetchone()
+                    prior_run = db.execute("SELECT * FROM forecast_window_runs WHERE account_id=? AND planned_date=?", (account["id"], day.isoformat())).fetchone()
+                    old_detail = json.loads(prior_run["detail"]) if prior_run else {}
                     detail["status_observed_at"] = stamp
-                    if status in ("missed", "incomplete", "failed", "history_unknown", "calendar_unknown"):
-                        old_detail = json.loads(prior_run["detail"]) if prior_run else {}
+                    # Preserve the first gap even after it is resolved.
+                    if old_detail.get('gap_discovered_at'):
+                        detail['gap_discovered_at'] = old_detail['gap_discovered_at']
+                    if status in ("missed", "incomplete", "failed", "history_unknown", "calendar_unknown", "calendar_conflict"):
                         detail["gap_discovered_at"] = old_detail.get("gap_discovered_at", stamp)
+                    changed = (not prior_run or prior_run['status'] != status or old_detail.get('calendar') != calendar
+                               or prior_run['scope_status'] != scope_status or prior_run['expected_count'] != expected
+                               or prior_run['batch_id'] != batch_id)
+                    if changed:
+                        reason = ('first_observation' if not prior_run else 'calendar_reconciled'
+                                  if old_detail.get('calendar') != calendar else 'window_state_changed')
+                        db.execute('''INSERT INTO forecast_window_revisions(account_id,planned_date,observed_at,previous_status,
+                            status,reason,calendar_revision,evidence) VALUES(?,?,?,?,?,?,?,?)''',
+                            (account['id'], day.isoformat(), stamp, prior_run['status'] if prior_run else None,
+                             status, reason, revision_id, _dump({'previous_detail': old_detail if prior_run else None,
+                             'detail': detail, 'scope_status': scope_status, 'expected_count': expected})))
+                        detail['last_revision_reason'] = reason
+                    elif old_detail.get('last_revision_reason'):
+                        detail['last_revision_reason'] = old_detail['last_revision_reason']
+                    check = db.execute('SELECT * FROM forecast_window_checks WHERE account_id=? AND planned_date=?',
+                                       (account['id'], day.isoformat())).fetchone()
+                    attempts = (check['attempts'] + 1) if check and check['calendar_revision'] == revision_id and not changed else 1
+                    next_check = (at + timedelta(minutes=min(1440, 5 * 2 ** min(attempts - 1, 9)))).isoformat()
+                    db.execute('INSERT OR REPLACE INTO forecast_window_checks VALUES(?,?,?,?,?,?)',
+                               (account['id'], day.isoformat(), revision_id, stamp, next_check, attempts))
                     db.execute("""INSERT INTO forecast_window_runs VALUES(?,?,?,?,?,?,?,?,?)
                         ON CONFLICT(account_id,planned_date) DO UPDATE SET status=excluded.status,updated_at=excluded.updated_at,
                         batch_id=excluded.batch_id,scope_status=excluded.scope_status,expected_count=excluded.expected_count,detail=excluded.detail""",
                         (account["id"], day.isoformat(), status, stamp, stamp, batch_id, scope_status, expected, _dump(detail)))
+                db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)', (cursor_key, _dump(forward_end.isoformat())))
         return self.forecast_window_statistics()
 
     def forecast_window_runs(self, account_id=None, limit=50, offset=0, start_date=None, end_date=None):
@@ -194,7 +258,15 @@ class ForecastWindowStore:
         with self.connect() as db:
             total = db.execute("SELECT count(*) FROM forecast_window_runs" + where, args).fetchone()[0]
             rows = db.execute("SELECT * FROM forecast_window_runs" + where + " ORDER BY planned_date DESC,account_id LIMIT ? OFFSET ?", [*args, limit, offset]).fetchall()
-        items = [{**dict(r), "detail": json.loads(r["detail"])} for r in rows]
+            items = []
+            for r in rows:
+                history = db.execute('''SELECT id,observed_at,previous_status,status,reason,calendar_revision,evidence
+                    FROM forecast_window_revisions WHERE account_id=? AND planned_date=? ORDER BY id DESC LIMIT 20''',
+                    (r['account_id'],r['planned_date'])).fetchall()
+                count = db.execute('SELECT count(*) FROM forecast_window_revisions WHERE account_id=? AND planned_date=?',
+                                   (r['account_id'],r['planned_date'])).fetchone()[0]
+                items.append({**dict(r), 'detail': json.loads(r['detail']), 'revision_count': count,
+                              'revisions': [{**dict(h), 'evidence': json.loads(h['evidence'])} for h in history]})
         return {"items": items, "total": total, "has_more": offset + len(items) < total,
                 "next_offset": offset + len(items) if offset + len(items) < total else None,
                 "history_started_at": self.meta("forecast_windows_history_started_at"),
@@ -213,5 +285,6 @@ class ForecastWindowStore:
         counts = {r["status"]: r["n"] for r in rows}
         return {"unit": "account_trading_day", "states": counts,
                 "known_expected_windows": sum(counts.get(k, 0) for k in ("completed", "batch_created", "failed", "incomplete", "missed", "pending")),
+                "calendar_conflict_windows": counts.get("calendar_conflict", 0),
                 "history_started_at": self.meta("forecast_windows_history_started_at"),
-                "method": "时间运行完整性以账户交易日窗口计数；未知范围不计入证券×期限覆盖或方向准确率。模型归属未知的日期不归入当前模型。"}
+                "method": "时间运行完整性以账户交易日窗口计数；未知范围不计入证券×期限覆盖或方向准确率。日历与已有批次冲突单独计数，保留原批次样本但不计为当前确认的应运行窗口。模型归属未知的日期不归入当前模型。"}

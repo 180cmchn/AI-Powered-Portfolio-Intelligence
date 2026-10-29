@@ -2,7 +2,7 @@
 
 运行在 Mac 本机的 A 股与场内 ETF 虚拟账户研究工作台。FastAPI + SQLite + asyncio 后台执行器 + 无构建依赖的原生 JavaScript 界面。主 Agent 和每个子 Agent 都有独立模型上下文及真实工具调用循环；模型原生联网与本地研究工具在同一 Agent 会话协作，不需要独立搜索密钥。
 
-**第七轮修复失败与重试归属、探索规则身份、已处理材料更正的恢复边界，新增每日窗口运行记录，并将分页、首次评分和历史更正复核分开处理。实现、测试与真实验收限制见 [第七轮交付](docs/iteration-7.md)和[预测评估口径](docs/forecast-evaluation.md)。[第六轮](docs/iteration-6.md)、[第五轮](docs/iteration-5.md)与[第四轮](docs/iteration-4.md)保留为历史证据，不作为本轮验收结果。供应商与统一角色操作保持[原有方式](docs/sixth-provider-roles.md)。**
+**第八轮补齐按证券持续基准准备、有限补充研究、真实子报告交付恢复、旧日历缺口重核、结构化行情访问与明确市场阶段，并修复浏览器请求生命周期和测试竞态。实现、测试与真实验收限制见 [第八轮交付](docs/iteration-8.md)、[第七轮历史交付](docs/iteration-7.md)和[预测评估口径](docs/forecast-evaluation.md)。[第六轮](docs/iteration-6.md)、[第五轮](docs/iteration-5.md)与[第四轮](docs/iteration-4.md)保留为历史证据，不作为本轮验收结果。供应商与统一角色操作保持[原有方式](docs/sixth-provider-roles.md)。**
 
 第三轮历史失败仍保留在 [验证记录](docs/verification.md)，不被新结果覆盖。
 
@@ -92,7 +92,7 @@ python3 -m venv .venv
 
 ## 备份与恢复
 
-当前为 **schema 6**。升级前先在页面执行“备份数据库”，然后停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
+当前为 **schema 8**。升级前先在页面执行“备份数据库”，然后停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
 
 ```sh
 ./stop.command --mode live
@@ -100,7 +100,7 @@ uv sync --frozen
 ./start.command --mode live
 ```
 
-旧数据库首次加载第六轮代码时，先用 SQLite 在线备份生成同目录 `<数据库文件名>.before-v6.bak`，再幂等添加供应商、模型目录、统一角色、账户覆盖、预测批次/账本/评分表。重复启动不重复迁移或覆盖升级前备份。已有账户、持仓、材料、报告和任务保留；新正式预测默认关闭，不补造旧报告的预测。历史 `.before-v2.bak` 至 `.before-v5.bak` 仍保留各自升级证据。
+旧数据库首次加载第八轮代码时，先用 SQLite 在线备份生成同目录 `<数据库文件名>.before-v8.bak`，再幂等升级。第八轮增加按证券基准准备、研究范围、实际子报告交付和窗口核对修订记录。重复启动不重复迁移或覆盖升级前备份。已有账户、供应商安全引用、全局角色、持仓、材料、报告、预测和任务保留；新正式预测默认关闭，不补造历史记录。历史 `.before-v*.bak` 仍保留各自升级证据。完整升级、回退及运行版本核对见 [Mac 操作手册](docs/mac-operations.md)。
 
 页面“备份数据库”生成 `data/backups/*.sqlite3`。备份包含业务数据、设置及安全凭据引用，**不包含钥匙串里的 Key，也不包含 `.env` 文件**。旧环境变量凭据仅保留内部引用；新 Key 不存普通 SQLite。换机后在供应商页面重新录入 Key、刷新目录并确认角色绑定；安全存储不可用时先处理系统钥匙串授权，不降级为明文文件。不要提交或公开本地数据库。凭据轮换、清除与恢复边界详见[安全存储说明](docs/sixth-provider-roles.md)。
 
@@ -110,7 +110,7 @@ uv sync --frozen
 ./start.command
 ```
 
-恢复脚本接受 schema 1–6，检查数据库完整性和运行模式，拒绝覆盖运行中的库，并在恢复前自动备份当前库。演示只能恢复到演示库；较旧备份在再次启动时按当前代码迁移。恢复 SQLite 不会复活已经明确清除的钥匙串秘密，跨机器也不会自动取得原机凭据，需在页面重新关联。
+恢复脚本接受 schema 1–8，检查数据库完整性和运行模式，拒绝覆盖运行中的库，并在恢复前自动备份当前库。演示只能恢复到演示库；较旧备份在再次启动时按当前代码迁移。恢复 SQLite 不会复活已经明确清除的钥匙串秘密，跨机器也不会自动取得原机凭据，需在页面重新关联。
 
 ## 验证
 
@@ -122,7 +122,7 @@ npx playwright install chromium
 PYTHON=.venv/bin/python npm run test:browser
 ```
 
-CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览器与系统依赖，再执行两组 Chromium 行为测试：HTTP 受控夹具，以及生产 FastAPI + 独立临时 SQLite。测试覆盖草稿保护、活跃/历史分页、证据定位、引用缺口、范围版本和账户隔离；不是仅做 JavaScript 语法检查。
+CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览器与系统依赖，再独立执行三组 Chromium 行为测试：HTTP 受控夹具、生产 FastAPI + 独立临时 SQLite，以及预测/配置/恢复页面。任一组失败仍执行后续浏览器组，最后汇总失败状态并保存产物。测试覆盖草稿保护、请求清理、活跃/历史分页、证据定位、引用缺口、范围版本和账户隔离。
 
 确定性测试使用明确的模型协议测试替身，证明任务隔离、多个子循环、追问和结果回传；不伪装成真实模型验收。真实模型样例评估说明与命令见 [Agent 文档](docs/agents.md)。历史第五轮使用 `.venv/bin/python scripts/verify_fifth_iteration.py`：新建隔离评估库并重启独立服务，通过正常 scheduler/worker 研究 159278；A 初始 10,000 份和现金 10,000 元、B 空仓和现金 20,000 元。仅 A 初始报告成功后才更新为 20,000 份，现金保持不变。脚本保留三次间隔至少 60 秒的真实报价，午休/收盘样本不计盘中新鲜验收；端点失败不会伪造报告。配置仅从项目环境与日常库只读加载，不修改日常设置。
 
@@ -131,7 +131,7 @@ CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览�
 ## 代码入口
 
 - `app/main.py`：HTTP API、本地访问边界与设置校验。
-- `app/store.py`：schema 6 初始化与升级前备份、输入版本、持久队列和原子发布。
+- `app/store.py`：schema 8 初始化与升级前备份、输入版本、持久队列和原子发布。
 - `app/agent_config.py` / `credentials.py`：三字段供应商、自动目录发现、统一角色、账户覆盖和 macOS 钥匙串引用。
 - `app/forecasts.py` / `forecast_prices.py`：固定批次、不可变预测账本、指定日价格证据及确定性评分。
 - `app/sixth_api.py` / `static/sixth.js`：供应商、角色、账户模型与预测评估页面和 API。

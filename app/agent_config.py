@@ -43,7 +43,7 @@ PROMPTS = Path(__file__).with_name('prompts')
 RESEARCH_TOOL_NAMES = ['read', 'pdf_metadata', 'search_pdf', 'save_material', 'list_materials',
     'search_materials', 'get_material', 'read_material_range', 'list_recommendations',
     'get_recommendation', 'recall_context', 'history', 'sectors', 'sector_members',
-    'sector_history', 'benchmark_history', 'fundamentals', 'calculate']
+    'sector_history', 'benchmark_history', 'fundamentals', 'calculate', 'query_market_rows', 'market_indicators']
 MANAGER_TOOL_NAMES = RESEARCH_TOOL_NAMES + ['list_business_demands', 'list_forecast_targets', 'prepare_synthesis', 'list_agent_roles', 'spawn_research',
     'send_message', 'follow_up', 'wait_agents', 'agent_status', 'cancel_agent', 'finish_analysis']
 CHILD_TOOL_NAMES = RESEARCH_TOOL_NAMES + ['report_progress', 'submit_report']
@@ -206,6 +206,40 @@ class AgentConfigStore:
             'at': now(), 'legacy_provider_id': provider_id, 'credentials': 'legacy environment reference only',
             'legacy_binding': 'preserved_unverified', 'private_role_conflicts': [],
             'note': '旧模型名称只作为角色历史绑定保留；尚未自动发现。没有已有 Profile 或账户私有角色结构。'}),))
+
+    def migrate_eighth_roles(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='eighth_role_migration'").fetchone():
+            return
+        previous_prompts = {'manager': '89fc4c1e5f3c4f0064e512ed27899df5c8e150463790d8aa9b951448e46e9c66', 'filing_researcher': '68411ea30363f2d2b964114243cff515c6f5eb38d2fb3b4820371317a4b4da71', 'market_researcher': '4a9eb21b273193087d26bace410d5b0a6448987254707f4b5e1d10eb2b5af431', 'industry_researcher': 'fdbf1c132e6cd996c7980217dab01d79fc3cd6f99632064ec090bc9e0789343e', 'etf_researcher': '781844debc5da7be1c5ccfa10f26a35b2d6158dba20f400f2c5fdc10e2a4f855', 'portfolio_researcher': 'e0fb39dd7c0b3062d4fbfc2cac391ee03a7756b442e0c689fae547bd965ca5cb'}
+        changed = []
+        for row in db.execute('SELECT role_id,body FROM agent_definitions').fetchall():
+            role = _loads(row['body'])
+            updated = False
+            expected = MANAGER_TOOL_NAMES if row['role_id'] == 'manager' else CHILD_TOOL_NAMES
+            old_tools = [t for t in expected if t not in ('query_market_rows', 'market_indicators')]
+            if role.get('tools') == old_tools and not role.get('custom'):
+                role['tools'] = expected
+                role['tool_version'] = role.get('tool_version', 1) + 1
+                updated = True
+            previous = previous_prompts.get(row['role_id'])
+            if previous and hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() == previous:
+                prompt = (PROMPTS / (row['role_id'] + '.txt')).read_text()
+                if row['role_id'] != 'manager':
+                    prompt += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+                if prompt != role['system_prompt']:
+                    role['system_prompt'] = prompt
+                    role['prompt_version'] = role.get('prompt_version', 1) + 1
+                    updated = True
+            if updated:
+                role.update(version=role['version']+1, updated_at=now())
+                db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?',
+                           (role['version'], _dumps(role), row['role_id']))
+                changed.append(row['role_id'])
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0])+1),))
+        db.execute("INSERT INTO meta VALUES('eighth_role_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
+            'note': 'Only exact previous built-in prompts/tools upgraded; custom instructions and frozen teams retained.'}),))
 
     def _provider(self, provider_id, db):
         row = db.execute('SELECT body FROM model_providers WHERE id=?', (provider_id,)).fetchone()

@@ -183,7 +183,11 @@ class ForecastIdentityStore:
             f.id AS forecast_id,f.direction,f.published_at,f.report_id,f.reason AS forecast_reason,
             %s AS team_id,%s AS manager_model,%s AS manager_effort,
             CASE WHEN %s IS NULL THEN 'configuration_unknown' WHEN f.id IS NOT NULL THEN 'published' ELSE 'planned' END AS attribution_status,
-            e.status AS evaluation_status,e.reason AS evaluation_reason,e.actual_direction,e.return_ratio,e.hit,
+            CASE WHEN t.last_error='calendar_revalidation_pending' THEN 'waiting_data' ELSE e.status END AS evaluation_status,
+            CASE WHEN t.last_error='calendar_revalidation_pending' THEN 'calendar_revalidation_pending' ELSE e.reason END AS evaluation_reason,
+            CASE WHEN t.last_error='calendar_revalidation_pending' THEN NULL ELSE e.actual_direction END AS actual_direction,
+            CASE WHEN t.last_error='calendar_revalidation_pending' THEN NULL ELSE e.return_ratio END AS return_ratio,
+            CASE WHEN t.last_error='calendar_revalidation_pending' THEN NULL ELSE e.hit END AS hit,
             e.revision AS evaluation_revision,t.last_error AS waiting_reason
             FROM forecast_samples s JOIN forecast_batches b ON b.id=s.batch_id
             LEFT JOIN forecast_rule_projections p ON p.batch_id=b.id

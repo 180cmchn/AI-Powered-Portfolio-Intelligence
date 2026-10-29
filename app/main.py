@@ -189,6 +189,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     app = FastAPI(title="观澜 · 本地投资研究台", version="0.1.0", lifespan=lifespan)
     app.state.store, app.state.service = store, service
+    from .runtime_version import startup_version
+    app.state.runtime_version = startup_version(store)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
 
     @app.middleware("http")
@@ -244,7 +246,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and not configuration_errors),
                 "configuration_errors": configuration_errors,
                 "native_search": native_search_status(cfg, store.meta('native_search_capability')),
-                "calendar": market_state(), "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
+                "calendar": market_state(calendar_path=store.settings().get('calendar_path')), "runtime_version": app.state.runtime_version,
+                "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
                 "last_resume": store.meta("last_resume")}, "settings": store.settings(), "time": now(),
                 "global_manager": {k: v for k, v in cfg.items() if k in ("model_name", "reasoning_effort", "provider_id", "team_id")},
                 "model_probe": probe, "running_model_configs": store.running_model_configs(),
@@ -504,4 +507,15 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     return app
 
 
-app = create_app()
+class _LazyApplication:
+    """ASGI compatibility without creating/migrating a database on import."""
+    def __init__(self):
+        self._application = None
+
+    async def __call__(self, scope, receive, send):
+        if self._application is None:
+            self._application = create_app()
+        await self._application(scope, receive, send)
+
+
+app = _LazyApplication()
