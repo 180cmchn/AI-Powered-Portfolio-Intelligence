@@ -269,6 +269,13 @@ class ModelClient:
             output = data.get("output")
             if not isinstance(output, list) or not all(isinstance(item, dict) for item in output):
                 raise ModelProtocolError("Responses 返回缺少 output 数组；端点可能不支持该协议")
+            # The terminal response cannot complete an explicitly unfinished
+            # function item. Reject the whole turn before parsing calls or
+            # appending opaque output to continuation history. Older compatible
+            # endpoints that omit item status retain their existing behavior.
+            if any(item.get("type") == "function_call" and "status" in item
+                   and item["status"] != "completed" for item in output):
+                raise ModelProtocolError("Responses 函数调用未完成；未执行工具或续接此轮输出")
             calls = [self._parse_call(item.get("call_id"), item.get("name"), item.get("arguments"))
                      for item in output if item.get("type") == "function_call"]
             parts = []
@@ -408,8 +415,167 @@ class ModelClient:
             return any(self._reflects_credential(key) or self._reflects_credential(item) for key, item in value.items())
         return False
 
+    # Keep limits independent of model token/context budgets. Streaming is a
+    # transport choice, not permission to retain unbounded provider output.
+    STREAM_MAX_BYTES = 8 * 1024 * 1024
+    STREAM_MAX_EVENT_BYTES = 4 * 1024 * 1024
+    STREAM_MAX_EVENTS = 20000
+
+    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started):
+        """Read a complete Responses terminal object; never assemble deltas.
+
+        Compatibility gateways may return ordinary JSON despite stream:true.
+        Decode that actual response once, without sending a fallback request.
+        SSE bodies and reasoning deltas are never placed in diagnostics.
+        """
+        async with self.http.stream('POST', endpoint, json=payload, timeout=timeout,
+                                    extensions={'trace': trace}) as response:
+            observation.update(status_code=response.status_code,
+                request_accepted=200 <= response.status_code < 300,
+                response_headers_received=True,
+                request_id=self._safe_provider_identifier(response.headers.get('x-request-id') or response.headers.get('request-id')))
+            content_type = response.headers.get('content-type', '').split(';', 1)[0].strip().lower()
+            is_sse = content_type == 'text/event-stream' and response.status_code < 400
+            observation['response_format'] = 'sse' if is_sse else 'json'
+            if not is_sse:
+                chunks, size = [], 0
+                async for chunk in response.aiter_bytes():
+                    size += len(chunk)
+                    observation['output_bytes'] = size
+                    if size > self.STREAM_MAX_BYTES:
+                        observation['error'] = 'response_size_limit'
+                        raise ModelProtocolError('模型响应超过有限接收大小；未采用部分结果')
+                    chunks.append(chunk)
+                observation['response_body_received'] = True
+                # A buffered Response preserves the existing error classifier and
+                # single-layer JSON envelope logic after this context closes.
+                decoded_headers = {k: v for k, v in response.headers.items()
+                                   if k.lower() not in {'content-encoding', 'content-length'}}
+                buffered = httpx.Response(response.status_code, headers=decoded_headers,
+                    content=b''.join(chunks), request=response.request, extensions=response.extensions)
+                return buffered, None
+
+            observation.update(stream_event_count=0, stream_terminal=None,
+                               stream_first_event_ms=None, stream_first_byte_ms=None)
+            buffer, event_data, event_name, event_size = bytearray(), [], None, 0
+            response_id, last_sequence, first_line = None, None, True
+
+            def consume_event():
+                nonlocal event_data, event_name, event_size, response_id, last_sequence
+                if not event_data:
+                    event_name, event_size = None, 0
+                    return None
+                encoded = b'\n'.join(event_data)
+                event_data, declared, event_name, event_size = [], event_name, None, 0
+                try:
+                    event = json.loads(encoded.decode('utf-8'))
+                except (UnicodeError, ValueError) as exc:
+                    observation['error'] = 'invalid_stream_json'
+                    raise ModelProtocolError('模型流事件不是完整 JSON；未采用部分结果') from exc
+                if not isinstance(event, dict) or not isinstance(event.get('type'), str):
+                    observation['error'] = 'invalid_stream_event'
+                    raise ModelProtocolError('模型流事件缺少有效类型')
+                if declared and declared != event['type']:
+                    observation['error'] = 'stream_event_type_mismatch'
+                    raise ModelProtocolError('模型流事件声明与内容类型不一致')
+                if self._reflects_credential(event):
+                    observation['error'] = 'credential_reflected_by_provider'
+                    raise ModelProtocolError('供应商响应包含凭据反射，已停止处理；未写入报告、日志或模型后续上下文')
+                observation['stream_event_count'] += 1
+                if observation['stream_first_event_ms'] is None:
+                    observation['stream_first_event_ms'] = round((time.perf_counter() - started) * 1000, 2)
+                if observation['stream_event_count'] > self.STREAM_MAX_EVENTS:
+                    observation['error'] = 'stream_event_limit'
+                    raise ModelProtocolError('模型流事件数超过有限接收上限')
+                sequence = event.get('sequence_number')
+                if sequence is not None:
+                    if isinstance(sequence, bool) or not isinstance(sequence, int) or (last_sequence is not None and sequence <= last_sequence):
+                        observation['error'] = 'stream_sequence_invalid'
+                        raise ModelProtocolError('模型流事件序号无效或重复')
+                    last_sequence = sequence
+                kind = event['type']
+                body = event.get('response')
+                if isinstance(body, dict) and isinstance(body.get('id'), str):
+                    if response_id is not None and body['id'] != response_id:
+                        observation['error'] = 'stream_response_identity_changed'
+                        raise ModelProtocolError('模型流中响应身份发生变化')
+                    response_id = body['id']
+                if kind == 'error':
+                    observation['error'] = 'stream_error'
+                    raise ModelProtocolError('模型服务返回流错误；未采用部分结果')
+                if kind not in {'response.completed', 'response.incomplete', 'response.failed', 'response.cancelled'}:
+                    return None
+                observation['stream_terminal'] = kind
+                expected = kind.split('.', 1)[1]
+                if (not isinstance(body, dict) or body.get('status') != expected
+                        or (expected == 'completed' and body.get('error'))
+                        or not isinstance(body.get('output'), list)
+                        or not all(isinstance(item, dict) for item in body['output'])):
+                    observation['error'] = 'invalid_stream_terminal'
+                    raise ModelProtocolError('模型流终止事件缺少完整且一致的响应对象')
+                return body
+
+            async for chunk in response.aiter_bytes():
+                observation['output_bytes'] += len(chunk)
+                if chunk and observation['stream_first_byte_ms'] is None:
+                    observation['stream_first_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
+                if observation['output_bytes'] > self.STREAM_MAX_BYTES:
+                    observation['error'] = 'response_size_limit'
+                    raise ModelProtocolError('模型流超过有限接收大小；未采用部分结果')
+                buffer.extend(chunk)
+                while True:
+                    endings = [position for position in (buffer.find(b'\n'), buffer.find(b'\r')) if position >= 0]
+                    if not endings:
+                        break
+                    end = min(endings)
+                    if buffer[end] == 13 and end == len(buffer) - 1:
+                        break  # A CRLF may straddle network chunks.
+                    width = 2 if buffer[end:end + 2] == b'\r\n' else 1
+                    line = bytes(buffer[:end]); del buffer[:end + width]
+                    if first_line:
+                        line = line.removeprefix(b'\xef\xbb\xbf')
+                        first_line = False
+                    event_size += len(line) + width
+                    if event_size > self.STREAM_MAX_EVENT_BYTES:
+                        observation['error'] = 'stream_event_size_limit'
+                        raise ModelProtocolError('单个模型流事件超过有限接收大小')
+                    if not line:
+                        terminal = consume_event()
+                        if terminal is not None:
+                            observation['response_body_received'] = True
+                            # Completion is authoritative; no deltas are applied
+                            # and no incomplete function call has been executed.
+                            return response, terminal
+                        continue
+                    if line.startswith(b':'):
+                        continue  # heartbeat/comment, no body or reasoning log
+                    field, _, value = line.partition(b':')
+                    if value.startswith(b' '):
+                        value = value[1:]
+                    if field == b'data':
+                        event_data.append(value)
+                    elif field == b'event':
+                        try:
+                            event_name = value.decode('utf-8')
+                        except UnicodeError as exc:
+                            observation['error'] = 'invalid_stream_event'
+                            raise ModelProtocolError('模型流事件名称编码无效') from exc
+                if len(buffer) + event_size > self.STREAM_MAX_EVENT_BYTES:
+                    observation['error'] = 'stream_event_size_limit'
+                    raise ModelProtocolError('单个模型流事件超过有限接收大小')
+            if buffer == b'\r':  # final CR-only blank line at clean EOF
+                terminal = consume_event()
+                if terminal is not None:
+                    observation['response_body_received'] = True
+                    return response, terminal
+            observation['error'] = 'stream_missing_terminal'
+            raise ModelProtocolError('模型流在完整终止事件前结束；未采用部分正文或工具调用')
+
     async def _post(self, endpoint: str, payload: dict, session: ModelSession | None = None) -> dict:
         retries = max(0, min(int(self.config.get("model_retries", 1)), 3))
+        streaming = self.protocol == 'responses' and self.config.get('model_responses_stream', True)
+        if streaming:
+            payload = {**payload, 'stream': True}
         for attempt in range(retries + 1):
             if self.before_request:
                 await self.before_request()
@@ -425,20 +591,75 @@ class ModelClient:
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
                            "requested_max_output_tokens": payload.get("max_output_tokens", payload.get("max_completion_tokens", payload.get("max_tokens"))),
-                           "output_bytes": 0, "request_id": None,
+                           "output_bytes": 0, "request_id": None, "stream_requested": bool(streaming),
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
-                           "status_code": None, "usage": None, "error": None}
+                           "status_code": None, "usage": None, "error": None,
+                           "transport_phase": "transport_not_observed", "transport_events": [],
+                           "response_headers_received": False, "response_body_received": False,
+                           "proxy_tunnel": {"observed": False, "status_code": None,
+                               "response_headers_received": False, "established": None},
+                           "environment_proxy_present": any(os.environ.get(key) for key in
+                               ('HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy'))}
             observation.update({key: self.config[key] for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in self.config})
             self.requests.append(observation)
             if session is not None:
                 session.requests.append(observation)
+            trace_state = {'response_scope': 'origin'}
+            async def trace(event, info):
+                # httpcore tracing supplies protocol boundaries. Never retain raw
+                # info: it can contain headers, stream objects or private bodies.
+                stage = event.rsplit('.', 1)[0].rsplit('.', 1)[-1]
+                if event.endswith('send_request_headers.started'):
+                    method = getattr(info.get('request'), 'method', None)
+                    tunnel = method in (b'CONNECT', 'CONNECT')
+                    trace_state['response_scope'] = 'proxy_tunnel' if tunnel else 'origin'
+                    if tunnel:
+                        observation['proxy_tunnel']['observed'] = True
+                    else:
+                        # A CONNECT 200 establishes only the proxy tunnel. Each
+                        # actual origin request starts with no response evidence.
+                        observation.update(status_code=None, request_accepted=None, request_id=None,
+                                           response_headers_received=False, response_body_received=False)
+                scope = 'origin_tls' if event.startswith('proxy.start_tls.') else trace_state['response_scope']
+                phases = {'connect_tcp': 'connection', 'start_tls': 'tls',
+                    'send_request_headers': 'sending_headers', 'send_request_body': 'sending_body',
+                    'receive_response_headers': 'receiving_headers', 'receive_response_body': 'receiving_body'}
+                if stage in phases:
+                    observation['transport_phase'] = ('proxy_' if scope == 'proxy_tunnel' else '') + phases[stage]
+                    observation['transport_events'] = [*observation['transport_events'],
+                        {'event': event, 'scope': scope, 'elapsed_ms': round((time.perf_counter() - started) * 1000, 2)}][-16:]
+                if event.endswith('receive_response_headers.complete'):
+                    response_observation = observation['proxy_tunnel'] if scope == 'proxy_tunnel' else observation
+                    response_observation['response_headers_received'] = True
+                    returned = info.get('return_value')
+                    if isinstance(returned, tuple):
+                        status = returned[1] if len(returned) == 4 else returned[0] if len(returned) == 2 else None
+                        headers = returned[3] if len(returned) == 4 else returned[1] if len(returned) == 2 else []
+                        if isinstance(status, int):
+                            if scope == 'proxy_tunnel':
+                                response_observation.update(status_code=status, established=200 <= status < 300)
+                            else:
+                                observation.update(status_code=status, request_accepted=200 <= status < 300)
+                        for header in headers if isinstance(headers, (list, tuple)) else []:
+                            if not isinstance(header, (list, tuple)) or len(header) != 2:
+                                continue
+                            key, value = header
+                            if scope != 'proxy_tunnel' and isinstance(key, bytes) and isinstance(value, bytes) and key.lower() in (b'x-request-id', b'request-id'):
+                                observation['request_id'] = self._safe_provider_identifier(value.decode('utf-8', errors='replace'))
+                if event.endswith('receive_response_body.complete') and scope != 'proxy_tunnel':
+                    observation['response_body_received'] = True
+
             try:
                 timeout = float(self.config.get("synthesis_request_timeout_seconds", self.config.get("model_request_timeout_seconds", 90))) if session and session.phase == "synthesis" else float(self.config.get("model_request_timeout_seconds", 90))
                 observation["request_timeout_seconds"] = timeout
                 # The HTTP total request and outer research-round deadlines are
                 # separate. Do not restart a whole round for a request failure.
+                stream_data = None
                 async with asyncio.timeout(timeout):
-                    response = await self.http.post(endpoint, json=payload, timeout=timeout)
+                    if streaming:
+                        response, stream_data = await self._receive_stream(endpoint, payload, timeout, trace, observation, started)
+                    else:
+                        response = await self.http.post(endpoint, json=payload, timeout=timeout, extensions={'trace': trace})
             except TimeoutError as exc:
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="RequestDeadlineExceeded")
                 if attempt < retries:
@@ -447,6 +668,17 @@ class ModelClient:
                 raise ModelError("模型单次请求超过时限；已完成研究可从汇总检查点恢复") from exc
             except httpx.RequestError as exc:
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error=type(exc).__name__)
+                # The past generic error cannot be reconstructed. New failures
+                # retain observed boundaries and a bounded type-only cause chain.
+                causes, cause = [], exc
+                while cause is not None and len(causes) < 4:
+                    causes.append(type(cause).__name__)
+                    cause = cause.__cause__
+                observation['exception_types'] = causes
+                message = str(exc).lower()
+                observation['transport_failure_kind'] = ('disconnected_before_response' if 'without sending a response' in message
+                    else 'incomplete_response_body' if 'incomplete' in message or 'peer closed connection' in message
+                    else 'transport_error')
                 if attempt < retries:
                     await asyncio.sleep(min(2 ** attempt, 4))
                     continue
@@ -454,9 +686,14 @@ class ModelClient:
             except asyncio.CancelledError:
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="cancelled")
                 raise
-            observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
+            except ModelProtocolError:
+                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
+                    transport_phase='local_stream_validation')
+                raise
+            observation.update(response_headers_received=True, response_body_received=True, transport_phase='response_received',
+                               duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
                                request_accepted=200 <= response.status_code < 300,
-                               output_bytes=len(response.content),
+                               output_bytes=observation['output_bytes'] if stream_data is not None else len(response.content),
                                request_id=self._safe_provider_identifier(response.headers.get("x-request-id") or response.headers.get("request-id")))
             if response.status_code >= 400:
                 observation["error"] = f"HTTP {response.status_code}"
@@ -493,9 +730,10 @@ class ModelClient:
             if response.status_code >= 400:
                 raise ModelError(f"模型服务 HTTP {response.status_code}；请检查端点、权限、配额与协议配置")
             try:
-                data = response.json()
+                data = stream_data if stream_data is not None else response.json()
             except ValueError as exc:
                 observation["error"] = "invalid_json"
+                observation["transport_phase"] = "local_response_parsing"
                 raise ModelProtocolError("模型服务未返回 JSON") from exc
             if not isinstance(data, dict):
                 observation["error"] = "invalid_response_type"

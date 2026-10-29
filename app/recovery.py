@@ -34,12 +34,138 @@ class RecoveryStore:
                     WHERE stream_key=? AND version>0 ORDER BY version DESC LIMIT 1''', (row['stream_key'],)).fetchone()
                 body = loads(db.execute('SELECT body FROM materials WHERE id=?', (mid,)).fetchone()[0])
                 parents = parent_material_ids(body)
-                result[mid] = {'read_document_version_id': row['id'], 'read_document_version': row['version'],
+                result[mid] = {'source_stream': row['stream_key'], 'source_key': row['source_key'],
+                    'read_document_version_id': row['id'], 'read_document_version': row['version'],
                     'representation_hash': row['representation_hash'], 'read_range': loads(row['access_metadata']),
                     'representation_kind': row['representation_kind'], 'parent_material_ids': parents,
                     'latest_available_document_version_id': latest[0] if latest else None}
                 pending.extend(parent for parent in parents if parent not in result)
         return result
+
+    def record_material_delivery(self, job_id, account_id, agent_id, tool, result, *, authored=None):
+        """Record the bounded result actually put into this actor's conversation.
+
+        An index, model-authored ID, or context archive pointer is not a read.
+        A native search citation can prove only its explicitly visible excerpt/link.
+        """
+        from .store import dumps
+        if not isinstance(result, dict) or result.get('failed') or result.get('truncated_for_context'):
+            return []
+        if tool not in {'read', 'get_material', 'read_material_range', 'search_pdf', 'history',
+                        'sectors', 'sector_members', 'sector_history', 'benchmark_history', 'fundamentals',
+                        'native_search', 'save_material'}:
+            return []
+        mid = result.get('material_id') or result.get('id')
+        if not mid or not self.material_accessible(mid, account_id):
+            return []
+        material = self.material(mid)
+        guard = self.checkpoint_material_guard([mid], account_id).get(mid)
+        if not guard:
+            return []
+        text = result.get('text') or result.get('content') or result.get('visible_excerpt')
+        from .materials import material_text
+        authored_content = (tool == 'save_material' and material.get('representation_kind') == 'agent_extraction'
+                            and isinstance(authored, dict) and bool(material_text(authored))
+                            and material_text(authored) == material_text(material))
+        metadata_only = tool == 'native_search' and material.get('access') == 'source_link'
+        structured = any(key in result for key in ('items', 'rows', 'matches', 'data'))
+        if not text and not structured and not metadata_only and not authored_content:
+            return []
+        proof = {**guard, 'task_id': job_id, 'agent_id': agent_id,
+            'delivered_content': bool(text or structured), 'metadata_only': metadata_only, 'authored_content': authored_content,
+            'delivered_range': {key: result[key] for key in ('start', 'end', 'total_chars', 'returned_range',
+                'page_range', 'pages_read', 'truncated', 'source_truncated') if key in result},
+            'visible_result_hash': hashlib.sha256(dumps(result).encode()).hexdigest()}
+        # The source's available range and this delivery's range are separate.
+        with self.connect() as db:
+            row = db.execute('INSERT INTO research_material_deliveries(job_id,account_id,agent_id,material_id,tool,body,delivered_at) VALUES(?,?,?,?,?,?,?)',
+                (job_id, account_id or '', agent_id, mid, tool, dumps(proof), now()))
+            return [row.lastrowid]
+
+    def checkpoint_deliveries(self, job_id):
+        from .store import loads
+        with self.connect() as db:
+            return [{**dict(row), 'body': loads(row['body'])} for row in db.execute(
+                'SELECT * FROM research_material_deliveries WHERE job_id=? ORDER BY id', (job_id,))]
+
+    def checkpoint_source_coverage(self, body, verified, deliveries):
+        """Describe visible treatment of corrections, without judging research truth."""
+        receipts = {item['id']: item for item in deliveries}
+        reports = body.get('reports') or []
+        # Keep old rounds for provenance; only the latest visible round is operative.
+        latest_reports = {}
+        for index, report in enumerate(reports):
+            latest_reports[report.get('agent_id') or 'legacy-' + str(index)] = report
+        manager = body.get('manager_summary') or {}
+        documents = list(latest_reports.items()) + [('manager', manager)]
+        streams = {}
+        for mid, value in verified.items():
+            streams.setdefault(value['source_stream'], []).append((mid, value))
+        coverage = {}
+        for stream, entries in streams.items():
+            head = entries[0][1]['latest_available_document_version_id']
+            current = {mid for mid, value in entries if value['read_document_version_id'] == head}
+            old = {mid for mid, value in entries if value['read_document_version_id'] != head}
+            received = [item for item in deliveries if item['body'].get('source_stream') == stream
+                        and item['body'].get('read_document_version_id') == head
+                        and (item['body'].get('delivered_content') or item['body'].get('authored_content') or
+                             (not old and item['body'].get('metadata_only')))]
+            status, reason = 'covered', None
+            handled_by, unresolved = [], []
+            if not received:
+                status, reason = 'needs_research', 'latest_content_not_delivered'
+            # An extraction's parent chain is verified but must have actual source
+            # delivery too; merely naming a parent never establishes coverage.
+            for actor, document in documents:
+                refs = {mid for mid in document.get('material_ids', []) if mid in verified}
+                pending = list(refs)
+                while pending:
+                    for parent in verified[pending.pop()]['parent_material_ids']:
+                        if parent in verified and parent not in refs:
+                            refs.add(parent)
+                            pending.append(parent)
+                related = {mid for mid in refs if verified[mid]['source_stream'] == stream}
+                if not related:
+                    continue
+                own = {rid for rid in document.get('material_delivery_ids', []) if rid in receipts
+                       and receipts[rid]['agent_id'] == actor}
+                newest_read = any(item['id'] in own for item in received)
+                if related & old:
+                    resolved = any(update.get('status') == 'handled' and update.get('summary')
+                        and update.get('latest_material_id') in current
+                        and set(update.get('prior_material_ids') or []) >= (related & old)
+                        for update in document.get('material_updates', []))
+                    if not (newest_read and resolved):
+                        unresolved.append(actor)
+                    else:
+                        handled_by.append(actor)
+                elif newest_read:
+                    handled_by.append(actor)
+                else:
+                    unresolved.append(actor)
+            # The main agent may visibly supersede an old child conclusion, only
+            # after receiving the correction itself. Preserve the child's attribution.
+            manager_ids = set(manager.get('material_delivery_ids') or [])
+            manager_read = any(item['id'] in manager_ids and item['agent_id'] == 'manager' for item in received)
+            if manager_read:
+                for update in manager.get('material_updates', []):
+                    if (update.get('status') == 'handled' and update.get('summary')
+                            and update.get('latest_material_id') in current
+                            and set(update.get('prior_material_ids') or []) >= old):
+                        unresolved = [actor for actor in unresolved if actor not in update.get('supersedes_agent_ids', [])]
+                        handled_by.append('manager')
+            if unresolved:
+                status, reason = 'needs_research', 'visible_report_has_unprocessed_correction'
+            if old and not handled_by:
+                status, reason = 'needs_research', 'historical_comparison_not_processed'
+            if any(update.get('status') == 'needs_review' and update.get('latest_material_id') in current
+                   for _, document in documents for update in document.get('material_updates', [])):
+                status, reason = 'needs_research', 'correction_review_pending'
+            coverage[stream] = {'status': status, 'reason': reason, 'latest_document_version_id': head,
+                'latest_material_ids': sorted(current), 'historical_material_ids': sorted(old),
+                'delivery_ids': [item['id'] for item in received], 'handled_by': sorted(set(handled_by)),
+                'unresolved_report_agents': sorted(set(unresolved))}
+        return coverage
 
     def research_guard(self, context):
         with self.connect() as db:
@@ -66,9 +192,15 @@ class RecoveryStore:
     def save_synthesis_checkpoint(self, job, body, context):
         from .store import dumps
         from .config import model_config_summary
-        body = {**body, 'verified_material_versions': self.checkpoint_material_guard(
-            body.get('material_ids', []), job.get('account_id')),
-            'material_guard_version': 2,
+        deliveries = self.checkpoint_deliveries(job['id'])
+        verified = self.checkpoint_material_guard(body.get('material_ids', []), job.get('account_id'))
+        coverage = self.checkpoint_source_coverage(body, verified, deliveries)
+        missing = sorted((set(body.get('material_ids', [])) |
+            {mid for entry in verified.values() for mid in entry['parent_material_ids']}) - set(verified))
+        body = {**body, 'verified_material_versions': verified,
+            'material_guard_version': 3, 'material_deliveries': deliveries,
+            'source_coverage': coverage, 'unknown_material_ids': missing,
+            'recovery_state': 'needs_research' if missing or any(item['status'] != 'covered' for item in coverage.values()) else 'synthesis_ready',
             'covered_event_scope': context.get('_research_input_guard') or self.research_guard(context),
             'latest_event_scope_at_save': self.research_guard(context),
             'team_snapshot': body.get('team_snapshot') or context.get('team_snapshot'),
@@ -101,13 +233,12 @@ class RecoveryStore:
                     continue
                 body = loads(row['body'])
                 verified = body.get('verified_material_versions', {})
-                # Legacy checkpoints incorrectly recorded the database head as an
-                # observed version. They cannot establish this proof retrospectively.
-                if body.get('material_guard_version') != 2:
+                # Older checkpoints lack per-actor delivery and processing proof.
+                # Their evidence is preserved, but cannot establish it retroactively.
+                if body.get('material_guard_version') != 3 or body.get('recovery_state') != 'synthesis_ready':
                     continue
                 current_materials = self.checkpoint_material_guard(list(verified), job.get('account_id'))
-                if current_materials != verified or any(value.get('read_document_version_id') !=
-                        value.get('latest_available_document_version_id') for value in verified.values()):
+                if current_materials != verified:
                     continue
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=resume_count+1 WHERE job_id=?', (row['job_id'],))
                 from .config import model_config_summary
@@ -125,6 +256,9 @@ class RecoveryStore:
 
     def checkpoint_status(self, job_id):
         with self.connect() as db:
-            row = db.execute('SELECT created_at,resume_count FROM synthesis_checkpoints WHERE job_id=?', (job_id,)).fetchone()
-        return {'available': bool(row), **(dict(row) if row else {}),
+            row = db.execute('SELECT created_at,resume_count,body FROM synthesis_checkpoints WHERE job_id=?', (job_id,)).fetchone()
+        from .store import loads
+        saved = loads(row['body']) if row else {}
+        return {'available': bool(row), **({key: row[key] for key in ('created_at', 'resume_count')} if row else {}),
+                'recovery_state': saved.get('recovery_state', 'legacy_unknown'), 'source_coverage': saved.get('source_coverage', {}),
                 'note': '重试前检查账户版本、公共范围、行情、事件与时效；不满足时重新研究'}

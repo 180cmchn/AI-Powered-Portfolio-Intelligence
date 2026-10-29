@@ -128,7 +128,10 @@ assert coverage['total'] == 2 and coverage['counts']['history'] == 104
 assert all(item['review_status'] == 'needs_review' and item['price_state'] == 'met' for item in coverage['items'])
 failed = store.enqueue(other['id'], 'controlled_synthesis_timeout')
 claimed = next(j for j in store.claim_jobs(10) if j['id'] == failed['id'])
-store.save_synthesis_checkpoint(claimed, {'child_reports': [{'summary': '受控已完成子研究'}],
+receipts = store.record_material_delivery(claimed['id'], other['id'], 'fixture-child', 'get_material',
+    store.material_range(native_excerpt['id']))
+store.save_synthesis_checkpoint(claimed, {'reports': [{'summary': '受控已完成子研究',
+    'agent_id': 'fixture-child', 'material_ids': [native_excerpt['id']], 'material_delivery_ids': receipts}],
     'material_ids': [native_excerpt['id']], 'open_questions': ['受控未决问题']},
     {'account': store.account(other['id']), 'universe_version': store.universe_snapshot()['universe_version']})
 store.set_job_state(failed['id'], 'failed', '受控汇总请求超时；未发布最终报告')

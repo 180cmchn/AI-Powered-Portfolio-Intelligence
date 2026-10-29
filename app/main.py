@@ -30,6 +30,7 @@ class Settings(BaseModel):
     model_key_env: str = "MODEL_API_KEY"
     model_allow_no_key: bool = False
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
+    model_responses_stream: bool = True
     model_native_search: bool = True
     reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
     synthesis_request_timeout_seconds: int = Field(default=120, ge=5, le=600)
@@ -51,6 +52,14 @@ class Settings(BaseModel):
     scheduled_research_enabled: bool = True
     market_refresh_enabled: bool = True
     forecast_evaluation_enabled: bool = True
+    forecast_evaluation_batch_size: int = Field(default=30, ge=1, le=500)
+    forecast_review_batch_size: int = Field(default=6, ge=1, le=100)
+    forecast_evaluation_concurrency: int = Field(default=4, ge=1, le=16)
+    forecast_request_timeout_seconds: int = Field(default=20, ge=1, le=120)
+    forecast_cycle_timeout_seconds: int = Field(default=45, ge=1, le=300)
+    forecast_review_interval_days: int = Field(default=7, ge=1, le=365)
+    forecast_unassessable_review_days: int = Field(default=14, ge=1, le=365)
+    forecast_baseline_batch_size: int = Field(default=40, ge=1, le=500)
     scan_interval_minutes: int = Field(default=5, ge=1, le=240)
     analysis_interval_minutes: int = Field(default=15, ge=1, le=1440)
     close_summary_time: str = "15:15"

@@ -91,7 +91,10 @@ def checkpoint(store, source, *, team='old-team', context=None):
     job = store.claim_jobs(account_id=account['id'])[0]
     context = context or {'account': account, 'universe_version': store.universe_snapshot()['universe_version'],
                          'metrics': {'positions': []}, 'team_snapshot': {'id': team}}
-    body = {'phase': 'synthesis', 'reports': [{'summary': 'Observed v1 report', 'team_id': team}],
+    receipts = store.record_material_delivery(job['id'], account['id'], 'child', 'get_material',
+        store.material_range(source['id']))
+    body = {'phase': 'synthesis', 'reports': [{'summary': 'Observed v1 report', 'team_id': team,
+        'agent_id': 'child', 'material_ids': [source['id']], 'material_delivery_ids': receipts}],
             'material_ids': [source['id']], 'team_snapshot': {'id': team}}
     store.save_synthesis_checkpoint(job, body, context)
     store.set_job_state(job['id'], 'failed', 'controlled transient synthesis failure')

@@ -2,9 +2,11 @@
 
 运行在 Mac 本机的 A 股与场内 ETF 虚拟账户研究工作台。FastAPI + SQLite + asyncio 后台执行器 + 无构建依赖的原生 JavaScript 界面。主 Agent 和每个子 Agent 都有独立模型上下文及真实工具调用循环；模型原生联网与本地研究工具在同一 Agent 会话协作，不需要独立搜索密钥。
 
-**第六轮将连接改为三字段供应商配置与 HTTP 自动模型发现，所有账户共用完整的具名 Agent 目录，并增加固定预测批次、不可变账本和独立收盘评估。实现、验证范围与限制见 [第六轮交付](docs/iteration-6.md)、[供应商与统一角色](docs/sixth-provider-roles.md)及[预测评估口径](docs/forecast-evaluation.md)。[第五轮](docs/iteration-5.md)与[第四轮](docs/iteration-4.md)历史记录保留，不作为第六轮真实链路已经通过的证明。**
+**第七轮修复失败与重试归属、探索规则身份、已处理材料更正的恢复边界，新增每日窗口运行记录，并将分页、首次评分和历史更正复核分开处理。实现、测试与真实验收限制见 [第七轮交付](docs/iteration-7.md)和[预测评估口径](docs/forecast-evaluation.md)。[第六轮](docs/iteration-6.md)、[第五轮](docs/iteration-5.md)与[第四轮](docs/iteration-4.md)保留为历史证据，不作为本轮验收结果。供应商与统一角色操作保持[原有方式](docs/sixth-provider-roles.md)。**
 
 第三轮历史失败仍保留在 [验证记录](docs/verification.md)，不被新结果覆盖。
+
+第七轮补充修复与 A 的两轮真实复验见 [占位终止与汇总断连](docs/iteration-7-followup.md)：Responses 流式接收、终止调用校验和紧凑汇总已验证，研究资料缺口与尚无成熟方向样本的限制单独记录。
 
 仅管理虚拟持仓快照与研究参考，不读取券商账户、不登录券商、不下单、不撮合交易。
 

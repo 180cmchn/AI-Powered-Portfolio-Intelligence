@@ -1,0 +1,37 @@
+{
+  "fixture": {
+    "forecast_count": 5000,
+    "historical_reviews": 4500,
+    "first_due": 500,
+    "accounts": 10,
+    "same_security_and_dates": true,
+    "supplier": "local async fixture; 2 ms per history call"
+  },
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.4",
+    "sqlite": "3.53.0"
+  },
+  "baseline_commit": "537e390856c9b2d203b2df49d122f1eac1094416",
+  "repetitions": 1,
+  "before": {
+    "elapsed_seconds": 0.418039,
+    "python_peak_bytes": 185277,
+    "supplier_history_requests": 61,
+    "first_baseline_request_seconds": 0.413946,
+    "first_scores_completed": 0,
+    "historical_reviews_completed": 30,
+    "new_ready_batches": 1
+  },
+  "after": {
+    "elapsed_seconds": 0.210578,
+    "python_peak_bytes": 214703,
+    "supplier_history_requests": 3,
+    "first_baseline_request_seconds": 0.088781,
+    "first_scores_completed": 24,
+    "historical_reviews_completed": 6,
+    "new_ready_batches": 1
+  },
+  "limitations": "Single controlled run; Python tracemalloc excludes SQLite/native memory. Setup/migration excluded. Highly reusable same-symbol data deliberately tests deduplication, not worst-case throughput or production SLA."
+}

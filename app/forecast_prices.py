@@ -77,3 +77,50 @@ async def closing_pair(provider, symbol, base_date, target_date):
         stable["adjustment_evidence"] = {k: v for k, v in stable["adjustment_evidence"].items() if k != "fetched_together_at"}
     result["data_version"] = hashlib.sha256(json.dumps(stable, sort_keys=True, default=str).encode()).hexdigest()
     return result
+
+
+class ClosingPriceSession:
+    """Bounded per-cycle request coalescing, with immutable shared raw evidence.
+
+    A fresh session performs a fresh supplier observation. It never combines
+    adjusted endpoints from different fetches or reuses an old cycle as a new
+    correction. Forecast-specific calculations remain in the forecast ledger.
+    """
+    def __init__(self, store, provider, *, concurrency=4, timeout=20):
+        import asyncio
+        self.store, self.provider = store, provider
+        self.semaphore = asyncio.Semaphore(max(1, min(16, int(concurrency))))
+        self.timeout = max(0.05, min(120, float(timeout)))
+        self.tasks = {}
+
+    async def pair(self, symbol, base_date, target_date):
+        import asyncio
+        from copy import deepcopy
+        key = (symbol, base_date, target_date, "same_source_pair_v1")
+        if key not in self.tasks:
+            self.tasks[key] = asyncio.create_task(self._fetch(key))
+        return deepcopy(await asyncio.shield(self.tasks[key]))
+
+    async def _fetch(self, key):
+        import asyncio
+        import uuid
+        async with self.semaphore:
+            result = await asyncio.wait_for(closing_pair(self.provider, *key[:3]), timeout=self.timeout)
+        request_key = hashlib.sha256(json.dumps(key).encode()).hexdigest()
+        stable = {k: v for k, v in result.items() if k != "fetched_at"}
+        version = result.get("data_version") or hashlib.sha256(json.dumps(stable, sort_keys=True, default=str).encode()).hexdigest()
+        # The snapshot is append-only. Individual forecast observations can refer
+        # to the same snapshot, but never share account conclusions.
+        with self.store.connect() as db:
+            db.execute("INSERT OR IGNORE INTO forecast_shared_price_evidence VALUES(?,?,?,?,?)",
+                       (uuid.uuid4().hex, request_key, version, now(), json.dumps(result, ensure_ascii=False, sort_keys=True, default=str)))
+            evidence_id = db.execute("SELECT id FROM forecast_shared_price_evidence WHERE request_key=? AND data_version=?", (request_key, version)).fetchone()[0]
+        return {**result, "shared_evidence_id": evidence_id}
+
+    async def close(self):
+        import asyncio
+        pending = [t for t in self.tasks.values() if not t.done()]
+        for task in pending:
+            task.cancel()
+        if self.tasks:
+            await asyncio.gather(*self.tasks.values(), return_exceptions=True)

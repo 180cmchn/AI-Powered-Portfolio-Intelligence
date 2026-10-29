@@ -224,6 +224,7 @@ class Service:
 
     def record_model_event(self, job_id, event):
         self.store.event(job_id, event)
+        self.store.observe_forecast_model_event(job_id, event)
         payload = event.get('payload') or {}
         capability = payload.get('capability') or payload.get('native_search')
         if isinstance(capability, dict) and capability.get('fingerprint') and capability.get('status'):
@@ -318,6 +319,9 @@ class Service:
         cfg = job.get("config_snapshot") or self.store.settings()
         started = time.monotonic()
         try:
+            # Bind planned identity before resolving secrets, clients or prices.
+            self.store.prepare_exploratory_forecast_job(job['id'])
+            self.store.ensure_forecast_attempt(job['id'])
             account = self.store.snapshot(job["account_id"], job["input_version"])
             universe = self.store.meta("universe", {"watchlist": [], "candidates": []})
             target = job["reason"].split("manual_security:", 1)[-1].split(";", 1)[0] if "manual_security:" in job["reason"] else None
@@ -365,7 +369,6 @@ class Service:
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
             context['_research_input_guard'] = self.store.research_guard(context)
             context['team_id'] = (cfg.get('_agent_team') or {}).get('team_id')
-            self.store.prepare_exploratory_forecast_job(job['id'])
             context['forecast_batch'] = self.store.forecast_job_context(job['id'])
             if self.store.mode == "demo":
                 result = {"report": f"演示模式 · 本地数值摘要\n\n账户：{account['name']} · 输入版本 v{account['version']}\n\n已知价格持仓市值：¥{values['known_priced_value']}。\n\n" + "\n\n".join(values["notes"]) + "\n\n这是固定样例数据和代码计算结果。未调用模型、搜索或多 Agent，不构成真实投资研究或买卖建议。",
@@ -586,6 +589,10 @@ class Service:
                 for batch in batches['batches']:
                     self.store.enqueue_forecast_batch(batch['id'], at=max(stamp, datetime.now(TZ)))
             self.forecast_task = self.spawn(forecast_cycle())
+        elif not cfg.get('forecast_evaluation_enabled', True) and not cfg.get('scheduled_research_enabled', True) and (not self.last_forecast_tick or stamp.timestamp() - self.last_forecast_tick >= 60):
+            # A pause is a visible run fact even when no network work is enabled.
+            self.last_forecast_tick = stamp.timestamp()
+            self.store.reconcile_forecast_windows(at=stamp, calendar_path=cfg.get('calendar_path'), scheduled_enabled=False)
         if not cfg.get('scheduled_research_enabled', True):
             return
         prior_seen = self.store.meta("schedule:last_seen")

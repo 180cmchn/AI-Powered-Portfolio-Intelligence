@@ -126,31 +126,39 @@ async def test_late_final_update_is_bounded_and_unincorporated_results_are_expli
                 "open_questions": ["Publication date remains unknown"]})
         manager_requests += 1
         if manager_requests == 1:
+            if case == "update_failure":
+                # Retain citation feedback from one legal terminal turn. The
+                # child completes during the next request, triggering a final
+                # update whose failure must not fall back to this stale draft.
+                return response("finish_analysis", {"report": "Earlier final with citation gap",
+                                                     "material_ids": ["missing"]})
             parent_started.set()
             await child_done.wait()
             if case == "plaintext_final":
                 return httpx.Response(200, json={"status": "completed", "output": [{"type": "message", "role": "assistant", "status": "completed",
                     "content": [{"type": "output_text", "text": "Child has not delivered; issuer conclusion remains unknown."}]}]})
-            if case == "update_failure":
-                # Leave a previous citation-feedback candidate in the runtime;
-                # an update failure must not fall back to that stale final.
-                args = {"report": "Earlier final with citation gap", "material_ids": ["missing"]}
-                return httpx.Response(200, json={"status": "completed", "output": [{"type": "function_call",
-                    "call_id": f"finish-{i}", "name": "finish_analysis", "arguments": json.dumps(args)} for i in range(2)]})
             return response("finish_analysis", {"report": "Child has not delivered; issuer conclusion remains unknown."})
+        if case == "update_failure" and manager_requests == 2:
+            parent_started.set()
+            await child_done.wait()
+            return response("finish_analysis", {"report": "Child has not delivered; issuer conclusion remains unknown."})
+        if case == "update_failure":
+            assert manager_requests == 3
+            assert {tool.get("name") for tool in payload["tools"]} == {"finish_analysis"}
+            assert "Late visible issuer report" in json.dumps(payload)
+            assert "Publication date remains unknown" in json.dumps(payload)
+            raise httpx.ReadTimeout("controlled final update failure", request=request)
         assert manager_requests == 2
         assert {tool.get("name") for tool in payload["tools"]} == {"finish_analysis"}
         assert "Late visible issuer report" in json.dumps(payload)
         assert "Publication date remains unknown" in json.dumps(payload)
-        if case == "update_failure":
-            raise httpx.ReadTimeout("controlled final update failure", request=request)
         return response("finish_analysis", {"report": "Updated report incorporates the late issuer findings; publication date remains unknown.", "material_ids": ["source-1"]})
 
     install(monkeypatch, handler)
     runtime = agents.ResearchRuntime({"task_id": "late-bounded"}, cfg, tools, emit)
     runtime.closeout_waited = True  # The bounded wait already expired, as in the real race.
     created = await runtime._spawn({"task": "Issuer evidence", "title": "Issuer child"})
-    runtime.calls = 28 if case == "no_calls_left" else 27
+    runtime.calls = 26 if case == "update_failure" else (28 if case == "no_calls_left" else 27)
     if case == "no_calls_left":
         await child_started.wait()  # Its in-flight request uses slot 29; parent final uses 30.
     if case == "update_failure":
@@ -171,7 +179,7 @@ async def test_late_final_update_is_bounded_and_unincorporated_results_are_expli
             assert result["unincorporated_child_reports"][0]["agent_id"] == created["agent_id"]
             assert result["unincorporated_child_reports"][0]["material_ids"] == ["source-1"]
             assert "正文尚未吸收" in result["report"] and result["uncertainties"]
-    assert runtime.calls <= 30 and len(payloads) <= 3
+    assert runtime.calls <= 30 and len(payloads) <= (4 if case == "update_failure" else 3)
 
 
 @pytest.mark.asyncio

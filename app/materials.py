@@ -32,6 +32,11 @@ CREATE TABLE IF NOT EXISTS material_observations(
 CREATE TABLE IF NOT EXISTS material_observation_bindings(
  observation_id TEXT NOT NULL, stream_key TEXT NOT NULL, document_version_id TEXT NOT NULL,
  PRIMARY KEY(observation_id,stream_key));
+CREATE TABLE IF NOT EXISTS research_material_deliveries(
+ id INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT NOT NULL, account_id TEXT NOT NULL,
+ agent_id TEXT NOT NULL, material_id TEXT NOT NULL, tool TEXT NOT NULL, body TEXT NOT NULL,
+ delivered_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS research_deliveries_job ON research_material_deliveries(job_id,agent_id,id);
 CREATE TABLE IF NOT EXISTS material_stream_heads(
  stream_key TEXT PRIMARY KEY, document_version_id TEXT NOT NULL, observation_sequence INTEGER NOT NULL);
 """

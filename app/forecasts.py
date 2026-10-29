@@ -17,6 +17,7 @@ from .calendar import SHANGHAI, advance_trading_days, trading_date
 from .domain import now
 from .providers import normalize_symbol
 from .forecast_prices import closing_pair
+from .forecast_identity import ForecastIdentityStore, SCHEMA as IDENTITY_SCHEMA, scoring_rule
 
 
 SCHEMA = """
@@ -26,8 +27,7 @@ CREATE TABLE IF NOT EXISTS forecast_batches(
  id TEXT PRIMARY KEY, account_id TEXT NOT NULL, kind TEXT NOT NULL, base_date TEXT NOT NULL,
  rule_version TEXT NOT NULL, rule TEXT NOT NULL, symbols TEXT NOT NULL, expected_count INTEGER NOT NULL,
  created_at TEXT NOT NULL, deadline TEXT NOT NULL, state TEXT NOT NULL, job_id TEXT UNIQUE,
- input_version INTEGER NOT NULL, team_snapshot TEXT NOT NULL, baseline_evidence TEXT NOT NULL,
- UNIQUE(account_id,kind,base_date,rule_version));
+ input_version INTEGER NOT NULL, team_snapshot TEXT NOT NULL, baseline_evidence TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS forecast_samples(
  id TEXT PRIMARY KEY, batch_id TEXT NOT NULL, account_id TEXT NOT NULL, symbol TEXT NOT NULL,
  horizon INTEGER NOT NULL, label TEXT NOT NULL, target_date TEXT, calendar_evidence TEXT NOT NULL,
@@ -169,8 +169,12 @@ def _manager_identity(team):
     return binding.get("model_id", binding.get("model_name")), binding.get("reasoning_effort", "medium")
 
 
-class ForecastStore:
+SCHEMA += IDENTITY_SCHEMA
+
+
+class ForecastStore(ForecastIdentityStore):
     def migrate_forecasts(self, db):
+        self.migrate_forecast_identity(db)
         # No backfill from historical reports; old accounts inherit disabled rules.
         db.execute("INSERT OR IGNORE INTO meta VALUES('forecast_migration',?)", (_dump({
             "version": 1, "at": now(), "new_batches_enabled": False, "historical_backfill": False}),))
@@ -191,6 +195,7 @@ class ForecastStore:
             old = db.execute("SELECT version,body FROM forecast_settings WHERE account_id=?", (account_id,)).fetchone()
             version = old[0] + int(_load(old[1]) != rule) if old else 1
             db.execute("INSERT OR REPLACE INTO forecast_settings VALUES(?,?,?,?)", (account_id, version, _dump(rule), now()))
+            self.record_window_configuration(db, account_id, source="forecast_settings_saved")
         return self.forecast_settings(account_id)
 
     def create_forecast_batch(self, account_id, *, at=None, kind="formal", symbols=None,
@@ -212,17 +217,14 @@ class ForecastStore:
             symbols = [h["symbol"] for h in account["holdings"]] + universe.get("candidates", [])
         symbols = sorted({normalize_symbol(s) for s in symbols})
         # A finite product is persisted in full; UI pagination never drops samples.
-        rule_version = _digest({k: v for k, v in rule.items() if k != "enabled"})
-        if kind == "exploratory":
-            rule_version += ":" + uuid.uuid4().hex
+        rule_version = scoring_rule(rule)[0]
         deadline = datetime.combine(at.date(), _clock(rule["deadline_time"]), SHANGHAI).isoformat()
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             current_account = self.account(account_id, db)
             if current_account["version"] != account["version"] or (expected_input_version is not None and current_account["version"] != expected_input_version):
                 raise ValueError("采集基准期间账户输入已变化，等待下一轮重新锁定批次")
-            existing = db.execute("SELECT id FROM forecast_batches WHERE account_id=? AND kind=? AND base_date=? AND rule_version=?",
-                (account_id, kind, at.date().isoformat(), rule_version)).fetchone()
+            existing = None
             # Rule edits during a day may not create a second official batch.
             if not existing and kind in ("formal", "test"):
                 existing = db.execute("SELECT id FROM forecast_batches WHERE account_id=? AND kind=? AND base_date=?",
@@ -234,6 +236,7 @@ class ForecastStore:
                 (batch_id, account_id, kind, at.date().isoformat(), rule_version, _dump(rule), _dump(symbols),
                  len(symbols) * len(rule["horizons"]), at.isoformat(), deadline, "open", account["version"],
                  _dump(team_snapshot or {}), _dump(baseline_evidence or {})))
+            self._register_scoring_rule(db, {"id": batch_id, "rule_version": rule_version, "rule": rule})
             for symbol in symbols:
                 for horizon, label in zip(rule["horizons"], rule["labels"]):
                     try:
@@ -252,12 +255,26 @@ class ForecastStore:
         batch = dict(row)
         for field in ("rule", "symbols", "team_snapshot", "baseline_evidence"):
             batch[field] = _load(batch[field])
-        batch["coverage"] = dict(Counter(r[0] for r in db.execute("SELECT state FROM forecast_samples WHERE batch_id=?", (batch_id,))))
+        batch["coverage"] = dict(db.execute("SELECT state,count(*) FROM forecast_samples WHERE batch_id=? GROUP BY state", (batch_id,)))
+        projection = db.execute("SELECT scoring_rule_id,status FROM forecast_rule_projections WHERE batch_id=?", (batch_id,)).fetchone()
+        batch["scoring_rule_id"] = projection[0] if projection else None
+        batch["rule_identity_status"] = projection[1] if projection else "unknown"
+        batch["attempts"] = [{**dict(r), "team_snapshot": _load(r["team_snapshot"]), "requests": _load(r["requests"])} for r in db.execute("SELECT * FROM forecast_execution_attempts WHERE batch_id=? ORDER BY id", (batch_id,))]
         return batch
 
-    def forecast_batches(self, account_id=None, limit=100, offset=0):
+    def forecast_batches(self, account_id=None, limit=100, offset=0, summary=False):
         with self.connect() as db:
-            rows = db.execute("SELECT id FROM forecast_batches WHERE (? IS NULL OR account_id=?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            if summary:
+                rows = db.execute("""SELECT b.id,b.account_id,b.kind,b.base_date,b.rule_version,b.expected_count,
+                    b.created_at,b.deadline,b.state,b.job_id,b.input_version,p.scoring_rule_id,p.status AS rule_identity_status,
+                    json_extract(b.team_snapshot,'$.team_id') AS team_id,
+                    json_extract(b.team_snapshot,'$.manager_model') AS manager_model,
+                    (SELECT count(*) FROM forecast_execution_attempts a WHERE a.batch_id=b.id) AS attempt_count
+                    FROM forecast_batches b LEFT JOIN forecast_rule_projections p ON p.batch_id=b.id
+                    WHERE (? IS NULL OR b.account_id=?) ORDER BY b.created_at DESC,b.id LIMIT ? OFFSET ?""",
+                    (account_id, account_id, min(200, max(1, limit)), max(0, offset))).fetchall()
+                return [{**dict(row), "coverage": dict(db.execute("SELECT state,count(*) FROM forecast_samples WHERE batch_id=? GROUP BY state", (row["id"],)))} for row in rows]
+            rows = db.execute("SELECT id FROM forecast_batches WHERE (? IS NULL OR account_id=?) ORDER BY created_at DESC,id LIMIT ? OFFSET ?",
                               (account_id, account_id, min(200, max(1, limit)), max(0, offset))).fetchall()
             return [self._forecast_batch(db, r[0]) for r in rows]
 
@@ -271,6 +288,8 @@ class ForecastStore:
             if batch["job_id"] and batch["job_id"] != job_id:
                 raise ValueError("批次已经绑定任务")
             db.execute("UPDATE forecast_batches SET job_id=? WHERE id=?", (job_id, batch_id))
+            if job["config_snapshot"]:
+                self.bind_forecast_attempt(db, job_id, job["attempts"], _load(job["config_snapshot"]))
             if not batch["job_id"]:
                 db.execute("INSERT INTO forecast_job_bindings(batch_id,prior_job_id,job_id,reason,created_at) VALUES(?,NULL,?,'initial',?)", (batch_id, job_id, now()))
 
@@ -315,7 +334,7 @@ class ForecastStore:
             has_prediction = db.execute("SELECT 1 FROM forecasts WHERE batch_id=? LIMIT 1", (batch["id"],)).fetchone()
             if (not already_bound and batch["kind"] in ("formal", "test") and not has_prediction
                     and batch["input_version"] == input_version and stamp < batch["deadline"]):
-                db.execute("UPDATE forecast_batches SET job_id=?,team_snapshot='{}',state='open' WHERE id=?", (new_job_id, batch["id"]))
+                db.execute("UPDATE forecast_batches SET job_id=?,state='open' WHERE id=?", (new_job_id, batch["id"]))
                 db.execute("UPDATE forecast_samples SET state='uncovered',reason=NULL WHERE batch_id=? AND state='failed'", (batch["id"],))
                 db.execute("INSERT INTO forecast_job_bindings(batch_id,prior_job_id,job_id,reason,created_at) VALUES(?,?,?,?,?)",
                     (batch["id"], batch["job_id"], new_job_id, "同账户输入版本的执行重试/合并；保持原固定批次规则与范围", stamp))
@@ -372,19 +391,10 @@ class ForecastStore:
             if not row:
                 return None
             batch = self._forecast_batch(db, row[0])
-            if not batch["team_snapshot"]:
-                job = db.execute("SELECT config_snapshot FROM jobs WHERE id=?", (job_id,)).fetchone()
-                if job and job[0]:
-                    team = _safe_team(_load(job[0]))
-                    model, effort = _manager_identity(team)
-                    team.setdefault("team_id", _digest(team))
-                    team["manager_model"], team["manager_effort"] = model, effort
-                    db.execute("UPDATE forecast_batches SET team_snapshot=? WHERE id=? AND team_snapshot='{}'", (_dump(team), batch["id"]))
-                    batch["team_snapshot"] = team
             items = [dict(r) for r in db.execute("SELECT id,symbol,horizon,label,target_date,state,reason FROM forecast_samples WHERE batch_id=? ORDER BY symbol,horizon LIMIT ? OFFSET ?",
                      (row[0], min(200, max(1, limit)), max(0, offset)))]
             summary = {k: batch[k] for k in ("id", "account_id", "kind", "base_date", "rule_version", "rule",
-                        "expected_count", "created_at", "deadline", "state", "input_version", "coverage")}
+                        "expected_count", "created_at", "deadline", "state", "input_version", "coverage", "scoring_rule_id", "rule_identity_status")}
             team = batch["team_snapshot"]
             summary.update(team_id=team.get("team_id"), manager_model=team.get("manager_model"), manager_effort=team.get("manager_effort"))
             return {**summary, "items": items, "offset": offset, "has_more": offset + len(items) < batch["expected_count"],
@@ -446,6 +456,20 @@ class ForecastStore:
             prior = db.execute("SELECT id FROM forecasts WHERE sample_id=? AND (kind IN ('formal','test') OR job_id=?)", (sample["id"], job["id"])).fetchone()
             if prior:
                 saved.append(prior[0]); continue
+            if batch["kind"] == "formal" and direction != "abstain":
+                baseline = batch["baseline_evidence"].get(symbol) or {}
+                try:
+                    price = Decimal(str(baseline.get("base_price")))
+                    exact = (baseline.get("status") == "ready" and baseline.get("symbol") == symbol
+                        and baseline.get("base_date") == batch["base_date"]
+                        and baseline.get("target_date") == batch["base_date"]
+                        and baseline.get("price_policy") == batch["rule"]["price_policy"]
+                        and bool(baseline.get("source")) and price.is_finite() and price > 0)
+                except (InvalidOperation, TypeError, ValueError):
+                    exact = False
+                if not exact:
+                    db.execute("UPDATE forecast_samples SET state='waiting_data',reason='未取得本证券基准日精确收盘证据，方向预测未发布' WHERE id=?", (sample["id"],))
+                    continue
             forecast_id = uuid.uuid4().hex
             revises_id = item.get("revises_id")
             if revises_id:
@@ -466,6 +490,7 @@ class ForecastStore:
                 db.execute("INSERT OR IGNORE INTO forecast_evaluation_tasks VALUES(?,'pending',0,?,NULL,?)", (forecast_id, due, at.isoformat()))
             saved.append(forecast_id)
         db.execute("UPDATE forecast_batches SET state='published',team_snapshot=? WHERE id=?", (_dump(team), batch["id"]))
+        db.execute("UPDATE forecast_execution_attempts SET published_at=?,state='published' WHERE job_id=? AND attempt=(SELECT max(attempt) FROM forecast_execution_attempts WHERE job_id=?)", (at.isoformat(), job["id"], job["id"]))
         return saved
 
     def fail_forecast_job(self, job_id, reason="任务失败"):
@@ -475,7 +500,7 @@ class ForecastStore:
     def expire_forecast_batches(self, at=None):
         stamp = _local(at).isoformat()
         with self.connect() as db:
-            db.execute("UPDATE forecast_samples SET state='missed',reason='超过截止仍未发布' WHERE state='uncovered' AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<?)", (stamp,))
+            db.execute("UPDATE forecast_samples SET state='missed',reason='超过截止仍未发布' WHERE state IN ('uncovered','waiting_config') AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<?)", (stamp,))
             db.execute("UPDATE forecast_samples SET state='missed',reason='超过截止仍无可用基准收盘数据，未生成预测' WHERE state='waiting_data' AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<?)", (stamp,))
             db.execute("UPDATE forecast_batches SET state='closed' WHERE deadline<?", (stamp,))
 
@@ -493,49 +518,10 @@ class ForecastStore:
             resolution = db.execute("SELECT * FROM forecast_calendar_resolutions WHERE forecast_id=?", (forecast_id,)).fetchone()
             result["calendar_resolution"] = {**dict(resolution), "evidence": _load(resolution["evidence"])} if resolution else None
             result["effective_target_date"] = result["target_date"] or (resolution["target_date"] if resolution else None)
+            projection = db.execute("SELECT * FROM forecast_rule_projections WHERE batch_id=?", (result["batch_id"],)).fetchone()
+            result["rule_projection"] = {**dict(projection), "canonical_rule": _load(projection["canonical_rule"])} if projection else None
+            result["execution_attempts"] = [{**dict(r), "team_snapshot": _load(r["team_snapshot"]), "requests": _load(r["requests"])} for r in db.execute("SELECT * FROM forecast_execution_attempts WHERE job_id=? ORDER BY attempt", (result["job_id"],))]
             return result
-
-    def _forecast_rows(self, db, filters):
-        allowed = {"account_id", "kind", "team_id", "manager_model", "manager_effort", "symbol", "start_date", "end_date", "rule_version", "batch_id", "horizon"}
-        if set(filters) - allowed:
-            raise ValueError("不支持的预测筛选条件")
-        clauses, values = [], []
-        for key, value in filters.items():
-            if value in (None, ""):
-                continue
-            if key in ("start_date", "end_date"):
-                date.fromisoformat(value)
-                clauses.append("b.base_date" + (">=?" if key == "start_date" else "<=?")); values.append(value)
-            else:
-                if key in ("team_id", "manager_model", "manager_effort"):
-                    clauses.append(f"COALESCE(f.{key},json_extract(b.team_snapshot,'$.{key}'))=?")
-                else:
-                    alias = "b" if key in ("account_id", "kind", "rule_version") else "s" if key in ("symbol", "horizon", "batch_id") else "f"
-                    clauses.append(f"{alias}.{key}=?")
-                values.append(value)
-        where = " WHERE " + " AND ".join(clauses) if clauses else ""
-        return db.execute("""SELECT s.*,b.kind,b.base_date,b.rule_version,b.rule,b.deadline,b.expected_count,
-            f.id AS forecast_id,f.direction,f.published_at,f.report_id,f.reason AS forecast_reason,f.team_id,
-            f.manager_model,f.manager_effort,e.status AS evaluation_status,e.reason AS evaluation_reason,
-            e.actual_direction,e.return_ratio,e.hit,e.revision AS evaluation_revision,t.last_error AS waiting_reason
-            FROM forecast_samples s JOIN forecast_batches b ON b.id=s.batch_id
-            LEFT JOIN forecasts f ON f.sample_id=s.id
-            LEFT JOIN forecast_evaluations e ON e.forecast_id=f.id AND e.revision=(SELECT max(x.revision) FROM forecast_evaluations x WHERE x.forecast_id=f.id)
-            LEFT JOIN forecast_evaluation_tasks t ON t.forecast_id=f.id""" + where + " ORDER BY b.base_date DESC,s.symbol,s.horizon", values).fetchall()
-
-    def forecasts_page(self, limit=50, offset=0, **filters):
-        with self.connect() as db:
-            rows = self._forecast_rows(db, filters)
-        limit, offset = min(200, max(1, limit)), max(0, offset)
-        items = []
-        for row in rows[offset:offset + limit]:
-            item = dict(row)
-            item["rule"] = _load(item["rule"])
-            item["calendar_evidence"] = _load(item["calendar_evidence"])
-            item["display_state"] = self._forecast_display_state(item)
-            items.append(item)
-        return {"items": items, "total": len(rows), "has_more": offset + len(items) < len(rows),
-                "next_offset": offset + len(items) if offset + len(items) < len(rows) else None}
 
     @staticmethod
     def _forecast_display_state(row):
@@ -548,68 +534,6 @@ class ForecastStore:
         if not row.get("target_date"):
             return "waiting_data"
         return "pending_maturity"
-
-    def forecast_comparison(self, account_ids, **filters):
-        """User-facing comparison only; never injected into account research."""
-        if not isinstance(account_ids, list) or not 2 <= len(set(account_ids)) <= 10:
-            raise ValueError("请选择 2 至 10 个不同账户")
-        filters = {"kind": "formal", **filters}
-        if "account_id" in filters:
-            raise ValueError("比较使用 account_ids")
-        accounts = {account_id: self.account(account_id)["name"] for account_id in account_ids}
-        rows = {}
-        with self.connect() as db:
-            for account_id in accounts:
-                rows[account_id] = {(r["base_date"], r["symbol"], r["horizon"], r["rule_version"]): dict(r)
-                    for r in self._forecast_rows(db, {**filters, "account_id": account_id})}
-        shared = set.intersection(*(set(r) for r in rows.values()))
-        evaluated = {key for key in shared if all(rows[a][key]["evaluation_status"] == "evaluated" for a in accounts)}
-        groups = []
-        for horizon, rule_version in sorted({(key[2], key[3]) for key in shared}):
-            keys = {k for k in shared if k[2:] == (horizon, rule_version)}
-            matured = keys & evaluated
-            groups.append({"horizon": horizon, "rule_version": rule_version, "overlap_expected": len(keys),
-                "overlap_evaluated": len(matured), "accounts": [{"account_id": a, "name": accounts[a],
-                    "hits": sum(rows[a][key]["hit"] or 0 for key in matured), "evaluated": len(matured),
-                    "accuracy": sum(rows[a][key]["hit"] or 0 for key in matured) / len(matured) if matured else None}
-                    for a in accounts]})
-        return {"matching_dimensions": ["base_date", "symbol", "horizon", "rule_version"], "groups": groups,
-                "overlap_expected": len(shared), "overlap_evaluated": len(evaluated),
-                "unmatched_counts": {a: len(rows[a]) - len(shared) for a in accounts},
-                "note": "仅统计全部选定账户共同且均已到期评估的样本；共享范围仍不代表材料清单、额外搜索或发布时间完全一致，不是严格对照实验。"}
-
-    def forecast_statistics(self, **filters):
-        # Main metric defaults to genuine formal records; fixtures are separate.
-        filters = {"kind": "formal", **filters}
-        with self.connect() as db:
-            rows = [dict(r) for r in self._forecast_rows(db, filters)]
-        groups = defaultdict(list)
-        for row in rows:
-            groups[(row["horizon"], row["rule_version"])].append(row)
-        output = []
-        for (horizon, version), samples in sorted(groups.items()):
-            counts = Counter(self._forecast_display_state(row) for row in samples)
-            evaluated = [r for r in samples if r["evaluation_status"] == "evaluated"]
-            hits = sum(r["hit"] or 0 for r in evaluated)
-            matrix = {pred: {actual: 0 for actual in ("up", "sideways", "down")} for pred in ("up", "sideways", "down")}
-            days = defaultdict(lambda: {"hits": 0, "evaluated": 0})
-            for row in evaluated:
-                matrix[row["direction"]][row["actual_direction"]] += 1
-                days[row["base_date"]]["hits"] += row["hit"]
-                days[row["base_date"]]["evaluated"] += 1
-            predicted = sum(r["state"] == "predicted" for r in samples)
-            addressed = predicted + sum(r["state"] == "abstain" for r in samples)
-            output.append({"horizon": horizon, "label": samples[0]["label"], "rule_version": version,
-                "threshold": _load(samples[0]["rule"])["threshold"], "expected": len(samples), "predicted": predicted,
-                "hits": hits, "evaluated": len(evaluated), "accuracy": hits / len(evaluated) if evaluated else None,
-                "coverage": addressed / len(samples), "directional_coverage": predicted / len(samples),
-                "states": dict(counts), "confusion_matrix": matrix,
-                "predicted_classes": dict(Counter(r["direction"] for r in samples if r["direction"])),
-                "actual_classes": dict(Counter(r["actual_direction"] for r in evaluated)),
-                "by_day": [{"date": day, **stats, "accuracy": stats["hits"] / stats["evaluated"]} for day, stats in sorted(days.items())]})
-        return {"groups": output, "expected": len(rows), "filters": filters,
-                "comparison_note": "仅相同基准批次日、证券、周期和规则的重叠样本可作并排比较；团队准确率不是主模型独立能力、交易胜率或收益。",
-                "method": "D 收盘为基准，D 后第 N 个交易日收盘为终点。首次成功正式预测锁定，阈值边界计震荡；未成熟及缺失不进入准确率分母。"}
 
     def record_forecast_evaluation(self, forecast_id, evidence, *, at=None):
         at = _local(at)
@@ -655,122 +579,244 @@ class ForecastStore:
                 (status, next_try.isoformat(), reason, at.isoformat(), forecast_id))
         return evaluation_id
 
-    async def evaluate_due_forecasts(self, config, *, at=None, provider=None, limit=30):
+    def request_forecast_recheck(self, forecast_id, *, at=None):
+        """Explicit correction refresh; preserves the current valid score."""
         at = _local(at)
-        if provider is None:
+        self.forecast_detail(forecast_id)
+        with self.connect() as db:
+            if not db.execute("UPDATE forecast_evaluation_tasks SET state='recheck_requested',next_attempt=?,updated_at=? WHERE forecast_id=?", (at.isoformat(), at.isoformat(), forecast_id)).rowcount:
+                raise ValueError("弃权记录没有方向评分任务")
+        return {"forecast_id": forecast_id, "state": "recheck_requested", "requested_at": at.isoformat()}
+
+    async def evaluate_due_forecasts(self, config, *, at=None, provider=None, limit=None, price_session=None):
+        """Reserve work for first scoring and bound historical correction work."""
+        import time as runtime_time
+        from .forecast_prices import ClosingPriceSession
+        at, started = _local(at), runtime_time.monotonic()
+        current_time = lambda: at + timedelta(seconds=runtime_time.monotonic() - started)
+        total_limit = min(200, max(1, int(limit if limit is not None else config.get("forecast_evaluation_batch_size", 30))))
+        review_limit = min(total_limit, max(0, int(config.get("forecast_review_batch_size", 6))))
+        if provider is None and price_session is None:
             from .providers import MarketProvider
             provider = MarketProvider(config)
+        own_session = price_session is None
+        prices = price_session or ClosingPriceSession(self, provider,
+            concurrency=config.get("forecast_evaluation_concurrency", 4), timeout=config.get("forecast_request_timeout_seconds", 20))
+        # Latest assessment only; revisions never multiply queue entries. Round
+        # robin by account prevents a large account from occupying the whole batch.
+        query = """WITH candidates AS (
+            SELECT t.forecast_id,t.next_attempt,f.account_id,
+                CASE WHEN t.state='recheck_requested' THEN 0 WHEN e.status IN ('evaluated','unassessable') THEN 1 ELSE 0 END AS review,
+                ROW_NUMBER() OVER (PARTITION BY f.account_id,CASE WHEN t.state='recheck_requested' THEN 0 WHEN e.status IN ('evaluated','unassessable') THEN 1 ELSE 0 END ORDER BY t.next_attempt,t.forecast_id) AS account_rank
+            FROM forecast_evaluation_tasks t JOIN forecasts f ON f.id=t.forecast_id
+            LEFT JOIN forecast_evaluations e ON e.forecast_id=f.id AND e.revision=(SELECT max(x.revision) FROM forecast_evaluations x WHERE x.forecast_id=f.id)
+            WHERE t.next_attempt<=?)
+            SELECT forecast_id FROM candidates WHERE review=? ORDER BY account_rank,next_attempt,forecast_id LIMIT ?"""
         with self.connect() as db:
-            ids = [r[0] for r in db.execute("SELECT forecast_id FROM forecast_evaluation_tasks WHERE next_attempt<=? ORDER BY next_attempt LIMIT ?", (at.isoformat(), min(200, max(1, limit))))]
-        results = []
-        for forecast_id in ids:
-            forecast = self.forecast_detail(forecast_id)
-            if not forecast["target_date"]:
-                # A later calendar extension may resolve the originally frozen
-                # horizon, without changing the immutable forecast record.
+            first = [r[0] for r in db.execute(query, (at.isoformat(), 0, total_limit))]
+            reviews = [r[0] for r in db.execute(query, (at.isoformat(), 1, review_limit))]
+        ids = first[:max(1, total_limit - len(reviews))] + reviews if first else reviews
+        ids = ids[:total_limit]
+        concurrency = max(1, min(16, int(config.get("forecast_evaluation_concurrency", 4))))
+        semaphore = asyncio.Semaphore(concurrency if own_session else max(1, concurrency // 2))
+
+        async def evaluate_one(forecast_id):
+            async with semaphore:
+                token, lease_at = uuid.uuid4().hex, _local()
+                with self.connect() as db:
+                    db.execute("BEGIN IMMEDIATE")
+                    lease = db.execute("SELECT expires_at FROM forecast_evaluation_leases WHERE forecast_id=?", (forecast_id,)).fetchone()
+                    if lease and lease["expires_at"] > lease_at.isoformat():
+                        return None
+                    db.execute("INSERT OR REPLACE INTO forecast_evaluation_leases VALUES(?,?,?)", (forecast_id, token, (lease_at + timedelta(minutes=5)).isoformat()))
                 try:
-                    target = advance_trading_days(forecast["base_date"], forecast["horizon"], config.get("calendar_path"))
-                except (ValueError, OSError, KeyError):
-                    target = {"target_date": None}
-                with self.connect() as db:
-                    db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',last_error='calendar_gap',next_attempt=?,updated_at=? WHERE forecast_id=?", ((at + timedelta(hours=6)).isoformat(), at.isoformat(), forecast_id))
-                # Target resolution is persisted as evidence, not retrospectively
-                # invented from weekdays. record_evaluation handles it below.
-                if not target["target_date"]:
-                    continue
-                with self.connect() as db:
-                    db.execute("INSERT OR IGNORE INTO forecast_calendar_resolutions VALUES(?,?,?,?)", (forecast_id, target["target_date"], _dump(target), at.isoformat()))
-                    db.execute("UPDATE forecast_samples SET target_date=? WHERE id=? AND target_date IS NULL", (target["target_date"], forecast["sample_id"]))
-                forecast["target_date"] = target["target_date"]
-            due = datetime.combine(date.fromisoformat(forecast["target_date"]), time(15, 30), SHANGHAI)
-            if at < due:
-                continue
-            token, lease_at = uuid.uuid4().hex, _local()
-            with self.connect() as db:
-                db.execute("BEGIN IMMEDIATE")
-                lease = db.execute("SELECT expires_at FROM forecast_evaluation_leases WHERE forecast_id=?", (forecast_id,)).fetchone()
-                if lease and lease["expires_at"] > lease_at.isoformat():
-                    continue
-                db.execute("INSERT OR REPLACE INTO forecast_evaluation_leases VALUES(?,?,?)", (forecast_id, token, (lease_at + timedelta(minutes=5)).isoformat()))
-            try:
-                evidence = await asyncio.wait_for(closing_pair(provider, forecast["symbol"], forecast["base_date"], forecast["target_date"]),
-                    timeout=min(120, max(10, int(config.get("network_timeout_seconds", 12)) * 4)))
-                if self.record_forecast_evaluation(forecast_id, evidence, at=at):
-                    results.append(forecast_id)
-            except Exception as exc:
-                with self.connect() as db:
-                    db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',attempts=attempts+1,last_error=?,next_attempt=?,updated_at=? WHERE forecast_id=?",
-                        (type(exc).__name__ + ": " + str(exc)[:300], (at + timedelta(minutes=15)).isoformat(), at.isoformat(), forecast_id))
-            finally:
-                with self.connect() as db:
-                    db.execute("DELETE FROM forecast_evaluation_leases WHERE forecast_id=? AND token=?", (forecast_id, token))
-        return results
+                    with self.connect() as db:
+                        row = db.execute("SELECT f.*,COALESCE(f.target_date,c.target_date) AS effective_target_date FROM forecasts f LEFT JOIN forecast_calendar_resolutions c ON c.forecast_id=f.id WHERE f.id=?", (forecast_id,)).fetchone()
+                        forecast = dict(row)
+                    target_date = forecast["effective_target_date"]
+                    if not target_date:
+                        try:
+                            target = advance_trading_days(forecast["base_date"], forecast["horizon"], config.get("calendar_path"))
+                        except (ValueError, OSError, KeyError):
+                            target = {"target_date": None}
+                        if not target["target_date"]:
+                            with self.connect() as db:
+                                db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',last_error='calendar_gap',next_attempt=?,updated_at=? WHERE forecast_id=?", ((current_time() + timedelta(hours=6)).isoformat(), current_time().isoformat(), forecast_id))
+                            return None
+                        target_date = target["target_date"]
+                        with self.connect() as db:
+                            db.execute("INSERT OR IGNORE INTO forecast_calendar_resolutions VALUES(?,?,?,?)", (forecast_id, target_date, _dump(target), current_time().isoformat()))
+                            db.execute("UPDATE forecast_samples SET target_date=? WHERE id=? AND target_date IS NULL", (target_date, forecast["sample_id"]))
+                    due = datetime.combine(date.fromisoformat(target_date), time(15, 30), SHANGHAI)
+                    if current_time() < due:
+                        with self.connect() as db:
+                            db.execute("UPDATE forecast_evaluation_tasks SET next_attempt=? WHERE forecast_id=?", (due.isoformat(), forecast_id))
+                        return None
+                    evidence = await prices.pair(forecast["symbol"], forecast["base_date"], target_date)
+                    completed = self.record_forecast_evaluation(forecast_id, evidence, at=current_time())
+                    with self.connect() as db:
+                        task = db.execute("SELECT state FROM forecast_evaluation_tasks WHERE forecast_id=?", (forecast_id,)).fetchone()
+                        if task and task["state"] in ("evaluated", "unassessable"):
+                            days = config.get("forecast_review_interval_days", 7) if task["state"] == "evaluated" else config.get("forecast_unassessable_review_days", 14)
+                            db.execute("UPDATE forecast_evaluation_tasks SET next_attempt=? WHERE forecast_id=?", ((current_time() + timedelta(days=max(1, min(365, int(days))))).isoformat(), forecast_id))
+                    return forecast_id if completed else None
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    with self.connect() as db:
+                        task = db.execute("SELECT attempts FROM forecast_evaluation_tasks WHERE forecast_id=?", (forecast_id,)).fetchone()
+                        delay = min(1440, 15 * 2 ** min(task[0] if task else 0, 7))
+                        db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',attempts=attempts+1,last_error=?,next_attempt=?,updated_at=? WHERE forecast_id=?",
+                            (type(exc).__name__, (current_time() + timedelta(minutes=delay)).isoformat(), current_time().isoformat(), forecast_id))
+                    return None
+                finally:
+                    with self.connect() as db:
+                        db.execute("DELETE FROM forecast_evaluation_leases WHERE forecast_id=? AND token=?", (forecast_id, token))
+        tasks = [asyncio.create_task(evaluate_one(forecast_id)) for forecast_id in ids]
+        try:
+            if not tasks:
+                return []
+            done, pending = await asyncio.wait(tasks, timeout=max(0.05, min(300, float(config.get("forecast_cycle_timeout_seconds", 45)))))
+            for task in pending:
+                task.cancel()
+            if pending:
+                await asyncio.gather(*pending, return_exceptions=True)
+            return [task.result() for task in tasks if task in done and not task.cancelled() and task.exception() is None and task.result()]
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            if own_session:
+                await prices.close()
 
     async def forecast_tick(self, config, *, at=None, provider=None, create_batches=True):
-        at = _local(at)
+        """Persist today's scopes before network work; score and prepare in parallel."""
+        import time as runtime_time
+        from .forecast_prices import ClosingPriceSession
+        at, started = _local(at), runtime_time.monotonic()
+        current_time = lambda: at + timedelta(seconds=runtime_time.monotonic() - started)
         self.expire_forecast_batches(at)
-        evaluated = []
-        if config.get("forecast_evaluation_enabled", True):
-            evaluated = await self.evaluate_due_forecasts(config, at=at, provider=provider)
-        created = []
-        if not create_batches:
-            return {"evaluated": evaluated, "batches": created}
+        self.reconcile_forecast_windows(at=at, calendar_path=config.get("calendar_path"), scheduled_enabled=config.get("scheduled_research_enabled", self.settings().get("scheduled_research_enabled", True)))
+        candidates, created = [], []
         try:
             trading = trading_date(at.date(), config.get("calendar_path"))["trading_day"]
         except (OSError, ValueError, KeyError):
             trading = None
-        if trading is not True or at.time().replace(tzinfo=None) < time(15):
-            return {"evaluated": evaluated, "batches": created}
-        for account in self.accounts():
-            settings = self.forecast_settings(account["id"])
-            with self.connect() as db:
-                existing = db.execute("SELECT id,job_id FROM forecast_batches WHERE account_id=? AND kind=? AND base_date=?", (account["id"], "formal" if self.mode == "live" else "test", at.date().isoformat())).fetchone()
-                batch = self._forecast_batch(db, existing["id"]) if existing else None
-            if existing:
-                if existing["job_id"] or batch["state"] in ("failed", "closed") or at.isoformat() >= batch["deadline"]:
-                    continue
-                if batch["state"] == "open" and any(v.get("status") == "ready" for v in batch["baseline_evidence"].values()):
-                    created.append(batch)
-                    continue
-            else:
-                if not settings["enabled"] or not _clock(settings["start_time"]) <= at.time().replace(tzinfo=None) < _clock(settings["deadline_time"]):
-                    continue
-                universe = self.universe_snapshot()["universe"]
-                symbols = sorted({h["symbol"] for h in account["holdings"]} | set(universe.get("candidates", [])))
-                if not symbols:
-                    continue
-                try:
-                    batch = self.create_forecast_batch(account["id"], at=at, symbols=symbols,
-                        calendar_path=config.get("calendar_path"), expected_input_version=account["version"])
-                except ValueError as exc:
-                    self.set_meta("forecast_baseline_wait:" + account["id"], {"at": at.isoformat(), "date": at.date().isoformat(), "reason": str(exc), "symbols": symbols})
-                    continue
+        if create_batches and trading is True and at.time().replace(tzinfo=None) >= time(15):
+            for account in self.accounts():
+                settings = self.forecast_settings(account["id"])
                 with self.connect() as db:
-                    db.execute("UPDATE forecast_batches SET state='waiting_data' WHERE id=?", (batch["id"],))
-                    db.execute("UPDATE forecast_samples SET state='waiting_data',reason='等待当日精确收盘基准，尚未启动模型研究' WHERE batch_id=? AND state='uncovered'", (batch["id"],))
-            if provider is None:
-                from .providers import MarketProvider
-                provider = MarketProvider(config)
-            baseline = {}
-            for symbol in batch["symbols"]:
-                try:
-                    baseline[symbol] = await asyncio.wait_for(closing_pair(provider, symbol, batch["base_date"], batch["base_date"]),
-                        timeout=min(60, max(10, int(config.get("network_timeout_seconds", 12)) * 3)))
-                except Exception as exc:
-                    baseline[symbol] = {"symbol": symbol, "base_date": batch["base_date"], "target_date": batch["base_date"],
-                        "status": "waiting_data", "reason": "baseline_unavailable", "error": type(exc).__name__, "fetched_at": now()}
-            ready = any(v["status"] == "ready" for v in baseline.values())
+                    existing = db.execute("SELECT id,job_id FROM forecast_batches WHERE account_id=? AND kind=? AND base_date=?", (account["id"], "formal" if self.mode == "live" else "test", at.date().isoformat())).fetchone()
+                    batch = self._forecast_batch(db, existing["id"]) if existing else None
+                if batch:
+                    if batch["state"] in ("failed", "closed") or at.isoformat() >= batch["deadline"]:
+                        continue
+                    if batch["job_id"]:
+                        created.append(batch)  # stable ready-batch return contract
+                        continue
+                    if batch["state"] == "open" and any(v.get("status") == "ready" for v in batch["baseline_evidence"].values()):
+                        self.enqueue_forecast_batch(batch["id"], at=current_time())
+                        created.append(batch)
+                        continue
+                else:
+                    if not settings["enabled"] or not _clock(settings["start_time"]) <= at.time().replace(tzinfo=None) < _clock(settings["deadline_time"]):
+                        continue
+                    universe = self.universe_snapshot()["universe"]
+                    symbols = sorted({h["symbol"] for h in account["holdings"]} | set(universe.get("candidates", [])))
+                    if not symbols:
+                        continue
+                    try:
+                        batch = self.create_forecast_batch(account["id"], at=current_time(), symbols=symbols,
+                            calendar_path=config.get("calendar_path"), expected_input_version=account["version"])
+                    except ValueError as exc:
+                        self.set_meta("forecast_baseline_wait:" + account["id"], {"at": current_time().isoformat(), "date": at.date().isoformat(), "reason": str(exc), "symbols": symbols})
+                        continue
+                    with self.connect() as db:
+                        db.execute("UPDATE forecast_batches SET state='waiting_data' WHERE id=?", (batch["id"],))
+                        db.execute("UPDATE forecast_samples SET state='waiting_data',reason='等待当日精确收盘基准，尚未启动模型研究' WHERE batch_id=? AND state='uncovered'", (batch["id"],))
+                candidates.append(batch)
+        if provider is None:
+            from .providers import MarketProvider
+            provider = MarketProvider(config)
+        prices = ClosingPriceSession(self, provider, concurrency=config.get("forecast_evaluation_concurrency", 4),
+                                     timeout=config.get("forecast_request_timeout_seconds", 20))
+        budget = max(1, min(500, int(config.get("forecast_baseline_batch_size", 40))))
+        # Rotate bounded baseline requests across accounts and symbols. Each
+        # completed fetch is saved before another request; a crash loses no scope.
+        work = []
+        for rank in range(max((len(b["symbols"]) for b in candidates), default=0)):
+            for batch in candidates:
+                ordered = sorted(batch["symbols"], key=lambda s: (batch["baseline_evidence"].get(s, {}).get("last_checked_at", ""), s))
+                if rank < len(ordered):
+                    work.append((batch, ordered[rank]))
+        work = work[:budget]
+
+        async def prepare(batch, symbol):
+            try:
+                evidence = await prices.pair(symbol, batch["base_date"], batch["base_date"])
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                evidence = {"symbol": symbol, "base_date": batch["base_date"], "target_date": batch["base_date"], "status": "waiting_data", "reason": "baseline_unavailable", "error": type(exc).__name__}
+            check_at = current_time()
+            evidence["last_checked_at"] = check_at.isoformat()
+            ready_batch = None
             with self.connect() as db:
                 db.execute("BEGIN IMMEDIATE")
                 current = self._forecast_batch(db, batch["id"])
+                # Publication locks the baseline evidence visible at that time.
+                # Late completions do not revise it or retroactively qualify a
+                # forecast which lacked its own ready baseline.
+                if current["state"] == "published" or db.execute("SELECT 1 FROM forecasts WHERE batch_id=? LIMIT 1", (batch["id"],)).fetchone():
+                    return
+                prior_evidence = current["baseline_evidence"].get(symbol)
+                baseline = {**current["baseline_evidence"], symbol: prior_evidence if prior_evidence and prior_evidence.get("status") == "ready" else evidence}
                 if current["job_id"]:
-                    continue
-                if self.account(account["id"], db)["version"] != batch["input_version"]:
+                    # Other symbols may finish after the first ready symbol
+                    # opened the job. Keep their actual evidence, without
+                    # changing a published forecast or its fixed base date.
+                    if check_at.isoformat() < current["deadline"]:
+                        db.execute("UPDATE forecast_batches SET baseline_evidence=? WHERE id=?", (_dump(baseline), batch["id"]))
+                    return
+                if check_at.isoformat() >= current["deadline"]:
+                    db.execute("UPDATE forecast_batches SET state='closed',baseline_evidence=? WHERE id=?", (_dump(baseline), batch["id"]))
+                    db.execute("UPDATE forecast_samples SET state='missed',reason='精确基准请求完成时已超过批次截止' WHERE batch_id=? AND state IN ('uncovered','waiting_data')", (batch["id"],))
+                    return
+                if self.account(batch["account_id"], db)["version"] != batch["input_version"]:
                     db.execute("UPDATE forecast_batches SET state='failed',baseline_evidence=? WHERE id=?", (_dump(baseline), batch["id"]))
                     db.execute("UPDATE forecast_samples SET state='failed',reason='等待基准期间账户输入已变化' WHERE batch_id=? AND state IN ('uncovered','waiting_data')", (batch["id"],))
-                    continue
+                    return
+                ready = any(v.get("status") == "ready" for v in baseline.values())
                 db.execute("UPDATE forecast_batches SET state=?,baseline_evidence=? WHERE id=?", ("open" if ready else "waiting_data", _dump(baseline), batch["id"]))
                 if ready:
                     db.execute("UPDATE forecast_samples SET state='uncovered',reason=NULL WHERE batch_id=? AND state='waiting_data'", (batch["id"],))
-                    created.append(self._forecast_batch(db, batch["id"]))
-        return {"evaluated": evaluated, "batches": created}
+                    ready_batch = self._forecast_batch(db, batch["id"])
+            if ready_batch:
+                self.enqueue_forecast_batch(batch["id"], at=current_time())
+                if all(b["id"] != batch["id"] for b in created):
+                    created.append(ready_batch)
+
+        evaluation = asyncio.create_task(self.evaluate_due_forecasts(config, at=at, price_session=prices)) if config.get("forecast_evaluation_enabled", True) else None
+        if evaluation:
+            await asyncio.sleep(0)  # reserve scoring slots before baseline requests
+        preparations = [asyncio.create_task(prepare(batch, symbol)) for batch, symbol in work]
+        tasks = preparations + ([evaluation] if evaluation else [])
+        evaluated = []
+        try:
+            if tasks:
+                done, pending = await asyncio.wait(tasks, timeout=max(0.05, min(300, float(config.get("forecast_cycle_timeout_seconds", 45)))))
+                for task in pending:
+                    task.cancel()
+                await asyncio.gather(*pending, return_exceptions=True)
+                if evaluation and evaluation in done and not evaluation.cancelled() and evaluation.exception() is None:
+                    evaluated = evaluation.result()
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            await prices.close()
+            self.expire_forecast_batches(current_time())
+            self.reconcile_forecast_windows(at=current_time(), calendar_path=config.get("calendar_path"), scheduled_enabled=config.get("scheduled_research_enabled", self.settings().get("scheduled_research_enabled", True)))
+        return {"evaluated": evaluated, "batches": created, "window_runs": self.forecast_window_statistics()}

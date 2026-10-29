@@ -19,7 +19,7 @@ from typing import Any, Awaitable, Callable
 from zoneinfo import ZoneInfo
 
 from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelSession, ToolCall
-from .context import archive, recall
+from .context import archive, recall, references, visible_message
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -44,14 +44,84 @@ def _team_context(team):
     return result
 
 
+def _source_index_context(materials, conclusions):
+    """Keep cited source metadata; other fetched sources remain explicit ID indexes."""
+    cited = set()
+
+    def visit(value):
+        if isinstance(value, dict):
+            if isinstance(value.get('material_id'), str):
+                cited.add(value['material_id'])
+            material_ids = value.get('material_ids')
+            if isinstance(material_ids, list):
+                cited.update(mid for mid in material_ids if isinstance(mid, str))
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(conclusions)
+    entries = [material for material in (materials if isinstance(materials, list) else []) if isinstance(material, dict)]
+    return ([{key: material[key] for key in ('id', 'url', 'source_title', 'access', 'classification') if key in material}
+             for material in entries if material.get('id') in cited],
+            sorted({material['id'] for material in entries if isinstance(material.get('id'), str)}))
+
+
+def _previous_analysis_context(value):
+    if not isinstance(value, dict):
+        return _research_context(value)
+    raw_result = value.get('result')
+    result = raw_result if isinstance(raw_result, dict) else {}
+    projected = {key: _research_context(value[key]) for key in
+        ('id', 'job_id', 'account_id', 'input_version', 'status', 'created_at', 'data_as_of', 'report') if key in value}
+    # Last report and its conclusions remain account-scoped. Replaying its full
+    # source bodies/HTTP diagnostics provides no new research evidence.
+    projected['result'] = {key: (_team_context(result[key]) if key == 'team_snapshot' else _research_context(result[key])) for key in
+        ('report', 'findings', 'suggestions', 'research_records', 'forecasts', 'uncertainties',
+         'references', 'material_ids', 'unincorporated_child_reports', 'model_config', 'team_snapshot') if key in result}
+    if result.get('report') == projected.get('report'):
+        projected['result'].pop('report', None)
+    projected['material_index'], projected['material_ids'] = _source_index_context(
+        result.get('materials', []), projected['result'])
+    projected['history_note'] = '上次研究结论和来源索引；本轮未重新取得的原文不因列入索引而视为已读。'
+    if raw_result is not None and not isinstance(raw_result, dict):
+        projected['legacy_result_note'] = '历史结果结构无法投影；原记录保留，未解析细节保持未知。'
+    return projected
+
+
+def _checkpoint_context(value):
+    # Validation proofs stay in SQLite. They duplicate document versions and
+    # excerpts, and are not additional model-visible research conclusions.
+    keys = ('phase', 'task_id', 'account_id', 'input_version', 'scope', 'data_as_of', 'model_config',
+            'team_snapshot', 'reports', 'material_ids', 'calculations', 'metrics', 'open_questions',
+            'unresolved_tasks', 'unresolved_tasks_note', 'manager_summary', 'created_at',
+            'checkpoint_job_id', 'resume_attempt', 'configuration_relation', 'recovery_state', 'unknown_material_ids')
+    result = {key: (_team_context(value[key]) if key == 'team_snapshot' else _research_context(value[key]))
+              for key in keys if key in value}
+    result['materials'], indexed_ids = _source_index_context(value.get('materials', []),
+        {'reports': result.get('reports'), 'manager_summary': result.get('manager_summary')})
+    material_ids = result.get('material_ids')
+    result['material_ids'] = sorted({mid for mid in material_ids if isinstance(mid, str)} | set(indexed_ids)) if isinstance(material_ids, list) else indexed_ids
+    coverage = value.get('source_coverage') or {}
+    result['unresolved_source_coverage'] = [{key: entry[key] for key in
+        ('status', 'reason', 'latest_material_ids', 'historical_material_ids', 'unresolved_report_agents') if key in entry}
+        for entry in coverage.values() if isinstance(entry, dict) and entry.get('status') != 'covered']
+    result['checkpoint_note'] = '可见研究成果及原模型归属；材料列表是索引，恢复校验收据不作为新阅读或新结论。'
+    return result
+
+
 def _research_context(value):
-    """Keep complete immutable snapshots in storage, compact their prompt projection."""
+    """Keep immutable audit snapshots in storage, project visible prompt context."""
     if isinstance(value, list):
         return [_research_context(item) for item in value]
     if not isinstance(value, dict):
         return copy.deepcopy(value)
+    if value.get('phase') == 'synthesis' and ('reports' in value or 'manager_summary' in value):
+        return _checkpoint_context(value)
     return {key: (_team_context(item) if key in
-        {'team_snapshot', '_agent_team', 'previous_team_snapshot', 'current_team_snapshot'} else _research_context(item))
+        {'team_snapshot', '_agent_team', 'previous_team_snapshot', 'current_team_snapshot'} else
+        _previous_analysis_context(item) if key == 'previous_analysis' else _research_context(item))
         for key, item in value.items() if key not in {'_model_api_key', 'credential_reference'}}
 
 
@@ -81,6 +151,11 @@ RESEARCH_RECORD = {"type": "object", "properties": {
     "kind": {"type": "string", "enum": ["market", "sector", "candidate"]}, "security_id": STRING, "sector_id": STRING,
     "title": STRING, "reason": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
     "material_ids": STRINGS, "status": STRING, "key_changes": STRING, "account_fit": STRING}, "required": ["kind", "title", "reason"]}
+MATERIAL_UPDATES = {"type": "array", "items": {"type": "object", "properties": {
+    "latest_material_id": STRING, "prior_material_ids": STRINGS,
+    "status": {"type": "string", "enum": ["handled", "needs_review"]}, "summary": STRING,
+    "supersedes_agent_ids": STRINGS}, "required": ["latest_material_id", "prior_material_ids", "status", "summary"],
+    "additionalProperties": False}, "description": "对实际读过的资料更正给出可见处理说明；历史对照可保留。主 Agent 可列出被本次说明更新的子 Agent ID，不能将尚未阅读或未处理的新版声明为完成。"}
 RESEARCH_TOOLS = [
     _schema("read", "读取公开网页正文与附件；可按 PDF 物理页码（从 1 开始）或文本字符范围读取。访问范围及截断状态以返回值为准。",
             {"url": STRING, "start_page": PAGE, "end_page": PAGE, "page": PAGE, "offset": INTEGER, "limit": {"type": "integer", "minimum": 1, "maximum": 20000}, "refresh": {"type": "boolean"}}, ["url"]),
@@ -99,7 +174,7 @@ RESEARCH_TOOLS = [
     _schema("get_recommendation", "按已有建议 ID 读取当前账户的完整建议、价格状态与复核需求，禁止跨账户访问。", {"recommendation_id": STRING}, ["recommendation_id"]),
     _schema("recall_context", "检索当前 Agent 已整理的可见上下文；只读自己的历史。提供 record_id 时按字符范围取回原记录，否则按 query 分页查摘要与引用。",
             {"record_id": STRING, "query": STRING, "offset": INTEGER, "limit": {"type": "integer", "minimum": 1, "maximum": 20}, "start": INTEGER, "length": {"type": "integer", "minimum": 1, "maximum": 12000}}),
-    _schema("history", "获取历史 OHLCV 与成交额，保留复权方式、时间和数据源限制。", {"symbol": STRING, "start": STRING, "end": STRING, "interval": STRING, "adjust": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}, ["symbol"]),
+    _schema("history", "获取历史 OHLCV 与成交额，保留复权方式、时间和数据源限制。", {"symbol": {"type": "string", "description": "市场前缀证券代码，例如 SZ:159278"}, "start": STRING, "end": STRING, "interval": {"type": "string", "enum": ["daily", "weekly", "monthly", "1m", "5m", "15m", "30m", "60m"], "description": "默认 daily；日线用 daily，不使用 1d"}, "adjust": {"type": "string", "enum": ["none", "qfq", "hfq"], "description": "默认 none；前复权 qfq，后复权 hfq"}, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}, ["symbol"]),
     _schema("sectors", "分页查询行业或概念板块基础信息；offset 为 limit 的非负整数倍；数据权限不足时如实返回。", {"kind": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
     _schema("sector_members", "分页获取板块成分证券，offset 为 limit 的非负整数倍。", {"sector_id": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}, ["sector_id"]),
     _schema("sector_history", "获取板块历史表现，可与基准 history 数据比较。", {"sector_id": STRING, "start": STRING, "end": STRING, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}}, ["sector_id"]),
@@ -112,7 +187,7 @@ MANAGER_TOOLS = [
     _schema("list_agent_roles", "列出本轮冻结的全部系统角色、职责及账户绑定；配置错误不会删除角色。", {}),
     _schema("list_business_demands", "按当前任务分页读取需求；只在最终报告 covered_demand_ids 中声明实际处理的需求。", {"limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}),
     _schema("list_forecast_targets", "分页读取本轮固定预测证券与期限；每项明确预测或弃权，未覆盖会保留。", {"limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
-    _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS}, ["summary"]),
+    _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS, "material_updates": MATERIAL_UPDATES}, ["summary"]),
     _schema("spawn_research", "创建有独立模型上下文和工具循环的子 Agent；按需要创建，不要求固定数量。",
             {"role_id": STRING, "task": STRING, "title": STRING, "context": {"type": "object", "additionalProperties": True}}, ["role_id", "task"]),
     _schema("send_message", "给子 Agent 发送补充消息。运行中在下个安全边界接收；已完成则继续同一会话。",
@@ -123,7 +198,7 @@ MANAGER_TOOLS = [
             {"agent_ids": STRINGS, "timeout_seconds": {"type": "number", "minimum": 0, "maximum": 60}}),
     _schema("agent_status", "查看指定或全部子任务的状态、阶段发现和报告；需要等待时使用 wait_agents。", {"agent_id": STRING}),
     _schema("cancel_agent", "取消已无需要的子任务；已经保存的公开材料与阶段报告仍保留。", {"agent_id": STRING, "reason": STRING}, ["agent_id"]),
-    _schema("finish_analysis", "提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
+    _schema("finish_analysis", "仅在准备交付时调用一次，且必须是本轮唯一工具调用；不能用于测试或占位。提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
             {"report": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}}, "material_ids": STRINGS,
              "valid_until": {"type": ["string", "null"]}, "uncertainties": STRINGS,
              "covered_demand_ids": {"type": "array", "items": {"type": "integer", "minimum": 1}},
@@ -143,9 +218,9 @@ MANAGER_TOOLS = [
 ]
 CHILD_TOOLS = [
     _schema("report_progress", "把阶段发现交给主 Agent，不结束任务。仅提交可见摘要，不提交隐藏思维链。", {"summary": STRING, "material_ids": STRINGS}, ["summary"]),
-    _schema("submit_report", "结束本次子任务并交付材料；主 Agent 后续可继续此会话。",
+    _schema("submit_report", "仅在准备交付时调用一次，且必须是本轮唯一工具调用；不能用于测试或占位。结束本次子任务并交付材料；主 Agent 后续可继续此会话。",
             {"summary": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}},
-             "material_ids": STRINGS, "open_questions": STRINGS}, ["summary"]),
+             "material_ids": STRINGS, "open_questions": STRINGS, "material_updates": MATERIAL_UPDATES}, ["summary"]),
 ]
 
 
@@ -207,6 +282,7 @@ class ResearchRuntime:
         self.condition = asyncio.Condition()
         self.delivered_sequence = 0
         self.materials: list[dict] = []
+        self.material_delivery_ids: dict[str, list[int]] = {}
         self.calculations: list[dict] = []
         self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
         self.synthesis_only = bool(self.synthesis_checkpoint)
@@ -475,6 +551,8 @@ class ResearchRuntime:
                         session.phase = "synthesis"
             else:
                 self._deliver_inbox(self.children[agent_id])
+            if manager and final_request:
+                await self._enter_synthesis_context(session, reason='bounded_final_request')
             request_start, compactions = len(session.requests), session.compactions
             try:
                 while True:
@@ -498,6 +576,7 @@ class ResearchRuntime:
                             if events:
                                 client.add_user(session, {"research_events": events})
                             await self._save_checkpoint()
+                            await self._enter_synthesis_context(session, reason='concurrent_budget_closeout')
                     finally:
                         self.request_owner.reset(token)
             except asyncio.CancelledError:
@@ -540,6 +619,21 @@ class ResearchRuntime:
                 if manager and final_update_used:
                     result["late_child_update_performed"] = True
                 return result
+            terminal_calls = [call for call in turn.calls if call.name in {'finish_analysis', 'submit_report'}]
+            if terminal_calls and (len(terminal_calls) != 1 or len(turn.calls) != 1):
+                # A terminal submission is a lifecycle transition, never a batch
+                # of competing candidates or a tool probe. Reject the entire
+                # local-call turn atomically; nothing in it is executed.
+                reference_candidate = None
+                error = {'accepted': False, 'failed': True, 'error_code': 'invalid_terminal_submission',
+                    'error': '终止提交必须是本轮唯一工具调用；请只调用一次 finish_analysis/submit_report，且不能与研究工具混用。'}
+                client.add_results(session, [(call, error) for call in turn.calls])
+                for call in turn.calls:
+                    await self._publish('tool_result', agent_id, {'tool': call.name, 'result': error})
+                await self._publish('terminal_submission_rejected', agent_id, {'call_count': len(turn.calls), 'error_code': error['error_code']})
+                if final_update_used or remaining_turns <= 1 or self._remaining_calls() <= 0:
+                    raise ModelError('最终提交协议无效且已无剩余修正预算；未发布任何候选报告')
+                continue
             if turn.text.strip():
                 await self._publish("agent_message", agent_id, {"summary": turn.text[:4000]})
             results: list[tuple[ToolCall, Any]] = []
@@ -562,6 +656,7 @@ class ResearchRuntime:
                                       'note': '没有剩余修正调用预算；保留引用缺口并交付有效部分。'}
                     if call.name in {"finish_analysis", "submit_report"} and output.get('accepted'):
                         submitted = copy.deepcopy(output.get('resolved_result', call.arguments))
+                        submitted['material_delivery_ids'] = list(self.material_delivery_ids.get(agent_id, []))
                 except (ModelBudgetExceeded, asyncio.CancelledError):
                     raise
                 except Exception as exc:
@@ -569,12 +664,17 @@ class ResearchRuntime:
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
             client.add_results(session, results)
+            # Inspect the bounded, visible tool results, never the unabridged
+            # provider/body object that may have been put into the context archive.
+            if hasattr(self.tools, 'store'):
+                for (call, _), message in zip(results, session.history[-len(results):] if results else []):
+                    visible = json.loads(message.get('output', message.get('content', '{}')))
+                    receipts = self.tools.store.record_material_delivery(self.task_id, self.account_id,
+                        agent_id, call.name, visible, authored=call.arguments.get('material') if call.name == 'save_material' else None)
+                    self.material_delivery_ids.setdefault(agent_id, []).extend(receipts)
             if manager and getattr(self, "_fresh_synthesis_context", None) is not None:
-                fresh = self._fresh_synthesis_context
-                session.history = fresh.history
-                session.archive = fresh.archive
                 self._fresh_synthesis_context = None
-                client.add_user(session, {"phase": "synthesis", "instruction": "研究已完成。使用检查点中的可见成果，必要时读取已有材料或重新计算，然后提交 finish_analysis；保持报告精炼。"})
+                await self._enter_synthesis_context(session, reason='prepare_synthesis')
             if native_materials:
                 client.add_user(session, {"native_source_materials": native_materials})
             if submitted is not None:
@@ -592,6 +692,152 @@ class ResearchRuntime:
                 await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
             return reference_candidate
         raise ModelBudgetExceeded("Agent 达到本轮最大工具循环次数；阶段材料已保留")
+
+    async def _enter_synthesis_context(self, session, *, reason):
+        """Project delivered evidence at a resolved boundary; never replay audit data.
+
+        Every old visible record remains in this session's archive with its
+        original ID. Only delivered conversation/tool output is projected; raw
+        oversized tool archives and opaque provider reasoning are not expanded.
+        """
+        if getattr(session, '_synthesis_projected', False):
+            return
+        if session.pending_calls:
+            raise ValueError('汇总上下文必须在所有工具调用已返回后建立')
+        size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
+        before = size(session.history)
+        messages = []
+        for record in session.archive:
+            if record.get('kind') == 'conversation':
+                try:
+                    message = json.loads(record['payload'])
+                except (ValueError, TypeError):
+                    continue
+                messages.append((record['record_id'], message))
+        for message in session.history[1:]:
+            if message.get('_context_checkpoint'):
+                continue
+            visible = visible_message(message)
+            if visible:
+                item = archive(session, visible, 'conversation')
+                messages.append((item['record_id'], visible))
+        calls = {}
+        for _, message in messages:
+            if message.get('type') == 'function_call':
+                calls[message.get('call_id')] = message.get('name')
+            for call in message.get('tool_calls') or []:
+                calls[call.get('id')] = (call.get('function') or {}).get('name')
+        evidence, source_messages, extra_messages, seen = [], [], [], set()
+        latest_budget = None
+        for record_id, message in messages:
+            text = message.get('output') if message.get('type') == 'function_call_output' else message.get('content')
+            try:
+                value = json.loads(text) if isinstance(text, str) else text
+            except (ValueError, TypeError):
+                value = text
+            if message.get('type') == 'function_call_output' or message.get('role') == 'tool':
+                call_id = message.get('call_id', message.get('tool_call_id'))
+                tool = calls.get(call_id)
+                if tool in ('agent_status', 'wait_agents', 'report_progress', 'prepare_synthesis', 'finish_analysis', 'submit_report'):
+                    continue  # Latest full child reports/status are pinned separately.
+                item = {'tool': tool, 'result': value, 'record_id': record_id,
+                        'visibility': 'previously_delivered_tool_output'}
+                signature = json.dumps({'tool': tool, 'result': value}, sort_keys=True, ensure_ascii=False, default=str)
+                if signature not in seen:
+                    evidence.append(item); seen.add(signature)
+            elif message.get('role') == 'user' and isinstance(value, dict):
+                if 'native_source_materials' in value:
+                    signature = json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+                    if signature not in seen:
+                        source_messages.append(value); seen.add(signature)
+                elif 'late_completed_child_reports' in value:
+                    extra_messages.append(value)
+                elif 'resource_budget' in value:
+                    latest_budget = value
+                elif value.get('truncated_for_context') and value.get('record_id'):
+                    # Only this wrapper was delivered. Never inject its hidden
+                    # unabridged tool_result archive as if it had been read.
+                    item = {'tool': 'visible_user_context', 'result': value, 'record_id': record_id,
+                            'visibility': 'previously_delivered_user_context'}
+                    signature = json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+                    if signature not in seen:
+                        evidence.append(item); seen.add(signature)
+        if not self.synthesis_only:
+            await self._save_checkpoint()
+        seed = copy.deepcopy(self.context)
+        seed.pop('runtime_status', None)
+        if self.synthesis_checkpoint:
+            seed['synthesis_checkpoint'] = _checkpoint_context(self.synthesis_checkpoint)
+        seed['synthesis_transition'] = {'reason': reason, 'archive_count': len(session.archive),
+            'instruction': '仅基于已经交付的可见研究结果汇总。保留未决问题和资料范围；索引及截断部分不等于新阅读。只提交一次最终报告，不再扩展研究。'}
+        max_chars = int(self.config.get('max_context_chars', 240_000))
+        # Build the retained seed without ModelClient.session's one-third clip.
+        # Include current status before allocating output space, so refreshing it
+        # immediately before HTTP cannot consume an unaccounted-for third.
+        session.history = [{'role': 'user', 'content': json.dumps(seed, ensure_ascii=False, default=str)}]
+        remaining_turns = (latest_budget or {}).get('resource_budget', {}).get('remaining_agent_turns',
+            int(self.config.get('max_agent_turns', 12)))
+        self._pin_runtime_status(session, 'manager', remaining_turns, reason != 'prepare_synthesis')
+        seed_message = copy.deepcopy(session.history[0])
+        fixed = [seed_message]
+        if latest_budget:
+            fixed.append({'role': 'user', 'content': json.dumps(latest_budget, ensure_ascii=False, default=str)})
+        # Source messages are actual delivered excerpts too. Fit them using the
+        # same budget instead of letting many native sources bypass the bound.
+        candidates = [('tool', item) for item in evidence]
+        candidates += [('source', value) for value in source_messages]
+        candidates += [('extra', value) for value in extra_messages]
+        available = max(0, int(max_chars * .70) - size(fixed) - 400)
+        each = available // max(1, len(candidates))
+        compact_evidence, kept_sources, truncated = [], [], 0
+        for kind, item in candidates:
+            if size(item) <= each:
+                if kind == 'tool':
+                    compact_evidence.append(item)
+                else:
+                    kept_sources.append(item)
+                continue
+            payload = json.dumps(item.get('result') if kind == 'tool' else item, ensure_ascii=False, default=str)
+            refs = references(item)[:6]
+            while refs and size(refs) > each // 4:
+                refs.pop()
+            if each < 300:
+                # An extreme number of results cannot all fit; the original
+                # records and the explicit omission count remain available.
+                truncated += 1
+                continue
+            compact_evidence.append({'tool': item.get('tool', 'visible_source_context'),
+                'record_id': item.get('record_id'),
+                'visible_excerpt': payload[:max(0, each - size(refs) - 300)], 'references': refs,
+                'truncated_for_synthesis': True, 'total_visible_chars': len(payload),
+                'note': '此前交付全文仍在本会话档案；该片段之外的内容不据此补造结论。'})
+            truncated += 1
+        def projected_messages():
+            messages = copy.deepcopy(fixed)
+            if compact_evidence or truncated:
+                messages.append({'role': 'user', 'content': json.dumps({
+                    'delivered_research_evidence': compact_evidence,
+                    'bounded_or_omitted_outputs': truncated,
+                    'evidence_note': '截断或省略内容保留在原档案；未列出的细节保持未知，不以索引充当原文。'}, ensure_ascii=False, default=str)})
+            messages.extend({'role': 'user', 'content': json.dumps(value, ensure_ascii=False, default=str)} for value in kept_sources)
+            return messages
+        session.history = projected_messages()
+        # JSON escaping adds overhead. Enforce the final serialized threshold,
+        # including native sources, before the generic compactor can retire it.
+        while size(session.history) > int(max_chars * .74) and (compact_evidence or kept_sources):
+            if compact_evidence:
+                compact_evidence.pop()
+            else:
+                kept_sources.pop()
+            truncated += 1
+            session.history = projected_messages()
+        session.phase = 'synthesis'
+        session.native_search = False
+        session._synthesis_projected = True
+        await self._publish('synthesis_context_projected', 'manager', {'reason': reason,
+            'before_chars': before, 'after_chars': size(session.history), 'visible_tool_outputs': len(evidence),
+            'truncated_outputs': truncated,
+            'archive_count': len(session.archive)})
 
     async def _defer_late_final(self, result: dict, report_counts: dict, *, can_update: bool) -> bool:
         """Use at most one existing turn to absorb reports arriving during final HTTP."""
@@ -624,6 +870,12 @@ class ResearchRuntime:
                 kwargs = {'model_config': self._client_for(agent_id).config} if hasattr(self.tools, 'store') else {}
                 native_materials = await self.tools.record_native_search(agent_id, turn.native_events, turn.sources, turn.annotations, **kwargs)
                 self.materials.extend(copy.deepcopy(native_materials or []))
+                if hasattr(self.tools, 'store'):
+                    for material in native_materials or []:
+                        saved = self.tools.store.material(material['id'])
+                        receipts = self.tools.store.record_material_delivery(self.task_id, self.account_id,
+                            agent_id, 'native_search', {**material, 'visible_excerpt': saved.get('content', '')})
+                        self.material_delivery_ids.setdefault(agent_id, []).extend(receipts)
             await self._publish("native_search", agent_id, {"events": turn.native_events, "sources": turn.sources,
                 "annotations": turn.annotations, "materials": native_materials, "capability": turn.native_status})
         return native_materials
@@ -632,10 +884,15 @@ class ResearchRuntime:
         """Persist only visible, finished research; service enforces freshness/CAS."""
         if declaration is None:
             declaration = copy.deepcopy((self.synthesis_checkpoint or {}).get("manager_summary") or {})
+        else:
+            declaration = copy.deepcopy(declaration)
+            declaration.pop('material_delivery_ids', None)
+            if self.material_delivery_ids.get('manager'):
+                declaration['material_delivery_ids'] = list(self.material_delivery_ids['manager'])
         reports = []
         for child in self.children.values():
             for report in child.reports:
-                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions", "research_round") if key in report}
+                visible = {key: copy.deepcopy(report[key]) for key in ("summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates") if key in report}
                 if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
                     visible["summary"] = visible["summary"][:12000]
                     visible["summary_truncated"] = True
@@ -771,12 +1028,12 @@ class ResearchRuntime:
             await self._save_checkpoint(args)
             self.synthesis_only = True
             self.synthesis_started_calls = self.calls
-            fresh = self.client.session(self.manager_session.system, {**self.context, "synthesis_checkpoint": _research_context(self.synthesis_checkpoint)})
+            # Build the prompt only after this tool call has been resolved.
             # This function's result is resolved by the ordinary tool loop first;
             # compacting the old session here would orphan its pending call.
             self.manager_session.phase = "synthesis"
             self.manager_session.native_search = False
-            self._fresh_synthesis_context = fresh
+            self._fresh_synthesis_context = True
             return {"accepted": True, "phase": "synthesis", "material_ids": self.synthesis_checkpoint.get("material_ids", [])}
         if name == "spawn_research":
             return await self._spawn(args)

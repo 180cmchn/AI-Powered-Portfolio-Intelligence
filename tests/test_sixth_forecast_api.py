@@ -25,7 +25,10 @@ def create_predictions(client, store, name, *, kind="formal", symbols=None, dire
     account = response.json()
     if threshold != "0.005":
         assert client.put(f"/api/accounts/{account['id']}/forecast-settings", json={"threshold": threshold}).status_code == 200
-    batch = store.create_forecast_batch(account["id"], at=AT, kind=kind)
+    baseline = {symbol: {"status": "ready", "symbol": symbol, "base_date": "2026-10-28",
+        "target_date": "2026-10-28", "base_price": "100", "target_price": "100",
+        "source": "explicit synthetic API fixture", "price_policy": "same_source_pair_v1"} for symbol in symbols}
+    batch = store.create_forecast_batch(account["id"], at=AT, kind=kind, baseline_evidence=baseline)
     store.bind_forecast_job(batch["id"], account["latest_job_id"])
     job = store.job(account["latest_job_id"])
     result = {"report": "Synthetic API fixture", "forecasts": [{"security_id": symbol, "horizon": horizon,

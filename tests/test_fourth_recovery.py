@@ -104,7 +104,10 @@ def checkpoint_fixture(store, *, scope="account"):
     context = {"scope": scope, "account": account if scope == "account" else None,
         "universe_version": store.universe_snapshot()["universe_version"], "metrics": {"positions": []},
         "candidate_quotes": {"SH:600519": deepcopy(quote)}, "quotes": {"SZ:000001": deepcopy(quote)}}
-    body = {"phase": "synthesis", "task_id": job["id"], "reports": [{"summary": "Finished report"}],
+    receipts = store.record_material_delivery(job['id'], account['id'], 'child', 'get_material',
+        store.material_range(source['id']))
+    body = {"phase": "synthesis", "task_id": job["id"], "reports": [{"summary": "Finished report",
+        "agent_id": "child", "material_ids": [source['id']], "material_delivery_ids": receipts}],
         "material_ids": [source["id"]]}
     store.save_synthesis_checkpoint(job, body, context)
     store.set_job_state(job["id"], "failed", "controlled failure")

@@ -1,0 +1,44 @@
+{
+  "scope": "Synthetic SQLite, no network/model; legacy algorithm full materialization versus SQL COUNT/LIMIT/OFFSET, same current joins and fixture",
+  "batches": 5000,
+  "expected_samples": 15000,
+  "page_size": 30,
+  "offset": 60,
+  "repeats": 3,
+  "hardware": {
+    "machine": "arm64",
+    "system": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.4",
+    "sqlite": "3.53.0"
+  },
+  "before_full_materialization": {
+    "median_ms": 128.572,
+    "runs_ms": [
+      121.474,
+      130.047,
+      128.572
+    ],
+    "peak_python_bytes": 31448331,
+    "returned_items": [
+      30,
+      30,
+      30
+    ]
+  },
+  "after_sql_pagination": {
+    "median_ms": 12.63,
+    "runs_ms": [
+      13.492,
+      12.38,
+      12.63
+    ],
+    "peak_python_bytes": 139711,
+    "returned_items": [
+      30,
+      30,
+      30
+    ]
+  },
+  "limitations": "Local controlled microbenchmark; Python allocations exclude SQLite native memory and OS caches. Not a production SLA."
+}

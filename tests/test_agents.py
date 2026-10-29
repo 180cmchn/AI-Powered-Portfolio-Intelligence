@@ -165,9 +165,10 @@ async def test_real_independent_loops_two_children_followup_and_mixed_material(c
                 return response(call("save_material", {"material": {"claim": "报告披露收入 10 亿元", "category": "fact", "url": "https://example.org/report", "access_scope": "excerpt", "published_at": None}}, "save-fact"),
                                 call("save_material", {"material": {"claim": "评论员建议立即加仓", "category": "opinion", "url": "https://example.org/report"}}, "save-opinion"))
             if n == 3:
-                return response(call("report_progress", {"summary": "混合报道已分别保留财务事实与投资观点", "material_ids": ["m-1", "m-2"]}),
-                                call("submit_report", {"summary": "财务事实和外部观点已分开", "material_ids": ["m-1", "m-2"]}))
+                return response(call("report_progress", {"summary": "混合报道已分别保留财务事实与投资观点", "material_ids": ["m-1", "m-2"]}))
             if n == 4:
+                return response(call("submit_report", {"summary": "财务事实和外部观点已分开", "material_ids": ["m-1", "m-2"]}))
+            if n == 5:
                 assert "补查原文访问范围" in json.dumps(payload, ensure_ascii=False)
                 return response(call("read", {"url": "https://example.org/report"}))
             return response(call("submit_report", {"summary": "原文访问失败，仅见摘要；发布时间未知", "material_ids": ["m-1", "m-2"]}))
@@ -183,7 +184,9 @@ async def test_real_independent_loops_two_children_followup_and_mixed_material(c
     assert len(result["agents"][0]["reports"]) == 2
     assert {m["category"] for m in result["materials"]} == {"fact", "opinion"}
     assert result["input_version"] == 7
-    assert len(child_requests["财报材料"]) == 5
+    assert len(child_requests["财报材料"]) == 6
+    assert any(event['type'] == 'agent_progress' and event['agent_id'] == child_ids[0]
+               and event['payload'].get('summary') == '混合报道已分别保留财务事实与投资观点' for event in events)
     assert all(event["account_id"] == "account-a" for event in events)
     assert all(event["task_id"] == "job-a-7" for event in events)
     assert "not-a-real-key" not in json.dumps(events)

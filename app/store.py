@@ -17,6 +17,7 @@ from .references import ReferenceStore
 from .recovery import RecoveryStore
 from .agent_config import AgentConfigStore, SCHEMA as AGENT_CONFIG_SCHEMA
 from .forecasts import ForecastStore, SCHEMA as FORECAST_SCHEMA
+from .forecast_windows import ForecastWindowStore, SCHEMA as FORECAST_WINDOW_SCHEMA
 
 
 def uid() -> str:
@@ -35,7 +36,7 @@ class Conflict(Exception):
     pass
 
 
-class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore):
+class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore, ForecastWindowStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
@@ -46,7 +47,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 6:
+                if version and int(loads(version[0])) > 7:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -74,6 +75,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 6:
                     backup = self.path.with_name(self.path.name + ".before-v6.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 7:
+                    backup = self.path.with_name(self.path.name + ".before-v7.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -125,7 +132,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 raise ValueError("演示与真实运行必须使用不同数据库")
             db.execute("INSERT OR IGNORE INTO meta VALUES('mode',?)", (dumps(mode),))
             db.execute("INSERT OR IGNORE INTO meta VALUES('schema_version','1')")
-            db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA + AGENT_CONFIG_SCHEMA + FORECAST_SCHEMA)
+            db.executescript(SCHEDULING_SCHEMA + MATERIAL_SCHEMA + RECOMMENDATION_SCHEMA + AGENT_CONFIG_SCHEMA + FORECAST_SCHEMA + FORECAST_WINDOW_SCHEMA)
             db.execute("BEGIN IMMEDIATE")
             self.migrate_material_catalog(db)
             self.migrate_research_versions(db)
@@ -146,7 +153,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             # values > environment > medium is resolved on each settings read.
             self.migrate_agent_config(db, {**defaults(), **saved_settings})
             self.migrate_forecasts(db)
-            db.execute("UPDATE meta SET value='6' WHERE key='schema_version'")
+            self.migrate_forecast_windows(db)
+            db.execute("UPDATE meta SET value='7' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -172,6 +180,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
     def set_meta(self, key, value):
         with self.connect() as db:
             db.execute("INSERT OR REPLACE INTO meta VALUES(?,?)", (key, dumps(value)))
+            if key in ('settings', 'universe'):
+                self.record_window_configuration(db, source=key + '_saved')
 
     def settings(self):
         settings = {**defaults(), **self.meta("settings", {})}
@@ -213,7 +223,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             prompt_version=role['prompt_version'], tool_version=role['tool_version'], team_id=team['team_id'],
             account_id=account_id, _credential_fingerprint=(provider.get('credential_reference') or {}).get('fingerprint'))
         request_options = {k: config.get(k) for k in ('model_native_search', 'model_allow_no_key', 'reasoning',
-            'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds')}
+            'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds', 'model_responses_stream')}
         config['_model_configuration_fingerprint'] = hashlib.sha256(
             dumps({'team_id': team['team_id'], 'request_options': request_options}).encode()).hexdigest()
         return config
@@ -277,6 +287,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             db.execute("DELETE FROM condition_latches WHERE account_id=?", (account_id,))
             account = self.account(account_id, db)
             db.execute("INSERT INTO snapshots VALUES(?,?,?,?)", (account_id, version, dumps(account), stamp))
+            self.record_window_configuration(db, account_id, at=stamp, source='account_saved')
             self._enqueue(db, account, reason, delay=delay)
         return self.account(account_id, db)
 
@@ -286,6 +297,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             if exists:
                 return dict(exists)
         job_id, stamp = uid(), now()
+        replaced = db.execute("SELECT id FROM jobs WHERE account_id=? AND state IN ('queued','running','waiting_config')", (account['id'],)).fetchall()
+        for previous in replaced:
+            self.update_forecast_attempt_state(db, previous['id'], 'superseded', '已有较新的账户研究任务')
         db.execute("UPDATE jobs SET state='superseded',updated_at=? WHERE account_id=? AND state IN ('queued','running','waiting_config')", (stamp, account["id"]))
         # A replaced execution cannot erase the business work it was assigned.
         db.execute("UPDATE research_demands SET state='pending',job_id=NULL,input_version=?,detail='moved to latest account input',updated_at=? WHERE account_id=? AND state IN ('assigned','pending')", (account["version"], stamp, account["id"]))
@@ -379,6 +393,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 before = model_config_summary(previous) if previous else None
                 current = model_config_summary(cfg)
                 db.execute("UPDATE jobs SET state='running',attempts=attempts+1,updated_at=?,config_snapshot=? WHERE id=?", (now(), dumps(cfg), r["id"]))
+                self.bind_forecast_attempt(db, r['id'], r['attempts'] + 1, cfg)
                 db.execute("UPDATE accounts SET analysis_state='running' WHERE id=?", (r["account_id"],))
                 # Each restart attempt keeps an audit relation, even when the
                 # latest configuration snapshot on the job is replaced.
@@ -405,6 +420,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             if not row or row["state"] in ("superseded", "cancelled", "completed"):
                 return
             db.execute("UPDATE jobs SET state=?,error=?,updated_at=? WHERE id=?", (state, error, now(), job_id))
+            self.update_forecast_attempt_state(db, job_id, state, error)
             db.execute("UPDATE accounts SET analysis_state=? WHERE id=? AND latest_job_id=?", (state, row["account_id"], job_id))
             if state in ("failed", "cancelled"):
                 db.execute("UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')", (error or state, job_id))
@@ -464,7 +480,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
     def recover(self, config_ready=False):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            abandoned = db.execute("SELECT id FROM jobs WHERE state IN ('running','queued','waiting_config') AND NOT EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)").fetchall()
+            for previous in abandoned:
+                self.update_forecast_attempt_state(db, previous['id'], 'superseded', '服务恢复时已有较新的账户输入或任务')
             db.execute("UPDATE jobs SET state='superseded' WHERE state IN ('running','queued','waiting_config') AND NOT EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)")
+            for interrupted in db.execute("SELECT id FROM jobs WHERE state='running'").fetchall():
+                self.update_forecast_attempt_state(db, interrupted['id'], 'interrupted', '服务恢复：上次执行未完成')
             db.execute("UPDATE jobs SET state='queued',due_at=?,error='服务恢复：按当前输入重新运行',updated_at=? WHERE state='running'", (now(), now()))
             self.recover_demands(db, config_ready)
             db.execute("UPDATE accounts SET analysis_state='pending' WHERE latest_job_id IN (SELECT id FROM jobs WHERE state='queued')")

@@ -13,6 +13,10 @@ const directory = await mkdtemp(join(tmpdir(), 'guanlan-browser-'));
 const child = spawn(process.env.PYTHON || 'python', ['tests/browser_app_server.py', directory], {env:{...process.env, PYTHON_DOTENV_DISABLED:'1'}, stdio:['ignore','pipe','pipe']});
 let diagnostic = '', browser, page;
 const requestTrace=[];
+const waitGate=(promise,label)=>new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(new Error(`Browser gate not observed: ${label}`)),10000);
+  promise.then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+});
 child.stderr.on('data', data => {diagnostic += data.toString();});
 try {
   const fixture = await new Promise((resolve, reject) => {
@@ -91,7 +95,7 @@ try {
   const navigationStarted=new Promise(resolve=>{observeNavigation=resolve;});
   await page.route('**/api/status',async route=>{observeNavigation();await navigationGate;await route.continue();},{times:1});
   await page.locator('nav a[href="#research"]').click();
-  await navigationStarted;
+  await waitGate(navigationStarted,'navigationStarted');
   await page.locator('#account-switch').selectOption(fixture.other_id);
   await page.locator('#account-switch').selectOption(fixture.account_id);
   await page.locator('#account-switch').selectOption(fixture.other_id);
@@ -107,7 +111,7 @@ try {
   const agentsNavigationStarted=new Promise(resolve=>{observeAgentsNavigation=resolve;});
   await page.route('**/api/status',async route=>{observeAgentsNavigation();await agentsNavigationGate;await route.continue();},{times:1});
   await page.locator('nav a[href="#agents"]').click();
-  await agentsNavigationStarted;
+  await waitGate(agentsNavigationStarted,'agentsNavigationStarted');
   const checkpointCard=page.locator('.job-card').filter({has:page.locator(`[data-action="retry-job"][data-id="${fixture.checkpoint_job_id}"]`)});
   await checkpointCard.locator('.synthesis-checkpoint').waitFor();
   assert.ok((await checkpointCard.textContent()).includes('重试时优先恢复汇总'));
@@ -131,17 +135,21 @@ try {
   // Writes proceed while GET navigation is paused, keep the clicked account and
   // version, coalesce rapid repeats, and preserve edits made before the response.
   const pauseRoute=async(pattern, method='GET', afterServer=false)=>{
-    let release, observe;
+    let release, observe, matched=false;
     const gate=new Promise(resolve=>{release=resolve;});
     const started=new Promise(resolve=>{observe=resolve;});
     const handler=async route=>{
-      if(route.request().method()!==method) return route.fallback();
+      if(route.request().method()!==method || matched) return route.fallback();
+      matched=true;
       const response=afterServer ? await route.fetch() : null;
       observe(route.request());
       await gate;
       if(response) await route.fulfill({response}); else await route.continue();
+      await page.unroute(pattern,handler);
     };
-    await page.route(pattern,handler,{times:1});
+    // Playwright counts a fallback GET toward times:1; remove only after
+    // the intended method matches, so navigation cannot consume a PUT gate.
+    await page.route(pattern,handler);
     return {started,release};
   };
   const beforeB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
@@ -149,12 +157,12 @@ try {
   await page.locator('.loading-line').waitFor({state:'hidden'});
   const saveNavigation=await pauseRoute('**/api/status');
   await page.locator('nav a[href="#holdings"]').click();
-  await saveNavigation.started;
+  await waitGate(saveNavigation.started,'saveNavigation.started');
   const versionAtClick=Number(await page.locator('#account-form').getAttribute('data-version'));
   await page.locator('#name').fill('账户 A 提交时输入');
   const saveGate=await pauseRoute(`**/api/accounts/${fixture.account_id}`,'PUT',true);
   await page.locator('#account-form button[type="submit"]').click();
-  const saveRequest=await saveGate.started;
+  const saveRequest=await waitGate(saveGate.started,'saveGate.started');
   await page.locator('#account-form button[type="submit"]').click();
   await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
   await page.locator('#name').fill('账户 A 保存后继续输入');
@@ -186,10 +194,10 @@ try {
   assert.equal((await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json()).name,'账户 A 保存后继续输入');
   const analyzeNavigation=await pauseRoute('**/api/status');
   await page.locator('nav a[href="#overview"]').click();
-  await analyzeNavigation.started;
+  await waitGate(analyzeNavigation.started,'analyzeNavigation.started');
   const analyzeGate=await pauseRoute(`**/api/accounts/${fixture.account_id}/analyze`,'POST',true);
   await page.locator('.page-heading [data-action="analyze"]').click();
-  const analyzeRequest=await analyzeGate.started;
+  const analyzeRequest=await waitGate(analyzeGate.started,'analyzeGate.started');
   await page.locator('.page-heading [data-action="analyze"]').click();
   await page.getByText('立即分析仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
   await page.locator('#account-switch').selectOption(fixture.other_id);
@@ -211,7 +219,7 @@ try {
   });
   await page.locator('#security-query').fill('old');
   await page.locator('[data-action="lookup"]').click();
-  await lookupStarted;
+  await waitGate(lookupStarted,'lookupStarted');
   await page.locator('#security-query').fill('new');
   await page.locator('[data-action="lookup"]').click();
   await page.getByText('新查询结果 · etf',{exact:true}).waitFor();
@@ -291,12 +299,15 @@ try {
   assert.equal(await page.locator('.role-card').count(),6);
   await page.locator('nav a[href="#providers"]').click();
   await page.locator('#provider-connection-form').waitFor();
+  await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.deepEqual(await page.locator('#provider-connection-form [name]').evaluateAll(nodes=>nodes.map(node=>node.name).sort()),['api_key','base_url','protocol']);
   await page.locator('#provider-connection-form [name="api_key"]').fill('browser-form-only-fixture-secret');
   await page.locator('#provider-connection-form [name="base_url"]').fill('https://new.fixture.invalid/v1/responses');
   const created=page.waitForResponse(response=>response.url().endsWith('/api/providers') && response.request().method()==='POST');
   await page.locator('#provider-connection-form button[type="submit"]').click();
-  const newProvider=await (await created).json();
+  const createdResponse=await created;
+  const newProvider=await createdResponse.json();
+  assert.equal(createdResponse.status(),201,JSON.stringify(newProvider));
   assert.equal(newProvider.catalog.status,'success');
   assert.equal(newProvider.base_url,'https://new.fixture.invalid/v1');
   await page.locator('.loading-line').waitFor({state:'hidden'});
@@ -369,7 +380,7 @@ try {
     await route.fulfill({contentType:'application/json',body:JSON.stringify({note:'受控本地工具续接结果'})});
   },{times:1});
   await page.locator('[data-action="probe"]').click();
-  await localProbeStarted;
+  await waitGate(localProbeStarted,'localProbeStarted');
   await page.locator('nav a[href="#holdings"]').click();
   await page.locator('#account-form').waitFor();
   releaseProbe();

@@ -1,0 +1,123 @@
+{
+  "iteration": 7,
+  "verified_at": "2026-10-29T11:29:21.437324+08:00",
+  "base_commit": "537e390856c9b2d203b2df49d122f1eac1094416",
+  "worktree_state": "uncommitted implementation; no push",
+  "release_source_sha256": "256c43c09b357fc43e455b988526fca0e3026d5b0982ff13f0ce48aa77a311e3",
+  "source_algorithm": "sorted app/ + scripts/ files except __pycache__; relative path + NUL + bytes",
+  "python": {
+    "command": ".venv/bin/python -m pytest -q",
+    "passed": 620,
+    "seconds": 22.38,
+    "warnings": 1,
+    "warning": "Existing Starlette TestClient httpx deprecation",
+    "failed": 0
+  },
+  "browser": {
+    "command": "PYTHON=.venv/bin/python BROWSER_EXECUTABLE='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm run test:browser",
+    "passed": [
+      "frontend_iteration.mjs",
+      "frontend_production.mjs",
+      "frontend_seventh.mjs"
+    ],
+    "failed": [],
+    "scope": "Chromium; deterministic HTTP fixtures and production FastAPI + temporary SQLite",
+    "new_scenarios": {
+      "kind": "engineering_production_API_temporary_SQLite",
+      "passed": true,
+      "console_errors": [],
+      "scenarios": [
+        "failed-model-filter",
+        "attempt-details",
+        "missed-window-and-paging",
+        "exploration-many-batches",
+        "canonical-rule-groups",
+        "empty-mature-samples",
+        "prediction-paging",
+        "no-post-hoc-pairing"
+      ]
+    }
+  },
+  "performance": {
+    "query": "seventh-query-benchmark.json",
+    "scheduler": "iteration-7-scheduler-benchmark.json",
+    "scope": "controlled local fixture; no real provider pressure test"
+  },
+  "real_network": {
+    "evidence": "seventh-live-evidence.json",
+    "final_research_process_exit": 2,
+    "final_research_source_sha256": "eadea9eeb2a2b907774429e2f8f249dba484f85b07c483b96b3f7f216aedcd72",
+    "final_research_source_unchanged": true,
+    "post_patch_restart_source_sha256": "256c43c09b357fc43e455b988526fca0e3026d5b0982ff13f0ce48aa77a311e3",
+    "post_patch_restart_source_unchanged": true,
+    "post_patch_protocol_probe_ok": true,
+    "no_research_jobs_created_at_restart": true,
+    "formal_window_verified": false,
+    "real_directional_forecasts": 0,
+    "mature_forward_samples": 0,
+    "result": "B visible report + 3 exploratory abstentions; A placeholder initially, update synthesis transport failed; prior run A full report and position linkage retained"
+  },
+  "historical_remote_ci": {
+    "run_id": 40731086202,
+    "conclusion": "success",
+    "scope": "baseline only",
+    "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/40731086202"
+  },
+  "this_iteration_remote_ci": "not_run_no_push",
+  "protected_state": {
+    ".env_modified_by_task": false,
+    "daily_database_opened_by_evaluator": "read-only",
+    "daily_service_restarted": false,
+    "daily_schema_observed": 3,
+    "daily_database_hash_changed_by_concurrent_old_service": true,
+    "credential_exported": false
+  },
+  "dependencies": {
+    "httpx": "0.28.1",
+    "fastapi": "0.159.1",
+    "uvicorn": "0.54.0",
+    "pydantic": "2.14.1"
+  },
+  "dependency_sha256": {
+    "requirements.txt": "2a0cb45a1e8c9eade0d5700b9a49c4e5220817aded303112e3b05ce3727ce749",
+    "uv.lock": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+    "package-lock.json": "8e5ffcfdccd51976d453027fcd5189ff9f1d8f8d120d661d4edb5456c54caba3"
+  },
+  "application_manifest": {
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/agent_config.py": "4169bcd2b6aa36ce1b9cde932ea214cc3486633b75e14b884ac3e5acaf9aa702",
+    "app/agents.py": "8df2ebd8eb54fc51512bb2d777a56ff53d8a680c5a85f0aa4b0915153ce77258",
+    "app/calendar.py": "5e7df84b6b1b8014f7ffa6b403fe24f3b25624d52c45e7420a945ed744c54928",
+    "app/config.py": "803b9bbd10ecb9dc876d324cfe77dd729798685c837f32f110925508f0ec403e",
+    "app/context.py": "3f01e70b06aaa7bef76b54f02d08983dc3197afbb174e02fe5fffa738a6ab659",
+    "app/credentials.py": "16505501bd2a2facef89ca7a75dec5062b333de3ee68144c11b1c372a855ee46",
+    "app/domain.py": "db4f3e5dd86392174296f284801212f4a077996c1bf10fdfc6bffc7b0f255637",
+    "app/forecast_identity.py": "465e1363a5f312cd49c6e83f14a8ee58aeb51a097e37c1bf2eaccb5fd6c26196",
+    "app/forecast_prices.py": "3ccca61522fd211048e9c25c34138c8bb4170bb20d39516c8ddf69aa61041197",
+    "app/forecast_windows.py": "7026e7eaea8686952d2479680a44b24d89f60838d502cfe145b7f3f2fd81f3f8",
+    "app/forecasts.py": "460a9cc3b8dbf6e8db7a7bb66643b5dadb5f99b7b224b04ad77110b3d4c3b70c",
+    "app/main.py": "e827b1ac76500649addcdc093575dbb6a3bfafe08c5ce5a1f9fb79a0f370e097",
+    "app/materials.py": "18c3bb39e79b41227c194ffc163bf6a4403ebc79dcee40aa425280173a92bf11",
+    "app/model.py": "0c6df652c24de1d48df28bd599c79f4fc24ed6b78c5f03c45082285369851bcf",
+    "app/native_sources.py": "870896bee984b004b514f5517884994247c927ac0b85fdbeae91514b12a7a52c",
+    "app/prompts/etf_researcher.txt": "b624924a292ae280441d2faddd871437acc6d16fd6fe0f8806bc65b8f464c554",
+    "app/prompts/filing_researcher.txt": "da2832d2fb20d785d3b52c5b77eb3a745ea2521bc1d114125ebbf71796be2afb",
+    "app/prompts/industry_researcher.txt": "ef7560563e43a8922f5702a6da0495f30bfeae263184425b08e617dd86377d9d",
+    "app/prompts/manager.txt": "89fc4c1e5f3c4f0064e512ed27899df5c8e150463790d8aa9b951448e46e9c66",
+    "app/prompts/market_researcher.txt": "cc40b5c4b01cc409c16c77640454a514728be3469f519821da531446dae95f8f",
+    "app/prompts/portfolio_researcher.txt": "92c188f9655bb19fe84860ce51c4c8a9021e50e4559a58ddc0c394a3e67aa50e",
+    "app/prompts/researcher.txt": "766609b8b0a0e1b93d573990c45c02c06c45d9556f69bbc306a0244d4cfd698c",
+    "app/providers.py": "0c859f71950fe624a21d88ecd056cbc2937dc577784db31b8078d1882613e62a",
+    "app/recommendations.py": "8a3f15e5f261f4c4fa84b09cca8ea11ffe4d094617bb527fea5f5501e4fc5f92",
+    "app/recovery.py": "3c037166536bcbe1293a38adc9a345c4031910b2d94d2574783b1f8fff7301b1",
+    "app/references.py": "850250248913e881ea1abf2cca9cb08512eab6d129aa90ad968262ef9415335f",
+    "app/scheduling.py": "3d681f15800a362b53ebc0ed561a3b0cff634d5d9a0cc85773719105708392ce",
+    "app/service.py": "064ab017f66e7ae81b576c61aa38cad4ec2cc17fbc559a64e9cff2be3e538827",
+    "app/sixth_api.py": "8ef5d7104fb9ebb790c3a601e02aaa1157b4b2c504aeef9e6ea1f969f1b0bc9d",
+    "app/static/app.js": "dbab1f3bd9d2225354a8fd1b1da891d2f331d50ebaf0be9369c915a1a1f0634b",
+    "app/static/index.html": "04b6782cd8d3f4fe60115fd2d8c4216e4a683dd00deee875cc8bd75112e3fb11",
+    "app/static/sixth.js": "37390b0733978841beb4ae764168b2a2b2e0dc0e143ae5b5c863c500b18d87f5",
+    "app/static/style.css": "2e300f0fa0f57d1d7c78ed9460c2ae960c53d85d5a064b60b2f4ca86c7f427d8",
+    "app/store.py": "841dd60a43692fe6e594421a3568dd31bda964b225fea1b270615b6f04543b54"
+  }
+}

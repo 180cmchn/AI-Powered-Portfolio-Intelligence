@@ -24,6 +24,8 @@ def model_config_summary(config: dict) -> dict:
     summary = {key: config.get(key) for key in ("model_protocol", "model_base_url", "model_name", "model_native_search")}
     summary.update({key: config.get(key) for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in config})
     summary['model_allow_no_key'] = config.get('model_allow_no_key', False)
+    if 'model_responses_stream' in config:
+        summary['model_responses_stream'] = config['model_responses_stream']
     summary["reasoning_effort"] = config.get("reasoning_effort", "medium")
     if isinstance(config.get("reasoning"), dict):
         summary["reasoning"] = {key: config["reasoning"][key] for key in ("mode", "summary") if key in config["reasoning"]}
@@ -40,6 +42,7 @@ def defaults() -> dict:
         "model_native_search": os.getenv("MODEL_NATIVE_SEARCH", "true").lower() not in {"0", "false", "off"},
         "reasoning_effort": os.getenv("REASONING_EFFORT", "medium"),
         "model_request_timeout_seconds": 90,
+        "model_responses_stream": True,
         "synthesis_request_timeout_seconds": 120,
         "synthesis_max_calls": 4, "synthesis_checkpoint_max_age_seconds": 1800,
         "quote_provider": os.getenv("QUOTE_PROVIDER", "eastmoney"),
@@ -49,6 +52,10 @@ def defaults() -> dict:
         "max_agent_turns": 12, "max_output_tokens": 4000,
         "quote_interval_seconds": 60, "scan_interval_minutes": 5,
         "scheduled_research_enabled": True,
+        "forecast_evaluation_batch_size": 30, "forecast_review_batch_size": 6,
+        "forecast_evaluation_concurrency": 4, "forecast_request_timeout_seconds": 20,
+        "forecast_cycle_timeout_seconds": 45, "forecast_review_interval_days": 7,
+        "forecast_unassessable_review_days": 14, "forecast_baseline_batch_size": 40,
         "analysis_interval_minutes": 15, "close_summary_time": "15:15",
         "price_trigger_pct": "3", "quote_stale_seconds": 180,
         "network_timeout_seconds": 12, "news_queries": [],

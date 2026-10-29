@@ -121,7 +121,23 @@ def register_sixth_routes(app, store, service):
 
     @app.get('/api/forecast-batches')
     async def forecast_batches(account_id: str | None = None, limit: int = Query(50, ge=1, le=200)):
-        return store.forecast_batches(account_id.strip() or None if account_id is not None else None, limit=limit)
+        return store.forecast_batches(account_id.strip() or None if account_id is not None else None, limit=limit, summary=True)
+
+    @app.get('/api/forecast-window-runs')
+    async def forecast_windows(account_id: str | None = None, start: str | None = None, end: str | None = None,
+                               limit: int = Query(30, ge=1, le=100), offset: int = Query(0, ge=0)):
+        aid = account_id.strip() or None if account_id is not None else None
+        return {'page': store.forecast_window_runs(aid, limit=limit, offset=offset, start_date=start, end_date=end),
+                'statistics': store.forecast_window_statistics(aid, start_date=start, end_date=end)}
+
+    @app.get('/api/forecast-attempts')
+    async def forecast_attempts(batch_id: str | None = None, job_id: str | None = None):
+        return store.forecast_attempts(batch_id=batch_id, job_id=job_id)
+
+    @app.get('/api/forecast-batches/{batch_id}')
+    async def forecast_batch_detail(batch_id: str):
+        with store.connect() as db:
+            return store._forecast_batch(db, batch_id)
 
     @app.get('/api/forecasts')
     async def forecasts(account_id: str | None = None, kind: str = 'formal', security_id: str | None = None,
@@ -153,3 +169,7 @@ def register_sixth_routes(app, store, service):
         # This action cannot generate a model prediction or select a historical winner.
         result = await store.forecast_tick(store.settings(), create_batches=False)
         return {**result, 'enabled': store.settings().get('forecast_evaluation_enabled', True)}
+
+    @app.post('/api/forecasts/{forecast_id}/recheck')
+    async def recheck_forecast(forecast_id: str):
+        return store.request_forecast_recheck(forecast_id)
