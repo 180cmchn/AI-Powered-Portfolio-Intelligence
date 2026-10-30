@@ -326,6 +326,20 @@ class RecoveryStore:
                 # A discovered but unused URL is an explicit gap, not an unmet
                 # promise to read every document before synthesizing other work.
                 status, reason = 'index_only', 'source_index_not_claimed_as_read'
+            elif not referenced and old:
+                # An unused URL title update does not revise an observed claim.
+                # No version may contain text, a content receipt or a report
+                # declaration mentioning these IDs; otherwise normal guards apply.
+                mids = {mid for mid, _ in entries}
+                mentioned = any(any(mid in json.dumps(document, ensure_ascii=False, default=str) for mid in mids)
+                                for _, document in documents)
+                originals = [self.material(mid) for mid in mids]
+                link_indexes = all(m.get('representation_kind') == 'native_search_source' and m.get('access') == 'source_link'
+                                   and not (m.get('content') or m.get('text') or '').strip() for m in originals)
+                content_received = any(item['body'].get('source_stream') == stream and
+                    (item['body'].get('delivered_content') or item['body'].get('authored_content')) for item in deliveries)
+                if link_indexes and not mentioned and not content_received:
+                    status, reason = 'index_only', 'unused_source_link_metadata_changed'
             coverage[stream] = {'status': status, 'reason': reason, 'latest_document_version_id': head,
                 'latest_material_ids': sorted(current), 'historical_material_ids': sorted(old),
                 'delivery_ids': [item['id'] for item in received], 'report_delivery_ids': sorted(set(delegated_via)),
@@ -407,10 +421,13 @@ class RecoveryStore:
                 verified = body.get('verified_material_versions', {})
                 # Older checkpoints lack per-actor delivery and processing proof.
                 # Their evidence is preserved, but cannot establish it retroactively.
-                if body.get('material_guard_version') != 3 or body.get('recovery_state') != 'synthesis_ready':
+                if body.get('material_guard_version') != 3:
                     continue
                 current_materials = self.checkpoint_material_guard(list(verified), job.get('account_id'))
                 if current_materials != verified:
+                    continue
+                body = self.reassess_checkpoint_coverage(body)
+                if body.get('recovery_state') != 'synthesis_ready':
                     continue
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=resume_count+1 WHERE job_id=?', (row['job_id'],))
                 from .config import model_config_summary
@@ -426,12 +443,28 @@ class RecoveryStore:
                         'checkpoint_created_at': row['created_at'], 'resume_attempt': row['resume_count'] + 1}
         return None
 
+    def reassess_checkpoint_coverage(self, body):
+        """Read-only correction of unused-link metadata coverage; no new evidence."""
+        if body.get('material_guard_version') != 3 or body.get('recovery_state') != 'needs_research' or body.get('unknown_material_ids'):
+            return body
+        verified = body.get('verified_material_versions', {})
+        if self.checkpoint_material_guard(list(verified), body.get('account_id')) != verified:
+            return body
+        coverage = self.checkpoint_source_coverage(body, verified, body.get('material_deliveries', []), body.get('report_deliveries', []))
+        if not all(item['status'] in {'covered', 'index_only'} for item in coverage.values()):
+            return body
+        return {**body, 'source_coverage': coverage, 'recovery_state': 'synthesis_ready',
+            'recovery_assessment': {'stored_state': body['recovery_state'], 'basis': 'unused_link_metadata_only',
+                'note': '只重算未用仅链接元数据的覆盖语义；原检查点、失败状态、材料与全部输入/时效guard未改写。'}}
+
     def checkpoint_status(self, job_id):
         with self.connect() as db:
             row = db.execute('SELECT created_at,resume_count,body FROM synthesis_checkpoints WHERE job_id=?', (job_id,)).fetchone()
         from .store import loads
-        saved = loads(row['body']) if row else {}
+        original = loads(row['body']) if row else {}
+        saved = self.reassess_checkpoint_coverage(original) if row else {}
         return {'available': bool(row), **({key: row[key] for key in ('created_at', 'resume_count')} if row else {}),
+                'saved_recovery_state': original.get('recovery_state', 'legacy_unknown'),
                 'recovery_state': saved.get('recovery_state', 'legacy_unknown'), 'source_coverage': saved.get('source_coverage', {}),
                 'report_access': [{key: item['body'].get(key) for key in ('report_id', 'source_agent_id',
                     'research_round', 'role_id', 'access', 'summary_truncated', 'note')}

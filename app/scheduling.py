@@ -320,19 +320,24 @@ class SchedulingStore:
         from .store import loads
         return {**dict(row), 'result': loads(row['result']), 'input_snapshot': loads(row['input_snapshot'])}
 
-    def global_runs(self, limit=20):
+    def global_runs(self, limit=20, summary=False):
         from .store import loads
         with self.connect() as db:
             rows = db.execute("SELECT * FROM global_runs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
-        return [self._global_body(r) for r in rows]
+            values = [self._global_body(r) for r in rows]
+            if summary:
+                return [{k: v for k, v in value.items() if k != 'result'} for value in values]
+            return [{**value, 'result': self.project_report_references(value['result'], db=db)} for value in values]
 
     def global_run(self, run_id):
         from .store import loads
         with self.connect() as db:
             row = db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone()
-        if not row:
-            raise KeyError("公共研究不存在")
-        return self._global_body(row)
+            if not row:
+                raise KeyError("公共研究不存在")
+            value = self._global_body(row)
+            value['result'] = self.project_report_references(value['result'], db=db)
+            return value
 
     def recover_demands(self, db, config_ready=False):
         db.execute("UPDATE research_demands SET state='pending',detail='recovered interrupted global work' WHERE job_id IN (SELECT id FROM global_runs WHERE state='running')")

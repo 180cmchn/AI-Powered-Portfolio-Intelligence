@@ -1,0 +1,89 @@
+{
+  "recorded_at": "2026-10-30T18:44:26.062808+08:00",
+  "base_commit": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+  "source_sha256": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+  "static_sha256": "c46742122e9b8872e1d992b975f9ad77aa2758fb7069335e4c9386e81c7e40bc",
+  "api_contract": 10,
+  "schema_version": 10,
+  "python": "3.14.4",
+  "python_regression": {
+    "command": ".venv/bin/pytest -q",
+    "exit_code": 0,
+    "passed": 891,
+    "warnings": 1,
+    "duration_seconds": 68.26,
+    "warning": "Existing StarletteDeprecationWarning: httpx with starlette.testclient; no assertions skipped"
+  },
+  "browser_groups": [
+    {
+      "group": "iteration",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 2000
+    },
+    {
+      "group": "production",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 8978
+    },
+    {
+      "group": "seventh",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 4595
+    },
+    {
+      "group": "ninth",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 16628
+    },
+    {
+      "group": "tenth",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 18747
+    }
+  ],
+  "remote_ci": {
+    "run_id": 41025059218,
+    "commit": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+    "conclusion": "success",
+    "scope": "Existing baseline Python and four browser groups; local tenth changes have not been pushed or tested remotely"
+  },
+  "env_unchanged_from_start": true,
+  "daily_instance": {
+    "pid": 20070,
+    "port": 8765,
+    "api_contract": 9,
+    "schema_version": 9,
+    "restart_performed": false,
+    "read_only_evidence": "site-runtime-after.json"
+  },
+  "python_log_sha256": "5f02507380cfa9e3ce4d5d0ab202c60be45cbce67378dd40197e9e2628a95161",
+  "previous_engineering_validation": {
+    "source_sha256": "05936700cb10cba39266f1146ac8269d802bd4a5fc199212e0846a377e268ccd",
+    "python_passed": 884,
+    "python_seconds": 66.51,
+    "note": "Before final task-dialog navigation fix; real model retries used this exact source."
+  },
+  "research_backend_comparison": {
+    "scope": "All app Python and prompt files, excluding static UI and bytecode",
+    "sha256": "7f204d1d2ef815b84995371e57680f56cacf8434484a8701416f225bbabecfd2",
+    "real_run_source_sha256": "05936700cb10cba39266f1146ac8269d802bd4a5fc199212e0846a377e268ccd",
+    "final_sha256": "2a4dd56555cd29eb5e535c6d2d10b3fee61de8c7fa1b53a99e62c0c68a7dd693",
+    "unchanged": false,
+    "change_after_real_requests": "After real model requests: static task-dialog navigation fix and mechanical explicit-material-ID publication/display reference resolution. No further model calls; original report, stored result and read receipts are preserved by read projection. Final source must not be claimed as the model-generation source."
+  },
+  "previous_navigation_validation": {
+    "source_sha256": "3295661200a5bcd7cd938563aa485cf87aba69f59e2c2cf2a7037454f2a1ffa4",
+    "python_passed": 884,
+    "python_seconds": 67.08
+  },
+  "artifact_audit": {
+    "configured_api_key_occurrences": 0,
+    "forbidden_export_fields": 0,
+    "private_databases_in_git": false
+  }
+}

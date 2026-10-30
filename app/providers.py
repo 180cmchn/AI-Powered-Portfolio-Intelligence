@@ -67,6 +67,8 @@ def _decimal(value: Any, places: int) -> str | None:
 
 def _error(exc: Exception) -> str:
     # Do not echo HTTP response bodies, request headers, or secret-bearing URLs.
+    if isinstance(exc, DeferredRequestError):
+        return '本轮已确认同一路径取数失败，暂缓重复请求；可使用已存原始材料或其他公开来源，新任务可重新验证'
     if isinstance(exc, httpx.HTTPStatusError):
         return f"HTTP {exc.response.status_code}"
     if isinstance(exc, (httpx.TimeoutException, TimeoutError)):
@@ -78,6 +80,8 @@ def _error(exc: Exception) -> str:
 
 def _quote_failure_kind(exc: Exception) -> str:
     """Only report a network cause when the exception chain supports it."""
+    if isinstance(exc, DeferredRequestError):
+        return exc.failure_kind
     causes, current = [], exc
     while current is not None and len(causes) < 8:
         causes.append(current)
@@ -101,6 +105,33 @@ class _QuoteFailure(ValueError):
     def __init__(self, exc: Exception, diagnostics: list[dict]):
         super().__init__(_error(exc))
         self.diagnostics = diagnostics
+
+
+class DeferredRequestError(httpx.RequestError):
+    def __init__(self, failure_kind):
+        super().__init__('equivalent request deferred within this research task')
+        self.failure_kind = failure_kind
+
+
+def _deferred_failure(config, key, refresh=False):
+    memory = config.get('_research_failure_memory')
+    if memory is None:
+        return None
+    if refresh:
+        memory.pop(key, None)
+        return None
+    previous = memory.get(key)
+    return previous if previous and (previous['attempts'] >= 2 or time.monotonic() - previous['at'] < 30) else None
+
+
+def _remember_failure(config, key, kind, stage=None, action=None):
+    memory = config.get('_research_failure_memory')
+    if memory is not None:
+        previous = memory.get(key, {})
+        memory[key] = {'at': time.monotonic(), 'attempts': previous.get('attempts', 0) + 1,
+                       'kind': kind, 'stage': stage, 'action': action}
+        while len(memory) > 128:
+            del memory[next(iter(memory))]
 
 
 def _last_completed_session(stamp: datetime, calendar_path=None) -> datetime | None:
@@ -467,6 +498,42 @@ class MarketProvider:
             "source": "eastmoney:public-website", "source_url": "https://quote.eastmoney.com/",
             "volume_unit": "手（供应商原始口径）", "amount_unit": "人民币元", "provider_cap_reached": len(raw) >= 1000}
 
+    async def _tencent_daily(self, symbol: str, start: str, end: str) -> tuple[list, dict]:
+        """One distinct, unadjusted daily snapshot; never splice adjusted feeds."""
+        identity = symbol.replace(':', '').lower()
+        if not re.fullmatch(r'(sh|sz)\d{6}', identity):
+            raise ValueError('备用日线仅支持沪深证券或明确的沪深指数身份')
+        first = datetime.strptime(start, '%Y%m%d').date().isoformat()
+        last = datetime.strptime(end, '%Y%m%d').date().isoformat()
+        payload, meta = await _market_json('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get', self.config,
+            params={'param': f'{identity},day,{first},{last},1000,'})
+        data = payload.get('data', {}).get(identity) if isinstance(payload, dict) else None
+        if payload.get('code') != 0 or not isinstance(data, dict) or not isinstance(data.get('day'), list):
+            raise ValueError('备用日线未返回匹配证券的未复权 day 数据；不以 qfqday/hfqday 替代')
+        rows = []
+        for raw in data['day']:
+            if not isinstance(raw, list) or len(raw) < 6:
+                raise ValueError('备用日线格式异常')
+            row = {'time': raw[0], **{k: _decimal(v, 0) for k, v in zip(('open','close','high','low','volume'), raw[1:6])}, 'amount': None}
+            if any(row[k] is None or Decimal(row[k]) <= 0 for k in ('open','close','high','low')):
+                raise ValueError('备用日线缺有效 OHLC')
+            rows.append(row)
+        return _validated_bars(rows, start, end), {**meta, 'source': 'tencent:unadjusted-daily',
+            'source_url': 'https://gu.qq.com/' + identity, 'volume_unit': '供应商原始值（未核实单位）',
+            'amount_unit': None, 'provider_cap_reached': len(data['day']) >= 1000,
+            'coverage_note': '腾讯公开未复权日线；成交额未提供，成交量单位未独立确认，不作金额或跨源成交量比较。'}
+
+    async def _public_daily_with_fallback(self, symbol, secid, first, last, interval, adjust):
+        try:
+            return await self._eastmoney_history(secid, first, last, interval, adjust)
+        except (httpx.HTTPError, OSError, TimeoutError) as exc:
+            if interval != 'daily' or adjust != 'none' or not symbol.startswith(('SH:', 'SZ:')):
+                raise
+            rows, meta = await self._tencent_daily(symbol, first, last)
+            return rows, {**meta, 'fallback_from': 'eastmoney:public-website',
+                'primary_failure': {'failure_kind': _quote_failure_kind(exc), 'error': _error(exc)},
+                'fallback_note': '整段改用独立公开来源的未复权日线；未拼接或改写原来源缓存。'}
+
     async def history(self, symbol: str, start: str | None = None, end: str | None = None,
                       interval: str = "daily", adjust: str = "none", limit: int = 250) -> dict:
         symbol = normalize_symbol(symbol)
@@ -478,7 +545,7 @@ class MarketProvider:
                 raise ValueError("证券代码不在本适配器支持范围")
             exchange, code = symbol.split(":")
             if self.research_provider == "eastmoney":
-                rows, meta = await self._eastmoney_history(f"{'1' if exchange == 'SH' else '0'}.{code}", first, last, interval, adjust)
+                rows, meta = await self._public_daily_with_fallback(symbol, f"{'1' if exchange == 'SH' else '0'}.{code}", first, last, interval, adjust)
             elif self.research_provider == "tushare":
                 if interval != "daily" or adjust != "none" or _kind(symbol) != "stock":
                     raise ValueError("当前 Tushare 适配器支持 A 股未复权日线；其他口径请切换供应商或扩展适配器")
@@ -498,6 +565,8 @@ class MarketProvider:
                           status="ok" if rows else "empty", coverage_note="仅返回供应商提供的记录；不填补停牌、缺失或未开放历史。复权口径由供应商计算；成交量与金额保留明确单位。")
         except (httpx.HTTPError, ValueError, OSError, TypeError, TimeoutError) as exc:
             result["error"] = _error(exc)
+            result.update(error_kind=_quote_failure_kind(exc), failure_stage='market_data',
+                next_action='可读取已保存的同证券、区间与复权口径原始行情；未取得数据保持缺口。显式重试新任务可重新验证数据源。')
         return result
 
     async def _eastmoney_list(self, scope: str, limit: int, offset: int = 0) -> tuple[list, dict]:
@@ -663,7 +732,7 @@ class MarketProvider:
             first, last = _date_range(start, end)
             count = _bounded(limit, 250, 1, 1000)
             if self.research_provider == "eastmoney":
-                rows, meta = await self._eastmoney_history(codes[benchmark][0], first, last, "daily", "none")
+                rows, meta = await self._public_daily_with_fallback('SH:' + codes[benchmark][0].split('.')[1], codes[benchmark][0], first, last, "daily", "none")
             elif self.research_provider == "tushare":
                 raw, meta = await self._tushare("index_daily", {"ts_code": codes[benchmark][1], "start_date": first, "end_date": last}, "ts_code,trade_date,open,high,low,close,vol,amount,pct_chg")
                 if any(row.get("ts_code") != codes[benchmark][1] for row in raw):
@@ -679,6 +748,8 @@ class MarketProvider:
                           truncated=len(rows) > count or meta.get("provider_cap_reached", False))
         except (httpx.HTTPError, ValueError, OSError, TypeError, TimeoutError) as exc:
             result["error"] = _error(exc)
+            result.update(error_kind=_quote_failure_kind(exc), failure_stage='benchmark_data',
+                next_action='同基准、日期与指数口径缓存仍可复核；不要用其他指数或搜索摘要价格替代。')
         return result
 
 
@@ -695,6 +766,10 @@ async def _market_json(url: str, config: dict, *, params: dict | None = None, bo
     if ttl and cached and time.monotonic() - cached[0] < ttl:
         _MARKET_CACHE.move_to_end(key)
         return json.loads(cached[1]), {"fetched_at": cached[2], "cache_hit": True, "cache_age_seconds": int(time.monotonic() - cached[0]), "cache_ttl_seconds": ttl, "cache_stale": False}
+    failure_key = ('market', url)
+    deferred = _deferred_failure(config, failure_key)
+    if deferred:
+        raise DeferredRequestError(deferred['kind'])
     task_key = (asyncio.get_running_loop(), key)
     task = _MARKET_INFLIGHT.get(task_key)
     if task is None:
@@ -729,7 +804,19 @@ async def _market_json(url: str, config: dict, *, params: dict | None = None, bo
             if not done.cancelled():
                 done.exception()
         task.add_done_callback(finished)
-    encoded, fetched_at = await asyncio.shield(task)
+    try:
+        encoded, fetched_at = await asyncio.shield(task)
+    except (httpx.RequestError, OSError, TimeoutError) as exc:
+        # Several agents can await the same in-flight HTTP attempt. Count that
+        # failure once in each task's memory, not once per waiting consumer.
+        memory = config.get('_research_failure_memory')
+        owners = getattr(exc, '_research_failure_owners', set())
+        if memory is not None and id(memory) not in owners:
+            _remember_failure(config, failure_key, _quote_failure_kind(exc), 'market_data')
+            exc._research_failure_owners = owners | {id(memory)}
+        raise
+    if config.get('_research_failure_memory') is not None:
+        config['_research_failure_memory'].pop(failure_key, None)
     return json.loads(encoded), {"fetched_at": fetched_at, "cache_hit": False, "cache_age_seconds": 0, "cache_ttl_seconds": ttl, "cache_stale": False}
 
 
@@ -866,6 +953,33 @@ class DocumentAccessError(ValueError):
         self.kind, self.stage, self.action = kind, stage, action
 
 
+async def _public_dns_fallback(hostname: str, config: dict) -> str:
+    """Resolve a synthetic DNS answer through HTTPS; never connect to that answer.
+
+    This resolver endpoint is infrastructure, not a content-source allowlist.
+    Every result still requires a public address, pinned TCP and hostname TLS.
+    """
+    async with httpx.AsyncClient(timeout=min(5.0, float(config.get('network_timeout_seconds', 12))),
+                                 follow_redirects=False, trust_env=False) as client:
+        async with client.stream('GET', 'https://1.1.1.1/dns-query',
+                                 params={'name': hostname, 'type': 'A'}, headers={'Accept': 'application/dns-json'}) as response:
+            response.raise_for_status()
+            chunks, size = [], 0
+            async for part in response.aiter_bytes():
+                size += len(part)
+                if size > 64000:
+                    raise ValueError('公开DNS响应超出上限')
+                chunks.append(part)
+    payload = json.loads(b''.join(chunks))
+    questions = payload.get('Question') or []
+    if payload.get('Status') != 0 or payload.get('TC') or len(questions) != 1 or questions[0].get('type') != 1 or str(questions[0].get('name', '')).rstrip('.').lower() != hostname.lower():
+        raise ValueError('公开DNS未返回匹配的完整解析结果')
+    addresses = [str(row.get('data', '')) for row in payload.get('Answer', []) if row.get('type') == 1]
+    if not addresses or len(addresses) > 32 or any(not ipaddress.ip_address(x).is_global for x in addresses):
+        raise ValueError('公开DNS未返回全部为公网的地址')
+    return addresses[0]
+
+
 async def _resolve_public_url(url: str) -> tuple[str, str]:
     """Resolve once and pin a public IP, preventing DNS rebinding/redirect SSRF."""
     parts = urlsplit(url)
@@ -882,8 +996,10 @@ async def _resolve_public_url(url: str) -> tuple[str, str]:
         raise DocumentAccessError('dns_failure', 'dns', '公开原文域名解析失败', '可稍后重试，或用原生搜索找同份文档的其他公开发布地址') from exc
     addresses = list(dict.fromkeys(item[4][0] for item in entries))
     if not addresses or any(not ipaddress.ip_address(address).is_global for address in addresses):
-        raise DocumentAccessError('non_public_dns', 'address_validation', '研究工具不能访问本机、内网或保留地址',
+        error = DocumentAccessError('non_public_dns', 'address_validation', '研究工具不能访问本机、内网或保留地址',
                                   '域名解析含非公网地址，可能受本地DNS/代理影响；未发出正文请求。可核对本机网络配置或寻找其他公开来源，不绕过地址校验')
+        error.addresses, error.hostname = addresses, hostname
+        raise error
     return hostname, addresses[0]
 
 
@@ -891,7 +1007,33 @@ async def _fetch_public(url: str, config: dict) -> tuple[bytes, str, str]:
     max_bytes = min(20_000_000, max(10_000, int(config.get("read_max_bytes", 5_000_000))))
     async with httpx.AsyncClient(timeout=float(config.get("network_timeout_seconds", 12)), follow_redirects=False, trust_env=False) as client:
         for _ in range(6):
-            hostname, address = await _resolve_public_url(url)
+            try:
+                hostname, address = await _resolve_public_url(url)
+            except DocumentAccessError as exc:
+                addresses = getattr(exc, 'addresses', [])
+                hostname = getattr(exc, 'hostname', '')
+                # Only the known synthetic benchmarking range is eligible. A
+                # private/loopback/link-local answer never gains another route.
+                synthetic = addresses and all(ipaddress.ip_address(x) in ipaddress.ip_network('198.18.0.0/15') for x in addresses)
+                literal = False
+                try:
+                    ipaddress.ip_address(hostname)
+                    literal = True
+                except ValueError:
+                    pass
+                if not synthetic or literal or not config.get('document_public_dns_fallback', True):
+                    raise
+                diagnostic = {'host': hostname, 'stage': 'dns', 'system_dns': 'synthetic_198.18/15',
+                              'resolver': 'cloudflare_https_public_dns', 'private_address_used': False}
+                config.setdefault('_network_diagnostics', []).append(diagnostic)
+                try:
+                    address = await _public_dns_fallback(hostname, config)
+                except (httpx.HTTPError, OSError, ValueError, TimeoutError) as fallback:
+                    diagnostic.update(status='failed', error_kind=_quote_failure_kind(fallback))
+                    raise DocumentAccessError('public_dns_fallback_failed', 'dns',
+                        '本机返回代理虚拟地址，公开HTTPS DNS备用解析也未成功；未连接虚拟地址',
+                        '运行 scripts/diagnose_research_network.py 查看分阶段结果；可尝试同份披露的其他公开地址。需要修改系统DNS/代理时先由用户确认。') from fallback
+                diagnostic.update(status='resolved_public', tls_hostname_verification=True)
             original = httpx.URL(url)
             pinned = original.copy_with(host=address)
             # httpcore honors sni_hostname for TLS verification while TCP uses pinned IP.
@@ -950,6 +1092,12 @@ async def _download_document(url: str, config: dict, refresh: bool = False) -> d
     if not refresh and ttl and cached and time.monotonic() - cached[0] < ttl:
         _DOCUMENT_CACHE.move_to_end(key)
         return {**cached[1], "cache_hit": True, "retrieved_at": now_iso()}
+    failure_key = ('document_dns', parts.hostname)
+    deferred = _deferred_failure(config, failure_key, refresh)
+    if deferred:
+        raise DocumentAccessError(deferred['kind'], deferred['stage'],
+            '本轮已确认该域名解析路径失败，暂缓重复下载；未发出本次正文请求',
+            '可使用已存正文/片段或寻找另一公开发布域名；30秒后最多自动再验证一次，显式 refresh 或新任务可重新验证。')
     loop = asyncio.get_running_loop()
     task_key = (loop, key)
     task = _DOCUMENT_INFLIGHT.get(task_key)
@@ -960,11 +1108,15 @@ async def _download_document(url: str, config: dict, refresh: bool = False) -> d
                 async with asyncio.timeout(float(config.get("read_timeout_seconds", 30))):
                     body, mime, final_url = await _fetch_public(url, config)
             except Exception as exc:
+                if isinstance(exc, DocumentAccessError) and exc.stage in ('dns', 'address_validation'):
+                    _remember_failure(config, failure_key, exc.kind, exc.stage, exc.action)
                 if observation_id is not None:
                     exc._material_observation_id = observation_id
                 raise
             if len(body) > _body_limit(config):
                 raise ValueError("原文超过读取字节上限")
+            if config.get('_research_failure_memory') is not None:
+                config['_research_failure_memory'].pop(failure_key, None)
             document = {"body": body, "content_type": mime, "final_url": final_url,
                         "fetched_at": now_iso(), "document_id": hashlib.sha256(body).hexdigest(),
                         "byte_length": len(body)}
@@ -1107,6 +1259,7 @@ def _extract_document(body: bytes, mime: str, config: dict, *, url: str = "", st
 
 async def _document_operation(url: str, config: dict, operation, refresh: bool) -> dict:
     result = {"url": url, "title": None, "text": None, "published_at": None, "fetched_at": now_iso(), "access": "failed", "error": None}
+    config = {**config, '_network_diagnostics': []}
     document = None
     try:
         async with asyncio.timeout(float(config.get("read_timeout_seconds", 30))):
@@ -1133,6 +1286,8 @@ async def _document_operation(url: str, config: dict, operation, refresh: bool) 
                       returned_range=None, alternative_source_status='not_searched')
         if getattr(exc, "_material_observation_id", None) is not None:
             result["_observation_id"] = exc._material_observation_id
+    if config['_network_diagnostics']:
+        result['network_diagnostics'] = config['_network_diagnostics']
     return result
 
 

@@ -7,6 +7,53 @@ from urllib.parse import quote, urlsplit
 from .materials import index_of, parent_material_ids
 
 
+_EXPLICIT_MATERIAL_ID = re.compile(
+    r'(?<![A-Za-z0-9_/#?=&%\-])(?:材料(?:\s*(?:ID|编号))?|material[_ ]id)'
+    r'\s*(?:[：:=]\s*)?[`"\']?([a-f0-9]{32})(?![a-f0-9])', re.IGNORECASE)
+_TEXT_REFERENCE_LIMIT = 200
+_TEXT_REFERENCE_SCAN_LIMIT = 1_000_000
+
+
+def explicit_material_ids(text):
+    """Only explicitly labelled IDs, never bare hashes, task IDs or URL inference."""
+    if not isinstance(text, str):
+        return [], False
+    found = {}
+    limited = len(text) > _TEXT_REFERENCE_SCAN_LIMIT
+    for match in _EXPLICIT_MATERIAL_ID.finditer(text[:_TEXT_REFERENCE_SCAN_LIMIT]):
+        found.setdefault(match.group(1).lower(), None)
+        if len(found) > _TEXT_REFERENCE_LIMIT:
+            limited = True
+            break
+    return list(found)[:_TEXT_REFERENCE_LIMIT], limited
+
+
+def reference_counts(value):
+    counts = {'resolved': 0, 'source_link': 0, 'unresolved': 0}
+
+    def count_ref(ref):
+        if not isinstance(ref, dict):
+            return
+        if ref.get('status') in counts:
+            counts[ref['status']] += 1
+        for parent in ref.get('origin_references', []):
+            count_ref(parent)
+
+    def visit(item):
+        if isinstance(item, dict):
+            for ref in item.get('references', []):
+                count_ref(ref)
+            for key, child in item.items():
+                if key not in ('references', 'reference_summary'):
+                    visit(child)
+        elif isinstance(item, list):
+            for child in item:
+                visit(child)
+
+    visit(value)
+    return counts
+
+
 def source_url(value):
     if not isinstance(value, str):
         return None
@@ -18,6 +65,34 @@ def source_url(value):
 
 
 class ReferenceStore:
+    def project_report_references(self, result, account_id=None, db=None):
+        """Bounded read-only display repair for old ordinary-text reports.
+
+        Existing stored references remain intact. Only missing, explicitly named
+        material IDs use the same access/range resolver as new publications.
+        This neither changes the authored report nor records a material read.
+        """
+        if not isinstance(result, dict):
+            return result
+        ids, limited = explicit_material_ids(result.get('report'))
+        existing = result.get('references') or []
+        known = {ref.get('material_id') for ref in existing if isinstance(ref, dict)}
+        missing = [mid for mid in ids if mid not in known]
+        if not missing:
+            if limited:
+                return {**result, 'reference_projection': {'kind': 'explicit_material_ids_read_only',
+                    'added_material_ids': [], 'limited': True}}
+            return result
+        if db is None:
+            with self.connect() as conn:
+                return self.project_report_references(result, account_id, conn)
+        extra = self.resolve_result_references({'material_ids': missing}, account_id, db)['references']
+        projected = {**result, 'references': [*existing, *extra],
+            'reference_projection': {'kind': 'explicit_material_ids_read_only',
+                'added_material_ids': missing, 'limited': limited}}
+        projected['reference_summary'] = reference_counts(projected)
+        return projected
+
     def resolve_result_references(self, result, account_id=None, db=None):
         """Resolve stored IDs without fetching, granting access, or claiming a read.
 
@@ -102,6 +177,12 @@ class ReferenceStore:
             ids = parent_material_ids(item)
             if isinstance(item.get('material_id'), str):
                 ids = [item['material_id'], *ids]
+            for key in ('report', 'summary', 'basis'):
+                explicit, limited = explicit_material_ids(item.get(key))
+                ids.extend(explicit)
+                if limited:
+                    item['text_reference_scope'] = {'limited': True, 'max_ids_per_field': _TEXT_REFERENCE_LIMIT,
+                        'max_chars_per_field': _TEXT_REFERENCE_SCAN_LIMIT}
             refs = [resolve(mid) for mid in dict.fromkeys(ids)]
             urls = []
             for key in ('url', 'source_url'):
@@ -128,21 +209,5 @@ class ReferenceStore:
             return item
 
         resolved = walk(result)
-        counts = {'resolved': 0, 'source_link': 0, 'unresolved': 0}
-        def count_ref(ref):
-            counts[ref['status']] += 1
-            for parent in ref.get('origin_references', []):
-                count_ref(parent)
-        def count(value):
-            if isinstance(value, dict):
-                for ref in value.get('references', []):
-                    count_ref(ref)
-                for key, val in value.items():
-                    if key != 'references':
-                        count(val)
-            elif isinstance(value, list):
-                for val in value:
-                    count(val)
-        count(resolved)
-        resolved['reference_summary'] = counts
+        resolved['reference_summary'] = reference_counts(resolved)
         return resolved

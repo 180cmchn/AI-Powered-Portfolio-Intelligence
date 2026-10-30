@@ -147,7 +147,7 @@ def test_old_schema_upgrade_and_consistent_backup(repository):
     with sqlite3.connect(saved) as db:
         assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
         assert db.execute("SELECT value FROM meta WHERE key='ninth_preservation_marker'").fetchone()[0] == '"preserve"'
-        assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '9'
+        assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '10'
     with sqlite3.connect(path.with_name(path.name + '.before-v9.bak')) as db:
         assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '3'
 

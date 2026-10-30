@@ -97,7 +97,8 @@ def _checkpoint_context(value):
     keys = ('phase', 'task_id', 'account_id', 'input_version', 'scope', 'data_as_of', 'model_config',
             'team_snapshot', 'reports', 'material_ids', 'metrics', 'open_questions',
             'unresolved_tasks', 'unresolved_tasks_note', 'manager_summary', 'created_at',
-            'checkpoint_job_id', 'resume_attempt', 'configuration_relation', 'recovery_state', 'unknown_material_ids')
+            'checkpoint_job_id', 'resume_attempt', 'configuration_relation', 'recovery_state', 'unknown_material_ids',
+            'partial_research', 'interruption', 'recovery_assessment')
     result = {key: (_team_context(value[key]) if key == 'team_snapshot' else _research_context(value[key]))
               for key in keys if key in value}
     result['calculations'] = checkpoint_summaries(value.get('calculations'))
@@ -313,6 +314,8 @@ class ResearchRuntime:
             self.manager_session.phase = "synthesis"
             self.manager_session.native_search = False
             self.client.add_user(self.manager_session, {"recovery": "基于已保存的可见研究成果完成最终汇总；不重复联网或创建子任务。当前持仓与版本以本次 context 为准。"})
+            if self.synthesis_checkpoint.get('partial_research'):
+                self.client.add_user(self.manager_session, {'recovery_scope': '原研究中途失败，仅复用已完成计算与可见成果，未完成范围仍未知。本次交付须明确标为有限分析；不能声称所有专题完成。'})
 
     def _remember_calculation(self, agent_id, tool, arguments, output, *, restored=None):
         summary = calculation_projection(tool, output, arguments)
@@ -585,7 +588,12 @@ class ResearchRuntime:
 
     async def run(self) -> dict:
         self.deadline = time.monotonic() + float(self.config.get("analysis_timeout_seconds", 600))
-        await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason"), "model_config": self.model_config})
+        await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason"), "model_config": self.model_config,
+            'resource_limits': {'request_timeout_seconds': self.config.get('model_request_timeout_seconds', 90),
+                'child_timeout_seconds': self.config.get('agent_timeout_seconds', 120),
+                'analysis_timeout_seconds': self.config.get('analysis_timeout_seconds', 600),
+                'max_model_calls': self.config.get('max_model_calls', 40),
+                'synthesis_max_calls': self.config.get('synthesis_max_calls', 4)}})
         if self.synthesis_only:
             await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4),
                 "configuration_relation": self.synthesis_checkpoint.get("configuration_relation"), "model_config": self.model_config})
@@ -606,6 +614,13 @@ class ResearchRuntime:
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
                                "calculation_coverage": copy.deepcopy(self.calculation_coverage),
                                "materials": copy.deepcopy(self.materials)})
+                result['research_delivery'] = {'final_report_submitted': bool(result.get('report', '').strip()),
+                    'child_total': len(self.children), 'child_completed': sum(c.status == 'completed' for c in self.children.values()),
+                    'child_incomplete': [{'agent_id': c.id, 'title': c.title, 'status': c.status, 'error': c.error,
+                        'saved_report_count': len(c.reports)} for c in self.children.values() if c.status != 'completed'],
+                    'recovered_unresolved_tasks': copy.deepcopy((self.context.get('synthesis_checkpoint') or {}).get('unresolved_tasks', [])),
+                    'recovered_partial_research': bool((self.context.get('synthesis_checkpoint') or {}).get('partial_research')),
+                    'note': '执行与专题提交统计，不代表资料覆盖、建议质量或方向准确率。'}
                 if hasattr(self.tools, 'store'):
                     result['report_access'] = [{key: item['body'].get(key) for key in
                         ('report_id', 'source_agent_id', 'research_round', 'role_id', 'access', 'summary_truncated', 'note')}
@@ -613,12 +628,20 @@ class ResearchRuntime:
                 await self._publish("agent_completed", "manager", {"report": result["report"], "model_calls": self.calls, "model_usage": result["model_usage"]})
                 return json.loads(json.dumps(result, ensure_ascii=False, default=str, allow_nan=False))
         except TimeoutError as exc:
-            await self._publish("agent_failed", "manager", {"error": "账户分析超过配置时限；阶段材料已保留"})
+            await self._save_interrupted_checkpoint('analysis_deadline')
+            await self._publish("agent_failed", "manager", {"error": "账户分析超过配置时限；阶段材料已保留", 'failure_stage': 'analysis_deadline',
+                'timeout_seconds': self.config.get('analysis_timeout_seconds', 600), 'model_calls': self.calls})
             raise ResearchTimeout("账户分析超过配置时限；可查看阶段材料并重试") from exc
         except asyncio.CancelledError:
+            # Service's outer total deadline also arrives as cancellation.
+            # Preserve completed work without guessing whether the cause was
+            # that deadline, an explicit cancel or service interruption.
+            await self._save_interrupted_checkpoint('cancelled_or_interrupted')
             await self._publish("agent_cancelled", "manager", {"reason": "分析被取消或账户版本已更新"})
             raise
         except Exception as exc:
+            if isinstance(exc, ModelError):
+                await self._save_interrupted_checkpoint('model_request_or_budget')
             await self._publish("agent_failed", "manager", {"error": self._safe_error(exc)})
             raise
         finally:
@@ -1129,7 +1152,7 @@ class ResearchRuntime:
             snapshots(value.get('late_completed_child_reports'))
         return sorted(set(receipts))
 
-    async def _save_checkpoint(self, declaration: dict | None = None) -> dict:
+    async def _save_checkpoint(self, declaration: dict | None = None, *, interruption=None) -> dict:
         """Persist only visible, finished research; service enforces freshness/CAS."""
         if declaration is None:
             declaration = copy.deepcopy((self.synthesis_checkpoint or {}).get("manager_summary") or {})
@@ -1175,6 +1198,9 @@ class ResearchRuntime:
             "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
         if hasattr(self.tools, 'store'):
             checkpoint['report_deliveries'] = self.tools.store.checkpoint_report_deliveries(self.task_id)
+        if interruption:
+            checkpoint.update(partial_research=True, interruption=copy.deepcopy(interruption))
+            checkpoint['open_questions'].append('原研究中途失败，未完成专题和未核实范围仍未知；本次恢复应交付有限分析。')
         signature = json.dumps(checkpoint, sort_keys=True, default=str)
         if signature != self.checkpoint_signature:
             self.checkpoint_signature = signature
@@ -1185,6 +1211,33 @@ class ResearchRuntime:
             await self._publish("synthesis_checkpoint", "manager", {"phase": "synthesis", "reports": len(reports),
                 "material_ids": checkpoint["material_ids"], "calculations": len(self.calculations)})
         return checkpoint
+
+    async def _save_interrupted_checkpoint(self, stage):
+        """Save only completed tool/child work, never an unfinished SSE response."""
+        if self.synthesis_only or self.manager_session.pending_calls:
+            return
+        calculations = self._available_calculations('manager')
+        reports = [report for child in self.children.values() for report in child.reports]
+        if not reports and not any(c.get('summary', {}).get('status') == 'ok' for c in calculations):
+            return
+        previous = self.synthesis_checkpoint or {}
+        old_ids = {c.get('calculation_id') for c in previous.get('calculations', [])}
+        new_ids = {c.get('calculation_id') for c in calculations}
+        old_reports = {r.get('report_id') for r in previous.get('reports', [])}
+        new_reports = {r.get('report_id') for r in reports}
+        if previous and (not old_ids <= new_ids or not old_reports <= new_reports or
+                (old_ids == new_ids and old_reports == new_reports)):
+            return  # Preserve a more complete or already-ready final checkpoint.
+        interruption = {'stage': stage, 'completed_calculations': len(calculations), 'completed_child_reports': len(reports),
+            'note': '研究在完整交付前中断；仅完成的工具结果/子报告可复用。未终止SSE、未完成专题、未读取材料不计作成果。'}
+        try:
+            saved = await self._save_checkpoint(interruption=interruption)
+            if saved:
+                await self._publish('partial_research_saved', 'manager', interruption)
+        except Exception as exc:
+            # Do not replace the original model/timeout error with a secondary
+            # persistence error or incorrectly claim that a checkpoint exists.
+            await self._publish('checkpoint_save_failed', 'manager', {'error_type': type(exc).__name__})
 
     def _preview(self, value: Any) -> Any:
         serialized = json.dumps(value, ensure_ascii=False, default=str)
@@ -1399,7 +1452,10 @@ class ResearchRuntime:
         try:
             async with self.semaphore:
                 child.status = "running"
-                await self._publish("agent_started", child.id, {"title": child.title, "round": child.round})
+                await self._publish("agent_started", child.id, {"title": child.title, "round": child.round,
+                    'model_config': child.model_config, 'resource_limits': {
+                        'request_timeout_seconds': self.config.get('model_request_timeout_seconds', 90),
+                        'child_timeout_seconds': self.config.get('agent_timeout_seconds', 120)}})
                 async with asyncio.timeout(float(self.config.get("agent_timeout_seconds", 120))):
                     while True:
                         report = await self._loop(child.id, child.session, manager=False)
@@ -1430,7 +1486,8 @@ class ResearchRuntime:
             child.status = "failed"
             child.error = "子任务超过配置时限；已保存材料和阶段报告保留"
             (child.client or self.client).resolve_pending(child.session, child.error)
-            await self._publish("agent_failed", child.id, {"error": child.error})
+            await self._publish("agent_failed", child.id, {"error": child.error, 'failure_stage': 'child_deadline',
+                'timeout_seconds': self.config.get('agent_timeout_seconds', 120), 'saved_report_count': len(child.reports)})
         except asyncio.CancelledError:
             child.status = "cancelled"
             (child.client or self.client).resolve_pending(child.session, "子任务已取消；此工具调用未完成")

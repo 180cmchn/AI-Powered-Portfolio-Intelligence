@@ -283,6 +283,44 @@ class AgentConfigStore:
         return _loads(row[0]) if row else {'status': 'not_fetched', 'models': [], 'revision': revision,
                                          'complete': False, 'selectable': False}
 
+    def migrate_tenth_roles(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='tenth_role_migration'").fetchone():
+            self.migrate_tenth_delivery_prompt(db)
+            return
+        changed = []
+        row = db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()
+        if row:
+            role = _loads(row[0])
+            prior = 'd68e0d4263bfa36af2359ec2e0011bdbbc7c92c24860d7acc142c074c071ea99'
+            if not role.get('custom') and hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() == prior:
+                role.update(system_prompt=(PROMPTS / 'manager.txt').read_text(), version=role['version'] + 1,
+                            prompt_version=role['prompt_version'] + 1, updated_at=now())
+                db.execute("UPDATE agent_definitions SET version=?,body=? WHERE role_id='manager'", (role['version'], _dumps(role)))
+                version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+                db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+                changed.append('manager')
+        db.execute("INSERT INTO meta VALUES('tenth_role_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
+            'note': 'Only exact ninth built-in manager prompt upgraded; custom prompts, bindings, effort and frozen teams retained.'}),))
+        self.migrate_tenth_delivery_prompt(db)
+
+    def migrate_tenth_delivery_prompt(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='tenth_delivery_prompt_migration'").fetchone():
+            return
+        row = db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()
+        changed = []
+        if row:
+            role = _loads(row[0])
+            previous = 'a53144260c6dec930ba3190da434ebd03762b7b0ecc772850966f485fa8259cb'
+            if not role.get('custom') and hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() == previous:
+                role.update(system_prompt=(PROMPTS / 'manager.txt').read_text(), version=role['version'] + 1,
+                            prompt_version=role['prompt_version'] + 1, updated_at=now())
+                db.execute("UPDATE agent_definitions SET version=?,body=? WHERE role_id='manager'", (role['version'], _dumps(role)))
+                version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+                db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+                changed.append('manager')
+        db.execute("INSERT INTO meta VALUES('tenth_delivery_prompt_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
+            'note': 'Exact initial tenth built-in only; more concise delivery, no change to binding, effort or request deadlines.'}),))
+
     def _public_provider(self, provider, db):
         body = {k: v for k, v in provider.items() if k != 'credential_reference'}
         ref = provider.get('credential_reference') or {}

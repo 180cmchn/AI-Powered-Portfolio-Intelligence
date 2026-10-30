@@ -1,0 +1,155 @@
+{
+  "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+  "python_version": "3.14.4",
+  "repository_source_sha256": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+  "api_contract": 10,
+  "env_file": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "database_access": "read_only",
+  "runtime_version": {
+    "started_at": "2026-10-30T15:54:39.962744+08:00",
+    "commit_at_start": "046fdfc9351b498653c47b0fa697a3baefdc6e40",
+    "api_contract": 9,
+    "instance_id": "6c1a97db7a7c4ad8bbb22707957991d1",
+    "pid": 20070,
+    "port": 8765,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+    "database_identity": "a1c024e1463926d3e55014e140e6cd465f9e44afe515ac056d187516e0cc76b1",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "1c640b9467ce85e008a846c9a28b4decf8d8fce8203363e14a0d9c5793bd91e5",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "c055b65c0eaa54f5c105f6b8074834295ecdd00b9c6b603e08ace246e0834546",
+    "schema_version": 9,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/status",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/openapi.json",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent-roles",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/accounts",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/forecasts",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/forecast-batches",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/environment-connection",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "6c1a97db7a7c4ad8bbb22707957991d1"
+    }
+  ],
+  "disk_commit": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+  "disk_dirty": true,
+  "lockfile_sha256": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+  "database_schema_version": 9,
+  "database_mode": "live",
+  "pidfiles": {
+    "live": {
+      "pid": 20070,
+      "started": "五 10月/30 15:54:39 2026",
+      "mode": "live",
+      "port": 8765,
+      "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+      "process": {
+        "pid": 20070,
+        "started": "Fri Oct 30 15:54:39 2026",
+        "owned_entry": true,
+        "alive": true
+      }
+    },
+    "demo": {
+      "pid": 31017,
+      "legacy": true,
+      "process": null
+    }
+  },
+  "listeners": [
+    {
+      "pid": 20070,
+      "started": "Fri Oct 30 15:54:39 2026",
+      "owned_entry": true,
+      "alive": true,
+      "cwd": "/Users/chn/Documents/ChatGPT/金融股票 2"
+    }
+  ],
+  "service_mode": "live",
+  "recorded_at": "2026-10-30T18:44:26.069189+08:00",
+  "note": "Read-only final check. Daily process is unchanged API/schema9 PID20070. Repository is API10. Global legacy effort is not the test account override; real acceptance sent manager max."
+}

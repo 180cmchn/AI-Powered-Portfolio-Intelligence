@@ -42,7 +42,7 @@ def install(monkeypatch, handler):
 
 @pytest.mark.asyncio
 async def test_failed_event_driven_research_manual_retry_resumes_only_synthesis(store, monkeypatch):
-    account = store.save_account(AccountInput(name="Recovery A", holdings=[]))
+    account = store.save_account(AccountInput(name="Recovery A", holdings=[], research_scope='cash_only'))
     store.request_analysis(account["id"], "public_information", "immutable-incoming-event")
     state = {"discovered": False, "child_done": False, "native_requests": 0, "recovery_requests": 0}
 
@@ -82,7 +82,7 @@ async def test_failed_event_driven_research_manual_retry_resumes_only_synthesis(
     source = store.material(body["material_ids"][0])
     assert source["access"] == "source_link"
     before = state["native_requests"]
-    store.enqueue(account["id"], "manual")
+    store.submit_task(account["id"], research_scope='cash_only', parent_job_id=first['id'])
     second = store.claim_jobs(account_id=account["id"])[0]
     await service.execute(second)
     assert store.job(second["id"])["state"] == "completed"

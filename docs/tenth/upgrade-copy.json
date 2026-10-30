@@ -1,0 +1,33 @@
+{
+  "source_access": "read_only_backup",
+  "source_schema": "9",
+  "copy_schema": 10,
+  "backup_created": true,
+  "source_observed_counts": {
+    "accounts": 1,
+    "snapshots": 3,
+    "jobs": 5,
+    "analyses": 1,
+    "forecasts": 0,
+    "materials": 137
+  },
+  "copy_before": {
+    "accounts": 1,
+    "snapshots": 3,
+    "jobs": 5,
+    "analyses": 1,
+    "forecasts": 0,
+    "materials": 137
+  },
+  "copy_after": {
+    "accounts": 1,
+    "snapshots": 3,
+    "jobs": 5,
+    "analyses": 1,
+    "forecasts": 0,
+    "materials": 137
+  },
+  "counts_preserved": true,
+  "integrity": "ok",
+  "private_copy_not_delivered": true
+}

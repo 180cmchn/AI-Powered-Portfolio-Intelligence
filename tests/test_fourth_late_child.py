@@ -47,7 +47,7 @@ async def test_child_checkpoint_survives_parent_inflight_failure_and_manual_resu
     store = Store(tmp_path / "late-child.sqlite3")
     store.set_meta("settings", cfg)
     configure_test_team(store, cfg)
-    account = store.save_account(AccountInput(name="Late child recovery", holdings=[]))
+    account = store.save_account(AccountInput(name="Late child recovery", holdings=[], research_scope='cash_only'))
     parent_started = asyncio.Event()
     manager_requests = 0
     recovered = []
@@ -86,7 +86,7 @@ async def test_child_checkpoint_survives_parent_inflight_failure_and_manual_resu
     assert body["reports"][0]["summary"] == "Completed while parent HTTP was pending"
     assert body["unresolved_tasks"] == []
     assert "encrypted_content" not in json.dumps(body)
-    store.enqueue(account["id"], "manual")
+    store.submit_task(account["id"], research_scope='cash_only', parent_job_id=first['id'])
     second = store.claim_jobs(account_id=account["id"])[0]
     await service.execute(second)
     assert store.job(second["id"])["state"] == "completed"

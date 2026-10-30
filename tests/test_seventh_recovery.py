@@ -14,7 +14,7 @@ from app.store import Store
 def case(tmp_path):
     store = Store(tmp_path / 'seventh-recovery.sqlite3')
     store.set_meta('settings', {'quote_provider': 'manual', 'debounce_seconds': 0})
-    account = store.save_account(AccountInput(name='Recovery', holdings=[]))
+    account = store.save_account(AccountInput(name='Recovery', holdings=[], research_scope='cash_only'))
     job = store.claim_jobs(account_id=account['id'])[0]
     context = {'account': account, 'universe_version': store.universe_snapshot()['universe_version'],
                'metrics': {'positions': []}}
@@ -223,7 +223,7 @@ async def test_production_runtime_comparison_failure_resumes_only_synthesis(case
     configure_test_team(store, cfg)
     # Claim a fresh configured job, leaving the already claimed setup task terminal.
     store.set_job_state(original['id'], 'failed', 'fixture setup')
-    store.enqueue(account['id'], 'manual')
+    store.submit_task(account['id'], research_scope='cash_only')
     job = store.claim_jobs(account_id=account['id'])[0]
     old, new = source(store, 'v1'), source(store, 'v2')
     stage = {'requests': 0, 'resumed': 0}
@@ -289,7 +289,7 @@ async def test_production_runtime_comparison_failure_resumes_only_synthesis(case
     assert {entry['read_document_version'] for entry in verified.values()} == {1, 2}
     assert store.checkpoint_material_guard(list(verified), account['id']) == verified
     assert {entry['body']['read_document_version'] for entry in persisted['material_deliveries']} == {1, 2}
-    store.enqueue(account['id'], 'manual')
+    store.submit_task(account['id'], research_scope='cash_only', parent_job_id=job['id'])
     retry = store.claim_jobs(account_id=account['id'])[0]
     await service.execute(retry)
     assert store.job(retry['id'])['state'] == 'completed'

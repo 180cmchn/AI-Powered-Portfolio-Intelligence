@@ -21,7 +21,7 @@ log = logging.getLogger("guanlan")
 
 class ResearchTools:
     def __init__(self, store: Store, job: dict, config: dict, context=None):
-        self.store, self.job, self.config = store, job, config
+        self.store, self.job, self.config = store, job, {**config, '_research_failure_memory': {}}
         self.context = context
 
     async def list_forecast_targets(self, limit=30, offset=0):
@@ -63,7 +63,8 @@ class ResearchTools:
             # A hosted citation never proves a local download or full document hash.
             material = self.store.save_material({
                 'url': item['url'], 'source_title': item.get('title'), 'scope': 'public',
-                'content': snippet, 'source': 'model_native_search', 'classification': 'uncertain',
+                'content': snippet, 'source': 'model_native_search', 'classification': 'unclassified',
+                'classification_origin': 'unclassified_default', 'source_type': 'native_search_source',
                 'access': 'search_excerpt' if snippet else 'source_link',
                 'representation': 'native_search_source', 'fetched_at': now(),
                 'truncated': item.get('excerpt_truncated', False), 'returned_chars': len(snippet),
@@ -83,7 +84,8 @@ class ResearchTools:
         scope = "account" if self.job.get("account_id") else "public"
         if material.get("id") and not self.store.material_accessible(material["id"], self.job.get("account_id")):
             raise KeyError("材料不属于当前账户或公开研究范围")
-        saved = self.store.save_material({**material, "scope": scope, "representation": "agent_extraction"}, self.job["id"], self.job.get("account_id"))
+        saved = self.store.save_material({**material, "scope": scope, "representation": "agent_extraction",
+            'source_type': 'model_extraction', 'classification_origin': 'agent_selected' if material.get('classification') or material.get('category') else 'unclassified_default'}, self.job["id"], self.job.get("account_id"))
         return index_of(saved)
 
     async def search(self, query: str):
@@ -94,7 +96,8 @@ class ResearchTools:
         result = await providers.read_url(url, {**self.config, '_material_observer': self.store,
                     "read_max_chars": min(self.config.get("read_max_chars", 12000), 12000)}, **options)
         material = self.store.save_material({**result, "scope": "public", "source_title": result.get("title"),
-                                            "classification": "uncertain"}, self.job["id"], self.job.get("account_id"),
+                                            "classification": "unclassified", 'classification_origin': 'unclassified_default',
+                                            'source_type': 'external_original'}, self.job["id"], self.job.get("account_id"),
                                             observation_id=result.get('_observation_id'), notify=not bool(self.job.get('account_id')))
         self._track_public_material(material)
         return {**{k: v for k, v in result.items() if not k.startswith('_')}, "material_id": material["id"], "material_identity": {
@@ -147,20 +150,30 @@ class ResearchTools:
 
     async def search_pdf(self, url, query, **options):
         result = await providers.search_pdf(url, query, {**self.config, '_material_observer': self.store}, **options)
-        saved = self.store.save_material({**result, "scope": "public", "access": "pdf_search",
-                                         "content": dumps({k: v for k, v in result.items() if not k.startswith('_')}), "classification": "uncertain"}, self.job["id"], self.job.get("account_id"),
+        saved = self.store.save_material({**result, "scope": "public", "access": "failed" if result.get('access') == 'failed' else "pdf_search",
+                                         "content": dumps({k: v for k, v in result.items() if not k.startswith('_')}),
+                                         'classification': 'unclassified', 'classification_origin': 'unclassified_default',
+                                         'source_type': 'external_original'}, self.job["id"], self.job.get("account_id"),
                                          observation_id=result.get('_observation_id'), notify=not bool(self.job.get('account_id')))
         self._track_public_material(saved)
         return {**{k: v for k, v in result.items() if not k.startswith('_')}, "material_id": saved["id"]}
 
     async def _market_data(self, method, **kwargs):
         result = await getattr(providers.MarketProvider(self.config), method)(**kwargs)
+        if result.get('status') == 'unavailable':
+            from .research_cache import reusable_history
+            cached = reusable_history(self.store, method, kwargs, self.config)
+            if cached:
+                material, reuse = cached
+                dates = {key: datetime.strptime(reuse['cache_requested_range'][key], '%Y%m%d').date().isoformat() for key in ('start', 'end')}
+                view = await self.query_market_rows(material['id'], **dates, limit=min(30, int(kwargs.get('limit', 30))))
+                return {**view, **reuse, 'refresh_failure': {k: result.get(k) for k in ('error', 'error_kind', 'failure_stage', 'next_action')}}
         saved = self.store.save_material({"scope": "public", "content": dumps(result), "source_title": method,
                                          "source_identifier": 'market:' + dumps([method, result.get('source'),
                                              result.get('symbol') or result.get('benchmark') or result.get('sector_id'),
                                              result.get('interval'), result.get('adjustment'), result.get('requested_range')]),
                                          "symbol": result.get('symbol') or result.get('benchmark') or result.get('sector_id'),
-                                         "source": result.get("source"), "classification": "source_data",
+                                         "source": result.get("source"), "classification": "source_data", 'source_type': 'external_original',
                                          "fetched_at": result.get('fetched_at'), "truncated": result.get('truncated', False),
                                          "published_at": result.get("as_of"), "access": "structured_data"}, self.job["id"], self.job.get("account_id"))
         if method in ('history', 'benchmark_history', 'sector_history'):
@@ -351,10 +364,13 @@ class Service:
             self.store.prepare_exploratory_forecast_job(job['id'], calendar_path=cfg.get('calendar_path'))
             self.store.ensure_forecast_attempt(job['id'])
             account = self.store.snapshot(job["account_id"], job["input_version"])
-            universe = self.store.meta("universe", {"watchlist": [], "candidates": []})
+            universe = job.get('universe') or self.store.meta("universe", {"watchlist": [], "candidates": []})
             target = job["reason"].split("manual_security:", 1)[-1].split(";", 1)[0] if "manual_security:" in job["reason"] else None
             target_symbols = list(dict.fromkeys([*[h["symbol"] for h in account["holdings"]], *universe["candidates"], *([target] if target else [])]))
             target_symbols = list(dict.fromkeys([*target_symbols, *self.store.recommendation_symbols(account['id'])]))
+            if not target_symbols and job.get('research_scope') != 'cash_only' and self.store.mode == 'live' and self.runner is None:
+                self.store.set_job_state(job['id'], 'waiting_scope', '没有已保存持仓、候选或明确证券目标；请选择现金与偏好分析，或先添加研究证券')
+                return
             if self.store.mode == "live" and self.runner is None:
                 try:
                     if cfg.get('_agent_team'):
@@ -367,6 +383,7 @@ class Service:
                 except ModelConfigurationError:
                     self.spawn(self.refresh_quotes(target_symbols))
                     raise
+            self.store.task_stage(job['id'], 'fetching')
             try:
                 await asyncio.wait_for(self.refresh_quotes(target_symbols), timeout=min(cfg["quote_refresh_timeout_seconds"], cfg["analysis_timeout_seconds"]))
             except TimeoutError:
@@ -378,8 +395,9 @@ class Service:
             data_as_of = min(quote_times) if quote_times else None
             suggestion_context = self.store.recommendation_context(account['id'], job['id'], target=target)
             demand_page = self.store.task_demands(job['id'], account['id'])
-            scope = self.store.universe_snapshot()
+            scope = {'universe_version': job.get('universe_version')} if job.get('universe_version') else self.store.universe_snapshot()
             context = {"account": account, "metrics": values, "candidates": universe["candidates"],
+                       'research_scope': job.get('research_scope', 'securities'),
                        "candidate_quotes": {s: q for s, q in self.quotes().items() if s in universe["candidates"]},
                        "watchlist": universe["watchlist"], "reason": job["reason"], "data_as_of": data_as_of,
                        "previous_analysis": self.store.previous_analysis(account["id"]),
@@ -406,6 +424,7 @@ class Service:
                 async def emit(event):
                     self.record_model_event(job["id"], event)
                 research = self.runner or run_research
+                self.store.task_stage(job['id'], 'researching')
                 checkpoint = self.store.reusable_synthesis_checkpoint(job, context)
                 if checkpoint:
                     context['synthesis_checkpoint'] = checkpoint
@@ -420,6 +439,7 @@ class Service:
                           universe_version=scope['universe_version'],
                           shared_research_used=[{'id': r['id'], 'universe_version': r.get('universe_version'),
                               'scope': r.get('scope'), 'applicability': r.get('applicability')} for r in context['shared_research']])
+            self.store.task_stage(job['id'], 'publishing')
             valid = self.store.publish(job["id"], result, data_as_of)
             self.store.review_recommendations(self.quotes())
             self.store.event(job["id"], {"type": "published" if valid else "stale_result", "message": "结果已发布" if valid else "输入或任务已更新，迟到结果仅保留为过期历史"})
@@ -432,7 +452,10 @@ class Service:
             raise
         except Exception as e:
             from .model import ModelError
-            message = str(e) if isinstance(e, ModelError) else ("分析超过配置的总时限" if isinstance(e, TimeoutError) else f"分析失败：{type(e).__name__}")
+            from .store import ReportPublicationError
+            message = str(e) if isinstance(e, (ModelError, ReportPublicationError)) else ("分析超过配置的总时限" if isinstance(e, TimeoutError) else f"分析失败：{type(e).__name__}")
+            if '已完成研究可从汇总检查点恢复' in message and not self.store.checkpoint_status(job['id']).get('available'):
+                message = message.replace('已完成研究可从汇总检查点恢复', '本任务尚无汇总检查点；已保存材料和事件可查看，重试将按当前版本研究')
             self.store.set_job_state(job["id"], "failed", message)
             self.store.event(job["id"], {"type": "failed", "message": message})
 
@@ -711,7 +734,7 @@ class Service:
             if global_run:
                 self.global_task = self.spawn(self.execute_global(global_run))
         for job in self.store.claim_jobs(max(0, 2 - len(self.active))):
-            if job["attempts"] > self.store.settings()["max_job_attempts"]:
+            if job.get('recovery_attempts', 0) >= self.store.settings()["max_job_attempts"]:
                 self.store.set_job_state(job["id"], "failed", "服务中断后重试次数已达上限，请手动重试")
                 continue
             self.active[job["id"]] = asyncio.create_task(self.execute(job))

@@ -159,7 +159,7 @@ def test_legacy_public_scope_stays_unknown_and_backup_preserves_ids(store):
         db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
         db.execute("UPDATE research_records SET universe_version=NULL,applicability='legacy_unknown',logical_identity=NULL")
     upgraded = Store(store.path)
-    assert upgraded.meta('schema_version') == 9
+    assert upgraded.meta('schema_version') == 10
     assert upgraded.account(a['id'])['version'] == 1
     assert upgraded.material(m['id'])['content'] == 'legacy summary'
     assert not upgraded.research_records()

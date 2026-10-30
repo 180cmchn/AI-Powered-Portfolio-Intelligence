@@ -39,7 +39,7 @@ def configured(tmp_path, monkeypatch):
         'max_agent_turns': 8, 'agent_timeout_seconds': 8, 'analysis_timeout_seconds': 12}
     store.set_meta('settings', cfg)
     configure_test_team(store, cfg)
-    account = store.save_account(AccountInput(name='Delegation', holdings=[]))
+    account = store.save_account(AccountInput(name='Delegation', holdings=[], research_scope='cash_only'))
     job = store.claim_jobs(account_id=account['id'])[0]
     context = {'account': account, 'input_version': job['input_version'], 'job_id': job['id'],
         'universe_version': store.universe_snapshot()['universe_version'], 'metrics': {'positions': []}}
@@ -125,7 +125,7 @@ async def test_service_delegation_fault_resumes_without_reread_or_new_child(conf
     reports = store.checkpoint_report_deliveries(job['id'])
     assert any(item['body']['access'] == 'full_report' and item['body']['source_material_deliveries'] for item in reports)
     assert all(item['body']['research_round'] == 1 for item in reports)
-    store.enqueue(account['id'], 'manual')
+    store.submit_task(account['id'], research_scope='cash_only', parent_job_id=job['id'])
     retry = store.claim_jobs(account_id=account['id'])[0]
     await service.execute(retry)
     assert store.job(retry['id'])['state'] == 'completed'

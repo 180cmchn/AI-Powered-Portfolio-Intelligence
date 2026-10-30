@@ -1,0 +1,840 @@
+{
+  "observed_at": "2026-10-30T17:39:41.176922+08:00",
+  "access": "sqlite mode=ro + PRAGMA query_only; read transaction; no Store import/migration",
+  "selection": {
+    "method": "exact two IDs supplied by the user; not a system-wide sample",
+    "task_count": 2,
+    "created_interval": [
+      "2026-10-30T00:23:16.004521+08:00",
+      "2026-10-30T15:56:40.604928+08:00"
+    ],
+    "last_terminal_update": "2026-10-30T16:01:43.162041+08:00",
+    "active_cancellations_in_selected_tasks": 0,
+    "limitations": [
+      "Historical HTTP submission receipts were not persisted. Existing job rows prove persistence, not client receipt.",
+      "Version-9 account snapshots preserve holdings/cash but not a submission-time universe; missing historical candidates remain unknown.",
+      "No inference from these two tasks to other accounts, other tasks or long-term success rates."
+    ]
+  },
+  "runtime_before_development": {
+    "disk_commit": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+    "disk_dirty": false,
+    "repository_source_sha256": "c055b65c0eaa54f5c105f6b8074834295ecdd00b9c6b603e08ace246e0834546",
+    "api_contract": 9,
+    "database_schema_version": 9,
+    "source_matches_disk": true,
+    "static_matches_disk": true,
+    "database_matches_requested": true,
+    "api_compatible": true,
+    "loaded_version": {
+      "started_at": "2026-10-30T15:54:39.962744+08:00",
+      "commit_at_start": "046fdfc9351b498653c47b0fa697a3baefdc6e40",
+      "working_tree_dirty_at_start": true,
+      "source_sha256_at_start": "c055b65c0eaa54f5c105f6b8074834295ecdd00b9c6b603e08ace246e0834546",
+      "static_sha256_at_start": "1c640b9467ce85e008a846c9a28b4decf8d8fce8203363e14a0d9c5793bd91e5",
+      "api_contract": 9,
+      "schema_version": 9,
+      "port": 8765,
+      "database_mode": "live"
+    }
+  },
+  "tasks": [
+    {
+      "id": "a0fb153d1dc44636b12e2f6120381c41",
+      "input_version": 1,
+      "reason": "manual",
+      "state": "completed",
+      "mode": "live",
+      "attempts": 1,
+      "error": null,
+      "data_as_of": null,
+      "created_at": "2026-10-30T15:56:40.604928+08:00",
+      "updated_at": "2026-10-30T16:01:43.162041+08:00",
+      "account_alias": "test",
+      "frozen_account_input": {
+        "name": "test",
+        "version": 1,
+        "cash": null,
+        "holdings": [],
+        "preferences": {
+          "risk": "balanced",
+          "horizon": "中长期",
+          "max_position_pct": null,
+          "max_sector_pct": null
+        }
+      },
+      "frozen_universe": {
+        "watchlist": null,
+        "candidates": null,
+        "availability": "not saved in the v9 submission snapshot",
+        "published_report_claim": "no candidates/watchlist",
+        "not_inferred_from_current_universe": true
+      },
+      "times": {
+        "created_at": "2026-10-30T15:56:40.604928+08:00",
+        "last_due_at": "2026-10-30T15:56:40.605068+08:00",
+        "original_planned_at": null,
+        "claim_events": [
+          {
+            "at": "2026-10-30T15:56:41.051768+08:00",
+            "attempt": 1,
+            "model": "grok-4.7",
+            "reasoning_effort": "max",
+            "policy": "claim_time",
+            "changed": null
+          }
+        ],
+        "manager_started_events": [
+          "2026-10-30T15:56:41.090186+08:00"
+        ],
+        "published_events": [
+          "2026-10-30T16:01:43.172123+08:00"
+        ],
+        "last_terminal_update": "2026-10-30T16:01:43.162041+08:00",
+        "recovery_timestamp": null,
+        "duration_basis": "manager_started -> published only; creation/due time is not active model runtime",
+        "observed_manager_to_publish_seconds": 302.082
+      },
+      "configuration": {
+        "model_name": "grok-4.7",
+        "model_protocol": "responses",
+        "reasoning_effort": "max",
+        "model_request_timeout_seconds": 90,
+        "synthesis_request_timeout_seconds": 120,
+        "agent_timeout_seconds": 120,
+        "analysis_timeout_seconds": 600,
+        "max_model_calls": 40,
+        "max_job_attempts": 2
+      },
+      "frozen_roles": {
+        "manager": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "max",
+          "binding_source": "account_override",
+          "effort_source": "account_override",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "filing_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.6",
+          "reasoning_effort": "high",
+          "binding_source": "account_override",
+          "effort_source": "account_override",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "market_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "industry_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "etf_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "portfolio_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        }
+      },
+      "request_diagnostics": [
+        {
+          "sequence": 1,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 17722.62,
+          "error": null
+        },
+        {
+          "sequence": 2,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 9438.64,
+          "error": null
+        },
+        {
+          "sequence": 3,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 21690.67,
+          "error": null
+        },
+        {
+          "sequence": 4,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 6869.65,
+          "error": null
+        },
+        {
+          "sequence": 5,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 12680.37,
+          "error": null
+        },
+        {
+          "sequence": 6,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 26029.18,
+          "error": null
+        },
+        {
+          "sequence": 7,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 38603.64,
+          "error": null
+        },
+        {
+          "sequence": 8,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "research",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 90.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 54998.44,
+          "error": null
+        },
+        {
+          "sequence": 9,
+          "agent_id": "manager",
+          "role_id": "manager",
+          "model": "grok-4.7",
+          "protocol": "responses",
+          "stage": "synthesis",
+          "reasoning_effort": "max",
+          "reasoning_effort_sent": "max",
+          "request_timeout_seconds": 120.0,
+          "status_code": 200,
+          "request_accepted": true,
+          "attempt": 1,
+          "stream_terminal": "response.completed",
+          "duration_ms": 113381.8,
+          "error": null
+        }
+      ],
+      "request_counts": {
+        "recorded_http_attempts": 9,
+        "http_200": 9,
+        "accepted": 9,
+        "complete_sse": 9,
+        "transport_retry_attempts": 0,
+        "errors": 0,
+        "scope": "recorded model_usage requests only; no hidden reasoning/session payload exported"
+      },
+      "report": {
+        "published": true,
+        "report_id": "73571b11fe4e464096a43368be111a5d",
+        "status_at_read": "stale",
+        "created_at": "2026-10-30T16:01:43.161029+08:00",
+        "sha256": "0cf5d18cbe0d5e99c7060e0c1a7a0066d2a4aeef7d90330a54228767ddc199e8",
+        "file": "site-original-report.md"
+      },
+      "subresearch": {
+        "spawned": 0,
+        "completed": 0,
+        "note": "0/0 is not a subresearch success-rate claim"
+      },
+      "event_counts": {
+        "model_configuration_bound": 1,
+        "agent_started": 1,
+        "model_usage": 9,
+        "native_search": 4,
+        "agent_message": 7,
+        "tool_started": 22,
+        "tool_result": 22,
+        "context_compacted": 1,
+        "calculation_context_coverage": 3,
+        "material_saved": 1,
+        "synthesis_checkpoint": 1,
+        "synthesis_context_projected": 1,
+        "agent_completed": 1,
+        "published": 1
+      },
+      "data_calls": [
+        {
+          "tool": "read",
+          "at": "2026-10-30T15:57:08.346053+08:00",
+          "access": "failed",
+          "fetched_at": "2026-10-30T15:57:08.327879+08:00",
+          "error": "研究工具不能访问本机、内网或保留地址",
+          "error_kind": "non_public_dns",
+          "failure_stage": "address_validation",
+          "host": "m.jrj.com.cn"
+        },
+        {
+          "tool": "read",
+          "at": "2026-10-30T15:57:08.356915+08:00",
+          "access": "failed",
+          "fetched_at": "2026-10-30T15:57:08.347678+08:00",
+          "error": "研究工具不能访问本机、内网或保留地址",
+          "error_kind": "non_public_dns",
+          "failure_stage": "address_validation",
+          "host": "finance.sina.com.cn"
+        },
+        {
+          "tool": "read",
+          "at": "2026-10-30T15:57:08.367357+08:00",
+          "access": "failed",
+          "fetched_at": "2026-10-30T15:57:08.358323+08:00",
+          "error": "研究工具不能访问本机、内网或保留地址",
+          "error_kind": "non_public_dns",
+          "failure_stage": "address_validation",
+          "host": "cj.sina.com.cn"
+        },
+        {
+          "tool": "read",
+          "at": "2026-10-30T15:57:08.377163+08:00",
+          "access": "failed",
+          "fetched_at": "2026-10-30T15:57:08.368826+08:00",
+          "error": "研究工具不能访问本机、内网或保留地址",
+          "error_kind": "non_public_dns",
+          "failure_stage": "address_validation",
+          "host": "yuanchuang.10jqka.com.cn"
+        },
+        {
+          "tool": "benchmark_history",
+          "at": "2026-10-30T15:57:30.271206+08:00",
+          "symbol": "CSI300",
+          "status": "ok",
+          "access": "structured_rows",
+          "source": "eastmoney:public-website",
+          "fetched_at": "2026-10-30T15:57:30.261722+08:00",
+          "as_of": "2026-10-30",
+          "row_count": 17,
+          "error": null,
+          "adjustment": "index",
+          "interval": "daily"
+        },
+        {
+          "tool": "query_market_rows",
+          "at": "2026-10-30T15:57:49.899692+08:00",
+          "symbol": "CSI300",
+          "status": "ok",
+          "access": "structured_rows",
+          "source": "eastmoney:public-website",
+          "fetched_at": "2026-10-30T15:57:30.261722+08:00",
+          "as_of": "2026-10-30",
+          "row_count": 17,
+          "error": null,
+          "adjustment": "index",
+          "interval": "daily"
+        },
+        {
+          "tool": "benchmark_history",
+          "at": "2026-10-30T15:57:49.986299+08:00",
+          "symbol": "SSE50",
+          "status": "unavailable",
+          "access": "structured_rows",
+          "source": "eastmoney",
+          "fetched_at": "2026-10-30T15:57:49.900816+08:00",
+          "as_of": null,
+          "row_count": 0,
+          "error": "网络连接失败 (RemoteProtocolError)",
+          "adjustment": "index",
+          "interval": "daily"
+        },
+        {
+          "tool": "calculate",
+          "at": "2026-10-30T15:58:16.031987+08:00",
+          "operation": "subtract",
+          "inputs": [
+            "3985.50",
+            "4041.84"
+          ],
+          "result": "-56.34"
+        },
+        {
+          "tool": "calculate",
+          "at": "2026-10-30T15:58:16.035031+08:00",
+          "operation": "percent",
+          "inputs": [
+            "-56.34",
+            "4041.84"
+          ],
+          "result": "-1.393919600973813906537616531"
+        },
+        {
+          "tool": "calculate",
+          "at": "2026-10-30T15:58:16.037140+08:00",
+          "operation": "subtract",
+          "inputs": [
+            "3985.50",
+            "4310.28"
+          ],
+          "result": "-324.78"
+        },
+        {
+          "tool": "calculate",
+          "at": "2026-10-30T15:58:16.039087+08:00",
+          "operation": "percent",
+          "inputs": [
+            "-324.78",
+            "4310.28"
+          ],
+          "result": "-7.535009326540271165678331802"
+        },
+        {
+          "tool": "read",
+          "at": "2026-10-30T15:58:16.050718+08:00",
+          "access": "failed",
+          "fetched_at": "2026-10-30T15:58:16.040828+08:00",
+          "error": "研究工具不能访问本机、内网或保留地址",
+          "error_kind": "non_public_dns",
+          "failure_stage": "address_validation",
+          "host": "m.jrj.com.cn"
+        },
+        {
+          "tool": "history",
+          "at": "2026-10-30T15:58:16.056788+08:00",
+          "symbol": "SH:000001",
+          "status": "unavailable",
+          "access": "structured_rows",
+          "source": "eastmoney",
+          "fetched_at": "2026-10-30T15:58:16.053224+08:00",
+          "as_of": null,
+          "row_count": 0,
+          "error": "证券代码不在本适配器支持范围",
+          "adjustment": "none",
+          "interval": "daily"
+        },
+        {
+          "tool": "market_indicators",
+          "at": "2026-10-30T15:58:54.686352+08:00",
+          "symbol": "CSI300",
+          "status": "ok",
+          "access": "calculation",
+          "source": "eastmoney:public-website",
+          "fetched_at": "2026-10-30T15:57:30.261722+08:00",
+          "as_of": "2026-10-30",
+          "error": null,
+          "adjustment": "index",
+          "interval": "daily",
+          "valid_samples": 17,
+          "return": "-0.0753500932654027116567833180",
+          "window": 10,
+          "moving_average": "4084.45",
+          "moving_average_gap": null,
+          "volatility": 0.009367764904915291,
+          "return_samples": 16
+        },
+        {
+          "tool": "calculate",
+          "at": "2026-10-30T15:59:49.704794+08:00",
+          "operation": "subtract",
+          "inputs": [
+            "3985.50",
+            "4084.45"
+          ],
+          "result": "-98.95"
+        }
+      ],
+      "material_counts": {
+        "unique_saved_materials_linked_to_task": 39,
+        "access": {
+          "source_link": 31,
+          "failed": 4,
+          "browse_visible_lines_1_to_234_of_381_truncated": 1,
+          "structured_data": 3
+        },
+        "representation": {
+          "native_search_source": 31,
+          "text_representation": 7,
+          "agent_extraction": 1
+        },
+        "reference_summary": {
+          "resolved": 7,
+          "source_link": 42,
+          "unresolved": 0
+        },
+        "note": "reference entries, saved material IDs and tool calls are different denominators"
+      },
+      "calculation_delivery": {
+        "successful_records_in_last_observed_request": 6,
+        "request_number": 9,
+        "phase": "synthesis",
+        "stored_final_request_flag": false,
+        "note": "Final flag is false in this historical record. Request 9 is the last recorded request and leads to finish_analysis; inclusion alone does not prove report use."
+      },
+      "checkpoint": {
+        "exists": true,
+        "created_at": "2026-10-30T15:59:49.736538+08:00",
+        "resume_count": 0,
+        "recovery_state": "needs_research",
+        "completed_subreports": 0,
+        "open_questions": [
+          "上证、深成指、创业板、科创50收盘未取得交易所官方行情文件，仅有媒体与检索片段",
+          "沪深300完整自然月收益缺9月末收盘，已保存序列自10月8日起",
+          "全市场成交额与涨跌家数在不同媒体间口径不一致，且部分标为初步",
+          "账户现金未录入，不能讨论可投入规模"
+        ]
+      },
+      "linked_demands": [
+        {
+          "id": 1,
+          "kind": "close_summary",
+          "state": "completed",
+          "created_at": "2026-10-30T15:54:40.027930+08:00",
+          "updated_at": "2026-10-30T16:01:43.163652+08:00",
+          "detail": "explicitly covered in published report",
+          "planned_trading_day": "2026-10-30"
+        }
+      ],
+      "forecast": {
+        "batches": [],
+        "published_directions": 0,
+        "mature_scores": 0,
+        "note": "No linked batches/samples, so no direction coverage or accuracy rate can be estimated."
+      },
+      "structured_suggestions": 0
+    },
+    {
+      "id": "4e671f2250d54cfebed732fc966c1285",
+      "input_version": 1,
+      "reason": "close_summary",
+      "state": "failed",
+      "mode": "live",
+      "attempts": 3,
+      "error": "服务中断后重试次数已达上限，请手动重试",
+      "data_as_of": null,
+      "created_at": "2026-10-30T00:23:16.004521+08:00",
+      "updated_at": "2026-10-30T15:56:03.976785+08:00",
+      "account_alias": "test",
+      "frozen_account_input": {
+        "name": "test",
+        "version": 1,
+        "cash": null,
+        "holdings": [],
+        "preferences": {
+          "risk": "balanced",
+          "horizon": "中长期",
+          "max_position_pct": null,
+          "max_sector_pct": null
+        }
+      },
+      "frozen_universe": {
+        "watchlist": null,
+        "candidates": null,
+        "availability": "not saved in the v9 submission snapshot",
+        "published_report_claim": null,
+        "not_inferred_from_current_universe": true
+      },
+      "times": {
+        "created_at": "2026-10-30T00:23:16.004521+08:00",
+        "last_due_at": "2026-10-30T15:56:03.482506+08:00",
+        "original_planned_at": null,
+        "claim_events": [
+          {
+            "at": "2026-10-30T15:54:40.032860+08:00",
+            "attempt": 2,
+            "model": "grok-4.7",
+            "reasoning_effort": "medium",
+            "policy": "claim_time",
+            "changed": null
+          },
+          {
+            "at": "2026-10-30T15:56:03.971922+08:00",
+            "attempt": 3,
+            "model": "grok-4.7",
+            "reasoning_effort": "max",
+            "policy": "claim_time",
+            "changed": true
+          }
+        ],
+        "manager_started_events": [],
+        "published_events": [],
+        "last_terminal_update": "2026-10-30T15:56:03.976785+08:00",
+        "recovery_timestamp": null,
+        "duration_basis": "manager_started -> published only; creation/due time is not active model runtime"
+      },
+      "configuration": {
+        "model_name": "grok-4.7",
+        "model_protocol": "responses",
+        "reasoning_effort": "max",
+        "model_request_timeout_seconds": 90,
+        "synthesis_request_timeout_seconds": 120,
+        "agent_timeout_seconds": 120,
+        "analysis_timeout_seconds": 600,
+        "max_model_calls": 40,
+        "max_job_attempts": 2
+      },
+      "frozen_roles": {
+        "manager": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "max",
+          "binding_source": "account_override",
+          "effort_source": "account_override",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "filing_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "market_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "industry_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "etf_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        },
+        "portfolio_researcher": {
+          "provider_display_name": "供应商 1（迁移）",
+          "protocol": "responses",
+          "model_id": "grok-4.7",
+          "reasoning_effort": "medium",
+          "binding_source": "global_default",
+          "effort_source": "global_default",
+          "provider_revision": 1,
+          "credential_revision": 1
+        }
+      },
+      "request_diagnostics": [],
+      "request_counts": {
+        "recorded_http_attempts": 0,
+        "http_200": 0,
+        "accepted": 0,
+        "complete_sse": 0,
+        "transport_retry_attempts": 0,
+        "errors": 0,
+        "scope": "recorded model_usage requests only; no hidden reasoning/session payload exported"
+      },
+      "report": {
+        "published": false,
+        "report_id": null,
+        "status_at_read": "not_published",
+        "created_at": null,
+        "sha256": null,
+        "file": null
+      },
+      "subresearch": {
+        "spawned": 0,
+        "completed": 0,
+        "note": "0/0 is not a subresearch success-rate claim"
+      },
+      "event_counts": {
+        "model_configuration_bound": 2,
+        "configuration_missing": 1
+      },
+      "data_calls": [],
+      "material_counts": {
+        "unique_saved_materials_linked_to_task": 0,
+        "access": {},
+        "representation": {},
+        "reference_summary": null,
+        "note": "reference entries, saved material IDs and tool calls are different denominators"
+      },
+      "calculation_delivery": {
+        "successful_records_in_last_observed_request": 0,
+        "request_number": null,
+        "phase": null,
+        "stored_final_request_flag": null,
+        "note": "Final flag is false in this historical record. Request 9 is the last recorded request and leads to finish_analysis; inclusion alone does not prove report use."
+      },
+      "checkpoint": {
+        "exists": false,
+        "created_at": null,
+        "resume_count": null,
+        "recovery_state": null,
+        "completed_subreports": 0,
+        "open_questions": []
+      },
+      "linked_demands": [],
+      "forecast": {
+        "batches": [],
+        "published_directions": 0,
+        "mature_scores": 0,
+        "note": "No linked batches/samples, so no direction coverage or accuracy rate can be estimated."
+      },
+      "structured_suggestions": 0
+    }
+  ],
+  "current_account_relation": {
+    "account_alias": "test",
+    "version": 3,
+    "updated_at": "2026-10-30T16:42:48.640940+08:00",
+    "selected_report_input_version": 1,
+    "selected_report_is_current_input": false,
+    "latest_job_is_selected_task": false
+  },
+  "finite_sample_counts": {
+    "persisted_tasks": {
+      "numerator": 2,
+      "denominator": 2
+    },
+    "client_http_submission_acceptance": null,
+    "terminal_tasks": {
+      "numerator": 2,
+      "denominator": 2,
+      "completed": 1,
+      "failed": 1
+    },
+    "published_final_reports": {
+      "numerator": 1,
+      "denominator": 2
+    },
+    "current_input_reports_at_read": {
+      "numerator": 0,
+      "denominator": 2
+    },
+    "content_quality_complete_research": null,
+    "recorded_model_http_attempts": 9,
+    "accepted_model_requests": 9,
+    "complete_model_sse": 9,
+    "model_transport_retry_attempts": 0,
+    "child_research_spawned": 0,
+    "child_research_completed": 0,
+    "direct_document_read_calls": 5,
+    "direct_document_read_successes": 0,
+    "history_fetch_calls": 3,
+    "history_fetch_successes": 1,
+    "reused_structured_rows_calls": 1,
+    "reused_structured_rows_successes": 1,
+    "successful_calculations": 6,
+    "structured_suggestions": 0,
+    "forecast_batches": 0,
+    "direction_predictions": 0,
+    "mature_scores": 0
+  }
+}

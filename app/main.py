@@ -9,7 +9,7 @@ import re
 from urllib.parse import urlsplit
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Header
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -19,6 +19,7 @@ from .domain import AccountInput, UniverseInput, TZ, now, symbol
 from .store import Conflict, Store
 from .service import Service
 from .calendar import market_state
+from .symbols import SymbolResolver, ResolveInput, SymbolResolutionError
 
 
 class Settings(BaseModel):
@@ -156,8 +157,18 @@ class Settings(BaseModel):
         return [x.strip() for x in v if x.strip()]
 
 
+class TaskOrigin(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    page: str | None = Field(default=None, max_length=80)
+    action: str | None = Field(default=None, max_length=120)
+
+
 class AnalyzeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     symbol: str | None = None
+    operation_id: str | None = Field(default=None, min_length=8, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')
+    origin: TaskOrigin | None = None
+    research_scope: Literal['securities', 'cash_only'] | None = None
 
 
 def create_app(path=None, mode=None, worker=True, runner=None):
@@ -192,6 +203,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     app = FastAPI(title="观澜 · 本地投资研究台", version="0.1.0", lifespan=lifespan)
     app.state.store, app.state.service = store, service
+    resolver = SymbolResolver(store)
+    app.state.symbol_resolver = resolver
     from .runtime_version import startup_version, static_snapshot, REQUIRED_ROUTES
     assets = static_snapshot()
     app.state.runtime_version = startup_version(store, assets)
@@ -223,6 +236,10 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.exception_handler(ValueError)
     async def value_handler(request, exc):
         return JSONResponse({'detail': str(exc)}, status_code=422)
+
+    @app.exception_handler(SymbolResolutionError)
+    async def symbol_resolution_handler(request, exc):
+        return JSONResponse({'detail': exc.detail}, status_code=422)
 
     from .sixth_api import register_sixth_routes
     register_sixth_routes(app, store, service)
@@ -282,19 +299,25 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return [service.account(a["id"]) for a in store.accounts()]
 
     @app.post("/api/accounts", status_code=201)
-    async def create_account(data: AccountInput):
-        a = store.save_account(data)
-        return service.account(a["id"])
+    async def create_account(data: AccountInput, x_operation_id: str | None = Header(default=None, min_length=8, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')):
+        data, resolution = await resolver.account(data)
+        a = store.save_account_operation(data, operation_id=x_operation_id)
+        return {**service.account(a["id"]), 'symbol_resolution': resolution, 'save_receipt':a['save_receipt']}
+
+    @app.get('/api/account-operations/{operation_id}')
+    async def account_operation(operation_id: str):
+        return store.account_operation(operation_id)
 
     @app.get("/api/accounts/{account_id}")
     async def account(account_id: str):
         return service.account(account_id)
 
     @app.put("/api/accounts/{account_id}")
-    async def update_account(account_id: str, data: AccountInput):
+    async def update_account(account_id: str, data: AccountInput, x_operation_id: str | None = Header(default=None, min_length=8, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')):
         store.account(account_id)
-        a = store.save_account(data, account_id)
-        return service.account(a["id"])
+        data, resolution = await resolver.account(data)
+        a = store.save_account_operation(data, account_id, x_operation_id)
+        return {**service.account(a["id"]), 'symbol_resolution': resolution, 'save_receipt':a['save_receipt']}
 
     @app.delete("/api/accounts/{account_id}")
     async def delete_account(account_id: str):
@@ -305,11 +328,17 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     async def analyze(account_id: str, data: AnalyzeInput | None = None):
         target = None
         if data and data.symbol:
-            try:
-                target = symbol(data.symbol)
-            except ValueError as e:
-                raise HTTPException(422, str(e))
-        return store.enqueue(account_id, f"manual_security:{target}" if target else "manual")
+            resolved = await resolver.resolve([data.symbol])
+            if not resolved['ok']:
+                raise SymbolResolutionError(resolved['items'])
+            target = resolved['symbols'][0]
+        return store.submit_task(account_id, target=target, operation_id=data.operation_id if data else None,
+            origin=data.origin.model_dump() if data and data.origin else None,
+            research_scope=data.research_scope if data else None)
+
+    @app.get('/api/task-operations/{operation_id}')
+    async def task_operation(operation_id: str, account_id: str):
+        return store.task_operation(account_id, operation_id)
 
     @app.get("/api/accounts/{account_id}/analyses")
     async def analyses(account_id: str, limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), summary: bool = False):
@@ -361,7 +390,7 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.get("/api/global-research")
     async def global_research(limit: int = Query(20, ge=1, le=100)):
-        return [{k: v for k, v in run.items() if k != "result"} for run in store.global_runs(limit=limit)]
+        return store.global_runs(limit=limit, summary=True)
 
     @app.get("/api/global-research/{run_id}")
     async def global_research_detail(run_id: str):
@@ -391,9 +420,12 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return store.job(job_id)
 
     @app.post("/api/jobs/{job_id}/retry")
-    async def retry(job_id: str):
+    async def retry(job_id: str, data: AnalyzeInput | None = None):
         job = store.job(job_id)
-        return store.enqueue(job["account_id"], f"retry:{job['reason']}")
+        return store.submit_task(job['account_id'], target=job.get('target_security'), parent_job_id=job_id,
+            operation_id=data.operation_id if data else None,
+            origin=data.origin.model_dump() if data and data.origin else None,
+            research_scope=data.research_scope if data and data.research_scope is not None else job.get('research_scope'))
 
     @app.get("/api/universe")
     async def universe():
@@ -403,20 +435,22 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.put("/api/universe")
     async def save_universe(data: UniverseInput):
+        data, resolution = await resolver.universe(data)
         store.save_universe(data)
         service.spawn(service.refresh_quotes())
-        return await universe()
+        return {**await universe(), 'symbol_resolution': resolution}
+
+    @app.post('/api/securities/resolve')
+    async def resolve_securities(data: ResolveInput):
+        return await resolver.resolve(data.symbols, data.context)
 
     @app.get("/api/securities")
     async def securities(q: str = ""):
-        from .providers import MarketProvider
         query = q.strip().upper()
+        if re.fullmatch(r'(?:(?:SH|SZ|BJ):)?[0-9]{6}', query):
+            result = await resolver.resolve([query])
+            return [item for item in result['items'] if item['status'] == 'resolved']
         cache = store.cache("securities")
-        if re.fullmatch(r"(SH|SZ|BJ):[0-9]{6}", query) and query not in cache and mode == "live":
-            value = await MarketProvider(store.settings()).security(query)
-            if value.get("name"):
-                store.put_cache("securities", query, value)
-                cache[query] = value
         return [value for key, value in cache.items() if not query or query in key or query in str(value.get("name", "")).upper()][:100]
 
     @app.post("/api/quotes/refresh")

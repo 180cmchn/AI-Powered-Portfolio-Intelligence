@@ -1,0 +1,107 @@
+{
+  "kind": "read_only_real_model_application_UI_observation",
+  "observed_at": "2026-10-30T10:20:12.970Z",
+  "timezone": "Asia/Shanghai",
+  "instance": {
+    "port": 49700,
+    "pid": 49887,
+    "instance_id": "a09ceba7dad64fb09c94f7635263dfb8",
+    "source_sha256_at_start": "05936700cb10cba39266f1146ac8269d802bd4a5fc199212e0846a377e268ccd",
+    "static_sha256_at_start": "81d4a8eb9a07242e734719237b4c22d5ffa6d035a3551ba45bbdc31229fd2bc0",
+    "api_contract": 10
+  },
+  "account": {
+    "id": "c26f7f02a946436ca3f17eb217a5b255",
+    "name": "第十轮虚拟 A",
+    "input_version": 2,
+    "cash": "10000",
+    "holdings": [
+      {
+        "symbol": "SZ:159278",
+        "quantity": "20000",
+        "cost_price": null
+      }
+    ]
+  },
+  "job": {
+    "id": "183548f611d8459caaee9aea732068a5",
+    "state_before": "running",
+    "state_after": "running",
+    "stage_before": "researching",
+    "stage_after": "researching",
+    "report_id": null,
+    "report_status": "not_published",
+    "target": {
+      "account_id": "c26f7f02a946436ca3f17eb217a5b255",
+      "account_name": "第十轮虚拟 A",
+      "input_version": 2,
+      "holdings": [
+        {
+          "symbol": "SZ:159278",
+          "quantity": "20000",
+          "cost_price": null
+        }
+      ],
+      "candidates": [],
+      "watchlist": [
+        "SH:518880",
+        "SH:688825",
+        "SH:562500"
+      ],
+      "symbols": [
+        "SZ:159278"
+      ]
+    },
+    "parent_job_id": "8afc135a155f4f579e31699793247fe3"
+  },
+  "ui": {
+    "persistent_status_text": "最近研究任务 · 专题研究研究中第十轮虚拟 A · 手动重试 · 输入 v2背景冻结持仓 1 只 · 候选 0 只 · 目标 1 只查看研究对象SZ:159278创建 2026/10/30 18:16183548f611d8459caaee9aea732068a5查看任务",
+    "compatibility_warnings": 0,
+    "dialog_close_click_passed": true,
+    "close_geometry_at_body_bottom": {
+      "x": 810,
+      "y": 63,
+      "right": 870,
+      "bottom": 95,
+      "viewport_width": 1280,
+      "viewport_height": 800,
+      "hit": true
+    },
+    "console_errors": [],
+    "blocked_writes": []
+  },
+  "other_account_failed_jobs": [
+    {
+      "account_id": "4cad5f9448704d44891d465edb77559d",
+      "account_name": "第十轮虚拟 B",
+      "job_id": "97d3ce7e534749f9be1e8259ca96d077",
+      "input_version": 1,
+      "state": "failed",
+      "stage": "synthesizing",
+      "failure_stage": "synthesizing",
+      "error": "模型单次请求超过时限；本任务尚无汇总检查点；已保存材料和事件可查看，重试将按当前版本研究",
+      "report_id": null
+    },
+    {
+      "account_id": "4cad5f9448704d44891d465edb77559d",
+      "account_name": "第十轮虚拟 B",
+      "job_id": "b77571e47f954b0da7d054fcea7dd154",
+      "input_version": 1,
+      "state": "failed",
+      "stage": "synthesizing",
+      "failure_stage": "synthesizing",
+      "error": "已达到本轮模型调用预算；已保存持仓及材料保留，可调整预算后重试",
+      "report_id": null
+    }
+  ],
+  "screenshots": [
+    "ui-live-task.png",
+    "ui-live-task-detail.png"
+  ],
+  "observed_navigation_issue": {
+    "from": "overview task-strip view-task",
+    "result": "First attempt did not open the dialog within 30 seconds; inspection continued by navigating to agents before opening the same task. No write was attempted.",
+    "status": "requires follow-up after live-source freeze"
+  },
+  "boundary": "GET-only application observation. No analysis/retry/configuration writes, no model calls triggered by this browser. Running/failed/completed/report publication are reported as observed, not inferred from HTTP success."
+}

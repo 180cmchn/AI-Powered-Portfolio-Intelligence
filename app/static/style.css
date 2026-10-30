@@ -1566,3 +1566,59 @@ dialog::backdrop {
 .forecast-accuracy {font-size:24px;color:var(--accent)}
 .error-text {color:#b7473e;padding:10px 0}
 @media (max-width: 700px) {.forecast-metrics {gap:16px}.forecast-accuracy {font-size:18px}}
+
+/* A dialog owns only one scrolling body; its header and controls remain visible. */
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: min(90vh, calc(100% - 24px));
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+}
+body.dialog-open { overflow: hidden; }
+.dialog-header, .dialog-footer { flex: 0 0 auto; }
+.dialog-header { gap: 16px; }
+.dialog-header h2 { min-width: 0; overflow-wrap: anywhere; }
+.dialog-header > button { flex: 0 0 auto; }
+.dialog-content { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
+.dialog-content > * { min-width: 0; max-width: 100%; }
+.dialog-footer { flex-wrap: wrap; }
+.dialog-content .report { padding: 0; }
+.dialog-content .card { border: 0; box-shadow: none; }
+
+/* Shared label/input/help rows keep inputs aligned as labels or help wrap. */
+.holding-row { grid-template-rows: auto auto auto; align-items: start; row-gap: 7px; }
+.holding-row > .field { display: grid; grid-row: 1 / 4; grid-template-rows: subgrid; gap: 7px; min-width: 0; }
+.holding-row > .field:nth-child(1) { grid-column: 1; }
+.holding-row > .field:nth-child(2) { grid-column: 2; }
+.holding-row > .field:nth-child(3) { grid-column: 3; }
+.holding-row .field label { margin: 0; align-self: end; }
+.holding-row .field input { margin: 0; height: 39px; min-width: 0; width: 100%; }
+.holding-row .field small { grid-row: 3; overflow-wrap: anywhere; }
+.holding-row > .button { grid-column: 4; grid-row: 2; align-self: start; }
+.holding-row .security-resolution { grid-row: 3; }
+.security-resolution { display: block; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.security-resolution.error { color: #a56848; }
+.evidence-references { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line); }
+.evidence-references > summary { font-weight: 600; cursor: pointer; padding: 5px 0; }
+.evidence-references > p { margin-top: 10px; }
+.task-status-card { margin-bottom: 20px; border-left: 3px solid #7d906d; overflow-wrap: anywhere; }
+.task-status-card .source-meta { row-gap: 8px; }
+.task-status-card .source-meta details { flex-basis: 100%; }
+.job-heading, .job-meta { min-width: 0; overflow-wrap: anywhere; }
+.job-meta > span { display: block; }
+.job-checkpoint-details { margin: 0 20px 16px; }
+.job-checkpoint-details > summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.job-delivery > .notice { margin-top: 12px; }
+@media (max-width: 700px) {
+  .holding-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr) 32px; grid-template-rows: auto auto auto auto auto auto; }
+  .holding-row > .field:first-child { grid-column: 1 / -1; grid-row: 1 / 4; }
+  .holding-row > .field:nth-child(2) { grid-column: 1; grid-row: 4 / 7; }
+  .holding-row > .field:nth-child(3) { grid-column: 2; grid-row: 4 / 7; }
+  .holding-row > .button { grid-column: 3; grid-row: 5; }
+  .dialog-header, .dialog-content { padding: 16px; }
+  .dialog-footer { padding: 12px 16px; }
+}
+
+/* Explicit render restoration owns scroll; native anchoring must not move it again. */
+html { overflow-anchor: none; }

@@ -145,6 +145,7 @@ try {
   assert.ok(!(await extractionEvidence.textContent()).includes('已保存页码'));
   const generatedEvidence=page.locator('.report [data-reference-kind="generated_analysis"]');
   assert.ok((await generatedEvidence.textContent()).includes('已定位生成报告 · 不是外部原文'));
+  await page.locator('.report .evidence-references > summary').first().click();
   await generatedEvidence.locator('.origin-references > summary').click();
   assert.equal(await generatedEvidence.locator('[data-reference-status="unresolved"]').count(),1);
   assert.equal(await generatedEvidence.locator('.material-reference').count(),2);

@@ -456,9 +456,28 @@ class ForecastStore(ForecastIdentityStore):
             job = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
             if not job or not job["account_id"]:
                 return None
-        account = self.account(job["account_id"])
-        universe = self.universe_snapshot()["universe"]
-        if not account["holdings"] and not universe.get("candidates"):
+            account = self.account(job["account_id"], db)
+            if account['version'] != job['input_version'] or account['latest_job_id'] != job_id:
+                return None
+            metadata = _load(job['task_metadata'], {})
+            target = metadata.get('target_security')
+            if not target and 'manual_security:' in job['reason']:
+                target = job['reason'].split('manual_security:', 1)[1].split(';', 1)[0]
+            if target:
+                symbols = [target]
+            elif metadata.get('research_scope') == 'cash_only':
+                symbols = []
+            else:
+                snapshot = db.execute('SELECT body FROM snapshots WHERE account_id=? AND version=?',
+                    (job['account_id'], job['input_version'])).fetchone()
+                frozen_account = _load(snapshot[0], {}) if snapshot else {}
+                scope = metadata.get('target') or {}
+                holdings = scope.get('holdings', frozen_account.get('holdings', [])) or []
+                # Watchlist remains observational; formal rules also use only
+                # holdings/candidates. Missing historical candidates stay unknown.
+                candidates = scope.get('candidates', (metadata.get('universe') or {}).get('candidates', [])) or []
+                symbols = [holding['symbol'] for holding in holdings] + candidates
+        if not symbols:
             return None
         day = at.date() if at.time().replace(tzinfo=None) >= time(15) else at.date() - timedelta(days=1)
         # No heuristic weekdays outside verified coverage.
@@ -475,7 +494,8 @@ class ForecastStore(ForecastIdentityStore):
         else:
             return None
         batch = self.create_forecast_batch(job["account_id"], at=datetime.combine(day, time(15, 30), SHANGHAI),
-                                           kind="exploratory", calendar_path=calendar_path)
+                                           kind="exploratory", symbols=symbols, calendar_path=calendar_path,
+                                           expected_input_version=job['input_version'])
         # Exploration has a real pre-run lock time and a bounded session deadline;
         # the original close date is explicitly distinct from publication date.
         with self.connect() as db:

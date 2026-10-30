@@ -151,7 +151,7 @@ def test_failed_v9_migration_rolls_back_columns_tables_marker_and_version(env, m
         assert not db.execute("SELECT 1 FROM meta WHERE key='forecast_sample_identity_v9'").fetchone()
         assert not db.execute("SELECT 1 FROM sqlite_master WHERE name='forecast_sample_attempts'").fetchone()
         assert not {'lease_token', 'request_started_at'} & {r[1] for r in db.execute('PRAGMA table_info(forecast_preparations)')}
-    assert Store(store.path).meta('schema_version') == 9
+    assert Store(store.path).meta('schema_version') == 10
 
 
 @pytest.mark.asyncio

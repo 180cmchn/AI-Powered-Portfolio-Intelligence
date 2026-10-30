@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-30T17:44:34.766629+08:00",
+  "system_proxy_flags": {
+    "HTTPEnable": 1,
+    "HTTPSEnable": 1,
+    "ProxyAutoConfigEnable": 1,
+    "ProxyAutoDiscoveryEnable": 1,
+    "SOCKSEnable": 1
+  },
+  "scutil_exit_code": 0,
+  "tunnel_interface_names": [
+    "utun0",
+    "utun1",
+    "utun2",
+    "utun3",
+    "utun4",
+    "utun5",
+    "utun1024"
+  ],
+  "environment_proxy_present": true,
+  "scope": "Read-only flags and interface names; proxy addresses, credentials and system settings are not exported or changed. These observations do not identify a unique responsible application."
+}

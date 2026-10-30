@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-30T18:24:43.770795+08:00",
+  "kind": "production_FastAPI_temporary_SQLite_regression_before_fix",
+  "test": "tests/frontend_tenth.mjs",
+  "routes_planned": [
+    "overview",
+    "market",
+    "holdings"
+  ],
+  "first_failing_route": "overview",
+  "detail_get_delay_ms": 100,
+  "failure": "#dialog[open] did not appear within 2500ms",
+  "root_cause": "view-task changes location.hash before its GET settles; hashchange aborts the shared page read controller, so the dialog never opens. The superseded_read is deliberately silent.",
+  "proposed_fix": "Open the task dialog on the current page; remove implicit hash change and unrelated jobs-page reset. Keep normal pageReads cancellation for deliberate navigation.",
+  "source_modified": false
+}

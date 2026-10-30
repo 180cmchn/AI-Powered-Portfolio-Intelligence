@@ -1,0 +1,307 @@
+{
+  "started_at": "2026-10-30T17:30:54.330444+08:00",
+  "scope": "public network reads only; no model calls, private DB, credentials, proxy or DNS configuration changes",
+  "public_dns_fallback": true,
+  "dns": [
+    {
+      "host": "static.cninfo.com.cn",
+      "addresses": [
+        "198.18.0.40"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "www.phfund.com.cn",
+      "addresses": [
+        "198.18.0.42"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "www.sse.com.cn",
+      "addresses": [
+        "198.18.0.36"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "pdf.dfcfw.com",
+      "addresses": [
+        "198.18.0.41"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "dataclouds.cninfo.com.cn",
+      "addresses": [
+        "198.18.0.44"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    }
+  ],
+  "documents": [
+    {
+      "url": "https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/562500_20261027_Y1TM.pdf",
+      "final_url": "https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/562500_20261027_Y1TM.pdf",
+      "title": null,
+      "access": "excerpt",
+      "fetched_at": "2026-10-30T17:30:55.033541+08:00",
+      "document_id": "8f2d05fee3ef021d5e3f76194513ebf38fe26fb071c9f9d60205add1ec1e443f",
+      "page_count": 14,
+      "returned_range": {
+        "start_page": 1,
+        "end_page": 1
+      },
+      "returned_chars": 142,
+      "error": null,
+      "network_diagnostics": [
+        {
+          "host": "www.sse.com.cn",
+          "stage": "dns",
+          "system_dns": "synthetic_198.18/15",
+          "resolver": "cloudflare_https_public_dns",
+          "private_address_used": false,
+          "status": "resolved_public",
+          "tls_hostname_verification": true
+        }
+      ]
+    },
+    {
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202610261830902525_1.pdf",
+      "final_url": "https://pdf.dfcfw.com/pdf/H2_AN202610261830902525_1.pdf",
+      "title": null,
+      "access": "excerpt",
+      "fetched_at": "2026-10-30T17:30:58.089672+08:00",
+      "document_id": "58a0dd0ae0ab8d82af37379facea35736499b011b73cc163d9803ae9e66e4ed8",
+      "page_count": 17,
+      "returned_range": {
+        "start_page": 1,
+        "end_page": 1
+      },
+      "returned_chars": 190,
+      "error": null,
+      "network_diagnostics": [
+        {
+          "host": "pdf.dfcfw.com",
+          "stage": "dns",
+          "system_dns": "synthetic_198.18/15",
+          "resolver": "cloudflare_https_public_dns",
+          "private_address_used": false,
+          "status": "resolved_public",
+          "tls_hostname_verification": true
+        }
+      ]
+    },
+    {
+      "url": "https://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/86586da619209fd1ab0b5b014d68283e.pdf",
+      "final_url": "https://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/86586da619209fd1ab0b5b014d68283e.pdf",
+      "title": null,
+      "access": "excerpt",
+      "fetched_at": "2026-10-30T17:31:02.226222+08:00",
+      "document_id": "2c9cc5e2a0bf7fcbc309ce1725f54f9a61d6ba0b7b5ff846762194d1575bf93d",
+      "page_count": 16,
+      "returned_range": {
+        "start_page": 1,
+        "end_page": 1
+      },
+      "returned_chars": 174,
+      "error": null,
+      "network_diagnostics": [
+        {
+          "host": "dataclouds.cninfo.com.cn",
+          "stage": "dns",
+          "system_dns": "synthetic_198.18/15",
+          "resolver": "cloudflare_https_public_dns",
+          "private_address_used": false,
+          "status": "resolved_public",
+          "tls_hostname_verification": true
+        }
+      ]
+    }
+  ],
+  "histories": [
+    {
+      "symbol": "SZ:159278",
+      "status": "ok",
+      "source": "eastmoney:public-website",
+      "fetched_at": "2026-10-30T17:31:02.332683+08:00",
+      "as_of": "2026-10-30",
+      "adjustment": "none",
+      "requested_range": {
+        "start": "20260831",
+        "end": "20261030"
+      },
+      "fallback_from": null,
+      "primary_failure": null,
+      "error": null,
+      "error_kind": null,
+      "next_action": null,
+      "row_count": 39,
+      "first_row": {
+        "time": "2026-08-31",
+        "open": "0.927",
+        "close": "0.955",
+        "high": "0.957",
+        "low": "0.927",
+        "volume": "737014",
+        "amount": "69652557.800",
+        "amplitude_pct": "3.19",
+        "change_pct": "1.60",
+        "change": "0.015",
+        "turnover_pct": "3.78"
+      },
+      "last_row": {
+        "time": "2026-10-30",
+        "open": "0.888",
+        "close": "0.885",
+        "high": "0.942",
+        "low": "0.883",
+        "volume": "2212683",
+        "amount": "202014266.195",
+        "amplitude_pct": "6.44",
+        "change_pct": "-3.38",
+        "change": "-0.031",
+        "turnover_pct": "11.34"
+      }
+    },
+    {
+      "symbol": "SH:518880",
+      "status": "ok",
+      "source": "tencent:unadjusted-daily",
+      "fetched_at": "2026-10-30T17:31:02.564904+08:00",
+      "as_of": "2026-10-30",
+      "adjustment": "none",
+      "requested_range": {
+        "start": "20260831",
+        "end": "20261030"
+      },
+      "fallback_from": "eastmoney:public-website",
+      "primary_failure": {
+        "failure_kind": "remote_protocol",
+        "error": "网络连接失败 (RemoteProtocolError)"
+      },
+      "error": null,
+      "error_kind": null,
+      "next_action": null,
+      "row_count": 39,
+      "first_row": {
+        "time": "2026-08-31",
+        "open": "9.160",
+        "close": "9.135",
+        "high": "9.171",
+        "low": "9.050",
+        "volume": "9381908.000",
+        "amount": null
+      },
+      "last_row": {
+        "time": "2026-10-30",
+        "open": "8.160",
+        "close": "8.115",
+        "high": "8.176",
+        "low": "8.112",
+        "volume": "3368515.000",
+        "amount": null
+      }
+    },
+    {
+      "symbol": "SH:688825",
+      "status": "ok",
+      "source": "tencent:unadjusted-daily",
+      "fetched_at": "2026-10-30T17:31:02.759609+08:00",
+      "as_of": "2026-10-30",
+      "adjustment": "none",
+      "requested_range": {
+        "start": "20260831",
+        "end": "20261030"
+      },
+      "fallback_from": "eastmoney:public-website",
+      "primary_failure": {
+        "failure_kind": "remote_protocol",
+        "error": "本轮已确认同一路径取数失败，暂缓重复请求；可使用已存原始材料或其他公开来源，新任务可重新验证"
+      },
+      "error": null,
+      "error_kind": null,
+      "next_action": null,
+      "row_count": 39,
+      "first_row": {
+        "time": "2026-08-31",
+        "open": "58.800",
+        "close": "58.010",
+        "high": "59.900",
+        "low": "57.010",
+        "volume": "357653432.000",
+        "amount": null
+      },
+      "last_row": {
+        "time": "2026-10-30",
+        "open": "40.900",
+        "close": "41.800",
+        "high": "43.910",
+        "low": "40.810",
+        "volume": "285513767.000",
+        "amount": null
+      }
+    },
+    {
+      "symbol": "SH:562500",
+      "status": "ok",
+      "source": "tencent:unadjusted-daily",
+      "fetched_at": "2026-10-30T17:31:02.936788+08:00",
+      "as_of": "2026-10-30",
+      "adjustment": "none",
+      "requested_range": {
+        "start": "20260831",
+        "end": "20261030"
+      },
+      "fallback_from": "eastmoney:public-website",
+      "primary_failure": {
+        "failure_kind": "remote_protocol",
+        "error": "本轮已确认同一路径取数失败，暂缓重复请求；可使用已存原始材料或其他公开来源，新任务可重新验证"
+      },
+      "error": null,
+      "error_kind": null,
+      "next_action": null,
+      "row_count": 39,
+      "first_row": {
+        "time": "2026-08-31",
+        "open": "0.943",
+        "close": "0.973",
+        "high": "0.975",
+        "low": "0.938",
+        "volume": "5626380.000",
+        "amount": null
+      },
+      "last_row": {
+        "time": "2026-10-30",
+        "open": "0.842",
+        "close": "0.827",
+        "high": "0.874",
+        "low": "0.826",
+        "volume": "9104348.000",
+        "amount": null
+      }
+    }
+  ],
+  "benchmark": {
+    "benchmark": "CSI300",
+    "status": "ok",
+    "source": "tencent:unadjusted-daily",
+    "fetched_at": "2026-10-30T17:31:03.130393+08:00",
+    "as_of": "2026-10-30",
+    "adjustment": "index",
+    "fallback_from": "eastmoney:public-website",
+    "primary_failure": {
+      "failure_kind": "remote_protocol",
+      "error": "本轮已确认同一路径取数失败，暂缓重复请求；可使用已存原始材料或其他公开来源，新任务可重新验证"
+    },
+    "error": null,
+    "error_kind": null,
+    "row_count": 39
+  },
+  "finished_at": "2026-10-30T17:31:03.131175+08:00"
+}

@@ -34,8 +34,8 @@ async def configured(tmp_path):
     for role in store.list_agent_roles():
         store.update_agent_definition(role['role_id'], {'default_binding': {
             'provider_id': p['id'], 'model_id': 'vendor/Model-A', 'reasoning_effort': 'medium'}})
-    a = store.save_account(AccountInput(name='Fixture account A', holdings=[]))
-    b = store.save_account(AccountInput(name='Fixture account B', holdings=[]))
+    a = store.save_account(AccountInput(name='Fixture account A', holdings=[], research_scope='cash_only'))
+    b = store.save_account(AccountInput(name='Fixture account B', holdings=[], research_scope='cash_only'))
     for account, provider, manager_effort, child_effort in ((a, p, 'high', 'low'), (b, q, 'max', 'xhigh')):
         store.set_account_agent_override(account['id'], 'manager', {'provider_id': provider['id'],
             'model_id': 'same', 'reasoning_effort': manager_effort})

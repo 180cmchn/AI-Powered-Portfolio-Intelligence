@@ -1,0 +1,165 @@
+{
+  "recorded_at": "2026-10-30T18:46:02.574579+08:00",
+  "five_group_run": [
+    {
+      "group": "iteration",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 2000
+    },
+    {
+      "group": "production",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 8978
+    },
+    {
+      "group": "seventh",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 4595
+    },
+    {
+      "group": "ninth",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 16628
+    },
+    {
+      "group": "tenth",
+      "code": 0,
+      "signal": null,
+      "duration_ms": 18747
+    }
+  ],
+  "five_group_console_errors": 0,
+  "scope": "Production FastAPI/temporary SQLite except iteration uses deterministic HTTP fixtures; directory/model-result/vault doubles. No real model success or prediction-accuracy claim.",
+  "development_findings": [
+    {
+      "finding": "90vh/100dvh exceeded CSS zoom viewport",
+      "before": {
+        "zoom": 1.25,
+        "close_button_y": -21.5
+      },
+      "fix": "Cap height by containing-block percentage; all top/middle/bottom 125%/200% hit tests passed."
+    },
+    {
+      "finding": "Frontend API contract hardcoded 9 while backend 10",
+      "fix": "Contract updated to 10; tenth asserts absent compatibility warning and exact backend contract."
+    },
+    {
+      "finding": "Native modal Shift+Tab boundary could focus body",
+      "fix": "Explicit first/last visible control cycling; 12 alternating Tab/Shift+Tab checks pass."
+    },
+    {
+      "finding": "Latest task strip followed history pagination; dialog event body did not update",
+      "fix": "Independent latest task read plus modal incremental event update; dedicated production regressions pass."
+    },
+    {
+      "finding": "Old account toast remained after account switch",
+      "fix": "Account-bound notifications suppress late foreign-account messages; production assertion now requires absence while retaining receipt/single-write/version/draft checks."
+    },
+    {
+      "finding": "Retry merged into queued task must preserve original failed parent in each merged source",
+      "fix": "Each sources.parent_job_id is visible and opens the original task. Added F failed -> Q queued -> retry F merged into Q production regression."
+    },
+    {
+      "finding": "Recovery with zero new delegated topics could appear to have no topic gaps",
+      "fix": "Show current new-topic completion separately; recovered_unresolved_tasks remains visible and original topic denominator explicitly unknown. Regression uses current 0/0 with one failed historical topic."
+    },
+    {
+      "finding": "Real overview task-strip click changed hash and cancelled its own GET, leaving no dialog",
+      "before_evidence": "ui-navigation-regression-before.json",
+      "fix": "Removed implicit hash navigation and unrelated job-page reset. Explicit user navigation still cancels old reads. Parameterized overview/market/holdings regression passes; original real report opens from overview and market in GET-only viewer.",
+      "after_evidence": "ui-live-task-fixed.json"
+    }
+  ],
+  "viewport_cases": [
+    {
+      "width": 1280,
+      "height": 800,
+      "css_zoom": 1
+    },
+    {
+      "width": 1024,
+      "height": 680,
+      "css_zoom": 1
+    },
+    {
+      "width": 390,
+      "height": 740,
+      "css_zoom": 1
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "css_zoom": 1.25
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "css_zoom": 2
+    }
+  ],
+  "zoom_scope": "CSS layout zoom and small viewport, not native browser menu/shortcut zoom automation.",
+  "screenshots": [
+    "ui-report-collapsed.png",
+    "ui-dialog-200.png",
+    "ui-holdings-alignment.png",
+    "ui-task-demands.png",
+    "ui-task-status.png"
+  ],
+  "tenth_group_evidence": {
+    "passed": true,
+    "kind": "production_FastAPI_temporary_SQLite_explicit_directory_and_model_result_doubles",
+    "checks": [
+      "100 references default collapsed; expansion and scroll survive polling",
+      "modal close visible/clickable at top/middle/bottom desktop/small/125%/200%; Escape and focus restore",
+      "overview/market/holdings task-strip dialogs preserve page and survive delayed detail GET; close restores focus",
+      "holding label/help wrap input and remove-button alignment; narrow layout",
+      "bare-code atomic save, prefix/leading-zero/dedup, monitored refresh, invalid draft and account switch",
+      "submit/queued/running/waiting_config/merged/lost-response/reload/account-isolation/failed-retry identity",
+      "holdings change preserves cash, publishes new input version and opens exact report",
+      "latest task survives history pagination; modal events load; merged demand types/trading day/explicit target and original failed retry chain remain distinct",
+      "empty cash account requires explicit cash-only scope; watchlist does not become holding/candidate"
+    ],
+    "console_errors": [],
+    "runtime_version": {
+      "started_at": "2026-10-30T18:43:23.374690+08:00",
+      "commit_at_start": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+      "api_contract": 10,
+      "instance_id": "b013a940efef4a50b7f81e7107b1541c",
+      "pid": 63096,
+      "port": 8765,
+      "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+      "database_path": "/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/guanlan-tenth-browser-bYA5RO/tenth.sqlite3",
+      "database_identity": "f4961ab4bbea40d2177590332c26d78ce61cc164a7affa6bf8926396e70960a3",
+      "env_file_at_start": {
+        "exists": true,
+        "mtime_ns": 1793291266379543600,
+        "size": 951
+      },
+      "environment_settings_at_start": {
+        "model_base_url": "https://fixture.invalid/v1",
+        "model_protocol": "responses",
+        "legacy_model_name": "",
+        "reasoning_effort": "max",
+        "key_env_name": "TENTH_UNUSED_KEY",
+        "key_present": false,
+        "quote_provider": "eastmoney",
+        "quote_fallback_provider": "sina",
+        "model_native_search": true,
+        "research_provider": "eastmoney"
+      },
+      "static_sha256_at_start": "c46742122e9b8872e1d992b975f9ad77aa2758fb7069335e4c9386e81c7e40bc",
+      "working_tree_dirty_at_start": true,
+      "source_sha256_at_start": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+      "schema_version": 10,
+      "provenance": "source files observed at application creation; restart required after source edits",
+      "database_mode": "live"
+    }
+  },
+  "final_run_scope": "All five groups rerun after the view-task navigation race fix, recovery/scope changes, and read-only explicit-material-ID reference projection. Production regression checks overview, market and holdings task dialogs with delayed GET, unchanged route and focus restoration. Original real A report separately verified in GET-only worker-disabled temporary copied database viewer, including both resolved material ranges and unchanged stored report/job/read receipts.",
+  "final": true,
+  "real_report_viewer_evidence": "ui-live-task-fixed.json"
+}

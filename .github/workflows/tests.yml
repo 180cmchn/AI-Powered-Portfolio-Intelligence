@@ -33,6 +33,10 @@ jobs:
         id: browser-ninth
         continue-on-error: true
         run: npm run test:browser:ninth
+      - name: Browser task/report interaction group
+        id: browser-tenth
+        continue-on-error: true
+        run: npm run test:browser:tenth
       - name: Require all browser groups
         if: always()
         env:
@@ -40,7 +44,8 @@ jobs:
           PRODUCTION: ${{ steps.browser-production.outcome }}
           FORECAST: ${{ steps.browser-forecast.outcome }}
           NINTH: ${{ steps.browser-ninth.outcome }}
-        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success
+          TENTH: ${{ steps.browser-tenth.outcome }}
+        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success && test "$TENTH" = success
       - uses: actions/upload-artifact@v4
         if: always()
         with:

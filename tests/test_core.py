@@ -235,8 +235,9 @@ def test_backup_integrity_and_mode_isolation(store, tmp_path):
 
 def test_api_validation_conflict_and_local_boundary(tmp_path):
     app = create_app(tmp_path / "api.sqlite3", worker=False)
+    app.state.store.set_meta("settings", {"quote_provider": "manual"})
     with TestClient(app) as c:
-        bad = c.post("/api/accounts", json={"name": "bad", "holdings": [{"symbol": "600519", "quantity": "1"}]})
+        bad = c.post("/api/accounts", json={"name": "bad", "holdings": [{"symbol": "60x519", "quantity": "1"}]})
         assert bad.status_code == 422
         bad = c.post("/api/accounts", json={"name": "bad", "cash": "NaN"})
         assert bad.status_code == 422

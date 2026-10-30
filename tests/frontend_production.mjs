@@ -87,6 +87,7 @@ try {
   assert.equal(await page.getByText('账户 B 私有原文不得显示',{exact:false}).count(),0);
   assert.equal(await page.getByText('账户 B 私有资料标题',{exact:false}).count(),0);
   assert.equal(await page.locator(`.material-reference[data-id="${fixture.private_id}"]`).count(),0);
+  await report.locator(".evidence-references > summary").click();
   await report.locator(`.material-reference[data-id="${fixture.material_id}"]`).first().click();
   await page.locator('#dialog .material-text').waitFor();
   assert.equal(await page.locator('#dialog .material-text').textContent(),'受控已保存 PDF 选页正文');
@@ -130,6 +131,7 @@ try {
   await navigate('agents');
   await waitGate(agentsNavigationStarted,'agentsNavigationStarted');
   const checkpointCard=page.locator('.job-card').filter({has:page.locator(`[data-action="retry-job"][data-id="${fixture.checkpoint_job_id}"]`)});
+  await checkpointCard.locator('.job-checkpoint-details > summary').click();
   await checkpointCard.locator('.synthesis-checkpoint').waitFor();
   assert.ok((await checkpointCard.textContent()).includes('重试时优先恢复汇总'));
   assert.ok((await checkpointCard.textContent()).includes('不会将子报告当作最终分析'));
@@ -241,8 +243,9 @@ try {
   await page.locator('#account-switch').selectOption(fixture.other_id);
   await page.waitForFunction(id=>document.querySelector('#account-form')?.dataset.accountId===id,fixture.other_id);
   failCommitted();
-  await page.getByText('保存响应中断；已核对目标账户的版本和输入，确认保存成功，未重复写入。',{exact:true}).waitFor();
   await assertIdle();
+  assert.equal(await page.getByText('保存响应中断；已按操作标识确认原账户、输入版本与研究任务，未重复写入。',{exact:true}).count(),0,'account A save feedback must not appear in account B');
+  assert.ok((await page.evaluate(()=>window.__guanlanDiagnostics.snapshot())).counts.save_reconciled>=1,'the original write is still reconciled by its receipt');
   assert.equal(requestTrace.filter(x=>x.event==='request' && x.method==='PUT').length,putsBefore+1);
   const uncertainSaved=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
   assert.equal(uncertainSaved.version,beforeUncertain.version+1);

@@ -107,7 +107,7 @@ def access_metadata(body):
 
 
 def index_of(body):
-    keys = ("id", "classification", "category", "scope", "representation", "symbol", "security_id", "symbols", "url", "source_title", "title",
+    keys = ("id", "classification", "classification_origin", "source_type", "network_diagnostics", "category", "scope", "representation", "symbol", "security_id", "symbols", "url", "source_title", "title",
             "source", "publisher", "unit", "uncertainties", "conflicts", "security_ids", "access_scope", "published_at", "fetched_at", "retrieved_at", "document_id", "final_url", "event_period", "access", "truncated", "error", "page_count", "total_pages",
             "page_range", "pages_read", "start_page", "end_page", "access_range", "range", "requested_range", "returned_range", "extracted_range", "version", "previous_id", "source_id", "changed_at", "content_hash", "change_summary",
             "offset", "returned_chars", "requested_chars", "text_length", "extraction_method", "extraction_note", "document_version_id",
@@ -307,7 +307,7 @@ class MaterialStore:
             body["symbols"] = body["security_ids"]
         if "fetched_at" not in body and "retrieved_at" in body:
             body["fetched_at"] = body["retrieved_at"]
-        body.setdefault("classification", body.get("category", "uncertain"))
+        body.setdefault("classification", body.get("category", "unclassified"))
         body.setdefault("content", material_text(body))
         body.setdefault("source_title", body.get("title"))
         body.setdefault("fetched_at", now())

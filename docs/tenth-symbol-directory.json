@@ -1,0 +1,180 @@
+{
+  "collected_at": "2026-10-30T17:27:54.054340+08:00",
+  "endpoint": "https://searchapi.eastmoney.com/api/suggest/get",
+  "environment": "isolated temporary SQLite; no model or quote requests; default system network unchanged",
+  "kind": "actual_public_directory_requests",
+  "inputs": [
+    "518880",
+    "688825",
+    "562500",
+    "159278",
+    "000001"
+  ],
+  "result": {
+    "items": [
+      {
+        "input": "518880",
+        "index": 1,
+        "context": "stock_etf",
+        "symbol": "SH:518880",
+        "code": "518880",
+        "name": "黄金ETF华安",
+        "market": "SH",
+        "exchange": "SH",
+        "kind": "etf",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:53.829377+08:00",
+        "identity_verified_at": "2026-10-30T17:27:53.829377+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      },
+      {
+        "input": "688825",
+        "index": 2,
+        "context": "stock_etf",
+        "symbol": "SH:688825",
+        "code": "688825",
+        "name": "长鑫科技",
+        "market": "SH",
+        "exchange": "SH",
+        "kind": "stock",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:53.832730+08:00",
+        "identity_verified_at": "2026-10-30T17:27:53.832730+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      },
+      {
+        "input": "562500",
+        "index": 3,
+        "context": "stock_etf",
+        "symbol": "SH:562500",
+        "code": "562500",
+        "name": "机器人ETF华夏",
+        "market": "SH",
+        "exchange": "SH",
+        "kind": "etf",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:53.877019+08:00",
+        "identity_verified_at": "2026-10-30T17:27:53.877019+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      },
+      {
+        "input": "159278",
+        "index": 4,
+        "context": "stock_etf",
+        "symbol": "SZ:159278",
+        "code": "159278",
+        "name": "机器人ETF鹏华",
+        "market": "SZ",
+        "exchange": "SZ",
+        "kind": "etf",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:53.830694+08:00",
+        "identity_verified_at": "2026-10-30T17:27:53.830694+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      },
+      {
+        "input": "000001",
+        "index": 5,
+        "context": "stock_etf",
+        "symbol": "SZ:000001",
+        "code": "000001",
+        "name": "平安银行",
+        "market": "SZ",
+        "exchange": "SZ",
+        "kind": "stock",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:53.857831+08:00",
+        "identity_verified_at": "2026-10-30T17:27:53.857831+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      }
+    ],
+    "ok": true,
+    "symbols": [
+      "SH:518880",
+      "SH:688825",
+      "SH:562500",
+      "SZ:159278",
+      "SZ:000001"
+    ]
+  },
+  "saved_normalized": {
+    "watchlist": [
+      "SH:518880",
+      "SH:688825",
+      "SH:562500"
+    ],
+    "candidates": [
+      "SZ:159278",
+      "SZ:000001"
+    ]
+  },
+  "monitored": [
+    "SH:518880",
+    "SH:562500",
+    "SH:688825",
+    "SZ:000001",
+    "SZ:159278"
+  ],
+  "unknown_code": {
+    "items": [
+      {
+        "input": "999999",
+        "index": 1,
+        "context": "stock_etf",
+        "status": "not_found",
+        "matches": [],
+        "message": "本次目录未找到代码与市场、证券类型相符的记录；请核对代码或稍后刷新目录。"
+      }
+    ],
+    "ok": false,
+    "symbols": []
+  },
+  "index_context": {
+    "items": [
+      {
+        "input": "000001",
+        "index": 1,
+        "context": "index",
+        "symbol": "SH:000001",
+        "code": "000001",
+        "name": "上证指数",
+        "market": "SH",
+        "exchange": "SH",
+        "kind": "index",
+        "source": "eastmoney:public-security-directory",
+        "source_url": "https://searchapi.eastmoney.com/api/suggest/get",
+        "fetched_at": "2026-10-30T17:27:54.052089+08:00",
+        "identity_verified_at": "2026-10-30T17:27:54.052089+08:00",
+        "identity_status": "confirmed",
+        "status": "resolved",
+        "cache_hit": false,
+        "message": "已从证券目录识别；实时行情状态另行获取。"
+      }
+    ],
+    "ok": true,
+    "symbols": [
+      "SH:000001"
+    ]
+  },
+  "limitations": "Identity lookup does not establish price freshness, tradability or an investment conclusion; names are the directory snapshot."
+}

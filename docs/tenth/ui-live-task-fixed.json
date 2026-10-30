@@ -1,0 +1,151 @@
+{
+  "kind": "read_only_real_published_report_on_worker_disabled_copy",
+  "observed_at": "2026-10-30T10:45:43.219Z",
+  "timezone": "Asia/Shanghai",
+  "viewer": {
+    "port": 54842,
+    "pid": 64326,
+    "source_database_read_only": true,
+    "database_is_consistent_copy": true,
+    "account_id": "c26f7f02a946436ca3f17eb217a5b255",
+    "job_id": "183548f611d8459caaee9aea732068a5",
+    "worker_enabled": false,
+    "original_signature": {
+      "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+      "report_body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70",
+      "persisted_analysis_sha256": "034795965f56e77045a83051129a9384c9a572fda80f6b1f0dc1291eb646ee5c",
+      "persisted_job_result_sha256": "c4655ab137e67e6895781b239b7dd44499d44550e068257648ff070982431821",
+      "read_receipts_count": 164,
+      "read_receipts_sha256": "36ad53dc8d1f45300a0892bccfb9da995b713b7c9847e69ea985e96d958156ad",
+      "persisted_source_link_count": 2
+    }
+  },
+  "runtime": {
+    "api_contract": 10,
+    "instance_id": "1bb01792739840e7a31e179104fe79d3",
+    "source_sha256_at_start": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+    "static_sha256_at_start": "c46742122e9b8872e1d992b975f9ad77aa2758fb7069335e4c9386e81c7e40bc",
+    "worker_running": false
+  },
+  "job": {
+    "id": "183548f611d8459caaee9aea732068a5",
+    "account_id": "c26f7f02a946436ca3f17eb217a5b255",
+    "input_version": 2,
+    "state": "completed",
+    "stage": "published",
+    "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+    "report_status": "current",
+    "completed_at": "2026-10-30T18:24:58.191590+08:00",
+    "research_delivery": {
+      "final_report_submitted": true,
+      "child_total": 0,
+      "child_completed": 0,
+      "child_incomplete": [],
+      "recovered_unresolved_tasks": [],
+      "recovered_partial_research": false,
+      "note": "执行与专题提交统计，不代表资料覆盖、建议质量或方向准确率。"
+    }
+  },
+  "original_report": {
+    "id": "bd6211d06f79431bbd378dc6f9524b1f",
+    "status": "current",
+    "input_version": 2,
+    "body_characters": 1138,
+    "report_unchanged": true,
+    "body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70"
+  },
+  "reference_total": 4,
+  "reference_counts": {
+    "resolved": 2,
+    "source_link": 2
+  },
+  "reference_projection": {
+    "kind": "explicit_material_ids_read_only",
+    "added_material_ids": [
+      "b3851303dc014e758e3c05a9ea1e2e8b",
+      "fa6b240eab90472cbf8ab53a29e42540"
+    ],
+    "limited": false
+  },
+  "reference_summary": {
+    "resolved": 2,
+    "source_link": 22,
+    "unresolved": 0
+  },
+  "rendered_reference_counts": {
+    "total": 21,
+    "resolved": 2,
+    "source_link": 19
+  },
+  "rendered_reference_heading": "引用定位（21条） · 片段 2 · 链接 19",
+  "reference_count_boundary": "reference_total/counts describe only result.references; rendered counts recursively combine and deduplicate nested references.",
+  "reference_ranges_opened": [
+    {
+      "material_id": "b3851303dc014e758e3c05a9ea1e2e8b",
+      "access": "structured_data",
+      "representation_kind": "text_representation",
+      "readable_characters": 6000,
+      "returned_range": null,
+      "total_chars": 8826
+    },
+    {
+      "material_id": "fa6b240eab90472cbf8ab53a29e42540",
+      "access": "excerpt",
+      "representation_kind": "original_document",
+      "readable_characters": 3226,
+      "returned_range": {
+        "start_page": 1,
+        "end_page": 4
+      },
+      "total_chars": 3226
+    }
+  ],
+  "immutability": {
+    "source_before": {
+      "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+      "report_body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70",
+      "persisted_analysis_sha256": "034795965f56e77045a83051129a9384c9a572fda80f6b1f0dc1291eb646ee5c",
+      "persisted_job_result_sha256": "c4655ab137e67e6895781b239b7dd44499d44550e068257648ff070982431821",
+      "read_receipts_count": 164,
+      "read_receipts_sha256": "36ad53dc8d1f45300a0892bccfb9da995b713b7c9847e69ea985e96d958156ad",
+      "persisted_source_link_count": 2
+    },
+    "source_after": {
+      "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+      "report_body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70",
+      "persisted_analysis_sha256": "034795965f56e77045a83051129a9384c9a572fda80f6b1f0dc1291eb646ee5c",
+      "persisted_job_result_sha256": "c4655ab137e67e6895781b239b7dd44499d44550e068257648ff070982431821",
+      "read_receipts_count": 164,
+      "read_receipts_sha256": "36ad53dc8d1f45300a0892bccfb9da995b713b7c9847e69ea985e96d958156ad",
+      "persisted_source_link_count": 2
+    },
+    "source_unchanged": true,
+    "copy_before": {
+      "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+      "report_body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70",
+      "persisted_analysis_sha256": "034795965f56e77045a83051129a9384c9a572fda80f6b1f0dc1291eb646ee5c",
+      "persisted_job_result_sha256": "c4655ab137e67e6895781b239b7dd44499d44550e068257648ff070982431821",
+      "read_receipts_count": 164,
+      "read_receipts_sha256": "36ad53dc8d1f45300a0892bccfb9da995b713b7c9847e69ea985e96d958156ad",
+      "persisted_source_link_count": 2
+    },
+    "copy_after": {
+      "report_id": "bd6211d06f79431bbd378dc6f9524b1f",
+      "report_body_sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70",
+      "persisted_analysis_sha256": "034795965f56e77045a83051129a9384c9a572fda80f6b1f0dc1291eb646ee5c",
+      "persisted_job_result_sha256": "c4655ab137e67e6895781b239b7dd44499d44550e068257648ff070982431821",
+      "read_receipts_count": 164,
+      "read_receipts_sha256": "36ad53dc8d1f45300a0892bccfb9da995b713b7c9847e69ea985e96d958156ad",
+      "persisted_source_link_count": 2
+    },
+    "copy_unchanged": true
+  },
+  "verified_origins": [
+    "overview",
+    "market"
+  ],
+  "dialog_closed": true,
+  "console_errors": [],
+  "attempted_writes": [],
+  "boundary": "The original isolated evaluation database was read with SQLite mode=ro and consistently backed up to a temporary copy. Production FastAPI used worker=False and middleware rejected all non-GET/HEAD requests; browser also blocked writes. Original model report was displayed unchanged. Temporary copied database is removed on exit. No model call was initiated by this viewer; no credential is included in these artifacts."
+}

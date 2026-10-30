@@ -46,7 +46,9 @@ def provenance(material, body):
             'adjustment': body.get('adjustment', 'unknown'),
             'interval': body.get('interval', 'unknown'), 'source_requested_range': body.get('requested_range'),
             'source_truncated': bool(body.get('truncated') or body.get('provider_cap_reached')),
-            'volume_unit': body.get('volume_unit'), 'amount_unit': body.get('amount_unit')}
+            'volume_unit': body.get('volume_unit'), 'amount_unit': body.get('amount_unit'),
+            **{k: body[k] for k in ('fallback_from', 'primary_failure', 'fallback_note', 'cache_hit',
+                'cache_age_seconds', 'cache_stale', 'error_kind', 'failure_stage', 'next_action') if k in body}}
 
 
 def query_rows(material, *, start=None, end=None, fields=None, limit=30, offset=0, order='desc', symbol=None, max_chars=6000):

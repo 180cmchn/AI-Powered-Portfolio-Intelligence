@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import Annotated
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 import re
 
@@ -36,9 +36,14 @@ def decimal_text(value, *, integer=False, nullable=False) -> str | None:
 
 
 def symbol(value: str) -> str:
+    """Validate input syntax only; the asynchronous boundary resolves identity.
+
+    A six-digit string remains a string here, including its leading zeroes.  No
+    network or exchange guess belongs in a synchronous Pydantic validator.
+    """
     value = value.strip().upper()
-    if not re.fullmatch(r"(SH|SZ|BJ):[0-9]{6}", value):
-        raise ValueError("证券标识应为 SH:600519、SZ:000001 或 BJ:920001")
+    if not re.fullmatch(r"(?:(SH|SZ|BJ):)?[0-9]{6}", value):
+        raise ValueError("请输入六位证券代码（保留前导零），也兼容 SH:600519、SZ:000001 或 BJ:920001")
     return value
 
 
@@ -80,6 +85,7 @@ class AccountInput(BaseModel):
     preferences: Preferences = Field(default_factory=Preferences)
     holdings: list[HoldingInput] = Field(default_factory=list, max_length=300)
     expected_version: int | None = None
+    research_scope: Literal["securities", "cash_only"] | None = None
 
     @field_validator("name")
     @classmethod
@@ -104,10 +110,24 @@ class UniverseInput(BaseModel):
     watchlist: list[str] = Field(default_factory=list, max_length=500)
     candidates: list[str] = Field(default_factory=list, max_length=500)
 
-    @field_validator("watchlist", "candidates")
+    @field_validator("watchlist", "candidates", mode="before")
     @classmethod
     def symbols(cls, values):
-        return list(dict.fromkeys(symbol(v) for v in values))
+        if isinstance(values, str):
+            values = [v for v in re.split(r"[\s,，;；]+", values) if v]
+        if not isinstance(values, list):
+            raise ValueError("证券列表须为列表，或以换行、逗号、分号分隔的代码")
+        result = []
+        for index, value in enumerate(values, 1):
+            if not isinstance(value, str):
+                raise ValueError(f"第 {index} 项：代码须以字符串提交，以保留前导零")
+            try:
+                result.append(symbol(value))
+            except ValueError as exc:
+                raise ValueError(f"第 {index} 项「{value[:40]}」：{exc}") from None
+        # Keep submitted positions until asynchronous resolution has reported
+        # errors. Deduplication afterwards must not renumber invalid items.
+        return result
 
 
 def money(n: Decimal) -> str:

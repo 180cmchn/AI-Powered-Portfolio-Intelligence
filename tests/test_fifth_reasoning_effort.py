@@ -206,7 +206,7 @@ def test_v5_migration_backup_is_repeatable_and_never_persists_effort_default(tmp
     with original.connect() as db:
         db.execute('ALTER TABLE jobs DROP COLUMN config_snapshot')
     updated = Store(path)
-    assert updated.meta('schema_version') == 9
+    assert updated.meta('schema_version') == 10
     assert updated.account(account['id']) == account
     assert updated.settings()['reasoning_effort'] == 'xhigh'
     assert 'reasoning_effort' not in updated.meta('settings')
@@ -382,7 +382,7 @@ async def test_rejected_same_config_not_retried_on_unrelated_save_or_restart(tmp
     store = app.state.store
     store.set_meta('settings', {**config('max'), 'quote_provider': 'manual', 'debounce_seconds': 0})
     configure_test_team(store, config('max'))
-    account = store.save_account(AccountInput(name='no repeat'))
+    account = store.save_account(AccountInput(name='no repeat', research_scope='cash_only'))
     store.request_analysis(None, 'candidate_scan', 'public-rejection')
     requests = []
     def reject(request):

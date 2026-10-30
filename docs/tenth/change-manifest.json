@@ -1,0 +1,376 @@
+{
+  "base_commit": "fb22ebd523a7e1558d21174cc7d18588f5fd74ff",
+  "source_sha256": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+  "state": "local uncommitted changes; no remote push",
+  "scope": "Tracked modifications and new non-ignored deliverables only; no .env, private database or evaluation session files; manifest itself excluded from file hashes",
+  "files": [
+    {
+      "path": ".github/workflows/tests.yml",
+      "sha256": "e2c63cf6c76c8d9af83ff5ded38a66087ae72e2fe0dbec89a9349bb208ae5e12"
+    },
+    {
+      "path": "README.md",
+      "sha256": "877cc3bd7d331be0c3fad5796e625af34913f30738e5de7a04618f3116caed67"
+    },
+    {
+      "path": "app/agent_config.py",
+      "sha256": "efccad877d4e9163271126be80b759ad68a9d644643dcd587b9b34698d2a33d7"
+    },
+    {
+      "path": "app/agents.py",
+      "sha256": "f3f892244135ded048b37e69e9549cd9a2401be2bd0e7abd17fc5ff7a0390553"
+    },
+    {
+      "path": "app/domain.py",
+      "sha256": "073e356fc63ff172ad91025d3baef78efd66f48832a47588f8f9f494f4e8b76c"
+    },
+    {
+      "path": "app/forecasts.py",
+      "sha256": "31a6a6dc738fb93a0dd27812bcf590321a2c6b649dce668cb381af159c2eb774"
+    },
+    {
+      "path": "app/main.py",
+      "sha256": "c85931686e42562c5edc8a301c3d0f56ccf1bac4892cd16db77572f1b82dc014"
+    },
+    {
+      "path": "app/market_materials.py",
+      "sha256": "55c4da2aa82dd14bbdfabe053f811a7493ebe3b7431a7795e8a7e192a1f61868"
+    },
+    {
+      "path": "app/materials.py",
+      "sha256": "913d6c592b95511ef52e3b46700dbd4ba8484b59125bbd0ec30f9556c0488137"
+    },
+    {
+      "path": "app/prompts/manager.txt",
+      "sha256": "3c6da47391c5b691bd1b6bddcc4c30d9d3db41918dc9134bdf63fa644cc501ff"
+    },
+    {
+      "path": "app/providers.py",
+      "sha256": "451cc8c0b2e41d330479017c9ca65b7243bf43c56f62d42b5fabe49ee20ca71d"
+    },
+    {
+      "path": "app/recovery.py",
+      "sha256": "138846ff9549395ad0b9421bf04f01b702be0866b2df47c062aaf14c62e052cc"
+    },
+    {
+      "path": "app/references.py",
+      "sha256": "5e67969389a0baa698c22fe4172ee9f1c69da91fd3e598a0c582942a4474254c"
+    },
+    {
+      "path": "app/research_cache.py",
+      "sha256": "2bc6ef4797efac80e9ce3b16441e251220cb5802edeade48b7338c65bca819af"
+    },
+    {
+      "path": "app/runtime_version.py",
+      "sha256": "f757bfcf782cb44bd090ef33883a12ca3348fb03b39a6a9c44b70467543eae5e"
+    },
+    {
+      "path": "app/scheduling.py",
+      "sha256": "a6d41ae75d636dfb2a8d0a89899c1ebe5777537ef0bf6010a1549dc75f0015b1"
+    },
+    {
+      "path": "app/service.py",
+      "sha256": "a9ce2b30b0127172435c3107ee676fdcc268029f24066576802ec06c41d21ed6"
+    },
+    {
+      "path": "app/static/app.js",
+      "sha256": "12ddfba86af27db4eeafe883401ea76280d2a45c475e54f584656b9a4a4db493"
+    },
+    {
+      "path": "app/static/style.css",
+      "sha256": "4e028660e35ec13c8d94fb76f301cfea6ec6b538639182cf4f11aeaa9fc03962"
+    },
+    {
+      "path": "app/store.py",
+      "sha256": "32f2b4103ce0c195d863a12929156719e06257cbe2225d54dbce15fdc685c47d"
+    },
+    {
+      "path": "app/symbols.py",
+      "sha256": "2e770fea4e5320228f4825052e0717cd2296120548a7d91b71d23b7bb8d727ac"
+    },
+    {
+      "path": "app/task_tracking.py",
+      "sha256": "8309c7309fb92255567082196bd5b03e33f15dad86d942d9cdcefd13a4932e5e"
+    },
+    {
+      "path": "docs/iteration-10-research.md",
+      "sha256": "04059e852297ac1315ca28ca960c78d3d0ffbeaee9702b5eaf8c47d195bebf82"
+    },
+    {
+      "path": "docs/iteration-10-site.md",
+      "sha256": "083a602c1cabaca3e3ae47bdc484c5e529c39290060b7a80f995eac97444fdd5"
+    },
+    {
+      "path": "docs/iteration-10.md",
+      "sha256": "cdc2d46193c8d1fff47f24101022e14d5607165b7b077c375194acacc6a31804"
+    },
+    {
+      "path": "docs/mac-operations.md",
+      "sha256": "e6e9d5ede31ca1d2266ca162f55a9324c4b7c465681dd363be77f36e36fe9538"
+    },
+    {
+      "path": "docs/providers.md",
+      "sha256": "94a636f50b2816c8c626b9e5b369a802b6de86f1c8a95fc6ff7e975e7e75078c"
+    },
+    {
+      "path": "docs/tenth-live-evidence.json",
+      "sha256": "edf65b01b02302145bf1008cc0d55396fefe979706d6b4738d16d789b2c68fa0"
+    },
+    {
+      "path": "docs/tenth-live-reports.md",
+      "sha256": "f397f7c89fc3ed8db08fd848695848eaae78830b3ded20d0a95b60d3ab8bd829"
+    },
+    {
+      "path": "docs/tenth-live-research-review.md",
+      "sha256": "c8dc83ccf8f382322567af6d0da4fb540ffd5545a77e3d3e9044570d6db1c7b9"
+    },
+    {
+      "path": "docs/tenth-mac-network-context.json",
+      "sha256": "76a2537d2efcf49f5e3d87c0df990d68292b341b37387a2480488074ca684995"
+    },
+    {
+      "path": "docs/tenth-public-data-control.json",
+      "sha256": "40e42c64e36d0dc3099fcb6eec39013b9533a55f9f217f266151412935543f98"
+    },
+    {
+      "path": "docs/tenth-public-data-diagnostic.json",
+      "sha256": "9c5555ebfa6fefa81f267f01139c3537030736e58d319ef0b8e609238190f6ac"
+    },
+    {
+      "path": "docs/tenth-symbol-directory.json",
+      "sha256": "d106b0d07be0ac797483594b4aa809eedb3b85876bc6440e4bef4cf6116d3e4d"
+    },
+    {
+      "path": "docs/tenth/account-v2-original-report.md",
+      "sha256": "4d10dcd471af40e58d41e9c54dc30b42f196eb3f604cc1f80022b6edf2252a70"
+    },
+    {
+      "path": "docs/tenth/baseline-ci.json",
+      "sha256": "dc8e07f0db8b6cad44109d75d75fac94b446d5140298a4420c2d1cba828cd8ad"
+    },
+    {
+      "path": "docs/tenth/browser-validation.json",
+      "sha256": "40df02da2808c55969f746e31f2eb5795633c5a70b8772020988e95972acb123"
+    },
+    {
+      "path": "docs/tenth/final-validation.json",
+      "sha256": "9b5c509621dfa377bd1de53640c35b5fea7a7001562522e4ba993dac9518a24e"
+    },
+    {
+      "path": "docs/tenth/python-regression-navigation.txt",
+      "sha256": "ed96c2a539edb302370d25aafe1724d038010f6d4f623ed2b8c17d8ce57a1d88"
+    },
+    {
+      "path": "docs/tenth/python-regression-prenavigation.txt",
+      "sha256": "5bef7d08d1c8f2648ed706e558eec30b31358c4294b4375b040fb7495cfdbfd7"
+    },
+    {
+      "path": "docs/tenth/python-regression.txt",
+      "sha256": "5f02507380cfa9e3ce4d5d0ab202c60be45cbce67378dd40197e9e2628a95161"
+    },
+    {
+      "path": "docs/tenth/site-original-report.md",
+      "sha256": "0cf5d18cbe0d5e99c7060e0c1a7a0066d2a4aeef7d90330a54228767ddc199e8"
+    },
+    {
+      "path": "docs/tenth/site-runtime-after.json",
+      "sha256": "94536bee7c596ae44b3f1e8e35ec4d41b565b1e8f48f0757eb70b1d2b7605bbc"
+    },
+    {
+      "path": "docs/tenth/site-runtime-before.json",
+      "sha256": "bb3b442926d57f9039436f79cada86daf7e2e939ca3be08592bb1293bc30e9e0"
+    },
+    {
+      "path": "docs/tenth/site-tasks.json",
+      "sha256": "f17c9be65c4b9d0a5fedff3e5484abdae739188f5d844c655f72adb765cb361a"
+    },
+    {
+      "path": "docs/tenth/ui-dialog-200.png",
+      "sha256": "1eb952e7b6321a0daf5791db56a9052464eb0913221b8016497a978ae47ac023"
+    },
+    {
+      "path": "docs/tenth/ui-holdings-alignment.png",
+      "sha256": "68ea40063f87816925e39637cb408f66e00aa0502a3bdbeb749fa58ed197e646"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-detail.png",
+      "sha256": "a0ee326903d3d9425eb5c3edbfc71d4c54c73c1c18bf45b6a5a78edd84f9aa9e"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-market.png",
+      "sha256": "83b0ac2de989f93449bb468bb312c19d2fc3405893c76840a7e56bddae6a988d"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-material-1.png",
+      "sha256": "fd577ffa4d37e8e30ff696e21ef77cd365813cc9d136ff35abb29bc2ab778cf6"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-material-2.png",
+      "sha256": "1baa1b1bcc9b0db26fa8f8e5d379afc1f869b1ab689252d228179bb34f87b37f"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-overview.png",
+      "sha256": "32cc0b05dd7f480a76d29616fc05cd9175a77ff98a98b15701e3d10d0a7b91b6"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-references.png",
+      "sha256": "764192c1a1909eb013820b7fb7152f1537ab9b0372f967a2a0fd5e9f6fea79cc"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed-report.png",
+      "sha256": "16423afe005d9972ec327f6386aaecf4afff3579b33c382a6aea64d833eef609"
+    },
+    {
+      "path": "docs/tenth/ui-live-task-fixed.json",
+      "sha256": "6e0c359b9623922f27cd35589b65dd83a386340c289ce25dd2465f980a2e76b6"
+    },
+    {
+      "path": "docs/tenth/ui-live-task.json",
+      "sha256": "1b02e0cf32e959525e81adccc8aea07a3f442aabd42e33840adc064b3816c2f1"
+    },
+    {
+      "path": "docs/tenth/ui-live-task.png",
+      "sha256": "1de249a4577aa2e506fc388264a79bcacf06a07e078bbe409fa74e237a14b0ae"
+    },
+    {
+      "path": "docs/tenth/ui-navigation-regression-before.json",
+      "sha256": "a5f4af631700c87e68770677178c2d45d26a1dc69d85bc61c0bf6fe0b15ca414"
+    },
+    {
+      "path": "docs/tenth/ui-report-collapsed.png",
+      "sha256": "c7f6bf0e35b410a51316f008c401647ada04d89c82381d45cdbce8dde1492f5d"
+    },
+    {
+      "path": "docs/tenth/ui-task-demands.png",
+      "sha256": "a4b1a38c785f3ebc4a7565c5e2d95fa74bd624738e77b9dff99e7774d51926fb"
+    },
+    {
+      "path": "docs/tenth/ui-task-status.png",
+      "sha256": "d01513d211b25f7ff545a4fe5e0655fe032b73d36e25361e4489400c671188d3"
+    },
+    {
+      "path": "docs/tenth/ui-validation.md",
+      "sha256": "6d79ace37a1781a2034dfdab82188f8e2a9b02f32cf7c1adc4f634e507c8f01b"
+    },
+    {
+      "path": "docs/tenth/upgrade-copy.json",
+      "sha256": "e757f1edb723c6cf855be33bba6599853c6fa6cd9e6475bd8b7f66d0b56ab9c4"
+    },
+    {
+      "path": "package.json",
+      "sha256": "b91efd67a68803cc70c1ed3a1cb2f193253e2e17aba90662591ce54fe35f3265"
+    },
+    {
+      "path": "scripts/diagnose_research_network.py",
+      "sha256": "f41f5870aaec578f4a5d40eeeb9e7038dcc3291d98dbc3b9bfd31fd161dbba03"
+    },
+    {
+      "path": "scripts/restore.py",
+      "sha256": "43da714c3c780ac7bedf69012b285ed642fba317b33af14f2ff7edfd7ddc66a2"
+    },
+    {
+      "path": "scripts/verify_tenth_live.py",
+      "sha256": "d2e44a64b02d01cb346599db05b0bb99fc730b03dcda8cc03e31508b2fc92fe2"
+    },
+    {
+      "path": "scripts/verify_tenth_retry.py",
+      "sha256": "a8f8184d14257b2495db15cfab64692a0812ccc82cc30ab364ac2c2646154f01"
+    },
+    {
+      "path": "tests/fixtures/ninth-manager-prompt.txt",
+      "sha256": "d68e0d4263bfa36af2359ec2e0011bdbbc7c92c24860d7acc142c074c071ea99"
+    },
+    {
+      "path": "tests/frontend_iteration.mjs",
+      "sha256": "915146a905be2649d737e0d038eed96fe7c86bf9c70cb549a77389315137c25c"
+    },
+    {
+      "path": "tests/frontend_production.mjs",
+      "sha256": "87752e62c6d2aa9370b117de32cb3cbaa2f645dcf31ba746b7ac029502af4127"
+    },
+    {
+      "path": "tests/frontend_tenth.mjs",
+      "sha256": "f04394e052ac19f1dfb98ab69d04e2eea47fc47cc30542c280bee3088673ea0f"
+    },
+    {
+      "path": "tests/run_browser.mjs",
+      "sha256": "ec1c11a9f0648686e08b9025747ba861b8063f64f05043dae7e12b8f72eb6cac"
+    },
+    {
+      "path": "tests/tenth_browser_server.py",
+      "sha256": "d621af558613dc96b2be5231f0e5061d69764c6da4ec192fe1762f3d0ff54330"
+    },
+    {
+      "path": "tests/test_core.py",
+      "sha256": "0de2526e72f04dc777d4f71cf5aa821af928d0562bee0f32339c6d205f1e3f43"
+    },
+    {
+      "path": "tests/test_eighth_data_calendar.py",
+      "sha256": "8ad975278cf435a3ebe33d88239d1ad832210603b51c9b52fdb1d3e178dd3217"
+    },
+    {
+      "path": "tests/test_eighth_delegation.py",
+      "sha256": "44f772610fd35eada41f9a0a610034a59ad50d576529899565eeee7842640147"
+    },
+    {
+      "path": "tests/test_fifth_reasoning_effort.py",
+      "sha256": "e37a922d489bcc0b975b7add32ab9f181ed8a021c8abc7f06f8be1d52458e576"
+    },
+    {
+      "path": "tests/test_fourth_late_child.py",
+      "sha256": "2cbad70abb327167a85b590dbd3e8394a90c16b4deee0ecfaf7341aa7468675d"
+    },
+    {
+      "path": "tests/test_fourth_recovery.py",
+      "sha256": "6d355d85793ccbeea8fe83e4dfd710a35ed799d3088483f392b0dc351b7906f7"
+    },
+    {
+      "path": "tests/test_iteration.py",
+      "sha256": "062044160428afc198dd2413d00d4c2ed942e7c42a275248fc1c484c9cc5d4e7"
+    },
+    {
+      "path": "tests/test_ninth_forecast_identity.py",
+      "sha256": "703071300b45b2e0b2967ea82d7b18bdd0290ba49d5638751bb21c7f8e2cb6ff"
+    },
+    {
+      "path": "tests/test_ninth_forecast_preparation.py",
+      "sha256": "12b9a4870eecddffbe15d7be84c595f0cc2ac5d968c87b197575fcee2c545a8b"
+    },
+    {
+      "path": "tests/test_ninth_lifecycle.py",
+      "sha256": "bb5da76aee03b877bcce127245c375a08df013b843070ce5cc734070c2d0c33f"
+    },
+    {
+      "path": "tests/test_seventh_recovery.py",
+      "sha256": "492e7fc4af4ef5b6ac452c58779e12e455c2178398d5f06325586dda7a464576"
+    },
+    {
+      "path": "tests/test_sixth_runtime.py",
+      "sha256": "e4a967cb623e3d3ed082577a034cde2cd5d17164065ae7e42fde6fe9098bbd86"
+    },
+    {
+      "path": "tests/test_tenth_failure_recovery.py",
+      "sha256": "489f309749a6b4b4f6d7f282c428aaf0d0ebf055deb7f61d666cb17a7f998967"
+    },
+    {
+      "path": "tests/test_tenth_research.py",
+      "sha256": "3fd972653d83379ffb04bd34386140cdddcce535cfa1c41fc909fcaf5391de69"
+    },
+    {
+      "path": "tests/test_tenth_symbols.py",
+      "sha256": "12ef8f820056ed75fb562f85372846eb0d6cc42364d65387409077da71d04f97"
+    },
+    {
+      "path": "tests/test_tenth_tasks.py",
+      "sha256": "b79a8a462e804f87399c200ebd78fa692cdc6f43dd0a95b97b6c97a4c40ccd49"
+    },
+    {
+      "path": "tests/test_tenth_text_references.py",
+      "sha256": "c9378094dbd668c478f8c27ce49ec04363baf5405be35e26ef9372b0d3e7a53d"
+    },
+    {
+      "path": "tests/test_third_consistency.py",
+      "sha256": "29a4cb86f43cc2171eb8ede256b0a084d346173d4a809433bd090a77aabf2856"
+    }
+  ]
+}

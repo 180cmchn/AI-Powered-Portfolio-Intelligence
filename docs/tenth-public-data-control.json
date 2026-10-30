@@ -1,0 +1,71 @@
+{
+  "started_at": "2026-10-30T17:34:52.525538+08:00",
+  "scope": "public network reads only; no model calls, private DB, credentials, proxy or DNS configuration changes",
+  "public_dns_fallback": false,
+  "dns": [
+    {
+      "host": "www.sse.com.cn",
+      "addresses": [
+        "198.18.0.36"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "pdf.dfcfw.com",
+      "addresses": [
+        "198.18.0.41"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    },
+    {
+      "host": "dataclouds.cninfo.com.cn",
+      "addresses": [
+        "198.18.0.44"
+      ],
+      "all_public": false,
+      "synthetic_198_18": true
+    }
+  ],
+  "documents": [
+    {
+      "url": "https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/562500_20261027_Y1TM.pdf",
+      "title": null,
+      "access": "failed",
+      "fetched_at": "2026-10-30T17:34:52.533183+08:00",
+      "returned_range": null,
+      "returned_chars": 0,
+      "error": "研究工具不能访问本机、内网或保留地址",
+      "error_kind": "non_public_dns",
+      "failure_stage": "address_validation",
+      "next_action": "域名解析含非公网地址，可能受本地DNS/代理影响；未发出正文请求。可核对本机网络配置或寻找其他公开来源，不绕过地址校验"
+    },
+    {
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202610261830902525_1.pdf",
+      "title": null,
+      "access": "failed",
+      "fetched_at": "2026-10-30T17:34:52.551703+08:00",
+      "returned_range": null,
+      "returned_chars": 0,
+      "error": "研究工具不能访问本机、内网或保留地址",
+      "error_kind": "non_public_dns",
+      "failure_stage": "address_validation",
+      "next_action": "域名解析含非公网地址，可能受本地DNS/代理影响；未发出正文请求。可核对本机网络配置或寻找其他公开来源，不绕过地址校验"
+    },
+    {
+      "url": "https://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/86586da619209fd1ab0b5b014d68283e.pdf",
+      "title": null,
+      "access": "failed",
+      "fetched_at": "2026-10-30T17:34:52.555117+08:00",
+      "returned_range": null,
+      "returned_chars": 0,
+      "error": "研究工具不能访问本机、内网或保留地址",
+      "error_kind": "non_public_dns",
+      "failure_stage": "address_validation",
+      "next_action": "域名解析含非公网地址，可能受本地DNS/代理影响；未发出正文请求。可核对本机网络配置或寻找其他公开来源，不绕过地址校验"
+    }
+  ],
+  "histories": [],
+  "finished_at": "2026-10-30T17:34:52.558351+08:00"
+}
