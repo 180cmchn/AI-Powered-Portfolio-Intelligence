@@ -29,6 +29,21 @@ CREATE TRIGGER IF NOT EXISTS forecast_attempt_identity_immutable
 """
 
 
+# Executed under the Store migration transaction, never via executescript
+# (which would commit DDL before the version/column migration can roll back).
+SAMPLE_SCHEMA = (
+    """CREATE TABLE IF NOT EXISTS forecast_research_scope_samples(
+        job_id TEXT NOT NULL, sample_id TEXT NOT NULL, assigned_at TEXT NOT NULL,
+        PRIMARY KEY(job_id,sample_id))""",
+    """CREATE TABLE IF NOT EXISTS forecast_sample_attempts(
+        sample_id TEXT NOT NULL, attempt_id INTEGER NOT NULL, assigned_at TEXT NOT NULL,
+        PRIMARY KEY(sample_id,attempt_id))""",
+    'CREATE INDEX IF NOT EXISTS forecast_sample_attempt_latest ON forecast_sample_attempts(sample_id,attempt_id DESC)',
+    """CREATE TRIGGER IF NOT EXISTS forecast_sample_attempt_immutable BEFORE UPDATE ON forecast_sample_attempts
+        BEGIN SELECT RAISE(ABORT,'sample attribution is immutable'); END""",
+)
+
+
 def dump(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
 
@@ -62,6 +77,8 @@ class ForecastIdentityStore:
         return identity
 
     def migrate_forecast_identity(self, db):
+        for statement in SAMPLE_SCHEMA:
+            db.execute(statement)
         # Replace only the batch table's obsolete uniqueness constraint. The
         # prediction ledger and its immutable trigger are never touched.
         indexes = list(db.execute("PRAGMA index_list(forecast_batches)"))
@@ -87,6 +104,44 @@ class ForecastIdentityStore:
             AND NOT EXISTS(SELECT 1 FROM forecast_execution_attempts a WHERE a.job_id=j.id)""")):
             self.bind_forecast_attempt(db, job["id"], 1, json.loads(job["config_snapshot"]), historical=True)
 
+        if not db.execute("SELECT 1 FROM meta WHERE key='forecast_sample_identity_v9'").fetchone():
+            # Only a single frozen attempt and a recorded scope prove historical
+            # assignment. Never infer missing history from batch/current settings.
+            for scope in list(db.execute("""SELECT r.*,a.id AS attempt_id FROM forecast_research_scopes r
+                JOIN forecast_execution_attempts a ON a.job_id=r.job_id
+                WHERE (SELECT count(*) FROM forecast_execution_attempts x WHERE x.job_id=r.job_id)=1""")):
+                proven_ids = [row[0] for row in db.execute('''SELECT s.id FROM forecast_samples s WHERE s.batch_id=?
+                    AND (NOT EXISTS(SELECT 1 FROM forecasts f WHERE f.sample_id=s.id AND f.published_at<=?)
+                         OR EXISTS(SELECT 1 FROM forecasts f WHERE f.sample_id=s.id AND f.job_id=?))''',
+                    (scope['batch_id'], scope['assigned_at'], scope['job_id']))]
+                ids = self.assign_forecast_scope(db, scope['job_id'], scope['batch_id'],
+                    symbols=json.loads(scope['ready_symbols']), sample_ids=proven_ids,
+                    assigned_at=scope['assigned_at'], include_published=True)
+                db.executemany("INSERT OR IGNORE INTO forecast_sample_attempts VALUES(?,?,?)",
+                    [(sid, scope['attempt_id'], scope['assigned_at']) for sid in ids])
+            db.execute("INSERT INTO meta VALUES('forecast_sample_identity_v9',?)", (dump({'at': now(), 'unknown_history_preserved': True}),))
+
+    def assign_forecast_scope(self, db, job_id, batch_id, *, symbols=None, horizons=None, sample_ids=None, assigned_at=None, include_published=False):
+        clauses, args = ['s.batch_id=?'], [batch_id]
+        for column, values in (('symbol', symbols), ('horizon', horizons), ('id', sample_ids)):
+            if values is not None:
+                values = list(values)
+                if not values:
+                    return []
+                clauses.append('s.' + column + ' IN (' + ','.join('?' for _ in values) + ')')
+                args.extend(values)
+        if not include_published:
+            clauses.append('NOT EXISTS(SELECT 1 FROM forecasts f WHERE f.sample_id=s.id)')
+        ids = [r[0] for r in db.execute('SELECT s.id FROM forecast_samples s WHERE ' + ' AND '.join(clauses), args)]
+        stamp = assigned_at or now()
+        db.executemany('INSERT OR IGNORE INTO forecast_research_scope_samples VALUES(?,?,?)', [(job_id, sid, stamp) for sid in ids])
+        return ids
+
+    def bind_sample_attempt(self, db, job_id, attempt_id):
+        db.execute("""INSERT OR IGNORE INTO forecast_sample_attempts(sample_id,attempt_id,assigned_at)
+            SELECT r.sample_id,?,? FROM forecast_research_scope_samples r WHERE r.job_id=?
+            AND NOT EXISTS(SELECT 1 FROM forecasts f WHERE f.sample_id=r.sample_id)""", (attempt_id, now(), job_id))
+
     def bind_forecast_attempt(self, db, job_id, attempt, config, historical=False):
         from .forecasts import _safe_team, _manager_identity, _digest
         job = db.execute("SELECT account_id,state FROM jobs WHERE id=?", (job_id,)).fetchone()
@@ -103,12 +158,23 @@ class ForecastIdentityStore:
             job["account_id"], team["team_id"] if model else None, model, effort if model else None, dump(team),
             now(), "historical_request_unknown" if historical else "planned"))
         if batch:
+            if not historical:
+                scope = db.execute('SELECT ready_symbols,purpose FROM forecast_research_scopes WHERE job_id=?', (job_id,)).fetchone()
+                if scope and scope['purpose'] != 'explicit_subset':
+                    baseline = json.loads(db.execute('SELECT baseline_evidence FROM forecast_batches WHERE id=?', (batch[0],)).fetchone()[0])
+                    ready = {symbol for symbol, evidence in baseline.items() if evidence.get('status') == 'ready'}
+                    self.assign_forecast_scope(db, job_id, batch[0], symbols=ready)
+                    db.execute('UPDATE forecast_research_scopes SET ready_symbols=? WHERE job_id=?',
+                        (dump(sorted(set(json.loads(scope['ready_symbols'])) | ready)), job_id))
             db.execute("UPDATE forecast_execution_attempts SET batch_id=? WHERE job_id=? AND batch_id IS NULL", (batch[0], job_id))
-            frozen = db.execute("SELECT team_snapshot FROM forecast_execution_attempts WHERE job_id=? ORDER BY attempt DESC LIMIT 1", (job_id,)).fetchone()
+            frozen = db.execute("SELECT id,team_snapshot FROM forecast_execution_attempts WHERE job_id=? AND attempt=?", (job_id, max(1, attempt))).fetchone()
+            self.bind_sample_attempt(db, job_id, frozen['id'])
+            if not historical:
+                db.execute("""UPDATE forecast_samples SET state='uncovered',reason=NULL WHERE id IN
+                    (SELECT sample_id FROM forecast_sample_attempts WHERE attempt_id=?)
+                    AND state IN ('waiting_config','failed')""", (frozen['id'],))
             if not db.execute("SELECT 1 FROM forecasts WHERE batch_id=? LIMIT 1", (batch[0],)).fetchone():
-                db.execute("UPDATE forecast_batches SET team_snapshot=? WHERE id=?", (frozen[0], batch[0]))
-                if not historical:
-                    db.execute("UPDATE forecast_samples SET state='uncovered',reason=NULL WHERE batch_id=? AND state IN ('waiting_config','failed')", (batch[0],))
+                db.execute("UPDATE forecast_batches SET team_snapshot=? WHERE id=?", (frozen["team_snapshot"], batch[0]))
 
     def ensure_forecast_attempt(self, job_id):
         with self.connect() as db:
@@ -122,7 +188,10 @@ class ForecastIdentityStore:
             AND published_at IS NULL""", (state, str(error)[:1000] if error else None, job_id, job_id))
 
         if state == 'waiting_config':
-            db.execute("UPDATE forecast_samples SET state='waiting_config',reason=? WHERE batch_id IN (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')", (str(error)[:1000] if error else '等待配置', job_id))
+            db.execute("""UPDATE forecast_samples SET state='waiting_config',reason=? WHERE batch_id IN
+                (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')
+                AND id IN (SELECT sa.sample_id FROM forecast_sample_attempts sa JOIN forecast_execution_attempts a
+                    ON a.id=sa.attempt_id WHERE a.job_id=?)""", (str(error)[:1000] if error else '等待配置', job_id, job_id))
 
     def observe_forecast_model_event(self, job_id, event):
         payload = event.get("payload") or {}
@@ -160,7 +229,7 @@ class ForecastIdentityStore:
         if set(filters) - allowed:
             raise ValueError("不支持的预测筛选条件")
         clauses, args = [], []
-        identity = {key: f"COALESCE(f.{key},json_extract(b.team_snapshot,'$.{key}'))" for key in ("team_id", "manager_model", "manager_effort")}
+        identity = {key: f"CASE WHEN f.id IS NOT NULL THEN f.{key} ELSE a.{key} END" for key in ("team_id", "manager_model", "manager_effort")}
         for key, value in filters.items():
             if value in (None, ""):
                 continue
@@ -181,6 +250,8 @@ class ForecastIdentityStore:
             COALESCE(p.scoring_rule_id,'unknown:'||b.id) AS rule_version,
             p.scoring_rule_id,p.status AS rule_identity_status,b.rule,b.deadline,b.expected_count,b.created_at AS batch_created_at,
             f.id AS forecast_id,f.direction,f.published_at,f.report_id,f.reason AS forecast_reason,
+            a.id AS execution_attempt_id,a.job_id AS assigned_job_id,a.attempt AS assigned_attempt,
+            a.planned_at AS configuration_frozen_at,
             %s AS team_id,%s AS manager_model,%s AS manager_effort,
             CASE WHEN %s IS NULL THEN 'configuration_unknown' WHEN f.id IS NOT NULL THEN 'published' ELSE 'planned' END AS attribution_status,
             CASE WHEN t.last_error='calendar_revalidation_pending' THEN 'waiting_data' ELSE e.status END AS evaluation_status,
@@ -192,9 +263,25 @@ class ForecastIdentityStore:
             FROM forecast_samples s JOIN forecast_batches b ON b.id=s.batch_id
             LEFT JOIN forecast_rule_projections p ON p.batch_id=b.id
             LEFT JOIN forecasts f ON f.id=(SELECT f1.id FROM forecasts f1 WHERE f1.sample_id=s.id ORDER BY f1.published_at,f1.id LIMIT 1)
+            LEFT JOIN forecast_execution_attempts a ON a.id=(SELECT sa.attempt_id
+                FROM forecast_sample_attempts sa JOIN forecast_execution_attempts assigned ON assigned.id=sa.attempt_id
+                WHERE sa.sample_id=s.id AND (f.id IS NULL OR (assigned.job_id=f.job_id AND assigned.team_id=f.team_id))
+                ORDER BY sa.attempt_id DESC LIMIT 1)
             LEFT JOIN forecast_evaluations e ON e.forecast_id=f.id AND e.revision=(SELECT max(x.revision) FROM forecast_evaluations x WHERE x.forecast_id=f.id)
             LEFT JOIN forecast_evaluation_tasks t ON t.forecast_id=f.id""" % (identity["team_id"], identity["manager_model"], identity["manager_effort"], identity["manager_model"])
         return sql + (" WHERE " + " AND ".join(clauses) if clauses else ""), args
+
+    def forecast_sample_attribution(self, db, batch_id):
+        query, args = self._forecast_query({'batch_id': batch_id})
+        row = db.execute("""SELECT count(DISTINCT COALESCE(team_id,'__unknown__')) AS identities,
+            sum(manager_model IS NULL) AS unknown_samples,min(manager_model) AS model,min(team_id) AS team,
+            min(manager_effort) AS effort FROM (""" + query + ')', args).fetchone()
+        uniform = row['identities'] == 1 and not row['unknown_samples']
+        return {'identity_count': row['identities'], 'unknown_samples': row['unknown_samples'] or 0,
+            'attribution_status': 'known' if uniform else 'mixed' if row['identities'] > 1 else 'configuration_unknown',
+            'manager_model': row['model'] if uniform else None, 'team_id': row['team'] if uniform else None,
+            'manager_effort': row['effort'] if uniform else None,
+            'identity_semantics': '已发布样本保留发布署名；未发布样本按实际分配的最近冻结尝试；批次可含多个执行配置'}
 
     def _forecast_rows(self, db, filters, limit=None, offset=0):
         query, args = self._forecast_query(filters)
@@ -271,6 +358,9 @@ class ForecastIdentityStore:
             identity_keys = {'team_id', 'manager_model', 'manager_effort'}
             sample_query, sample_args = self._forecast_query({k: v for k, v in filters.items() if k not in identity_keys})
             ac, av = ["a.batch_id IN (SELECT batch_id FROM (" + sample_query + "))"], list(sample_args)
+            if filters.get('symbol') or filters.get('horizon'):
+                ac.append('EXISTS(SELECT 1 FROM forecast_sample_attempts sa WHERE sa.attempt_id=a.id AND sa.sample_id IN (SELECT id FROM (' + sample_query + ')))')
+                av.extend(sample_args)
             for k in identity_keys:
                 v = filters.get(k)
                 if v in (None, ''):

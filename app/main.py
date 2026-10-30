@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import datetime
-import fcntl
+import mimetypes
 import os
 from pathlib import Path
 import re
@@ -10,8 +10,7 @@ from urllib.parse import urlsplit
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -165,32 +164,38 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     mode = mode or os.getenv("APP_MODE", "live")
     if mode not in ("live", "demo"):
         raise ValueError("APP_MODE 必须为 live 或 demo")
-    store = Store(path or db_path(mode), mode)
-    service = Service(store, runner)
+    from .runtime_lock import DatabaseLease
+    target = Path(path or db_path(mode)).resolve()
+    # The old order migrated the file before detecting another worker. Keep
+    # ownership for the entire worker lifetime, including initialization.
+    lock = DatabaseLease(target) if worker else None
+    try:
+        store = Store(target, mode)
+        service = Service(store, runner)
+    except BaseException:
+        if lock:
+            lock.close()
+        raise
 
     @asynccontextmanager
     async def lifespan(app):
-        lock = None
-        if worker:
-            lock = open(str(store.path) + ".lock", "a+")
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except OSError:
-                lock.close()
-                raise RuntimeError("该数据库已有后台服务运行；请勿使用多 worker 启动")
-            await service.start()
         try:
+            if worker:
+                await service.start()
             yield
         finally:
             if worker:
-                await service.stop()
-                fcntl.flock(lock, fcntl.LOCK_UN)
-                lock.close()
+                try:
+                    await service.stop()
+                finally:
+                    lock.close()
 
     app = FastAPI(title="观澜 · 本地投资研究台", version="0.1.0", lifespan=lifespan)
     app.state.store, app.state.service = store, service
-    from .runtime_version import startup_version
-    app.state.runtime_version = startup_version(store)
+    from .runtime_version import startup_version, static_snapshot, REQUIRED_ROUTES
+    assets = static_snapshot()
+    app.state.runtime_version = startup_version(store, assets)
+    app.state.database_lease = lock
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
 
     @app.middleware("http")
@@ -204,6 +209,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'"
         response.headers["Cache-Control"] = "no-store"
+        response.headers['X-Guanlan-API-Contract'] = str(app.state.runtime_version['api_contract'])
+        response.headers['X-Guanlan-Instance'] = app.state.runtime_version['instance_id']
         return response
 
     from fastapi.exceptions import RequestValidationError
@@ -229,9 +236,10 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return JSONResponse({"detail": str(exc)}, status_code=409)
 
     @app.get("/api/status")
-    async def status():
+    async def status(account_id: str | None = None):
         from .model import native_search_status, native_search_fingerprint
-        cfg, binding_error = service.manager_config(credentials=False)
+        cfg, binding_error = service.manager_config(account_id=account_id, credentials=False)
+        global_cfg, global_binding_error = service.manager_config(credentials=False) if account_id else (cfg, binding_error)
         from .config import reasoning_effort
         configuration_errors = [binding_error] if binding_error else []
         try:
@@ -241,17 +249,33 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         p = urlsplit(cfg["model_base_url"])
         key_ready = bool(os.getenv(cfg["model_key_env"])) or (cfg.get("model_allow_no_key", False) and p.hostname in ("localhost", "127.0.0.1", "::1"))
         probe = store.meta("model_probe")
+        global_probe = probe
+        if global_probe and global_probe.get('fingerprint') != native_search_fingerprint(global_cfg):
+            global_probe = {"ok": False, "status": "unverified", "note": "全局主 Agent 配置已变化，请重新明确检测。"}
         if probe and probe.get('fingerprint') != native_search_fingerprint(cfg):
             probe = {"ok": False, "status": "unverified", "note": "配置已变化，历史协议探测不适用于当前模型、端点或思考强度。"}
         return {"mode": mode, "timezone": "Asia/Shanghai", "model_configured": bool(cfg["model_name"] and not configuration_errors),
                 "configuration_errors": configuration_errors,
+                "configuration_readiness": store.configuration_readiness(account_id),
                 "native_search": native_search_status(cfg, store.meta('native_search_capability')),
+                "global_native_search": native_search_status(global_cfg, store.meta('native_search_capability')),
+                "global_model_configured": bool(global_cfg['model_name'] and not global_binding_error),
+                "global_model_probe": global_probe,
                 "calendar": market_state(calendar_path=store.settings().get('calendar_path')), "runtime_version": app.state.runtime_version,
                 "worker": {"running": service.running, "active": len(service.active), "last_error": service.last_error,
                 "last_resume": store.meta("last_resume")}, "settings": store.settings(), "time": now(),
-                "global_manager": {k: v for k, v in cfg.items() if k in ("model_name", "reasoning_effort", "provider_id", "team_id")},
+                "global_manager": {k: v for k, v in global_cfg.items() if k in ("model_name", "reasoning_effort", "provider_id", "team_id")},
+                "effective_manager": {k: v for k, v in cfg.items() if k in ("model_name", "reasoning_effort", "provider_id", "team_id", "account_id")},
                 "model_probe": probe, "running_model_configs": store.running_model_configs(),
                 "last_quote_refresh": store.meta("last_quote_refresh")}
+
+    @app.get('/api/health')
+    async def health():
+        registered = {(route.path, method.lower()) for route in app.routes for method in getattr(route, 'methods', [])}
+        missing = [f'{method.upper()} {path}' for path, method in REQUIRED_ROUTES.items() if (path, method) not in registered]
+        return {'ready': not missing and (service.running or not worker), 'mode': mode,
+                'worker_running': service.running, 'runtime_version': app.state.runtime_version,
+                'required_routes': REQUIRED_ROUTES, 'missing_routes': missing}
 
     @app.get("/api/accounts")
     async def accounts():
@@ -498,11 +522,17 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         store.save_account(AccountInput(name="演示 · 长期组合", cash=None, holdings=[{"symbol": "SH:510300", "quantity": "3000"}]))
         return {"created": True, "message": "样例仅用于界面和计算展示，不执行模拟 Agent 研究"}
 
-    app.mount("/static", StaticFiles(directory=ROOT / "app" / "static"), name="static")
+    @app.get('/static/{asset:path}')
+    async def static_asset(asset: str):
+        # A running backend always serves the assets captured with that backend.
+        # Disk updates take effect only on an explicit safe restart.
+        if asset not in assets:
+            raise HTTPException(404, '静态资源不存在')
+        return Response(assets[asset], media_type=mimetypes.guess_type(asset)[0] or 'application/octet-stream')
 
     @app.get("/")
     async def index():
-        return FileResponse(ROOT / "app" / "static" / "index.html")
+        return Response(assets['index.html'], media_type='text/html')
 
     return app
 

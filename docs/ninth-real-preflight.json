@@ -1,0 +1,70 @@
+{
+  "kind": "real_ninth_nonpaid_preflight",
+  "observed_at": "2026-10-30T01:30:24.778633+08:00",
+  "configuration": {
+    "configured": true,
+    "protocol": "responses",
+    "model_name": "grok-4.7",
+    "model_host": "api.xxyapi.com",
+    "reasoning_effort": "medium",
+    "model_native_search": true,
+    "quote_provider": "eastmoney",
+    "quote_fallback_provider": "sina",
+    "research_provider": "eastmoney",
+    "settings_origin": "project_environment_and_defaults"
+  },
+  "model_inference_requests": 0,
+  "daily_database_access": "read_only_settings",
+  "catalog": {
+    "status": "success",
+    "complete": true,
+    "selectable": true,
+    "error": null,
+    "model_count": 2,
+    "configured_model_present": true
+  },
+  "security": {
+    "symbol": "SZ:159278",
+    "code": "159278",
+    "exchange": "SZ",
+    "name": null,
+    "kind": "etf",
+    "sector": null,
+    "source": "eastmoney",
+    "fetched_at": "2026-10-30T01:30:25.752386+08:00",
+    "status": "unavailable",
+    "error": "网络连接失败 (RemoteProtocolError)",
+    "request_diagnostics": [
+      {
+        "stage": "quote",
+        "attempt": 1,
+        "host": "push2.eastmoney.com",
+        "status": "failed",
+        "failure_kind": "remote_protocol",
+        "exception": "RemoteProtocolError",
+        "elapsed_seconds": 0.113
+      },
+      {
+        "stage": "quote",
+        "attempt": 2,
+        "host": "push2.eastmoney.com",
+        "status": "failed",
+        "failure_kind": "remote_protocol",
+        "exception": "RemoteProtocolError",
+        "elapsed_seconds": 0.05
+      }
+    ]
+  },
+  "history": {
+    "symbol": "SZ:159278",
+    "name": null,
+    "status": "unavailable",
+    "source": "eastmoney",
+    "fetched_at": "2026-10-30T01:30:26.077192+08:00",
+    "error": "网络连接失败 (RemoteProtocolError)",
+    "row_count": null,
+    "start": null,
+    "end": null,
+    "observed_rows": 0
+  }
+}

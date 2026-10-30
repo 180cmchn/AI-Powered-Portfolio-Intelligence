@@ -47,7 +47,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 8:
+                if version and int(loads(version[0])) > 9:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -87,6 +87,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 8:
                     backup = self.path.with_name(self.path.name + ".before-v8.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 9:
+                    backup = self.path.with_name(self.path.name + ".before-v9.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -160,9 +166,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             # values > environment > medium is resolved on each settings read.
             self.migrate_agent_config(db, {**defaults(), **saved_settings})
             self.migrate_eighth_roles(db)
+            self.migrate_ninth_roles(db)
             self.migrate_forecasts(db)
             self.migrate_forecast_windows(db)
-            db.execute("UPDATE meta SET value='8' WHERE key='schema_version'")
+            db.execute("UPDATE meta SET value='9' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -431,7 +438,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             self.update_forecast_attempt_state(db, job_id, state, error)
             db.execute("UPDATE accounts SET analysis_state=? WHERE id=? AND latest_job_id=?", (state, row["account_id"], job_id))
             if state in ("failed", "cancelled"):
-                db.execute("UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')", (error or state, job_id))
+                db.execute("""UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN
+                    (SELECT id FROM forecast_batches WHERE job_id=?) AND state IN ('uncovered','waiting_data')
+                    AND id IN (SELECT sa.sample_id FROM forecast_sample_attempts sa JOIN forecast_execution_attempts a
+                        ON a.id=sa.attempt_id WHERE a.job_id=?)""", (error or state, job_id, job_id))
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'", (state, error or state, now(), job_id))
 
     def publish(self, job_id, result, data_as_of):

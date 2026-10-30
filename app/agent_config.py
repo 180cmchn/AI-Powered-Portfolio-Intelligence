@@ -19,7 +19,7 @@ from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit, parse_qsl
 
 import httpx
 
-from .config import defaults, REASONING_EFFORTS
+from .config import defaults, REASONING_EFFORTS, environment_connection_source
 from .credentials import KeychainCredentials, CredentialError, fingerprint
 from .domain import now
 
@@ -55,12 +55,17 @@ INITIAL_ROLES = [
     ('etf_researcher', 'ETF 与指数研究员', '研究基金及跟踪指数，交付跟踪标的、费用、披露持仓时点、流动性与资料缺口。'),
     ('portfolio_researcher', '组合与配置研究员', '分析本账户结构、集中度和配置情景，交付组合影响、风险敞口、计算与约束。'),
 ]
+NINTH_PREVIOUS_PROMPTS = {
+    'manager': '7744b22dd0ce824a2917b0de7a312b865cf73c1c1408e2ba77154dadc0f9fda8',
+    'portfolio_researcher': '18cc7d58ab0bf324cbde0fda37139a7da001da3cc56adec0f50902ba12102039',
+}
 
 DISCOVERY_TTL_SECONDS = 3600
 DISCOVERY_PAGE_LIMIT = 5
 DISCOVERY_MODEL_LIMIT = 2000
 DISCOVERY_RESPONSE_BYTES = 2_000_000
 _DISCOVERY_TASKS: dict[tuple, asyncio.Task] = {}
+_SAVE_TASKS: dict[tuple, asyncio.Task] = {}
 
 
 def _dumps(value):
@@ -247,6 +252,32 @@ class AgentConfigStore:
             raise KeyError('供应商不存在')
         return _loads(row[0])
 
+    def migrate_ninth_roles(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='ninth_role_migration'").fetchone():
+            return
+        changed = []
+        for role_id, expected_hash in NINTH_PREVIOUS_PROMPTS.items():
+            row = db.execute('SELECT body FROM agent_definitions WHERE role_id=?', (role_id,)).fetchone()
+            if not row:
+                continue
+            role = _loads(row[0])
+            if role.get('custom') or hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() != expected_hash:
+                continue
+            prompt = (PROMPTS / (role_id + '.txt')).read_text()
+            if role_id != 'manager':
+                prompt += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+            if prompt == role['system_prompt']:
+                continue
+            role.update(system_prompt=prompt, version=role['version'] + 1,
+                        prompt_version=role['prompt_version'] + 1, updated_at=now())
+            db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?', (role['version'], _dumps(role), role_id))
+            changed.append(role_id)
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+        db.execute("INSERT INTO meta VALUES('ninth_role_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
+            'note': 'Only exact eighth built-in prompts upgraded; custom roles, bindings and frozen task authors retained.'}),))
+
     def _provider_catalog(self, provider_id, revision, db):
         row = db.execute('SELECT body FROM provider_catalogs WHERE provider_id=? AND revision=?', (provider_id, revision)).fetchone()
         return _loads(row[0]) if row else {'status': 'not_fetched', 'models': [], 'revision': revision,
@@ -258,6 +289,12 @@ class AgentConfigStore:
         body['key_configured'] = ref.get('kind') not in {None, 'missing'}
         body['key_mask'] = '••••••••' if body['key_configured'] else ''
         body['credential_id'] = ref.get('fingerprint', '')[:12]
+        body['connection_source'] = provider.get('connection_source') or ('environment' if ref.get('kind') == 'environment' else 'saved')
+        body['key_state'] = 'reference_saved' if body['key_configured'] else 'missing'
+        if ref.get('kind') == 'environment':
+            current = os.environ.get(ref.get('name', ''), '')
+            body['key_state'] = 'available' if current and fingerprint(current) == ref.get('fingerprint') else 'environment_changed' if current else 'missing'
+        body['key_available'] = body['key_state'] == 'available' if ref.get('kind') == 'environment' else None
         catalog = self._provider_catalog(provider['id'], provider['revision'], db)
         catalog = copy.deepcopy(catalog)
         if catalog.get('fetched_at'):
@@ -276,7 +313,149 @@ class AgentConfigStore:
             rows = [_loads(r[0]) for r in db.execute('SELECT body FROM model_providers ORDER BY rowid')]
             return [self._public_provider(p, db) for p in rows if include_archived or not p.get('archived')]
 
-    async def save_provider(self, payload: dict, provider_id=None, transport=None):
+    def environment_connection(self):
+        """Read-only reconciliation; a one-time migration never silently wins.
+
+        Preview is an opaque configuration revision, not a credential digest.
+        It is stored only in memory and expires whenever the proposed inputs or
+        saved provider revision change. Import requires this exact preview.
+        """
+        config = defaults()
+        key_name = config.get('model_key_env') or 'MODEL_API_KEY'
+        secret = os.getenv(key_name, '')
+        error = None
+        try:
+            base = normalize_api_base(config['model_base_url'])
+        except ValueError:
+            base, error = '', '环境 Base URL 无效，请修正后安全重启'
+        protocol = config['model_protocol']
+        if protocol not in {'responses', 'chat_completions'}:
+            error = '环境协议无效，请使用 responses 或 chat_completions'
+        source = environment_connection_source()
+        with self.connect() as db:
+            rows = [_loads(r[0]) for r in db.execute('SELECT body FROM model_providers ORDER BY rowid')]
+            migration = db.execute("SELECT value FROM meta WHERE key='agent_config_migration'").fetchone()
+            legacy_id = (_loads(migration[0], {}) if migration else {}).get('legacy_provider_id')
+            # Reuse the migration connection, or a previously explicitly imported
+            # connection. Never overwrite a provider edited through the web UI.
+            target = next((p for p in rows if p.get('connection_source') == 'environment' and p.get('environment_key_name') == key_name), None)
+            legacy = next((p for p in rows if p['id'] == legacy_id), None)
+            if not target and legacy and legacy.get('connection_source') != 'saved' and legacy['revision'] == 1 and legacy.get('credential_reference', {}).get('kind') in {'missing', 'environment'}:
+                target = legacy
+            revoked_ids = {p['id'] for p in rows if db.execute('SELECT 1 FROM meta WHERE key=?', ('revoked_provider_credentials:' + p['id'],)).fetchone()}
+            # A revoked migration/import cannot be resurrected by re-reading env.
+            revoked = bool((target and target['id'] in revoked_ids) or (not target and legacy_id in revoked_ids))
+            if revoked:
+                error = '此环境连接已明确撤销；环境导入不会恢复它。请在供应商表单明确录入新凭据。'
+            exact = next((p for p in rows if not p.get('archived') and p['base_url'] == base and p['protocol'] == protocol
+                          and p.get('credential_reference', {}).get('fingerprint') == fingerprint(secret) and secret), None)
+            if exact and exact['id'] not in revoked_ids:
+                target = exact
+            same = bool(exact and target and exact['id'] == target['id'])
+            revision = target['revision'] if target else None
+            identity = (base, protocol, key_name, fingerprint(secret), target['id'] if target else None, revision, revoked, source['restart_required'])
+            previous = getattr(self, '_environment_preview', None)
+            if not previous or previous[0] != identity:
+                self._environment_preview = (identity, uuid.uuid4().hex)
+            if source['restart_required']:
+                error = error or '.env 与当前进程不同；请先按手册安全重启，再检测和导入'
+            return {'base_url': base, 'protocol': protocol, 'key_present': bool(secret), 'key_name': key_name,
+                    'source': source, 'provider_id': target['id'] if target else None, 'provider_revision': revision,
+                    'status': 'revoked' if revoked else 'invalid' if error else 'missing_key' if not secret else 'current' if same else 'pending_import',
+                    'can_import': bool(secret and not error), 'changed': not same,
+                    'preview_id': self._environment_preview[1], 'error': error,
+                    'action': '供应商已识别；请从实际目录为主 Agent 选择模型' if same else '确认此目标后显式导入环境连接；已有网页连接与角色绑定保持原值',
+                    'existing_saved_connections': len(rows), 'migration_completed': bool(migration)}
+
+    async def import_environment_connection(self, preview_id, transport=None):
+        preview = self.environment_connection()
+        if preview_id != preview['preview_id']:
+            raise ValueError('环境或已保存连接已变化，请重新检测并确认目标')
+        if not preview['can_import']:
+            raise ValueError(preview['error'] or '环境中没有可用 API Key')
+        key_name = preview['key_name']
+        reference = {'kind': 'environment', 'name': key_name, 'fingerprint': fingerprint(os.getenv(key_name, ''))}
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            old = self._provider(preview['provider_id'], db) if preview['provider_id'] else None
+            if old and old['revision'] != preview['provider_revision']:
+                raise ValueError('供应商已修改，请重新检测')
+            if old and db.execute('SELECT 1 FROM meta WHERE key=?', ('revoked_provider_credentials:' + old['id'],)).fetchone():
+                raise ValueError('已撤销连接不能通过环境导入恢复')
+            if old and preview['status'] == 'current':
+                provider = old
+            else:
+                count = db.execute('SELECT COUNT(*) FROM model_providers').fetchone()[0]
+                provider = {**(old or {}), 'id': old['id'] if old else uuid.uuid4().hex,
+                    'display_name': old['display_name'] if old else f'供应商 {count + 1}（环境）',
+                    'base_url': preview['base_url'], 'protocol': preview['protocol'],
+                    'revision': old['revision'] + 1 if old else 1,
+                    'credential_revision': old['credential_revision'] + 1 if old else 1,
+                    'credential_reference': reference, 'connection_source': 'environment', 'environment_key_name': key_name,
+                    'created_at': old['created_at'] if old else now(), 'updated_at': now(), 'archived': False, 'connection_error': None}
+                db.execute('INSERT OR REPLACE INTO model_providers VALUES(?,?,?)', (provider['id'], provider['revision'], _dumps(provider)))
+                db.execute('INSERT INTO provider_connections VALUES(?,?,?)', (provider['id'], provider['revision'], _dumps(provider)))
+        await self.discover_models(provider['id'], transport=transport)
+        return self.provider(provider['id'])
+
+    def configuration_readiness(self, account_id=None):
+        roles = self.list_agent_roles(account_id)
+        manager = next((r for r in roles if r['role_id'] == 'manager'), None)
+        providers = {p['id']: p for p in self.list_providers()}
+        resolved = (manager or {}).get('resolved', {})
+        provider = providers.get(resolved.get('provider_id'))
+        error = (manager or {}).get('config_error')
+        if provider and provider['key_state'] == 'environment_changed':
+            error = '环境凭据已变化；请检测并显式更新环境连接'
+        configured = bool(manager and resolved.get('model_id') and not error)
+        any_connection = any(p['key_configured'] and not p.get('archived') for p in providers.values())
+        next_step = ('供应商已识别，主 Agent 待绑定模型；请从实际目录选择模型' if any_connection and not resolved.get('model_id')
+                     else error or ('模型已绑定；函数和原生搜索能力以明确探测或实际请求为准' if configured else '请添加或导入供应商连接'))
+        return {'account_id': account_id, 'local_api': 'ready', 'provider_saved': any(not p.get('archived') for p in providers.values()),
+                'manager_provider_saved': bool(provider),
+                'key_state': provider['key_state'] if provider else 'missing',
+                'catalog_status': provider['catalog']['status'] if provider else 'not_fetched',
+                'manager_binding': resolved, 'manager_ready': configured, 'manager_error': error,
+                'next_step': next_step,
+                'roles': [{'role_id': r['role_id'], 'binding_source': r['resolved']['binding_source'], 'error': r.get('config_error')} for r in roles],
+                'functions': 'unverified', 'native_search': 'protocol_unsupported' if provider and provider['protocol'] == 'chat_completions' else 'unverified'}
+
+    def provider_operation(self, operation_id):
+        if not re.fullmatch(r'[a-f0-9-]{32,36}', operation_id):
+            raise ValueError('保存操作标识无效')
+        with self.connect() as db:
+            row = db.execute('SELECT value FROM meta WHERE key=?', ('provider_operation:' + operation_id,)).fetchone()
+            value = _loads(row[0]) if row else None
+            return {'status': 'committed', 'committed_revision': value.get('revision'),
+                    'provider': self._public_provider(self._provider(value['provider_id'], db), db)} if value else {'status': 'not_found'}
+
+    async def save_provider(self, payload: dict, provider_id=None, transport=None, operation_id=None):
+        if operation_id:
+            if not re.fullmatch(r'[a-f0-9-]{32,36}', operation_id):
+                raise ValueError('保存操作标识无效')
+            # Persist only non-sensitive intent. Reusing an operation identifier
+            # returns its first committed connection and never rotates its key.
+            identity = _digest({'provider_id': provider_id, 'payload': {k: v for k, v in payload.items() if k != 'api_key'}})
+            with self.connect() as db:
+                row = db.execute('SELECT value FROM meta WHERE key=?', ('provider_operation:' + operation_id,)).fetchone()
+                if row:
+                    saved = _loads(row[0])
+                    if saved['identity'] != identity:
+                        raise ValueError('操作标识已用于其他输入，请先核对上次保存')
+                    return self._public_provider(self._provider(saved['provider_id'], db), db)
+            key = (str(self.path.resolve()), operation_id, id(asyncio.get_running_loop()))
+            if key in _SAVE_TASKS:
+                active_identity, task = _SAVE_TASKS[key]
+                if active_identity != identity:
+                    raise ValueError('操作标识正在保存其他输入')
+            else:
+                task = asyncio.create_task(self._save_provider(payload, provider_id, transport, operation_id, identity))
+                _SAVE_TASKS[key] = (identity, task)
+                task.add_done_callback(lambda done: _SAVE_TASKS.pop(key, None))
+            return await asyncio.shield(task)
+        return await self._save_provider(payload, provider_id, transport)
+
+    async def _save_provider(self, payload: dict, provider_id=None, transport=None, operation_id=None, identity=None):
         if not isinstance(payload, dict) or set(payload) - {'api_key', 'base_url', 'protocol'}:
             raise ValueError('供应商只接受 api_key、base_url、protocol 三项连接输入')
         with self.connect() as db:
@@ -307,9 +486,13 @@ class AgentConfigStore:
                             'base_url': base, 'protocol': protocol, 'revision': revision,
                             'credential_revision': (old['credential_revision'] + int(bool(secret))) if old else 1,
                             'credential_reference': ref, 'created_at': old['created_at'] if old else now(),
-                            'updated_at': now(), 'archived': old.get('archived', False) if old else False}
+                            'updated_at': now(), 'archived': old.get('archived', False) if old else False,
+                            'connection_source': 'saved'}
                 db.execute('INSERT OR REPLACE INTO model_providers VALUES(?,?,?)', (provider_id, revision, _dumps(provider)))
                 db.execute('INSERT OR REPLACE INTO provider_connections VALUES(?,?,?)', (provider_id, revision, _dumps(provider)))
+                if operation_id:
+                    db.execute('INSERT INTO meta VALUES(?,?)', ('provider_operation:' + operation_id,
+                        _dumps({'provider_id': provider_id, 'revision': revision, 'identity': identity, 'at': now()})))
         except BaseException:
             if secret:
                 await asyncio.to_thread(self._vault().delete, ref)
@@ -512,10 +695,16 @@ class AgentConfigStore:
                     error = '供应商已归档'
                 elif provider.get('credential_reference', {}).get('kind') == 'missing':
                     error = '供应商未配置 API Key'
+                elif provider.get('credential_reference', {}).get('kind') == 'environment' and fingerprint(os.getenv(provider['credential_reference'].get('name', ''), '')) != provider['credential_reference'].get('fingerprint'):
+                    error = '环境凭据已变化或缺失，请检测并显式更新环境连接'
                 elif not resolved.get('model_id'):
                     error = '尚未选择模型'
                 elif resolved.get('validation') == 'legacy_unverified':
-                    warning = '迁移历史绑定，尚未由模型列表重新确认'
+                    if resolved['model_id'] in {m['id'] for m in catalog.get('models', [])} and catalog.get('selectable'):
+                        resolved['validation'] = 'discovered'
+                        resolved['discovered_revision'] = provider['revision']
+                    else:
+                        error = '迁移历史模型未在实际目录确认；请获取目录并选择模型'
                 elif resolved.get('discovered_revision') != provider['revision']:
                     if resolved['model_id'] in {m['id'] for m in catalog.get('models', [])} and catalog.get('selectable'):
                         resolved['validation'] = 'discovered'

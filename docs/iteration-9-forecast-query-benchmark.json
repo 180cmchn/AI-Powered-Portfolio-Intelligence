@@ -1,0 +1,87 @@
+{
+  "scope": "Synthetic mixed published A / failed frozen B, exact sample-attempt mappings; no network or user database",
+  "batches": 5000,
+  "samples": 30000,
+  "attempts": 10000,
+  "sample_attempt_links": 45000,
+  "hardware": {
+    "machine": "arm64",
+    "system": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.4",
+    "sqlite": "3.53.0"
+  },
+  "full_materialization_control": {
+    "median_ms": 325.976,
+    "runs_ms": [
+      356.116,
+      325.976,
+      323.475
+    ],
+    "peak_python_bytes": 77286297,
+    "returned_items": [
+      30,
+      30,
+      30
+    ]
+  },
+  "sql_page": {
+    "median_ms": 67.396,
+    "runs_ms": [
+      67.396,
+      65.732,
+      74.759
+    ],
+    "peak_python_bytes": 154476,
+    "returned_items": [
+      30,
+      30,
+      30
+    ]
+  },
+  "sql_filtered_page": {
+    "median_ms": 63.182,
+    "runs_ms": [
+      63.182,
+      63.049,
+      63.997
+    ],
+    "peak_python_bytes": 148727,
+    "returned_items": [
+      30,
+      30,
+      30
+    ]
+  },
+  "sql_filtered_aggregate": {
+    "median_ms": 145.334,
+    "runs_ms": [
+      144.511,
+      145.334,
+      150.649
+    ],
+    "peak_python_bytes": 35306,
+    "returned_items": [
+      3,
+      3,
+      3
+    ]
+  },
+  "query_plan": [
+    "SEARCH b USING INDEX forecast_batches_page (kind=?)",
+    "SEARCH s USING INDEX forecast_samples_batch_page (batch_id=?)",
+    "SEARCH p USING INDEX sqlite_autoindex_forecast_rule_projections_1 (batch_id=?) LEFT-JOIN",
+    "SEARCH f USING INDEX sqlite_autoindex_forecasts_1 (id=?) LEFT-JOIN",
+    "CORRELATED SCALAR SUBQUERY 1",
+    "SEARCH f1 USING INDEX sqlite_autoindex_forecasts_2 (sample_id=?)",
+    "USE TEMP B-TREE FOR ORDER BY",
+    "SEARCH a USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+    "CORRELATED SCALAR SUBQUERY 2",
+    "SEARCH sa USING COVERING INDEX forecast_sample_attempt_latest (sample_id=?)",
+    "SEARCH assigned USING INTEGER PRIMARY KEY (rowid=?)",
+    "SEARCH e USING INDEX sqlite_autoindex_forecast_evaluations_2 (forecast_id=? AND revision=?) LEFT-JOIN",
+    "CORRELATED SCALAR SUBQUERY 3",
+    "SEARCH x USING COVERING INDEX forecast_evaluations_latest (forecast_id=?)",
+    "SEARCH t USING INDEX sqlite_autoindex_forecast_evaluation_tasks_1 (forecast_id=?) LEFT-JOIN"
+  ],
+  "limitations": "Controlled local microbenchmark, not a production SLA. Python memory excludes SQLite native allocation and OS caches."
+}

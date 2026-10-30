@@ -1,0 +1,94 @@
+{
+  "kind": "ninth_local_engineering_validation",
+  "observed_at": "2026-10-30T01:34:34.160222+08:00",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4",
+  "sqlite": "3.53.0",
+  "node": "v25.9.0",
+  "source_sha256": "9054a471a4a51b35f38cf51089cbb925dcaba50834377a2fdfbc08408e3bc02f",
+  "commit_at_validation": "046fdfc9351b498653c47b0fa697a3baefdc6e40",
+  "working_tree_patched": true,
+  "dependencies": {
+    "fastapi": "0.159.1",
+    "starlette": "1.9.0",
+    "uvicorn": "0.54.0",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "python-dotenv": "1.2.4",
+    "pytest": "9.1.1"
+  },
+  "python_regression": {
+    "command": ".venv/bin/pytest -q",
+    "passed": 812,
+    "warnings": 1,
+    "seconds": 62.42,
+    "warning": "existing Starlette TestClient/httpx deprecation"
+  },
+  "browser_regression": {
+    "command": "PYTHON=.venv/bin/python npm run test:browser",
+    "groups": [
+      "iteration",
+      "production",
+      "seventh",
+      "ninth state + real FastAPI"
+    ],
+    "all_passed": true
+  },
+  "handbook_entry": {
+    "command": ".venv/bin/python scripts/check_handbook_frozen.py --output docs/ninth-frozen-entry.json",
+    "result": "passed",
+    "note": "real uv frozen install + zsh entry in temporary copy"
+  },
+  "old_database_copy": {
+    "command": ".venv/bin/python scripts/check_upgrade_copy.py --source data/live.sqlite3 --output docs/ninth-old-database-upgrade.json",
+    "result": "passed",
+    "source_access": "read-only backup; source schema3 unchanged"
+  },
+  "daily_service_started_or_stopped": false,
+  "daily_database_migrated": false,
+  "remote_ci": {
+    "state_as_of": "pre_push_local_validation_at_observed_at",
+    "run_id": 40909112902,
+    "sha": "046fdfc9351b498653c47b0fa697a3baefdc6e40",
+    "status": "completed",
+    "conclusion": "success",
+    "new_patch_pushed": false,
+    "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/40909112902"
+  },
+  "real_external_validation": {
+    "result": "three exploratory account reports completed; limitations retained",
+    "evidence": "docs/ninth-live-evidence.json",
+    "reports": "docs/ninth-live-reports.md",
+    "review": "docs/ninth-live-research-review.md",
+    "business_requests": 40,
+    "business_response_completed": 38,
+    "business_incomplete_streams": 2,
+    "native_search_preflight_requests": 1,
+    "account_reports_completed": 3,
+    "calculation_summaries_in_final_requests": 11,
+    "exploratory_abstentions": 9,
+    "formal_batches": 0,
+    "natural_evaluations": 0,
+    "actual_browser_pages_checked": 8,
+    "daily_service_final_check": "docs/ninth-site-final.json",
+    "unverified": [
+      "real market_indicators adoption",
+      "formal window publication",
+      "natural mature scoring",
+      "real cross-model retry attribution",
+      "ETF full text facts independently supported by local material"
+    ]
+  },
+  "application_files_sha256": "9fc25dec73d16436af2e56f29a64683110184ce2482caf1e0706f13132f9240f",
+  "real_acceptance_source_sha256": "c055b65c0eaa54f5c105f6b8074834295ecdd00b9c6b603e08ace246e0834546",
+  "acceptance_script_note": "Two pre-inference runs stopped on overly strict identity gate (closed quote, then observed Sina abbreviation); no paid requests. Validation script corrected only; application code unchanged after 812-test/four-group pass.",
+  "final_review": {
+    "source_matches_real_acceptance": true,
+    "independent_acceptance_process_exited": true,
+    "changed_files_and_acceptance_artifacts_secret_scan": {
+      "files_scanned": 75,
+      "current_configured_secret_matches": 0
+    },
+    "real_evidence_independently_recounted": true
+  }
+}

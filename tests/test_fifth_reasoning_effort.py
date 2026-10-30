@@ -206,7 +206,7 @@ def test_v5_migration_backup_is_repeatable_and_never_persists_effort_default(tmp
     with original.connect() as db:
         db.execute('ALTER TABLE jobs DROP COLUMN config_snapshot')
     updated = Store(path)
-    assert updated.meta('schema_version') == 8
+    assert updated.meta('schema_version') == 9
     assert updated.account(account['id']) == account
     assert updated.settings()['reasoning_effort'] == 'xhigh'
     assert 'reasoning_effort' not in updated.meta('settings')

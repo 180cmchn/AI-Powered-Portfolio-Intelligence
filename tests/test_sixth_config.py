@@ -353,11 +353,16 @@ async def test_refresh_failure_does_not_undo_last_complete_catalog_absence(store
     assert '未列出' in store.list_agent_roles()[0]['config_error']
 
 
-def test_legacy_environment_snapshot_never_silently_switches_credentials(tmp_path, monkeypatch):
+@pytest.mark.asyncio
+async def test_legacy_environment_snapshot_never_silently_switches_credentials(tmp_path, monkeypatch):
     monkeypatch.setenv('MODEL_KEY_ENV', 'SIXTH_LEGACY_FIXTURE_KEY')
     monkeypatch.setenv('SIXTH_LEGACY_FIXTURE_KEY', 'legacy-fixture-key-one')
     monkeypatch.setenv('MODEL_NAME', 'legacy-model')
     store = Store(tmp_path / 'legacy.sqlite3')
+    # A legacy model name remains pending until the actual directory confirms it.
+    provider = store.list_providers()[0]
+    assert store.list_agent_roles()[0]['config_error']
+    await store.discover_models(provider['id'], transport=response_transport({'data': [{'id': 'legacy-model'}]}))
     team = store.freeze_agent_team()
     assert store.runtime_role_config(team, 'manager')['_model_api_key'] == 'legacy-fixture-key-one'
     monkeypatch.setenv('SIXTH_LEGACY_FIXTURE_KEY', 'legacy-fixture-key-two')

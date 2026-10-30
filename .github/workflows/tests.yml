@@ -29,13 +29,18 @@ jobs:
         id: browser-forecast
         continue-on-error: true
         run: npm run test:browser:seventh
+      - name: Browser daily configuration group
+        id: browser-ninth
+        continue-on-error: true
+        run: npm run test:browser:ninth
       - name: Require all browser groups
         if: always()
         env:
           FIXTURES: ${{ steps.browser-fixtures.outcome }}
           PRODUCTION: ${{ steps.browser-production.outcome }}
           FORECAST: ${{ steps.browser-forecast.outcome }}
-        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success
+          NINTH: ${{ steps.browser-ninth.outcome }}
+        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success
       - uses: actions/upload-artifact@v4
         if: always()
         with:

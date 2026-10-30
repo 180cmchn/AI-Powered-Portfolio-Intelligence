@@ -1,0 +1,1239 @@
+{
+  "kind": "real_ninth_api_worker_acceptance",
+  "started_at": "2026-10-30T01:37:07.727771+08:00",
+  "finished_at": "2026-10-30T01:44:42.271900+08:00",
+  "source_sha256": "c055b65c0eaa54f5c105f6b8074834295ecdd00b9c6b603e08ace246e0834546",
+  "source_unchanged": true,
+  "verification_files_unchanged": true,
+  "env_file_metadata_unchanged": true,
+  "configuration": {
+    "configured": true,
+    "protocol": "responses",
+    "model_name": "grok-4.7",
+    "model_host": "api.xxyapi.com",
+    "reasoning_effort": "medium",
+    "model_native_search": true,
+    "quote_provider": "eastmoney",
+    "quote_fallback_provider": "sina",
+    "research_provider": "eastmoney",
+    "settings_origin": "project_environment_and_defaults"
+  },
+  "basic_routes": {
+    "/api/health": 200,
+    "/api/providers": 200,
+    "/api/agent-roles": 200,
+    "/api/accounts": 200,
+    "/api/forecasts": 200,
+    "/api/research": 200,
+    "/api/environment-connection": 200
+  },
+  "success": true,
+  "rounds": [
+    {
+      "label": "a_initial",
+      "job_id": "2f1b920203d642a5b118320ec987b9eb",
+      "state": "completed",
+      "input_version": 1,
+      "model_calls": 12,
+      "model_usage": {
+        "requests": 12,
+        "duration_ms": 134372.65,
+        "failed_requests": 0,
+        "usage": {
+          "input_tokens": 263399,
+          "output_tokens": 9860,
+          "total_tokens": 273259,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 8,
+          "cost_in_usd_ticks": 1883073200
+        },
+        "usage_reported_requests": 12
+      },
+      "model_config": {
+        "model_protocol": "responses",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_name": "grok-4.7",
+        "model_native_search": true,
+        "provider_id": "legacy-519781424afd",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "manager",
+        "role_version": 2,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "team_id": "2f2e7c2095be9bde9cf3f9486561a2bd7bb3bd128e8d7c0e22988a9cc3bbd699",
+        "account_id": "695970e0d13340fb8b9085e0e3e17bd4",
+        "model_allow_no_key": false,
+        "model_responses_stream": true,
+        "reasoning_effort": "medium",
+        "fingerprint": "2eafd419c448782b17bad9d8639a2e3cd8a598a1e2f4b46ab39672ba00f42f46"
+      },
+      "final_manager_calculation_coverage": [
+        {
+          "request_number": 12,
+          "agent_id": "manager",
+          "final_request": true,
+          "phase": "synthesis",
+          "calculations": [
+            {
+              "calculation_id": "calculation-6dea97ec6f034f9bbac2843f710b6668",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "2f1b920203d642a5b118320ec987b9eb",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-1"
+            }
+          ],
+          "note": "Actual prepared request coverage; inclusion does not establish use in the report."
+        }
+      ],
+      "agent_count": 0
+    },
+    {
+      "label": "a_position_update",
+      "job_id": "056d5e19e4d6495092f54ec622bffd26",
+      "state": "completed",
+      "input_version": 2,
+      "model_calls": 12,
+      "model_usage": {
+        "requests": 12,
+        "duration_ms": 134046.51,
+        "failed_requests": 0,
+        "usage": {
+          "input_tokens": 304119,
+          "output_tokens": 9670,
+          "total_tokens": 313789,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 8,
+          "cost_in_usd_ticks": 1725245200
+        },
+        "usage_reported_requests": 12
+      },
+      "model_config": {
+        "model_protocol": "responses",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_name": "grok-4.7",
+        "model_native_search": true,
+        "provider_id": "legacy-519781424afd",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "manager",
+        "role_version": 2,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "team_id": "2f2e7c2095be9bde9cf3f9486561a2bd7bb3bd128e8d7c0e22988a9cc3bbd699",
+        "account_id": "695970e0d13340fb8b9085e0e3e17bd4",
+        "model_allow_no_key": false,
+        "model_responses_stream": true,
+        "reasoning_effort": "medium",
+        "fingerprint": "2eafd419c448782b17bad9d8639a2e3cd8a598a1e2f4b46ab39672ba00f42f46"
+      },
+      "final_manager_calculation_coverage": [
+        {
+          "request_number": 12,
+          "agent_id": "manager",
+          "final_request": true,
+          "phase": "synthesis",
+          "calculations": [
+            {
+              "calculation_id": "calculation-eaa52a1c1a944175bf3c6d582769130d",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "056d5e19e4d6495092f54ec622bffd26",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-26"
+            },
+            {
+              "calculation_id": "calculation-ef9a3b17173b4b1794aef57410b96273",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "056d5e19e4d6495092f54ec622bffd26",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-27"
+            }
+          ],
+          "note": "Actual prepared request coverage; inclusion does not establish use in the report."
+        }
+      ],
+      "agent_count": 0
+    },
+    {
+      "label": "b_candidate",
+      "job_id": "f23f77311a5f43598c81cfb57ba34e04",
+      "state": "completed",
+      "input_version": 1,
+      "model_calls": 16,
+      "model_usage": {
+        "requests": 16,
+        "duration_ms": 385345.82,
+        "failed_requests": 2,
+        "usage": {
+          "input_tokens": 291546,
+          "output_tokens": 20848,
+          "total_tokens": 312394,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 13,
+          "cost_in_usd_ticks": 2504237600
+        },
+        "usage_reported_requests": 14
+      },
+      "model_config": {
+        "model_protocol": "responses",
+        "model_base_url": "https://api.xxyapi.com/v1",
+        "model_name": "grok-4.7",
+        "model_native_search": true,
+        "provider_id": "legacy-519781424afd",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "manager",
+        "role_version": 2,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "team_id": "2f2e7c2095be9bde9cf3f9486561a2bd7bb3bd128e8d7c0e22988a9cc3bbd699",
+        "account_id": "1c4bd59a55f44e5e91cdca2e517dc136",
+        "model_allow_no_key": false,
+        "model_responses_stream": true,
+        "reasoning_effort": "medium",
+        "fingerprint": "78d140471cf76b94fd248a56cecf9d2559673a8f26a02db37823e30be194f302"
+      },
+      "final_manager_calculation_coverage": [
+        {
+          "request_number": 15,
+          "agent_id": "manager",
+          "final_request": true,
+          "phase": "synthesis",
+          "calculations": [
+            {
+              "calculation_id": "calculation-8bdd63b2d4b54232a1a6c81b0d2648c2",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-34"
+            },
+            {
+              "calculation_id": "calculation-5b901d8d0012490a8d4c43d98afb50d5",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-35"
+            },
+            {
+              "calculation_id": "calculation-d383e7e62ccc48498b2d7edf10b88ff1",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-36"
+            },
+            {
+              "calculation_id": "calculation-f5a17fe486c94ff285a175c4b2557ecb",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-37"
+            },
+            {
+              "calculation_id": "calculation-85f23044bf0e4f6495efdb8cee9264c2",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-38"
+            },
+            {
+              "calculation_id": "calculation-0a9745975a4f457ab02bf08f82ae2d0c",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-39"
+            },
+            {
+              "calculation_id": "calculation-a71a0b7bce88460396063ba4fc2ebd5d",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-40"
+            },
+            {
+              "calculation_id": "calculation-6121a9b5d4f344f4b443bda9ec060082",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-41"
+            }
+          ],
+          "note": "Actual prepared request coverage; inclusion does not establish use in the report."
+        },
+        {
+          "request_number": 16,
+          "agent_id": "manager",
+          "final_request": true,
+          "phase": "synthesis",
+          "calculations": [
+            {
+              "calculation_id": "calculation-8bdd63b2d4b54232a1a6c81b0d2648c2",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-34"
+            },
+            {
+              "calculation_id": "calculation-5b901d8d0012490a8d4c43d98afb50d5",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-35"
+            },
+            {
+              "calculation_id": "calculation-d383e7e62ccc48498b2d7edf10b88ff1",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-36"
+            },
+            {
+              "calculation_id": "calculation-f5a17fe486c94ff285a175c4b2557ecb",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-37"
+            },
+            {
+              "calculation_id": "calculation-85f23044bf0e4f6495efdb8cee9264c2",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-38"
+            },
+            {
+              "calculation_id": "calculation-0a9745975a4f457ab02bf08f82ae2d0c",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-39"
+            },
+            {
+              "calculation_id": "calculation-a71a0b7bce88460396063ba4fc2ebd5d",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-40"
+            },
+            {
+              "calculation_id": "calculation-6121a9b5d4f344f4b443bda9ec060082",
+              "tool": "calculate",
+              "source_agent_id": "manager",
+              "source_task_id": "f23f77311a5f43598c81cfb57ba34e04",
+              "status": "ok",
+              "visibility": "summary",
+              "record_id": "context-41"
+            }
+          ],
+          "note": "Actual prepared request coverage; inclusion does not establish use in the report."
+        }
+      ],
+      "agent_count": 2
+    }
+  ],
+  "position_update": {
+    "old_report_status": "stale",
+    "version": 2,
+    "cash": "10000",
+    "b_unchanged": true
+  },
+  "b_binding_unchanged": true,
+  "b_input_version_unchanged": true,
+  "formal": {
+    "groups": [],
+    "expected": 0,
+    "filters": {
+      "kind": "formal"
+    },
+    "attempt_statistics": {
+      "total": 0,
+      "states": []
+    },
+    "comparison_note": "正式样本按发布团队归属；未发布按最近已冻结尝试归属，旧失败另计尝试。探索累计次数会影响数量，不直接配对。",
+    "method": "D 收盘为基准，D 后第 N 个交易日收盘为终点。首次成功正式预测锁定，阈值边界计震荡；未成熟及缺失不进入准确率分母。"
+  },
+  "exploratory": {
+    "groups": [
+      {
+        "horizon": 1,
+        "label": "短线",
+        "rule_version": "5e00ecdf26aea5b6e3526136788c29d1f83099300be77c76b18b9faf2f4ed1bc",
+        "threshold": "0.005",
+        "expected": 3,
+        "predicted": 0,
+        "hits": 0,
+        "evaluated": 0,
+        "accuracy": null,
+        "coverage": 1.0,
+        "directional_coverage": 0.0,
+        "states": {
+          "abstain": 3
+        },
+        "confusion_matrix": {
+          "up": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "sideways": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "down": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          }
+        },
+        "predicted_classes": {
+          "abstain": 3
+        },
+        "actual_classes": {},
+        "by_day": []
+      },
+      {
+        "horizon": 5,
+        "label": "中线",
+        "rule_version": "5e00ecdf26aea5b6e3526136788c29d1f83099300be77c76b18b9faf2f4ed1bc",
+        "threshold": "0.005",
+        "expected": 3,
+        "predicted": 0,
+        "hits": 0,
+        "evaluated": 0,
+        "accuracy": null,
+        "coverage": 1.0,
+        "directional_coverage": 0.0,
+        "states": {
+          "abstain": 3
+        },
+        "confusion_matrix": {
+          "up": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "sideways": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "down": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          }
+        },
+        "predicted_classes": {
+          "abstain": 3
+        },
+        "actual_classes": {},
+        "by_day": []
+      },
+      {
+        "horizon": 20,
+        "label": "长线",
+        "rule_version": "5e00ecdf26aea5b6e3526136788c29d1f83099300be77c76b18b9faf2f4ed1bc",
+        "threshold": "0.005",
+        "expected": 3,
+        "predicted": 0,
+        "hits": 0,
+        "evaluated": 0,
+        "accuracy": null,
+        "coverage": 1.0,
+        "directional_coverage": 0.0,
+        "states": {
+          "abstain": 3
+        },
+        "confusion_matrix": {
+          "up": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "sideways": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          },
+          "down": {
+            "up": 0,
+            "sideways": 0,
+            "down": 0
+          }
+        },
+        "predicted_classes": {
+          "abstain": 3
+        },
+        "actual_classes": {},
+        "by_day": []
+      }
+    ],
+    "expected": 9,
+    "filters": {
+      "kind": "exploratory"
+    },
+    "attempt_statistics": {
+      "total": 3,
+      "states": [
+        {
+          "state": "published",
+          "count": 3,
+          "requested": 3,
+          "published": 3
+        }
+      ]
+    },
+    "comparison_note": "正式样本按发布团队归属；未发布按最近已冻结尝试归属，旧失败另计尝试。探索累计次数会影响数量，不直接配对。",
+    "method": "D 收盘为基准，D 后第 N 个交易日收盘为终点。首次成功正式预测锁定，阈值边界计震荡；未成熟及缺失不进入准确率分母。"
+  },
+  "native_probe_requests": 1,
+  "native_probe_sources": 15,
+  "formal_window_verified": false,
+  "formal_window_note": "Actual run outside default formal window; no clock/cutoff changes or formal backfill.",
+  "independent_service_exit": -15,
+  "daily_database_migrated": false,
+  "daily_service_restarted": false,
+  "monetary_charge": "No billing receipt or confirmed unit conversion; provider-reported counters retained without converting ticks to currency.",
+  "business_requests": [
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5982.53
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 7364.64
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 18435.63
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5627.75
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4960.92
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5302.64
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 3315.09
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 3647.4
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 9062.51
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4148.89
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5943.23
+    },
+    {
+      "round": "a_initial",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 60581.42
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5978.92
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 6152.34
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 7369.38
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 8875.25
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 9148.66
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 9477.19
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 6568.16
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 6593.13
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 8100.91
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 9756.05
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 10747.22
+    },
+    {
+      "round": "a_position_update",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 45279.3
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 6994.33
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 11065.43
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 3636.18
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-0428c8d6e451",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4616.91
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 5521.55
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 3888.7
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4329.89
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4738.67
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4025.67
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 4503.72
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 37163.32
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_error",
+      "agent_id": "research-0428c8d6e451",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": null,
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": null,
+      "status_code": 200,
+      "error": "RequestDeadlineExceeded",
+      "stream_terminal": null,
+      "duration_ms": 90002.51
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": null,
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": null,
+      "status_code": 200,
+      "error": "RemoteProtocolError",
+      "stream_terminal": null,
+      "duration_ms": 54949.46
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "research-175ffa58a4e1",
+      "attempt": 2,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 27645.72
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 43888.18
+    },
+    {
+      "round": "b_candidate",
+      "event_type": "model_usage",
+      "agent_id": "manager",
+      "attempt": 1,
+      "model": "grok-4.7",
+      "reported_model": "grok-4.7",
+      "protocol": "responses",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "status_code": 200,
+      "error": null,
+      "stream_terminal": "response.completed",
+      "duration_ms": 78375.58
+    }
+  ],
+  "business_request_observations": {
+    "total": 40,
+    "event_types": {
+      "model_usage": 39,
+      "model_error": 1
+    },
+    "terminals": {
+      "response.completed": 38,
+      "None": 2
+    },
+    "failures": [
+      {
+        "round": "b_candidate",
+        "event_type": "model_error",
+        "agent_id": "research-0428c8d6e451",
+        "attempt": 1,
+        "model": "grok-4.7",
+        "reported_model": null,
+        "protocol": "responses",
+        "reasoning_effort_sent": "medium",
+        "reported_reasoning_effort": null,
+        "status_code": 200,
+        "error": "RequestDeadlineExceeded",
+        "stream_terminal": null,
+        "duration_ms": 90002.51
+      },
+      {
+        "round": "b_candidate",
+        "event_type": "model_usage",
+        "agent_id": "research-175ffa58a4e1",
+        "attempt": 1,
+        "model": "grok-4.7",
+        "reported_model": null,
+        "protocol": "responses",
+        "reasoning_effort_sent": "medium",
+        "reported_reasoning_effort": null,
+        "status_code": 200,
+        "error": "RemoteProtocolError",
+        "stream_terminal": null,
+        "duration_ms": 54949.46
+      }
+    ]
+  },
+  "native_probe_request": {
+    "model": "grok-4.7",
+    "reported_model": "grok-4.7",
+    "status_code": 200,
+    "error": null,
+    "stream_terminal": "response.completed",
+    "usage": {
+      "input_tokens": 56597,
+      "input_tokens_details": {
+        "cached_tokens": 34816
+      },
+      "output_tokens": 2540,
+      "output_tokens_details": {
+        "reasoning_tokens": 1704
+      },
+      "total_tokens": 59137,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 5,
+      "cost_in_usd_ticks": 509114000,
+      "server_side_tool_usage_details": {
+        "web_search_calls": 5,
+        "x_search_calls": 0,
+        "x_posts_fetched": 0,
+        "x_users_fetched": 0,
+        "code_interpreter_calls": 0,
+        "file_search_calls": 0,
+        "mcp_calls": 0,
+        "document_search_calls": 0,
+        "image_generation_calls": 0
+      },
+      "context_details": {
+        "input_tokens": 21605,
+        "output_tokens": 1472
+      }
+    },
+    "duration_ms": 32441.31
+  },
+  "usage_reported_for_requests": 39,
+  "observed_usage_totals": {
+    "input_tokens": 915661,
+    "output_tokens": 42918,
+    "total_tokens": 958579,
+    "cost_in_usd_ticks": 6621670000
+  },
+  "browser_pages": {
+    "count": 8,
+    "javascript_errors": [],
+    "missing_route_or_disconnect_notice": false
+  },
+  "prior_preflight_stops": [
+    {
+      "directory": "ninth-final-20261030",
+      "reason": "validation script incorrectly required ok instead of actual closed quote",
+      "model_requests": 0
+    },
+    {
+      "directory": "ninth-final-v2-20261030",
+      "reason": "validation script did not yet accept observed Sina abbreviated name for exact SZ:159278",
+      "model_requests": 0
+    }
+  ]
+}

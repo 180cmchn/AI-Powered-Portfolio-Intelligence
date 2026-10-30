@@ -47,6 +47,8 @@ const state = {
 // identities, never query strings, form values, response bodies or credentials.
 const diagnosticsEnabled = sessionStorage.getItem("guanlan.diagnostics") === "1";
 const lifecycleEvents = [], lifecycleCounts = {}, pendingRequests = new Map(), operationIds = new Map();
+// Deterministic missing routes are retried only by an explicit reconnect.
+const missingRoutes = new Map();
 const diagnosticAccounts = new Map();
 function diagnosticAccount(id) {
   if (!id || !diagnosticsEnabled) return null;
@@ -286,6 +288,8 @@ function objectView(value) {
 }
 async function api(path, options = {}) {
   const method = (options.method || "GET").toUpperCase(), reading = method === "GET";
+  const routeKey = path.split('?')[0];
+  if (reading && missingRoutes.has(routeKey)) throw missingRoutes.get(routeKey);
   const id = ++lifecycleSequence, controller = new AbortController();
   const parentSignal = options.signal || (reading ? pageReads.signal : null);
   const abort = () => controller.abort(parentSignal.reason);
@@ -293,7 +297,9 @@ async function api(path, options = {}) {
   else parentSignal?.addEventListener("abort", abort, {once: true});
   // Local API reads must settle even if a response body never completes. A
   // navigation cancels only reads; writes retain their captured target/input.
-  const timer = reading ? setTimeout(() => controller.abort("read_timeout"), 15000) : null;
+  const providerWrite = !reading && /^\/api\/(providers|environment-connection)\b/.test(path);
+  const timer = reading ? setTimeout(() => controller.abort("read_timeout"), 15000)
+    : providerWrite ? setTimeout(() => controller.abort('write_timeout'), 60000) : null;
   const request = {id, method, path: path.split("?")[0].replace(/\b[a-f0-9]{32}\b/g, ":id"), account: diagnosticAccount(path.match(/^\/api\/accounts\/([a-f0-9]{32})\b/)?.[1])};
   pendingRequests.set(id, request);
   lifecycle("request_started", request);
@@ -317,7 +323,7 @@ async function api(path, options = {}) {
     if (!response.ok) {
       const detail =
         body?.detail || body?.error || `请求失败 (${response.status})`;
-      throw new Error(
+      const failure = new Error(
         typeof detail === "string"
           ? detail
           : Array.isArray(detail)
@@ -329,10 +335,31 @@ async function api(path, options = {}) {
                 .join("；")
             : JSON.stringify(detail),
       );
+      failure.status = response.status;
+      failure.path = routeKey;
+      failure.method = method;
+      failure.contentType = response.headers.get('content-type')?.split(';')[0] || 'unknown';
+      const collectionRoute = /^\/api\/(status|health|accounts|providers|agent-roles|environment-connection|forecasts|forecast-batches|forecast-window-runs)$/.test(routeKey);
+      failure.code = response.status === 404 ? (body?.detail === 'Not Found' || collectionRoute ? 'route_missing' : 'object_missing') : response.status === 405 ? 'route_missing' : 'http_error';
+      // A provider write may have committed before discovery or response
+      // handling failed. A 5xx is not evidence that no connection was saved.
+      if (!reading && ['POST','PUT'].includes(method) && /^\/api\/providers(?:\/[^/]+)?$/.test(routeKey) && response.status >= 500) {
+        failure.code = 'write_outcome_unknown';
+        failure.message = '保存响应未确认；服务端可能已提交，将按操作标识核对，不自动重发。';
+      }
+      const explanation = failure.code === 'route_missing' ? '当前后端缺少此接口，请核对运行版本并按手册安全重启。' : failure.code === 'object_missing' ? '该记录已不存在，请刷新当前列表。' : failure.message;
+      failure.message = `${method} ${routeKey} · HTTP ${response.status}：${explanation}`;
+      if (reading && failure.code === 'route_missing') missingRoutes.set(routeKey, failure);
+      throw failure;
     }
     return body;
   } catch (error) {
     if (controller.signal.aborted) {
+      if (!reading) {
+        const uncertain = new Error('保存响应超时，服务端可能已提交；正在按操作标识核对，未自动重发。');
+        uncertain.code = 'write_outcome_unknown';
+        throw uncertain;
+      }
       const cancelled = new Error(controller.signal.reason === "read_timeout" ? "读取超时，保留已有内容；可刷新重试。" : "旧页面读取已取消。");
       cancelled.code = controller.signal.reason;
       lifecycle("request_cancelled", {id, reason: cancelled.code});
@@ -343,6 +370,10 @@ async function api(path, options = {}) {
       const uncertain = new Error("写入响应中断，服务端可能已提交；请核对结果后再操作，当前草稿已保留。");
       uncertain.code = "write_outcome_unknown";
       throw uncertain;
+    }
+    if (reading && error instanceof TypeError) {
+      error.code = 'network_error';
+      error.message = `GET ${routeKey}：本地请求无法连接，请检查服务与端口。`;
     }
     throw error;
   } finally {
@@ -402,10 +433,10 @@ async function loadJobEvents(jobId) {
     more: Boolean(response.has_more),
   };
 }
-async function loadAccount() {
+async function loadAccount({retryCatalogs=false}={}) {
   const read = ++state.accountRead, route = state.route;
   const current = () => read === state.accountRead && route === state.route;
-  await sixth.load();
+  await sixth.load({retryCatalogs});
   if (!current()) return;
   if (!state.accountId) {
     state.account = null;
@@ -478,15 +509,14 @@ async function refresh(full = false) {
   const read = ++state.refreshRead, route = state.route, accountId = state.accountId;
   const loadUniverse = full || state.route === "market";
   const results = await Promise.allSettled([
-    api("/api/status"),
+    api(`/api/status${state.accountId ? '?account_id=' + encodeURIComponent(state.accountId) : ''}`),
     api("/api/accounts"),
     loadUniverse ? api("/api/universe") : Promise.resolve(null),
     full ? api("/api/settings") : Promise.resolve(null),
   ]);
   if (read !== state.refreshRead || route !== state.route || accountId !== state.accountId) return;
   if (results[0].status === "fulfilled") state.status = results[0].value;
-  if (results[1].status === "rejected") throw results[1].reason;
-  state.accounts = array(results[1].value, "accounts");
+  if (results[1].status === "fulfilled") state.accounts = array(results[1].value, "accounts");
   if (!state.accounts.some((a) => a.id === state.accountId)) {
     state.accountId = state.accounts[0]?.id || null;
     state.pages = { analyses: 0, jobs: 0, materials: 0, recommendations: 0, recommendationHistory: 0 };
@@ -497,8 +527,13 @@ async function refresh(full = false) {
   if (state.accountId) localStorage.setItem("guanlan.account", state.accountId);
   if (results[2].status === "fulfilled" && results[2].value) state.universe = results[2].value;
   if (results[3].status === "fulfilled" && results[3].value) state.settings = results[3].value;
-  await loadAccount();
+  try { await loadAccount({retryCatalogs:full}); }
+  catch (error) { if (error.code !== 'superseded_read') state.partialError = error.message; }
+  if (results[1].status === 'rejected') state.partialError = results[1].reason.message;
   state.error = results[0].status === "rejected" ? results[0].reason.message : null;
+  state.errorKind = results[0].status === 'rejected' ? results[0].reason.code : null;
+  state.compatibilityError = state.status.runtime_version?.api_contract !== 9
+    ? '页面与后端接口版本尚未确认一致；请核对实例版本。缺少的接口已暂停自动重试，可在安全升级后重新连接。' : null;
   state.loaded = true;
 }
 function pager(kind, rows) {
@@ -512,7 +547,9 @@ function pager(kind, rows) {
 function notice() {
   let html = "";
   if (state.error)
-    html += `<div class="notice error">${icon("info")}<div>本地服务连接中断。页面保留最近一次结果。<p>${e(state.error)}</p></div>${button("重新连接", "refresh", "compact")}</div>`;
+    html += `<div class="notice error">${icon("info")}<div>${state.errorKind === 'network_error' ? '本地服务连接中断。' : '本地健康检查尚未通过。'}页面保留最近一次结果。<p>${e(state.error)}</p></div>${button("重新连接", "refresh", "compact")}</div>`;
+  if (state.compatibilityError)
+    html += `<div class="notice warning"><div>${e(state.compatibilityError)}</div>${button('重新连接', 'refresh', 'compact')}</div>`;
   if (state.partialError)
     html += `<div class="notice warning">${icon("info")}<div>${e(state.partialError)}</div></div>`;
   if (state.status.configuration_errors?.length)
@@ -520,7 +557,7 @@ function notice() {
   if (state.status.mode === "demo")
     html += `<div class="notice warning">${icon("info")}<div><strong>演示空间</strong> · 使用明确标识的固定样例数据，与真实研究历史隔离。示例行情不代表当前价格；没有模型配置时不会模拟 Agent 研究。</div></div>`;
   else if (!state.status.model_configured)
-    html += `<div class="notice">${icon("info")}<div><strong>基础功能已就绪</strong> · 尚未配置可用的运行时模型。可管理账户、刷新行情并计算持仓指标；联网 Agent 研究需要在系统设置中接入支持原生联网的模型端点。</div><a class="button compact" href="#settings">配置服务 ${icon("arrow")}</a></div>`;
+    html += `<div class="notice">${icon("info")}<div><strong>${state.error ? '模型配置状态' : '基础功能已就绪'}</strong> · ${e(state.status.configuration_readiness?.next_step || '主 Agent 待配置供应商和模型。')} 可先管理账户、行情和持仓；模型绑定、函数能力与原生联网分别检查。</div><a class="button compact" href="#providers">配置供应商 ${icon("arrow")}</a><a class="button compact" href="#${state.accountId ? 'account-models' : 'roles'}">选择 Agent 模型</a></div>`;
   return html;
 }
 function shell() {
@@ -656,10 +693,10 @@ function field(label, name, value = "", options = {}) {
     max,
     step,
   } = options;
-  return `<div class="field ${options.full ? "span-two" : ""}"><label for="${e(name)}">${e(label)}${required ? " *" : ""}</label><input id="${e(name)}" name="${e(name)}" type="${e(type)}" value="${e(value ?? "")}" placeholder="${e(placeholder)}" ${required ? "required" : ""} ${min !== undefined ? `min="${min}"` : ""} ${max !== undefined ? `max="${max}"` : ""} ${step ? `step="${step}"` : ""} ${options.autocomplete ? 'autocomplete="off"' : ""}>${help ? `<small>${e(help)}</small>` : ""}</div>`;
+  return `<div class="field ${options.full ? "span-two" : ""}"><label for="${e(options.id || name)}">${e(label)}${required ? " *" : ""}</label><input id="${e(options.id || name)}" name="${e(name)}" type="${e(type)}" value="${e(value ?? "")}" placeholder="${e(placeholder)}" ${required ? "required" : ""} ${min !== undefined ? `min="${min}"` : ""} ${max !== undefined ? `max="${max}"` : ""} ${step ? `step="${step}"` : ""} ${options.autocomplete ? 'autocomplete="off"' : ""}>${help ? `<small>${e(help)}</small>` : ""}</div>`;
 }
-function selectField(label, name, value, choices, help = "") {
-  return `<div class="field"><label for="${e(name)}">${e(label)}</label><select id="${e(name)}" name="${e(name)}">${choices.map(([v, l]) => `<option value="${e(v)}" ${v === String(value) ? "selected" : ""}>${e(l)}</option>`).join("")}</select>${help ? `<small>${e(help)}</small>` : ""}</div>`;
+function selectField(label, name, value, choices, help = "", id = name) {
+  return `<div class="field"><label for="${e(id)}">${e(label)}</label><select id="${e(id)}" name="${e(name)}">${choices.map(([v, l]) => `<option value="${e(v)}" ${v === String(value) ? "selected" : ""}>${e(l)}</option>`).join("")}</select>${help ? `<small>${e(help)}</small>` : ""}</div>`;
 }
 let rowCounter = 0;
 function holdingRow(holding = {}) {
@@ -958,7 +995,7 @@ function runtimeVersionDetails() {
   return `<details id="runtime-version"><summary>当前服务启动版本</summary><p class="small muted">启动于 ${date(version.started_at)} · schema ${e(version.schema_version)} · ${e(version.database_mode)}<br>启动提交：${e(version.commit_at_start || "未知")}${version.working_tree_dirty_at_start ? "（含未提交修改）" : ""}<br>启动源码摘要：<span class="mono">${e(version.source_sha256_at_start || "未知")}</span><br>记录的是创建此服务时的版本；修改源码后需要手动重启才会加载。</p></details>`;
 }
 function nativeSearchStatus() {
-  const status = state.status.native_search || {status: "unverified"};
+  const status = (state.route === 'settings' ? state.status.global_native_search : null) || state.status.native_search || {status: "unverified"};
   return e({disabled: "已关闭", unverified: "尚未验证", observed: "已观察到原生搜索", unsupported: "当前协议或端点不支持", authentication_failed: "认证失败", request_failed: "请求失败"}[status.status] || "尚未验证");
 }
 function settings() {
@@ -978,7 +1015,7 @@ function settings() {
       ["manual", "仅使用已录入行情 / 禁止联网刷新"],
     ],
     "公开接口可能限流、延迟或变更；刷新失败会保留实际错误。",
-  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${selectField("基础行情刷新", "market_refresh_enabled", String(s.market_refresh_enabled ?? true), [["true", "启用"], ["false", "暂停自动行情刷新"]])}${selectField("已发布预测的评估", "forecast_evaluation_enabled", String(s.forecast_evaluation_enabled ?? true), [["true", "独立启用"], ["false", "暂停到期评估"]], "恢复后补算全部待评记录；暂停研究不会暂停评分。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更供尚未启动的任务使用；在途任务保持启动时配置。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">模型：${state.status.model_configured ? "已配置密钥（需实测能力）" : "尚未配置"}<br>全局主 Agent 默认强度：${e(state.status.global_manager?.reasoning_effort ?? "未绑定")}；账户实际值以角色配置及本轮快照为准<br>原生联网：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div>${runtimeVersionDetails()}</div></div>${inFlightModelSettings()}<div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
+  )}${selectField("备用行情数据源", "quote_fallback_provider", s.quote_fallback_provider || "sina", [["sina", "新浪公开网页报价"], ["none", "关闭"]], "东方财富请求失败时使用；保留实际来源与时间，不绕过限流，不需要付费密钥。")}${field("行情刷新间隔（秒）", "quote_interval_seconds", s.quote_interval_seconds ?? 60, { type: "number", min: 30, max: 3600, step: 1, help: "实际频率受数据源能力、市场状态与网络约束。" })}<div class="field span-two"><label for="news_queries">公开信息观察检索（每行一个）</label><textarea id="news_queries" name="news_queries" placeholder="可按行业、政策或公告主题配置">${e(array(s.news_queries).join("\n"))}</textarea><small>新材料进入研究上下文，由主 Agent 判断相关性与是否继续调查。</small></div></div></div><div class="settings-section"><div class="settings-title">${icon("research")}<div><h2>资讯扫描与研究数据</h2><p>交易时段之外仍按配置扫描；数据权限和真实联网能力需单独验证。</p></div></div><div class="form-grid three">${field("资讯扫描间隔（分钟）", "news_interval_minutes", s.news_interval_minutes ?? 30, { type: "number", min: 1, max: 1440, step: 1 })}${field("资讯扫描开始时（上海）", "news_start_hour", s.news_start_hour ?? 8, { type: "number", min: 0, max: 24, step: 1 })}${field("资讯扫描结束时（上海）", "news_end_hour", s.news_end_hour ?? 23, { type: "number", min: 0, max: 24, step: 1 })}${selectField("研究数据适配器", "research_provider", s.research_provider || "eastmoney", [["eastmoney", "东方财富公开接口"], ["tushare", "Tushare（需要凭据与权限）"]])}${field("Tushare 密钥环境变量", "tushare_token_env", s.tushare_token_env || "TUSHARE_TOKEN", { help: "只保存环境变量名，不填写实际 Token。" })}${field("报价缓存复用（秒）", "quote_cache_seconds", s.quote_cache_seconds ?? 30, { type: "number", min: 0, max: 3600, step: 1 })}${field("行情刷新总超时（秒）", "quote_refresh_timeout_seconds", s.quote_refresh_timeout_seconds ?? 45, { type: "number", min: 5, max: 300, step: 1 })}${field("文档下载缓存（秒）", "read_cache_seconds", s.read_cache_seconds ?? 300, { type: "number", min: 0, max: 3600, step: 1 })}</div></div><div class="settings-section"><div class="settings-title">${icon("clock")}<div><h2>后台研究节奏</h2><p>Asia/Shanghai · 非交易日不按正常交易时段触发</p></div></div><div class="form-grid three">${selectField("定时研究", "scheduled_research_enabled", String(s.scheduled_research_enabled ?? true), [["true", "开启"], ["false", "暂停定时研究"]], "暂停后持仓保存、手动研究与已持久化事件仍正常处理。")}${selectField("基础行情刷新", "market_refresh_enabled", String(s.market_refresh_enabled ?? true), [["true", "启用"], ["false", "暂停自动行情刷新"]])}${selectField("已发布预测的评估", "forecast_evaluation_enabled", String(s.forecast_evaluation_enabled ?? true), [["true", "独立启用"], ["false", "暂停到期评估"]], "恢复后补算全部待评记录；暂停研究不会暂停评分。")}${field("板块及候选扫描（分钟）", "scan_interval_minutes", s.scan_interval_minutes ?? 5, { type: "number", min: 1, step: 1 })}${field("账户综合分析（分钟）", "analysis_interval_minutes", s.analysis_interval_minutes ?? 15, { type: "number", min: 1, step: 1 })}${field("收盘后总结时间", "close_summary_time", s.close_summary_time || "15:15", { type: "time" })}${field("行情变化研究阈值（%）", "price_trigger_pct", s.price_trigger_pct ?? 3, { type: "number", min: 0, step: "any", help: "触发增量研究的工程参数，不是买卖信号。" })}</div></div><div class="settings-section"><div class="settings-title">${icon("shield")}<div><h2>任务资源与预算</h2><p>用于本机负载、超时与调用成本管理，不对材料观点进行准入评分。</p></div></div><div class="form-grid three">${field("并行子 Agent 上限", "max_concurrent_agents", s.max_concurrent_agents ?? 3, { type: "number", min: 1, max: 8, step: 1 })}${field("每次研究模型调用上限", "max_model_calls", s.max_model_calls ?? 24, { type: "number", min: 2, max: 300, step: 1 })}${field("单个 Agent 超时（秒）", "agent_timeout_seconds", s.agent_timeout_seconds ?? 180, { type: "number", min: 5, max: 1800, step: 1 })}${field("账户分析超时（秒）", "analysis_timeout_seconds", s.analysis_timeout_seconds ?? 600, { type: "number", min: 10, max: 3600, step: 1 })}${field("Agent 工具循环轮数上限", "max_agent_turns", s.max_agent_turns ?? 12, { type: "number", min: 2, max: 60, step: 1 })}${field("单次输出 token 上限", "max_output_tokens", s.max_output_tokens ?? 4096, { type: "number", min: 256, max: 32000, step: 1 })}</div></div><div class="form-actions"><span class="form-status">配置变更供尚未启动的任务使用；在途任务保持启动时配置。环境变量变更需要重启后端。</span><div class="actions">${button("检测原生联网", "probe-native", "", "search")}${button("检测本地工具续接", "probe", "", "refresh")}<button type="submit" class="button primary">保存设置</button></div></div></section></form><section class="card"><div class="card-header"><h2>运行状态与数据维护</h2>${badge(state.status.mode === "demo" ? "演示数据库" : "真实模式数据库", state.status.mode === "demo" ? "warning" : "neutral")}</div><div class="card-body"><div class="form-grid"><div><h3>模型与搜索</h3><p class="small muted section-gap">全局主 Agent：${(state.status.global_model_configured ?? state.status.model_configured) ? "模型已绑定（函数与联网需实测）" : "尚未配置"}<br>全局主 Agent 默认强度：${e(state.status.global_manager?.reasoning_effort ?? "未绑定")}；账户实际值以角色配置及本轮快照为准<br>全局原生联网检测：${nativeSearchStatus()}<br>统一时区：${e(state.status.timezone || "Asia/Shanghai")}</p></div><div><h3>后台工作器与交易日历</h3><div class="small muted section-gap">${runtimeStatus()}</div>${runtimeVersionDetails()}</div></div>${inFlightModelSettings()}<div id="probe-result"></div><div class="divider"></div><p class="small muted">备份由 SQLite 在线备份机制生成。恢复前请停止后台服务，并按项目 README 中的恢复命令操作。Mac 睡眠时不执行任务；唤醒或重启后刷新过期数据，旧提醒不集中补发。</p>${state.status.mode === "demo" ? `<div class="section-gap">${button("创建固定演示账户", "demo-seed", "", "plus")}<span class="small muted"> 仅写入演示数据库；不伪造 Agent 运行。</span></div>` : ""}</div></section>`;
 }
 function rememberDrafts() {
   $$('form[data-draft-key]').forEach((form) => {
@@ -1025,11 +1062,19 @@ function matchesSavedAccount(saved, payload) {
 }
 function render() {
   rememberDrafts();
+  // Keep the actual password input node only during this active page session.
+  // Never add provider forms/secrets to the cross-page draft map or storage.
+  const connectionForm = state.route === 'providers' && $('#app nav a[href="#providers"][aria-current="page"]')
+    ? $('#app #provider-connection-form') : null;
   const focused = document.activeElement;
   const selection = focused && "selectionStart" in focused ? [focused.selectionStart, focused.selectionEnd] : null;
   const openDetails = new Set($$("#main details[open][data-key]").map((node) => node.dataset.key));
   const scroll = window.scrollY;
   $("#app").innerHTML = shell();
+  if (connectionForm && connectionForm.dataset.discard !== 'true') {
+    $('#app #provider-connection-form')?.replaceWith(connectionForm);
+    sixth.syncProviderForm(connectionForm);
+  }
   $$('form[data-draft-key]').forEach((form) => {
     const draft = state.drafts.get(form.dataset.draftKey);
     if (draft) form.replaceWith(draft);
@@ -1046,6 +1091,15 @@ function dialog(title, content, footer = "") {
     `<div class="dialog-header"><h2>${e(title)}</h2>${button("关闭", "close-dialog", "ghost", "close")}</div><div class="dialog-content">${content}</div>${footer ? `<div class="dialog-footer">${footer}</div>` : ""}`;
   $("#dialog").showModal();
 }
+$('#dialog').addEventListener('close', () => {
+  const form = $('#dialog #provider-connection-form');
+  if (form) { form.elements.api_key.value = ''; form.remove(); }
+});
+window.addEventListener('beforeunload', event => {
+  if ($$('#provider-connection-form input[type=password]').some(input => input.value)) {
+    event.preventDefault(); event.returnValue = '';
+  }
+});
 function createAccountDialog() {
   dialog(
     "创建虚拟账户",
@@ -1160,6 +1214,7 @@ document.addEventListener("click", (event) => {
       const job = await api(`/api/jobs/${encodeURIComponent(target.dataset.id)}`);
       dialog("任务结果与可观察统计", objectView(job.result || { state: job.state, error: job.error, synthesis_checkpoint: job.synthesis_checkpoint, message: "尚无已提交结果；调用统计可查看工具事件。" }));
     } else if (action === "refresh") {
+      missingRoutes.clear();
       await refresh(true);
       render();
       toast("状态已更新");
@@ -1458,13 +1513,13 @@ function changeSignature() {
     demands: state.demands,
     globalRuns: state.globalRuns,
     events: Object.entries(state.events).map(([id, events]) => [id, events.cursor]),
-    runtime: [state.status.model_configured, state.status.worker?.running, state.status.configuration_errors, state.status.running_model_configs],
+    runtime: [state.status.model_configured, state.status.worker?.running, state.status.configuration_errors, state.status.running_model_configs, state.status.global_model_configured, state.status.global_native_search],
     error: state.error,
     partial: state.partialError,
     sixth: sixth.snapshot(),
   });
 }
-const sixth = createSixthUI({state, api, e, render, toast, operation, field, selectField, dialog, objectView});
+const sixth = createSixthUI({state, api, e, render, toast, operation, field, selectField, dialog, objectView, resetFailures:()=>missingRoutes.clear()});
 let polling = false;
 setInterval(async () => {
   if (

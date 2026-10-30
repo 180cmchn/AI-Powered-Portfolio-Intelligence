@@ -1,0 +1,8 @@
+{
+  "platform": "macOS",
+  "service_scope": "isolated_random_test_item",
+  "real_user_credentials_read": false,
+  "write": true,
+  "read_matches": true,
+  "deleted": true
+}

@@ -1,0 +1,43 @@
+{
+  "observed_at": "2026-10-30T01:18:27.813777+08:00",
+  "platform": "macOS",
+  "scope": "DNS and address validation only; no TLS or SSRF bypass; no authenticated requests",
+  "hosts": {
+    "static.cninfo.com.cn": {
+      "address_categories": [
+        "benchmark_range_198.18.0.0/15_non_public"
+      ],
+      "validation": "non_public_dns",
+      "stage": "address_validation"
+    },
+    "pdf.dfcfw.com": {
+      "address_categories": [
+        "benchmark_range_198.18.0.0/15_non_public"
+      ],
+      "validation": "non_public_dns",
+      "stage": "address_validation"
+    },
+    "www.phfund.com.cn": {
+      "address_categories": [
+        "benchmark_range_198.18.0.0/15_non_public"
+      ],
+      "validation": "non_public_dns",
+      "stage": "address_validation"
+    }
+  },
+  "proxy_variables_present": {
+    "HTTP_PROXY": true,
+    "HTTPS_PROXY": true,
+    "ALL_PROXY": false,
+    "http_proxy": false,
+    "https_proxy": false,
+    "all_proxy": false
+  },
+  "system_proxy_enabled": {
+    "HTTPEnable": true,
+    "HTTPSEnable": true,
+    "SOCKSEnable": true,
+    "ProxyAutoConfigEnable": true
+  },
+  "utun_interface_count": 7
+}

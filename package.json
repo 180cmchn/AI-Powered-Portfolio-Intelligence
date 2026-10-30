@@ -5,7 +5,8 @@
     "test:browser": "node tests/run_browser.mjs",
     "test:browser:iteration": "node tests/frontend_iteration.mjs",
     "test:browser:production": "node tests/frontend_production.mjs",
-    "test:browser:seventh": "node tests/frontend_seventh.mjs"
+    "test:browser:seventh": "node tests/frontend_seventh.mjs",
+    "test:browser:ninth": "node tests/frontend_ninth_state.mjs && node tests/frontend_ninth.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

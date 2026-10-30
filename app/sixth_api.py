@@ -1,5 +1,5 @@
 """Local API boundaries for provider connections, shared roles and predictions."""
-from fastapi import HTTPException, Query
+from fastapi import HTTPException, Query, Header
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 
@@ -26,6 +26,11 @@ class RoleInput(BindingInput):
     enabled: bool | None = None
 
 
+class EnvironmentImportInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    preview_id: str = Field(min_length=32, max_length=32)
+
+
 def _forecast_filters(kind='formal', **values):
     """Empty browser filters are absent; empty kind keeps the formal-only default."""
     kind = kind.strip() if isinstance(kind, str) else 'formal'
@@ -42,17 +47,31 @@ def _forecast_filters(kind='formal', **values):
 
 
 def register_sixth_routes(app, store, service):
+    @app.get('/api/environment-connection')
+    async def environment_connection():
+        return store.environment_connection()
+
+    @app.post('/api/environment-connection/import')
+    async def import_environment_connection(data: EnvironmentImportInput):
+        result = await store.import_environment_connection(data.preview_id)
+        service.resume_waiting_config()
+        return result
+
+    @app.get('/api/provider-operations/{operation_id}')
+    async def provider_operation(operation_id: str):
+        return store.provider_operation(operation_id)
+
     @app.get('/api/providers')
     async def providers():
         return store.list_providers()
 
     @app.post('/api/providers', status_code=201)
-    async def create_provider(data: ProviderInput):
-        return await store.save_provider(data.model_dump(exclude_unset=True))
+    async def create_provider(data: ProviderInput, x_operation_id: str | None = Header(default=None, max_length=36)):
+        return await store.save_provider(data.model_dump(exclude_unset=True), operation_id=x_operation_id)
 
     @app.put('/api/providers/{provider_id}')
-    async def update_provider(provider_id: str, data: ProviderInput):
-        result = await store.save_provider(data.model_dump(exclude_unset=True), provider_id=provider_id)
+    async def update_provider(provider_id: str, data: ProviderInput, x_operation_id: str | None = Header(default=None, max_length=36)):
+        result = await store.save_provider(data.model_dump(exclude_unset=True), provider_id=provider_id, operation_id=x_operation_id)
         service.resume_waiting_config()
         return result
 
@@ -137,7 +156,7 @@ def register_sixth_routes(app, store, service):
     @app.get('/api/forecast-batches/{batch_id}')
     async def forecast_batch_detail(batch_id: str):
         with store.connect() as db:
-            return store._forecast_batch(db, batch_id)
+            return store._forecast_batch(db, batch_id, include_attribution=True)
 
     @app.get('/api/forecasts')
     async def forecasts(account_id: str | None = None, kind: str = 'formal', security_id: str | None = None,

@@ -92,20 +92,77 @@ class ClosingPriceSession:
         self.semaphore = asyncio.Semaphore(max(1, min(16, int(concurrency))))
         self.timeout = max(0.05, min(120, float(timeout)))
         self.tasks = {}
+        self.requests = {}
+        self.retired_tasks = set()
+        self.closed = False
+        self.metrics = {'requests_started': 0, 'requests_completed': 0,
+                        'capacity_wait_cancelled': 0, 'shared_consumers': 0}
 
-    async def pair(self, symbol, base_date, target_date):
+    async def pair(self, symbol, base_date, target_date, *, on_start=None):
+        """Notify a consumer only after capacity is acquired for a real fetch.
+
+        A consumer's cancellation never cancels a request still needed by another.
+        Consumers attached to an in-flight shared request count one observation,
+        while the session metrics count the one actual supplier fetch.
+        """
         import asyncio
         from copy import deepcopy
         key = (symbol, base_date, target_date, "same_source_pair_v1")
-        if key not in self.tasks:
-            self.tasks[key] = asyncio.create_task(self._fetch(key))
-        return deepcopy(await asyncio.shield(self.tasks[key]))
+        if self.closed:
+            raise RuntimeError('closing price session is closed')
+        token = object()
+        entry = self.requests.get(key)
+        if entry is not None and (entry['task'].cancelled() or entry['task'].cancelling()):
+            # Cancellation can also finish before existing consumers run their
+            # finally blocks. Replacement still owns a distinct local entry.
+            self.retired_tasks.add(entry['task'])
+            entry = None
+        if entry is None:
+            # Each generation owns its subscribers and start marker. A cancelled
+            # generation cannot donate its started state to a later request.
+            entry = {'subscribers': {}, 'started': False}
+            task = asyncio.create_task(self._fetch(key, entry))
+            entry['task'] = task
+            self.requests[key], self.tasks[key] = entry, task
+        else:
+            self.metrics['shared_consumers'] += 1
+        task, subscribers = entry['task'], entry['subscribers']
+        subscribers[token] = on_start
+        try:
+            if entry['started'] and on_start is not None and on_start() is False:
+                raise asyncio.CancelledError('consumer lease no longer owned')
+            return deepcopy(await asyncio.shield(task))
+        finally:
+            subscribers.pop(token, None)
+            if not subscribers and (not task.done() or task.cancelled()):
+                if not task.done():
+                    if not entry['started']:
+                        self.metrics['capacity_wait_cancelled'] += 1
+                    task.cancel()
+                self.retired_tasks.add(task)
+                # A later subscriber may already own a new generation. Never
+                # let an older consumer's cleanup remove or cancel that task.
+                if self.requests.get(key) is entry:
+                    del self.requests[key]
+                if self.tasks.get(key) is task:
+                    del self.tasks[key]
 
-    async def _fetch(self, key):
+    async def _fetch(self, key, entry):
         import asyncio
         import uuid
+        async def fetch_started():
+            subscribers = entry['subscribers']
+            for token, callback in list(subscribers.items()):
+                if callback is not None and callback() is False:
+                    subscribers.pop(token, None)
+            if not subscribers:
+                raise asyncio.CancelledError('no current consumers')
+            entry['started'] = True
+            self.metrics['requests_started'] += 1
+            return await closing_pair(self.provider, *key[:3])
         async with self.semaphore:
-            result = await asyncio.wait_for(closing_pair(self.provider, *key[:3]), timeout=self.timeout)
+            result = await asyncio.wait_for(fetch_started(), timeout=self.timeout)
+            self.metrics['requests_completed'] += 1
         request_key = hashlib.sha256(json.dumps(key).encode()).hexdigest()
         stable = {k: v for k, v in result.items() if k != "fetched_at"}
         version = result.get("data_version") or hashlib.sha256(json.dumps(stable, sort_keys=True, default=str).encode()).hexdigest()
@@ -119,8 +176,10 @@ class ClosingPriceSession:
 
     async def close(self):
         import asyncio
-        pending = [t for t in self.tasks.values() if not t.done()]
-        for task in pending:
-            task.cancel()
-        if self.tasks:
-            await asyncio.gather(*self.tasks.values(), return_exceptions=True)
+        self.closed = True
+        tasks = set(self.tasks.values()) | self.retired_tasks
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)

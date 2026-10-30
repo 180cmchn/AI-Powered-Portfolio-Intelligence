@@ -1,0 +1,52 @@
+{
+  "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+  "python": "/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python",
+  "python_version": "3.14.4",
+  "repository_source_sha256": "17128a7b6ccc203dcfa616be9ff9c81776084809728ac088569e8e75f17d4fa9",
+  "api_contract": 9,
+  "env_file": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+  "database_access": "read_only",
+  "runtime_version": "unknown_until_reported_by_service",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "classification": "network_unreachable",
+      "error_type": "ConnectError"
+    }
+  ],
+  "disk_commit": "046fdfc9351b498653c47b0fa697a3baefdc6e40",
+  "disk_dirty": true,
+  "lockfile_sha256": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+  "database_schema_version": 3,
+  "database_mode": "live",
+  "database_has_saved_settings": false,
+  "agent_config_migrated": false,
+  "legacy_configuration": {
+    "source": "saved_settings_over_environment_defaults",
+    "endpoint_host": "api.xxyapi.com",
+    "protocol": "responses",
+    "legacy_model_present": true,
+    "key_present_in_current_diagnostic_environment": true,
+    "note": "These are not proof of the running process environment or a selected Agent model."
+  },
+  "pidfiles": {
+    "demo": {
+      "pid": 31017,
+      "legacy": true,
+      "process": null
+    }
+  },
+  "listeners": [],
+  "observed_at": "2026-10-30T01:13:43.007635+08:00",
+  "platform": "macOS",
+  "port_8765_listening": false,
+  "diagnostic_scope": "read-only; no Store construction, no migration, no stop/start",
+  "daily_database_unchanged": true,
+  "original_failure_requests": "not observable: no listener at inspection"
+}

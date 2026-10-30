@@ -1,0 +1,45 @@
+{
+  "kind": "real_existing_database_isolated_copy",
+  "observed_at": "2026-10-30T01:23:43.704895+08:00",
+  "source_access": "SQLite mode=ro backup only",
+  "daily_service_changed": false,
+  "paid_requests": 0,
+  "source_before": {
+    "accounts": 1,
+    "snapshots": 1,
+    "materials": 0,
+    "analyses": 0,
+    "schema": 3
+  },
+  "start_exit": 0,
+  "routes": {
+    "/api/health": 200,
+    "/api/providers": 200,
+    "/api/agent-roles": 200,
+    "/api/accounts": 200,
+    "/api/forecasts": 200,
+    "/api/research": 200
+  },
+  "copy_after": {
+    "accounts": 1,
+    "snapshots": 1,
+    "materials": 0,
+    "analyses": 0,
+    "forecasts": 0,
+    "model_providers": 1,
+    "schema": 9
+  },
+  "business_counts_preserved": true,
+  "before_v9_backup": true,
+  "integrity": "ok",
+  "stop_exit": 0,
+  "source_after": {
+    "accounts": 1,
+    "snapshots": 1,
+    "materials": 0,
+    "analyses": 0,
+    "schema": 3
+  },
+  "source_unchanged": true,
+  "success": true
+}

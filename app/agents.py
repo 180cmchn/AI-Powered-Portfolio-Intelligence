@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 
 from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelSession, ToolCall
 from .context import archive, recall, references, visible_message
+from .calculation_context import checkpoint_summaries, projection as calculation_projection, signature as calculation_signature
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -94,11 +95,12 @@ def _checkpoint_context(value):
     # Validation proofs stay in SQLite. They duplicate document versions and
     # excerpts, and are not additional model-visible research conclusions.
     keys = ('phase', 'task_id', 'account_id', 'input_version', 'scope', 'data_as_of', 'model_config',
-            'team_snapshot', 'reports', 'material_ids', 'calculations', 'metrics', 'open_questions',
+            'team_snapshot', 'reports', 'material_ids', 'metrics', 'open_questions',
             'unresolved_tasks', 'unresolved_tasks_note', 'manager_summary', 'created_at',
             'checkpoint_job_id', 'resume_attempt', 'configuration_relation', 'recovery_state', 'unknown_material_ids')
     result = {key: (_team_context(value[key]) if key == 'team_snapshot' else _research_context(value[key]))
               for key in keys if key in value}
+    result['calculations'] = checkpoint_summaries(value.get('calculations'))
     result['materials'], indexed_ids = _source_index_context(value.get('materials', []),
         {'reports': result.get('reports'), 'manager_summary': result.get('manager_summary')})
     material_ids = result.get('material_ids')
@@ -305,10 +307,124 @@ class ResearchRuntime:
         self.manager_session = self.client.session(self.team["roles"]["manager"]["system_prompt"] if self.team else (PROMPTS / "manager.txt").read_text(), self.context)
         self.manager_session.task_id = self.task_id
         self.manager_session.agent_id = "manager"
+        self.calculation_coverage: list[dict] = []
+        self._restore_calculations()
         if self.synthesis_only:
             self.manager_session.phase = "synthesis"
             self.manager_session.native_search = False
             self.client.add_user(self.manager_session, {"recovery": "基于已保存的可见研究成果完成最终汇总；不重复联网或创建子任务。当前持仓与版本以本次 context 为准。"})
+
+    def _remember_calculation(self, agent_id, tool, arguments, output, *, restored=None):
+        summary = calculation_projection(tool, output, arguments)
+        if summary is None:
+            return
+        session = self.manager_session if agent_id == 'manager' or restored else self._child(agent_id).session
+        original = {'tool': tool, 'arguments': copy.deepcopy(arguments), 'output': copy.deepcopy(output)}
+        record = archive(session, original, 'calculation_inputs')
+        identity = (restored or {}).get('calculation_id') or 'calculation-' + uuid.uuid4().hex
+        provenance = {key: copy.deepcopy((restored or {}).get(key, value)) for key, value in {
+            'agent_id': agent_id, 'source_task_id': self.task_id, 'input_version': self.input_version,
+            'research_round': self.children[agent_id].round if agent_id in self.children else None,
+            'model_config': self.children[agent_id].model_config if agent_id in self.children else self.model_config}.items()}
+        summary.update(calculation_id=identity, **provenance,
+            full_inputs={'record_id': record['record_id'], 'tool': 'recall_context', 'start': 0,
+                         'total_chars': record['total_chars'], 'session_agent_id': session.agent_id},
+            visibility='deterministic projection of completed tool output; inclusion does not prove model adoption')
+        self.calculations.append({**original, **provenance, 'calculation_id': identity, 'summary': summary,
+            'signature': calculation_signature(tool, arguments, output), 'restored': bool(restored)})
+
+    def _restore_calculations(self):
+        for record in (self.synthesis_checkpoint or {}).get('calculations') or []:
+            if not isinstance(record, dict):
+                continue
+            if record.get('tool') in {'market_indicators', 'calculate'} and isinstance(record.get('output'), dict):
+                self._remember_calculation(record.get('agent_id', 'manager'), record['tool'],
+                    record.get('arguments') or {}, record['output'], restored=record)
+            elif 'operation' in record and isinstance(record.get('result'), dict):
+                self._remember_calculation(record.get('agent_id', 'unknown'), 'calculate',
+                    {'operation': record['operation'], 'values': record.get('values', [])}, record['result'],
+                    restored={**record, 'source_task_id': (self.synthesis_checkpoint or {}).get('task_id'),
+                              'input_version': (self.synthesis_checkpoint or {}).get('input_version'),
+                              'research_round': None, 'model_config': None})
+
+    def _available_calculations(self, agent_id):
+        if agent_id != 'manager':
+            return [record for record in self.calculations if record['agent_id'] == agent_id]
+        reports = [report for child in self.children.values() for report in child.reports]
+        reported = {identity for report in reports for identity in report.get('calculation_ids', [])}
+        return [record for record in self.calculations if record['agent_id'] == 'manager'
+                or record['calculation_id'] in reported or record.get('restored')]
+
+    def _pin_calculations(self, seed, session, agent_id, final_request):
+        """Reserve bounded value-first evidence before generic prose/row excerpts.
+
+        A whole summary either fits or becomes an explicit index; individual
+        values are never silently removed from a JSON prefix.
+        """
+        for key in ('calculation_summaries', 'calculation_indexes', 'calculation_access'):
+            seed.pop(key, None)
+        records = self._available_calculations(agent_id)
+        if not records:
+            return
+        if isinstance(seed.get('synthesis_checkpoint'), dict):
+            seed['synthesis_checkpoint'].pop('calculations', None)
+        size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
+        max_chars = int(self.config.get('max_context_chars', 240_000))
+        # Keep the seed and all summaries below the generic compactor threshold.
+        budget = max(0, min(int(max_chars * .60), int(max_chars * .66) - size(seed) - 1200))
+        summaries, indexes = [], []
+        for record in records:
+            summary = copy.deepcopy(record['summary'])
+            if agent_id == 'manager' and summary.get('agent_id') != 'manager':
+                # Child-local archive IDs cannot be used in the manager session.
+                local = next((item for item in session.archive if item.get('calculation_id') == record['calculation_id']), None)
+                if local is None:
+                    local = archive(session, {key: record[key] for key in ('tool', 'arguments', 'output')}, 'calculation_inputs')
+                    local['calculation_id'] = record['calculation_id']
+                summary['full_inputs'] = {'record_id': local['record_id'], 'tool': 'recall_context',
+                    'start': 0, 'total_chars': local['total_chars'], 'session_agent_id': agent_id}
+            if size([*summaries, summary]) <= budget:
+                summaries.append(summary)
+            else:
+                indexes.append({key: summary.get(key) for key in
+                    ('calculation_id', 'tool', 'agent_id', 'source_task_id', 'status', 'full_inputs')})
+        seed['calculation_summaries'] = summaries
+        # Index rows are bounded independently. Full accounting stays in the
+        # coverage event; no unbounded list can force the seed over its limit.
+        index_limit = max(0, int(max_chars * .70) - size(seed) - 1000)
+        shown = []
+        for item in indexes:
+            if size([*shown, item]) > index_limit:
+                break
+            shown.append(item)
+        seed['calculation_indexes'] = {'items': shown, 'omitted_summary_count': len(indexes),
+                                       'unlisted_index_count': len(indexes) - len(shown)}
+        seed['calculation_access'] = ('当前仅可提交最终报告，不能调用 recall_context；仅索引或未列出的数值不在本次可见上下文。'
+            '已成功计算与最终报告采用是不同事实，不得把未采用描述为工具未取得。' if final_request else
+            '摘要来自实际工具输出。完整输入和逐日数据可用 full_inputs 指向的 recall_context 分段取回；原始行未因摘要而视为亲读。')
+
+    async def _record_calculation_coverage(self, session, agent_id, final_request):
+        records = self._available_calculations(agent_id)
+        if not records and not final_request:
+            return
+        try:
+            seed = json.loads(session.history[0]['content'])
+        except (ValueError, TypeError, KeyError):
+            seed = {}
+        included = {item.get('calculation_id') for item in seed.get('calculation_summaries', [])}
+        indexed = {item.get('calculation_id') for item in (seed.get('calculation_indexes') or {}).get('items', [])}
+        visible_records = {item.get('calculation_id'): (item.get('full_inputs') or {}).get('record_id')
+            for item in [*seed.get('calculation_summaries', []), *(seed.get('calculation_indexes') or {}).get('items', [])]}
+        coverage = {'request_number': self.calls, 'agent_id': agent_id, 'final_request': bool(final_request),
+            'phase': session.phase,
+            'calculations': [{'calculation_id': item['calculation_id'], 'tool': item['tool'],
+                'source_agent_id': item['agent_id'], 'source_task_id': item['source_task_id'],
+                'status': item['summary'].get('status'),
+                'visibility': 'summary' if item['calculation_id'] in included else 'index' if item['calculation_id'] in indexed else 'omitted',
+                'record_id': visible_records.get(item['calculation_id'])} for item in records],
+            'note': 'Actual prepared request coverage; inclusion does not establish use in the report.'}
+        self.calculation_coverage.append(coverage)
+        await self._publish('final_calculation_coverage' if final_request else 'calculation_context_coverage', agent_id, coverage)
 
     def _role_index(self):
         return [{key: copy.deepcopy(role.get(key)) for key in
@@ -349,6 +465,8 @@ class ResearchRuntime:
             if self._shared_closeout() and not final_request:
                 raise _CloseoutRequired("共享预算进入收尾；本次尚未发送 HTTP")
             self.calls += 1
+            await self._record_calculation_coverage(self.manager_session if agent_id == 'manager'
+                else self.children[agent_id].session, agent_id, final_request)
             if agent_id == 'manager':
                 # ModelClient invokes this after final context compaction and
                 # credential/budget checks, immediately before the HTTP attempt.
@@ -449,6 +567,7 @@ class ResearchRuntime:
                 status["unresolved_children_omitted"] = status.get("unresolved_children_omitted", 0) + int(omitted["unresolved"])
         seed = json.loads(session.history[0]["content"])
         seed["runtime_status"] = status
+        self._pin_calculations(seed, session, agent_id, final_request)
         session.history[0]["content"] = json.dumps(seed, ensure_ascii=False, default=str)
 
     async def _publish(self, kind: str, agent_id: str, payload: dict) -> dict:
@@ -485,6 +604,7 @@ class ResearchRuntime:
                                "synthesis_recovered": bool(self.context.get("synthesis_checkpoint")),
                                "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
+                               "calculation_coverage": copy.deepcopy(self.calculation_coverage),
                                "materials": copy.deepcopy(self.materials)})
                 if hasattr(self.tools, 'store'):
                     result['report_access'] = [{key: item['body'].get(key) for key in
@@ -684,6 +804,8 @@ class ResearchRuntime:
                     raise
                 except Exception as exc:
                     output = {"error": self._safe_error(exc), "failed": True}
+                    if call.name in {'market_indicators', 'calculate'}:
+                        self._remember_calculation(agent_id, call.name, call.arguments, output)
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
             client.add_results(session, results)
@@ -746,12 +868,23 @@ class ResearchRuntime:
             if visible:
                 item = archive(session, visible, 'conversation')
                 messages.append((item['record_id'], visible))
-        calls = {}
-        for _, message in messages:
+        calls, arguments, bindings = {}, {}, {}
+        for record_id, message in messages:
             if message.get('type') == 'function_call':
                 calls[message.get('call_id')] = message.get('name')
+                try:
+                    arguments[message.get('call_id')] = json.loads(message.get('arguments') or '{}')
+                except (ValueError, TypeError):
+                    pass
+            if message.get('type') == 'function_call_output' or message.get('role') == 'tool':
+                call_id = message.get('call_id', message.get('tool_call_id'))
+                bindings[record_id] = (calls.get(call_id), copy.deepcopy(arguments.get(call_id, {})))
             for call in message.get('tool_calls') or []:
                 calls[call.get('id')] = (call.get('function') or {}).get('name')
+                try:
+                    arguments[call.get('id')] = json.loads((call.get('function') or {}).get('arguments') or '{}')
+                except (ValueError, TypeError):
+                    pass
         evidence, source_messages, extra_messages, seen = [], [], [], set()
         latest_budget = None
         for record_id, message in messages:
@@ -762,9 +895,15 @@ class ResearchRuntime:
                 value = text
             if message.get('type') == 'function_call_output' or message.get('role') == 'tool':
                 call_id = message.get('call_id', message.get('tool_call_id'))
-                tool = calls.get(call_id)
+                tool, args = bindings.get(record_id, (None, {}))
                 if tool in ('agent_status', 'wait_agents', 'report_progress', 'prepare_synthesis', 'finish_analysis', 'submit_report'):
                     continue  # Latest full child reports/status are pinned separately.
+                if tool in {'market_indicators', 'calculate'} and isinstance(value, dict) and not value.get('truncated_for_context'):
+                    # Compatibility for already-delivered sessions/checkpoints
+                    # from before explicit calculation retention was installed.
+                    signature = calculation_signature(tool, args, value)
+                    if not any(record['signature'] == signature for record in self.calculations):
+                        self._remember_calculation('manager', tool, args, value)
                 item = {'tool': tool, 'result': value, 'record_id': record_id,
                         'visibility': 'previously_delivered_tool_output'}
                 signature = json.dumps({'tool': tool, 'result': value}, sort_keys=True, ensure_ascii=False, default=str)
@@ -809,7 +948,7 @@ class ResearchRuntime:
             fixed.append({'role': 'user', 'content': json.dumps(latest_budget, ensure_ascii=False, default=str)})
         # Source messages are actual delivered excerpts too. Fit them using the
         # same budget instead of letting many native sources bypass the bound.
-        candidates = [('tool', item) for item in evidence]
+        candidates = [('tool', item) for item in evidence if item.get('tool') not in {'market_indicators', 'calculate'}]
         candidates += [('source', value) for value in source_messages]
         candidates += [('extra', value) for value in extra_messages]
         available = max(0, int(max_chars * .70) - size(fixed) - 400)
@@ -1003,12 +1142,13 @@ class ResearchRuntime:
         reports = []
         for child in self.children.values():
             for report in child.reports:
-                visible = {key: copy.deepcopy(report[key]) for key in ("report_id", "summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates") if key in report}
+                visible = {key: copy.deepcopy(report[key]) for key in ("report_id", "summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates", "calculation_ids") if key in report}
                 if isinstance(visible.get("summary"), str) and len(visible["summary"]) > 12000:
                     visible["summary"] = visible["summary"][:12000]
                     visible["summary_truncated"] = True
                 reports.append({"agent_id": child.id, "role_id": child.role_id, "model_config": copy.deepcopy(child.model_config), "title": child.title, **visible})
-        if not reports and not declaration:
+        available_calculations = self._available_calculations('manager')
+        if not reports and not declaration and not available_calculations:
             return {}
         unresolved_tasks = [{"agent_id": child.id, "title": child.title, "task": child.task,
             "status": child.status, "round": child.round, "error": child.error,
@@ -1016,14 +1156,18 @@ class ResearchRuntime:
             for child in self.children.values()
             if child.status != "completed" or child.pending_messages or child.inbox]
         material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
+        calculation_material_ids = {entry.get('material_id') for record in available_calculations
+            for entry in (record['summary'], record['summary'].get('benchmark') or {})
+            if isinstance(entry.get('material_id'), str)}
         checkpoint = {"phase": "synthesis", "task_id": self.task_id, "account_id": self.account_id,
             "model_config": copy.deepcopy(self.model_config), "team_snapshot": copy.deepcopy(self.team),
             "input_version": self.input_version, "scope": self.context.get("scope", "account"),
             "data_as_of": self.context.get("data_as_of"), "reports": reports,
             "materials": material_index, "material_ids": sorted({m["id"] for m in material_index if m.get("id")} |
+                calculation_material_ids |
                 {mid for report in reports for mid in report.get("material_ids", []) if isinstance(mid, str)} |
                 {mid for mid in (declaration or {}).get("material_ids", []) if isinstance(mid, str)}),
-            "calculations": copy.deepcopy(self.calculations), "metrics": copy.deepcopy(self.context.get("metrics")),
+            "calculations": copy.deepcopy(available_calculations), "metrics": copy.deepcopy(self.context.get("metrics")),
             "open_questions": [*(declaration.get("open_questions") or []),
                 *[question for report in reports for question in report.get("open_questions", [])]],
             "unresolved_tasks": unresolved_tasks,
@@ -1116,7 +1260,10 @@ class ResearchRuntime:
                         "note": "轻量索引；使用 get_material/read_material_range 获取正文，行情材料可用 query_market_rows 按日期取行。"}
             return result
         if name in {"query_market_rows", "market_indicators"}:
-            return await getattr(self.tools, name)(**args)
+            output = await getattr(self.tools, name)(**args)
+            if name == 'market_indicators':
+                self._remember_calculation(agent_id, name, args, output)
+            return output
         if name == "get_material":
             return await self.tools.get_material(self._text(args, "material_id"))
         if name == "read_material_range":
@@ -1133,8 +1280,7 @@ class ResearchRuntime:
             if not isinstance(values, list) or any(isinstance(v, bool) or not isinstance(v, (str, int, float)) for v in values):
                 raise ValueError("values 必须为已知数值数组；缺失值不能按零计算")
             output = await self.tools.calculate(self._text(args, "operation"), values)
-            self.calculations.append({"agent_id": agent_id, "operation": args["operation"], "values": copy.deepcopy(values), "result": copy.deepcopy(output)})
-            self.calculations = self.calculations[-32:]
+            self._remember_calculation(agent_id, name, args, output)
             return output
         if name == "prepare_synthesis":
             if any(child.status in {"queued", "running"} for child in self.children.values()):
@@ -1260,7 +1406,9 @@ class ResearchRuntime:
                         # Runtime identity cannot be supplied by the model.
                         report.update(report_id=uuid.uuid4().hex, agent_id=child.id,
                             role_id=child.role_id, model_config=copy.deepcopy(child.model_config),
-                            research_round=child.round)
+                            research_round=child.round,
+                            calculation_ids=[record['calculation_id'] for record in self.calculations
+                                if record['agent_id'] == child.id and record['research_round'] == child.round])
                         child.reports.append(report)
                         # Messages delivered before this completed report have
                         # been covered; messages received during the request are

@@ -49,7 +49,7 @@ try {
     assert.deepEqual(snapshot.operations,[],'all registered operations must finish');
     assert.equal(snapshot.counts.operation_registered, snapshot.counts.operation_finished);
   };
-  await page.context().tracing.start({screenshots:true,snapshots:true});
+  // This group types a provider key. Do not record trace snapshots or request bodies.
   page.on('request',request=>{if(request.url().includes('/api/')) requestTrace.push({event:'request',method:request.method(),path:new URL(request.url()).pathname});});
   page.on('response',response=>{if(response.url().includes('/api/')) requestTrace.push({event:'response',status:response.status(),path:new URL(response.url()).pathname});});
   page.on('requestfinished',request=>{if(request.url().includes('/api/'))requestTrace.push({event:'finished',method:request.method(),path:new URL(request.url()).pathname});});
@@ -110,7 +110,7 @@ try {
   let releaseNavigation, observeNavigation;
   const navigationGate=new Promise(resolve=>{releaseNavigation=resolve;});
   const navigationStarted=new Promise(resolve=>{observeNavigation=resolve;});
-  await page.route('**/api/status',async route=>{observeNavigation();await navigationGate;await route.continue();},{times:1});
+  await page.route('**/api/status*',async route=>{observeNavigation();await navigationGate;await route.continue();},{times:1});
   await navigate('research');
   await waitGate(navigationStarted,'navigationStarted');
   await page.locator('#account-switch').selectOption(fixture.other_id);
@@ -126,7 +126,7 @@ try {
   let releaseAgentsNavigation, observeAgentsNavigation;
   const agentsNavigationGate=new Promise(resolve=>{releaseAgentsNavigation=resolve;});
   const agentsNavigationStarted=new Promise(resolve=>{observeAgentsNavigation=resolve;});
-  await page.route('**/api/status',async route=>{observeAgentsNavigation();await agentsNavigationGate;await route.continue();},{times:1});
+  await page.route('**/api/status*',async route=>{observeAgentsNavigation();await agentsNavigationGate;await route.continue();},{times:1});
   await navigate('agents');
   await waitGate(agentsNavigationStarted,'agentsNavigationStarted');
   const checkpointCard=page.locator('.job-card').filter({has:page.locator(`[data-action="retry-job"][data-id="${fixture.checkpoint_job_id}"]`)});
@@ -179,7 +179,7 @@ try {
   const beforeB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
   await navigate('research');
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  const saveNavigation=await pauseRoute('**/api/status');
+  const saveNavigation=await pauseRoute('**/api/status*');
   await navigate('holdings');
   await waitGate(saveNavigation.started,'saveNavigation.started');
   const versionAtClick=Number(await page.locator('#account-form').getAttribute('data-version'));
@@ -215,7 +215,7 @@ try {
     await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({detail:'受控保存冲突，草稿应保留'})});
   },{times:1});
   await page.locator('#account-form button[type="submit"]').click();
-  await page.getByText('受控保存冲突，草稿应保留',{exact:true}).waitFor();
+  await page.getByText('受控保存冲突，草稿应保留',{exact:false}).waitFor();
   assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入');
   await page.locator('#account-form button[type="submit"]').click();
   await page.locator('.loading-line').waitFor({state:'hidden'});
@@ -254,15 +254,17 @@ try {
   assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),uncertainSaved.version);
   // Exercise the real bounded GET lifecycle without a 15-second test sleep.
   await page.clock.install();
-  const timeoutNavigation=await pauseRoute('**/api/status');
+  const timeoutNavigation=await pauseRoute('**/api/status*');
   await navigate('research');
   await waitGate(timeoutNavigation.started,'timeout navigation');
+  // Advance only the deliberately held request; let unrelated local reads finish.
+  await page.waitForFunction(()=>{const requests=window.__guanlanDiagnostics.snapshot().requests;return requests.length===1 && requests[0].path==='/api/status';});
   await page.clock.fastForward(15001);
   await page.getByText('读取超时，保留已有内容；可刷新重试。',{exact:false}).first().waitFor();
   await assertIdle();
   timeoutNavigation.release();
   await navigate('holdings');await assertIdle();
-  const analyzeNavigation=await pauseRoute('**/api/status');
+  const analyzeNavigation=await pauseRoute('**/api/status*');
   await navigate('overview');
   await waitGate(analyzeNavigation.started,'analyzeNavigation.started');
   const analyzeGate=await pauseRoute(`**/api/accounts/${fixture.account_id}/analyze`,'POST',true);
@@ -314,7 +316,7 @@ try {
   assert.equal(await page.locator('#model_native_search').inputValue(),'true');
   await page.locator('#runtime-version').waitFor();
   assert.equal(await page.locator('#search_provider, #search_key_env').count(),0);
-  const waitCapability=async label=>page.waitForFunction(text=>document.body.textContent.includes('原生联网：'+text),label);
+  const waitCapability=async label=>page.waitForFunction(text=>document.body.textContent.includes('全局原生联网检测：'+text),label);
   await waitCapability('尚未验证');
   const inFlightFixture=await (await fetch(base+'/__fixture/start_model_snapshot',{method:'POST'})).json();
   assert.ok(inFlightFixture.jobs.length>0);
@@ -477,7 +479,7 @@ try {
 } catch(error) {
   await mkdir('test-results',{recursive:true});
   if(page) await page.screenshot({path:'test-results/frontend-production-failure.png',fullPage:true});
-  if(page) await page.context().tracing.stop({path:'test-results/frontend-production-trace.zip'});
+  // No trace: even fixture keys must stay out of artifacts.
   await writeFile('test-results/frontend-production-requests.json', JSON.stringify({error:String(error),requests:requestTrace,lifecycle:page?await page.evaluate(()=>window.__guanlanDiagnostics?.snapshot()).catch(()=>null):null,server:diagnostic},null,2));
   throw error;
 } finally {

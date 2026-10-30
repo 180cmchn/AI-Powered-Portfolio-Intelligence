@@ -4,10 +4,43 @@ import os
 import hashlib
 import json
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 ROOT = Path(__file__).resolve().parent.parent
+# Remember only names; never keep an extra copy of credentials for diagnostics.
+try:
+    _PARENT_DOTENV_NAMES = json.loads(os.getenv('APP_DOTENV_ORIGIN_NAMES', '[]'))
+    if not isinstance(_PARENT_DOTENV_NAMES, list):
+        _PARENT_DOTENV_NAMES = []
+except (TypeError, ValueError):
+    _PARENT_DOTENV_NAMES = []
+_SHELL_ENV_NAMES = frozenset(os.environ) - frozenset(name for name in _PARENT_DOTENV_NAMES if isinstance(name, str))
+_INITIAL_DOTENV_NAMES = (frozenset(dotenv_values(ROOT / '.env')) if os.getenv('PYTHON_DOTENV_DISABLED', '').lower() not in {'1', 'true', 'yes', 'on'} else frozenset()) | frozenset(name for name in _PARENT_DOTENV_NAMES if isinstance(name, str))
 load_dotenv(ROOT / ".env")
+
+
+def environment_connection_source() -> dict:
+    """Report presence/source and pending file edits, never values of secrets.
+
+    dotenv deliberately keeps its normal non-override behavior. Editing .env
+    does not mutate an already running worker's credential references.
+    """
+    enabled = os.getenv('PYTHON_DOTENV_DISABLED', '').lower() not in {'1', 'true', 'yes', 'on'}
+    file_values = dotenv_values(ROOT / '.env') if enabled else {}
+    key_name = os.getenv('MODEL_KEY_ENV', 'MODEL_API_KEY')
+    names = ('MODEL_BASE_URL', 'MODEL_PROTOCOL', 'MODEL_KEY_ENV', key_name, 'MODEL_NAME', 'REASONING_EFFORT')
+    fields = {}
+    for name in names:
+        present = bool(os.getenv(name))
+        source = 'shell' if name in _SHELL_ENV_NAMES else 'dotenv' if name in _INITIAL_DOTENV_NAMES or name in file_values else 'default_or_process'
+        file_differs = ((name in file_values and file_values[name] != os.getenv(name))
+                        or (enabled and name in _INITIAL_DOTENV_NAMES and name not in _SHELL_ENV_NAMES and name not in file_values and present))
+        fields[name] = {'present': present, 'source': source,
+                        'file_differs': bool(file_differs),
+                        'shell_overrides_file': name in _SHELL_ENV_NAMES and name in file_values and file_values[name] != os.getenv(name)}
+    return {'dotenv_path': str(ROOT / '.env'), 'dotenv_enabled': enabled, 'fields': fields,
+            'restart_required': any(v['file_differs'] and not v['shell_overrides_file'] for v in fields.values()),
+            'note': '.env 修改需要安全重启；已有 shell 环境优先。环境连接导入不会覆盖角色或账户模型选择。'}
 
 REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 

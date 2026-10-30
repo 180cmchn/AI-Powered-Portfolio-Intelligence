@@ -1,7 +1,7 @@
 // Provider secrets stay only in the write form until submission; never in state/drafts.
-export function createSixthUI({state, api, e, render, toast, operation, field, selectField, dialog, objectView}) {
+export function createSixthUI({state, api, e, render, toast, operation, field, selectField, dialog, objectView, resetFailures}) {
   const routes = new Set(['providers', 'roles', 'account-models', 'forecasts']);
-  const data = {providers: [], roles: [], catalogs: {}, predictions: null, batches: [], rule: null, filters: {}, offset: 0, comparison: null, comparisonAccounts: [], windows: null, windowOffset: 0};
+  const data = {providers: [], roles: [], catalogs: {}, predictions: null, batches: [], rule: null, filters: {}, offset: 0, comparison: null, comparisonAccounts: [], windows: null, windowOffset: 0, errors: {}, catalogErrors: {}, environment: null, providerWritable: true};
   let read = 0;
   const enc = encodeURIComponent;
   const direction = {up:'上涨', sideways:'震荡', down:'下跌', abstain:'弃权'};
@@ -13,11 +13,26 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
   const button = (label, action, id='', extra='') => `<button type="button" class="button" data-sixth-action="${e(action)}" data-id="${e(id)}" ${extra}>${e(label)}</button>`;
   const info = text => `<p class="small muted">${e(text)}</p>`;
   const providers = () => data.providers.filter(p => !p.archived);
-  async function load() {
+  async function load({retryCatalogs=false}={}) {
     if (!routes.has(state.route)) return;
     const generation = ++read, route = state.route, account = state.accountId;
-    let result;
-    if (route === 'providers') result = await api('/api/providers');
+    let result, environment, catalogFailure;
+    try {
+    if (route === 'providers') {
+      result = await api('/api/providers');
+      if (!Array.isArray(result)) { const error=Error('GET /api/providers：返回格式不兼容，请核对后端版本。'); error.code='format_error'; throw error; }
+      if (generation !== read || route !== state.route || account !== state.accountId) return;
+      try { environment = await api('/api/environment-connection'); }
+      catch (error) { environment = {error: error.message}; }
+      if (generation !== read || route !== state.route || account !== state.accountId) return;
+      // Only the explicitly configured environment connection is discovered once.
+      const initial = result.find(p=>p.connection_source==='environment' && p.key_available && p.catalog?.status==='not_fetched'
+        && (retryCatalogs || data.catalogErrors[p.id]?.revision!==p.revision));
+      if (initial) {
+        try { initial.catalog = await api(`/api/providers/${enc(initial.id)}/models`); }
+        catch (error) { if(error.code!=='superseded_read')catalogFailure={providerId:initial.id,revision:initial.revision,message:error.message}; }
+      }
+    }
     else if (route === 'roles' || route === 'account-models') {
       result = await Promise.all([api('/api/providers'), route === 'roles' ? api('/api/agent-roles') : account ? api(`/api/accounts/${enc(account)}/agent-models`) : Promise.resolve([])]);
     } else {
@@ -31,23 +46,35 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
       result = await Promise.all([api(`/api/forecasts?${query}`), api(`/api/forecast-batches${filters.account_id ? '?account_id='+enc(filters.account_id):''}`), account ? api(`/api/accounts/${enc(account)}/forecast-settings`) : Promise.resolve(null), data.comparisonAccounts.length>=2 ? api(`/api/forecasts/compare?${comparisonQuery}`) : Promise.resolve(null), api(`/api/forecast-window-runs?${new URLSearchParams({...Object.fromEntries(['account_id','start','end'].filter(k=>filters[k]).map(k=>[k,filters[k]])),limit:30,offset:data.windowOffset})}`)]);
     }
     if (generation !== read || route !== state.route || account !== state.accountId) return;
-    if (route === 'providers') data.providers = result;
+    if (route === 'providers') {
+      data.providers = result; data.environment = environment; data.providerWritable = true;
+      for (const [id,error] of Object.entries(data.catalogErrors)) {
+        const provider=result.find(p=>p.id===id);
+        if(!provider || provider.revision!==error.revision || ['success','empty','partial'].includes(provider.catalog?.status))delete data.catalogErrors[id];
+      }
+      if(catalogFailure && result.some(p=>p.id===catalogFailure.providerId && p.revision===catalogFailure.revision))data.catalogErrors[catalogFailure.providerId]=catalogFailure;
+    }
     else if (route === 'roles' || route === 'account-models') {
       [data.providers, data.roles] = result;
-      for (const provider of providers()) {
-        const cat = await api(`/api/providers/${enc(provider.id)}/models`);
-        if (generation !== read || route !== state.route || account !== state.accountId) return;
-        data.catalogs[provider.id] = cat;
-      }
+      for (const provider of providers()) data.catalogs[provider.id] = provider.catalog || {};
     } else [data.predictions, data.batches, data.rule, data.comparison, data.windows] = result;
+    delete data.errors[route];
+    } catch (error) {
+      if (generation !== read || route !== state.route || account !== state.accountId || error.code==='superseded_read') return;
+      data.errors[route] = error.message;
+      if (route === 'providers') data.providerWritable = !['route_missing','format_error'].includes(error.code);
+    }
   }
   function providerForm(provider=null) {
-    return `<form id="provider-connection-form" data-provider-id="${e(provider?.id || '')}" autocomplete="off"><div class="form-grid">${field('API Key', 'api_key', '', {type:'password', help:provider ? '留空保留现有凭据。替换会生成新凭据修订。' : '保存到本机安全凭据存储，数据库和 GET 不返回原文。'})}${field('Base URL', 'base_url', provider?.base_url || '', {placeholder:'https://api.example.com/v1'})}${selectField('协议', 'protocol', provider?.protocol || 'responses', [['responses','Responses'],['chat_completions','Chat Completions']])}</div><div class="form-actions"><span class="small muted">保存后自动获取该连接实际返回的模型列表。</span><button class="button primary" type="submit">保存连接并获取模型</button></div></form>`;
+    const prefix = 'provider-' + (provider?.id || 'new') + '-';
+    return `<form id="provider-connection-form" data-provider-id="${e(provider?.id || '')}" autocomplete="off"><div class="form-grid">${field('API Key', 'api_key', '', {id:prefix+'api_key', type:'password', help:provider ? '留空保留现有凭据。替换会生成新凭据修订。' : '保存到本机安全凭据存储，数据库和 GET 不返回原文。'})}${field('Base URL', 'base_url', provider?.base_url || '', {id:prefix+'base_url', placeholder:'https://api.example.com/v1'})}${selectField('协议', 'protocol', provider?.protocol || 'responses', [['responses','Responses'],['chat_completions','Chat Completions']], '', prefix+'protocol')}</div><div class="form-actions"><span class="small muted provider-feedback">保存后自动获取该连接实际返回的模型列表。Key 只留在当前表单，离开或取消后清除。</span><button type="button" class="button" data-sixth-action="provider-cancel">取消输入</button><button class="button primary" type="submit" ${data.providerWritable?'':'disabled'}>保存连接并获取模型</button></div></form>`;
   }
   function providerPage() {
-    return `<section class="card"><div class="card-header"><h2>添加模型供应商</h2></div><div class="card-body">${providerForm()}</div></section>${data.providers.map(p=>{
+    const env = data.environment;
+    const environment = env ? `<section class="card" id="environment-connection"><div class="card-header"><h2>环境连接检测</h2></div><div class="card-body">${info(env.error || env.action || '检测当前进程读取的 .env 连接')}${env.base_url ? `<p class="mono">${e(env.base_url)} · ${e(env.protocol)} · ${env.key_present?'Key 已读取':'未读取到 Key'}</p>` : ''}${env.source ? info(`来源文件：${env.source.dotenv_path}；已有 shell 环境优先；${env.source.restart_required?'文件已修改，需要安全重启':'当前进程已加载'}`) + (Object.entries(env.source.fields || {}).some(([,v])=>v.shell_overrides_file) ? info(`这些字段与文件不同，当前由 shell 覆盖：${Object.entries(env.source.fields).filter(([,v])=>v.shell_overrides_file).map(([name])=>name).join('、')}。只编辑 .env 不会覆盖它们。`) : '') : ''}${env.can_import ? button(env.changed?'确认目标并导入环境连接':'刷新环境连接目录','environment-import',env.preview_id):''}${button('重新检测','resource-retry')}</div></section>` : '';
+    return `${environment}<section class="card"><div class="card-header"><h2>添加模型供应商</h2></div><div class="card-body">${providerForm()}</div></section>${data.providers.map(p=>{
       const c=p.catalog || {}, models=c.models || [];
-      return `<section class="card"><div class="card-header"><div><h2>${e(p.display_name)}</h2>${info(`${p.protocol} · 连接修订 ${p.revision} · ${p.key_configured ? '凭据已配置' : '未配置凭据'}${p.archived ? ' · 已归档' : ''}`)}</div><span class="pill">${e(title(c.status))}</span></div><div class="card-body"><p class="mono">${e(p.base_url)}</p>${info(c.error || `${models.length} 个模型 · ${c.complete ? '完整列表' : '覆盖范围未完整'} · ${c.fetched_at || '尚未发现'}`)}${c.cache_expired ? '<p class="warning">缓存已过期；历史发现不代表当前服务验证。</p>':''}<details><summary>查看实际模型目录</summary><div class="model-list">${models.map(m=>`<span class="pill" title="${e(m.suitability || '')}">${e(m.id)}</span>`).join('') || info('没有可选择的已发现模型；请检查此供应商是否提供目录接口。')}</div></details><div class="actions section-gap">${button('修改连接','provider-edit',p.id)}${button('刷新模型列表','provider-refresh',p.id)}${c.next_url ? button('继续加载模型','provider-more',p.id):''}${button('清除凭据','provider-clear',p.id)}${!p.archived ? button('归档连接','provider-archive',p.id):''}</div></div></section>`;
+      return `<section class="card"><div class="card-header"><div><h2>${e(p.display_name)}</h2>${info(`${p.protocol} · 连接修订 ${p.revision} · ${p.key_state==='environment_changed' ? '环境凭据已变化，待显式导入' : p.key_configured ? '凭据引用已保存' : '未配置凭据'} · 来源 ${p.connection_source==='environment'?'环境连接':'网页保存'}${p.archived ? ' · 已归档' : ''}`)}</div><span class="pill">${e(title(c.status))}</span></div><div class="card-body"><p class="mono">${e(p.base_url)}</p>${info(c.error || `${models.length} 个模型 · ${c.complete ? '完整列表' : '覆盖范围未完整'} · ${c.fetched_at || '尚未发现'}`)}${c.cache_expired ? '<p class="warning">缓存已过期；历史发现不代表当前服务验证。</p>':''}<details><summary>查看实际模型目录</summary><div class="model-list">${models.map(m=>`<span class="pill" title="${e(m.suitability || '')}">${e(m.id)}</span>`).join('') || info('没有可选择的已发现模型；请检查此供应商是否提供目录接口。')}</div></details><div class="actions section-gap">${button('修改连接','provider-edit',p.id)}${button('刷新模型列表','provider-refresh',p.id)}${c.next_url ? button('继续加载模型','provider-more',p.id):''}${button('清除凭据','provider-clear',p.id)}${!p.archived ? button('归档连接','provider-archive',p.id):''}</div></div></section>`;
     }).join('')}<section class="card"><div class="card-body">${info('模型列出、请求被接受、本地函数可用、原生联网可用与服务明确回报 effort 是不同状态。目录发现不进行批量付费模型探测。Chat 协议保留现有原生联网限制。')}${info('备份只包含凭据引用。换机后请在此重新录入 Key；旧环境变量凭据可继续兼容使用。')}</div></section>`;
   }
   function modelOptions(providerId, selected, query='') {
@@ -98,10 +125,15 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     const result=data.predictions || {}, statistics=result.statistics || {}, page=result.page || {};
     const filters=data.filters;
     const groups=statistics.groups || [];
-    return `${(filters.kind==='test')?'<div class="notice"><p><strong>工程测试夹具</strong> · 此处数据只验证计算与页面，不代表真实前瞻表现。</p></div>':(filters.kind==='exploratory')?'<div class="notice"><p><strong>探索记录</strong> · 盘中与临时研究单独展示，不进入正式固定批次准确率。</p></div>':''}${rulesForm()}${comparisonCard()}${windowsCard()}${attemptsCard(statistics)}<section class="card"><form id="forecast-filter-form" data-draft-key="forecast-filters:${e(state.accountId || 'all')}" class="card-body"><div class="form-grid three">${selectField('账户','account_id',filters.account_id ?? state.accountId ?? '',[['','全部账户'],...state.accounts.map(a=>[a.id,a.name])])}${selectField('记录类型','kind',filters.kind || 'formal',[['formal','正式固定批次'],['exploratory','探索记录'],['test','工程测试夹具']])}${field('证券','security_id',filters.security_id || '',{placeholder:'SZ:159278'})}${field('主模型 ID','model_id',filters.model_id || '')}${selectField('主模型 effort','reasoning_effort',filters.reasoning_effort || '',[['','全部'],...['low','medium','high','xhigh','max'].map(x=>[x,x])])}${field('研究团队版本','team_id',filters.team_id || '')}${field('统计规则身份（可用原版本查询）','rule_version',filters.rule_version || '')}${field('基准日从','start',filters.start || '',{type:'date'})}${field('基准日到','end',filters.end || '',{type:'date'})}</div><div class="form-actions"><span class="small muted">每个周期与规则单独统计。</span><div class="actions">${button('检查到期数据','forecast-evaluate')}<button class="button primary" type="submit">筛选</button></div></div></form></section><div class="notice"><p>${e(statistics.method || '尚无预测记录。真实前瞻表现从启用后开始积累。')}<br>${e(statistics.comparison_note || '不同证券或批次的准确率不能直接用于模型排名。')}</p></div>${groups.length?groups.map(g=>`<section class="card"><div class="card-header"><h2>${e(g.label)} · ${g.horizon} 个交易日</h2><strong class="forecast-accuracy">${pct(g.accuracy)}</strong></div><div class="card-body"><div class="forecast-metrics"><span>命中 / 已评估 <b>${g.hits} / ${g.evaluated}</b></span><span>预期样本 <b>${g.expected}</b></span><span>预测 / 弃权覆盖率 <b>${pct(g.coverage)}</b></span><span>阈值 <b>±${Number(g.threshold)*100}%</b></span></div><p>${Object.entries(g.states).map(([k,v])=>`<span class="pill">${e(title(k))} ${v}</span>`).join(' ')}</p><details><summary>三分类对照与每日表现 · 规则 ${e(g.rule_version.slice(0,12))}</summary><div class="form-grid section-gap"><div class="table-wrap"><table><thead><tr><th>预测 ↓ / 实际 →</th><th>上涨</th><th>震荡</th><th>下跌</th></tr></thead><tbody>${['up','sideways','down'].map(d=>`<tr><th>${direction[d]}</th>${['up','sideways','down'].map(a=>`<td>${g.confusion_matrix[d][a]}</td>`).join('')}</tr>`).join('')}</tbody></table>${info(`预测分类：${JSON.stringify(g.predicted_classes)}；实际分类：${JSON.stringify(g.actual_classes)}`)}</div><div><table><thead><tr><th>基准交易日</th><th>命中 / 已评估</th><th>准确率</th></tr></thead><tbody>${g.by_day.map(d=>`<tr><td>${e(d.date)}</td><td>${d.hits} / ${d.evaluated}</td><td>${pct(d.accuracy)}</td></tr>`).join('')}</tbody></table>${info('累计按总命中数 / 总已评估数计算，不平均每日百分比。')}</div></div></details></div></section>`).join(''):'<section class="card"><div class="card-body"><h2>暂无已评估样本</h2><p>新发的 5 / 20 交易日预测需等待真实到期；不会回填已知行情上的预测。</p></div></section>'}<section class="card"><div class="card-header"><h2>预测与覆盖记录</h2><span>${page.total || 0} 个预期样本</span></div><div class="table-wrap"><table><thead><tr><th>证券</th><th>期限</th><th>基准 / 目标</th><th>原预测</th><th>真实方向 / 收益率</th><th>状态</th><th>详情</th></tr></thead><tbody>${(page.items || []).map(r=>`<tr><td>${e(r.symbol)}</td><td>${r.horizon} 交易日</td><td>${e(r.base_date)}<br>${e(r.target_date || '日历缺覆盖')}</td><td>${e(direction[r.direction] || '未预测')}</td><td>${e(direction[r.actual_direction] || '—')} / ${r.return_ratio==null?'—':(Number(r.return_ratio)*100).toFixed(3)+'%'}</td><td>${e(title(r.display_state))}${r.hit==null?'':r.hit?' · 命中':' · 未命中'}${(r.reason || r.evaluation_reason || r.waiting_reason)?`<br><small>${e(r.reason || r.evaluation_reason || r.waiting_reason)}</small>`:''}</td><td>${r.forecast_id?button('原记录','forecast-detail',r.forecast_id):button('批次与尝试','forecast-batch-detail',r.batch_id)}</td></tr>`).join('') || '<tr><td colspan="7">没有符合筛选条件的记录</td></tr>'}</tbody></table></div><div class="form-actions"><span>第 ${Math.floor(data.offset/30)+1} 页</span><div class="actions">${data.offset?button('上一页','forecast-prev'):''}${page.has_more?button('下一页','forecast-next'):''}</div></div></section><section class="card"><div class="card-header"><h2>批次范围与覆盖</h2></div><div class="card-body">${(data.batches || []).map(b=>`<details><summary>${e(b.base_date)} · ${e(b.kind)} · 预期 ${b.expected_count} 样本 · ${e(title(b.state))}</summary>${info(preparationText(b))}${objectView(b)}${button('批次与尝试详情','forecast-batch-detail',b.id)}</details>`).join('') || info('尚未创建批次。')}</div></section>`;
+    return `${(filters.kind==='test')?'<div class="notice"><p><strong>工程测试夹具</strong> · 此处数据只验证计算与页面，不代表真实前瞻表现。</p></div>':(filters.kind==='exploratory')?'<div class="notice"><p><strong>探索记录</strong> · 盘中与临时研究单独展示，不进入正式固定批次准确率。</p></div>':''}${rulesForm()}${comparisonCard()}${windowsCard()}${attemptsCard(statistics)}<section class="card"><form id="forecast-filter-form" data-draft-key="forecast-filters:${e(state.accountId || 'all')}" class="card-body"><div class="form-grid three">${selectField('账户','account_id',filters.account_id ?? state.accountId ?? '',[['','全部账户'],...state.accounts.map(a=>[a.id,a.name])])}${selectField('记录类型','kind',filters.kind || 'formal',[['formal','正式固定批次'],['exploratory','探索记录'],['test','工程测试夹具']])}${field('证券','security_id',filters.security_id || '',{placeholder:'SZ:159278'})}${field('主模型 ID','model_id',filters.model_id || '')}${selectField('主模型 effort','reasoning_effort',filters.reasoning_effort || '',[['','全部'],...['low','medium','high','xhigh','max'].map(x=>[x,x])])}${field('研究团队版本','team_id',filters.team_id || '')}${field('统计规则身份（可用原版本查询）','rule_version',filters.rule_version || '')}${field('基准日从','start',filters.start || '',{type:'date'})}${field('基准日到','end',filters.end || '',{type:'date'})}</div><div class="form-actions"><span class="small muted">每个周期与规则单独统计。</span><div class="actions">${button('检查到期数据','forecast-evaluate')}<button class="button primary" type="submit">筛选</button></div></div></form></section><div class="notice"><p>${e(statistics.method || '尚无预测记录。真实前瞻表现从启用后开始积累。')}<br>${e(statistics.comparison_note || '不同证券或批次的准确率不能直接用于模型排名。')}</p></div>${groups.length?groups.map(g=>`<section class="card"><div class="card-header"><h2>${e(g.label)} · ${g.horizon} 个交易日</h2><strong class="forecast-accuracy">${pct(g.accuracy)}</strong></div><div class="card-body"><div class="forecast-metrics"><span>命中 / 已评估 <b>${g.hits} / ${g.evaluated}</b></span><span>预期样本 <b>${g.expected}</b></span><span>预测 / 弃权覆盖率 <b>${pct(g.coverage)}</b></span><span>阈值 <b>±${Number(g.threshold)*100}%</b></span></div><p>${Object.entries(g.states).map(([k,v])=>`<span class="pill">${e(title(k))} ${v}</span>`).join(' ')}</p><details><summary>三分类对照与每日表现 · 规则 ${e(g.rule_version.slice(0,12))}</summary><div class="form-grid section-gap"><div class="table-wrap"><table><thead><tr><th>预测 ↓ / 实际 →</th><th>上涨</th><th>震荡</th><th>下跌</th></tr></thead><tbody>${['up','sideways','down'].map(d=>`<tr><th>${direction[d]}</th>${['up','sideways','down'].map(a=>`<td>${g.confusion_matrix[d][a]}</td>`).join('')}</tr>`).join('')}</tbody></table>${info(`预测分类：${JSON.stringify(g.predicted_classes)}；实际分类：${JSON.stringify(g.actual_classes)}`)}</div><div><table><thead><tr><th>基准交易日</th><th>命中 / 已评估</th><th>准确率</th></tr></thead><tbody>${g.by_day.map(d=>`<tr><td>${e(d.date)}</td><td>${d.hits} / ${d.evaluated}</td><td>${pct(d.accuracy)}</td></tr>`).join('')}</tbody></table>${info('累计按总命中数 / 总已评估数计算，不平均每日百分比。')}</div></div></details></div></section>`).join(''):'<section class="card"><div class="card-body"><h2>暂无已评估样本</h2><p>新发的 5 / 20 交易日预测需等待真实到期；不会回填已知行情上的预测。</p></div></section>'}<section class="card"><div class="card-header"><h2>预测与覆盖记录</h2><span>${page.total || 0} 个预期样本</span></div><div class="table-wrap"><table><thead><tr><th>证券</th><th>期限</th><th>基准 / 目标</th><th>原预测</th><th>执行署名</th><th>真实方向 / 收益率</th><th>状态</th><th>详情</th></tr></thead><tbody>${(page.items || []).map(r=>`<tr><td>${e(r.symbol)}</td><td>${r.horizon} 交易日</td><td>${e(r.base_date)}<br>${e(r.target_date || '日历缺覆盖')}</td><td>${e(direction[r.direction] || '未预测')}</td><td>${e(r.manager_model || '历史身份未知')}<br><small>${e(r.manager_effort || '强度未知')} · ${r.forecast_id?'已发布署名':r.execution_attempt_id?'冻结尝试 #'+e(r.assigned_attempt):'未有可核对的冻结尝试'}</small>${r.team_id?`<br><small class="mono">团队 ${e(r.team_id.slice(0,12))}</small>`:''}</td><td>${e(direction[r.actual_direction] || '—')} / ${r.return_ratio==null?'—':(Number(r.return_ratio)*100).toFixed(3)+'%'}</td><td>${e(title(r.display_state))}${r.hit==null?'':r.hit?' · 命中':' · 未命中'}${(r.reason || r.evaluation_reason || r.waiting_reason)?`<br><small>${e(r.reason || r.evaluation_reason || r.waiting_reason)}</small>`:''}</td><td>${r.forecast_id?button('原记录','forecast-detail',r.forecast_id):button('批次与尝试','forecast-batch-detail',r.batch_id)}</td></tr>`).join('') || '<tr><td colspan="8">没有符合筛选条件的记录</td></tr>'}</tbody></table></div><div class="form-actions"><span>第 ${Math.floor(data.offset/30)+1} 页</span><div class="actions">${data.offset?button('上一页','forecast-prev'):''}${page.has_more?button('下一页','forecast-next'):''}</div></div></section><section class="card"><div class="card-header"><h2>批次范围与覆盖</h2></div><div class="card-body">${(data.batches || []).map(b=>`<details><summary>${e(b.base_date)} · ${e(b.kind)} · 预期 ${b.expected_count} 样本 · ${e(title(b.state))}</summary>${info(preparationText(b))}${objectView(b)}${button('批次与尝试详情','forecast-batch-detail',b.id)}</details>`).join('') || info('尚未创建批次。')}</div></section>`;
   }
-  async function repaint() { await load(); render(); }
+  async function repaint(retryCatalogs=false) { await load({retryCatalogs}); render(); }
   document.addEventListener('input', event=>{
+    const connection=event.target.closest('#provider-connection-form');
+    if(connection) {
+      connection.dataset.inputRevision=String(Number(connection.dataset.inputRevision || 0)+1);
+      if(event.target.name==='api_key')connection.dataset.keyRevision=String(Number(connection.dataset.keyRevision || 0)+1);
+    }
     if(!event.target.matches('[data-model-filter]'))return;
     const form=event.target.closest('form'), select=form.querySelector('[data-role-model]');
     select.innerHTML=modelOptions(form.elements.provider_id.value, select.value, event.target.value);
@@ -124,6 +156,15 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     const {sixthAction:action,id}=target.dataset;
     const account=target.dataset.accountId;
     operation(async()=>{
+      if(action==='resource-retry') { resetFailures?.(); await api(`/api/status${state.accountId?'?account_id='+enc(state.accountId):''}`); }
+      if(action==='environment-import') {
+        const env=data.environment;
+        if(!env?.can_import || env.preview_id!==id)throw Error('请重新检测环境连接');
+        if(env.changed && !confirm(`将环境凭据用于已确认目标 ${env.base_url}（${env.protocol}）。已有角色与账户选择不会改变。确认导入？`))return;
+        const saved=await api('/api/environment-connection/import',{method:'POST',body:JSON.stringify({preview_id:id})});
+        toast(saved.catalog?.error ? '环境连接已保存；目录获取失败：'+saved.catalog.error : '环境连接已识别，请到 Agent 角色选择实际目录中的模型');
+      }
+      if(action==='provider-cancel') { const form=target.closest('form'); form.reset(); delete form.dataset.operationId; delete form.dataset.uncertain; if(form.closest('dialog')){form.closest('dialog').close();form.remove();} return; }
       if(action==='provider-edit') {const p=data.providers.find(p=>p.id===id); dialog('修改供应商连接',providerForm(p));return;}
       if(action==='provider-refresh'||action==='provider-more') await api(`/api/providers/${enc(id)}/models/${action==='provider-more'?'continue':'refresh'}`,{method:'POST'});
       if(action==='provider-clear') {if(!confirm('明确清除该供应商凭据？冻结的旧凭据将撤销，相关运行任务可能失败。历史预测保留。'))return;await api(`/api/providers/${enc(id)}/credential`,{method:'DELETE'});}
@@ -138,7 +179,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
       if(action==='forecast-evaluate')await api('/api/forecasts/evaluate',{method:'POST'});
       if(action==='forecast-prev')data.offset=Math.max(0,data.offset-30);
       if(action==='forecast-next')data.offset+=30;
-      await repaint();
+      await repaint(action==='resource-retry');
     },{key:`sixth:${action}:${account || ''}:${id}`,label:target.textContent});
   });
   document.addEventListener('submit',event=>{
@@ -146,14 +187,50 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     if(!['provider-connection-form','forecast-rule-form','forecast-filter-form','forecast-comparison-form'].includes(form.id)&&!form.classList.contains('role-model-form'))return;
     event.preventDefault();
     const values=Object.fromEntries(new FormData(form)), account=form.dataset.accountId;
-    // Clear before any asynchronous work; never retain key in the generic draft map.
-    if(form.id==='provider-connection-form')form.elements.api_key.value='';
     operation(async()=>{
       if(form.id==='provider-connection-form'){
+        if(!data.providerWritable)throw Error('当前后端没有兼容的供应商接口，请安全升级并重新连接。输入仍保留在当前页面。');
         if(!values.api_key)delete values.api_key;
         const pid=form.dataset.providerId;
-        try{await api(`/api/providers${pid?'/'+enc(pid):''}`,{method:pid?'PUT':'POST',body:JSON.stringify(values)});}finally{delete values.api_key;}
-        if(form.closest('dialog'))form.closest('dialog').close();else form.reset();
+        const operationId=form.dataset.operationId || crypto.randomUUID();
+        if(!form.dataset.operationId) {
+          form.dataset.submittedInputRevision=form.dataset.inputRevision || '0';
+          form.dataset.submittedKeyRevision=form.dataset.keyRevision || '0';
+        }
+        form.dataset.operationId=operationId;
+        let saved, unchanged=false;
+        try {
+          if(form.dataset.uncertain==='true') {
+            const checked=await api(`/api/provider-operations/${enc(operationId)}`);
+            if(checked.status==='committed')saved=checked.provider;
+            else throw Error('尚未确认上次保存结果，请刷新供应商列表核对；不会自动重发写请求。取消本次输入后可开始新操作。');
+          } else {
+            saved=await api(`/api/providers${pid?'/'+enc(pid):''}`,{method:pid?'PUT':'POST',headers:{'X-Operation-ID':operationId},body:JSON.stringify(values)});
+          }
+        } catch(error) {
+          if(error.code==='write_outcome_unknown') {
+            form.dataset.uncertain='true';
+            try {
+              const checked=await api(`/api/provider-operations/${enc(operationId)}`);
+              if(checked.status==='committed')saved=checked.provider;
+            } catch { /* Preserve uncertainty; never re-send the write. */ }
+          }
+          if(!saved) {
+            if(error.code!=='write_outcome_unknown' && form.dataset.uncertain!=='true')delete form.dataset.operationId;
+            const feedback=form.querySelector('.provider-feedback');
+            if(feedback)feedback.textContent=error.code==='write_outcome_unknown'?'保存结果待核对，未自动重发；Key 仅留在当前输入框，取消时清除。':error.message;
+            syncProviderForm(form);
+            throw error;
+          }
+        } finally {
+          unchanged=(form.dataset.inputRevision || '0')===form.dataset.submittedInputRevision && form.elements.base_url.value===values.base_url && form.elements.protocol.value===values.protocol;
+          if(saved && (form.dataset.keyRevision || '0')===form.dataset.submittedKeyRevision)form.elements.api_key.value='';
+          delete values.api_key;
+        }
+        delete form.dataset.operationId; delete form.dataset.uncertain;
+        if(unchanged && form.closest('dialog')) { form.closest('dialog').close(); form.remove(); }
+        else if(unchanged)form.reset();
+        toast(saved.catalog?.error ? '连接保存成功，模型目录失败：'+saved.catalog.error+'。请刷新目录，无需重复创建供应商。' : '连接已保存；请从已发现模型目录配置 Agent');
       } else if(form.classList.contains('role-model-form')) {
         const payload={};
         if(values.provider_id){
@@ -175,7 +252,12 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
         data.comparisonAccounts=selected;
       } else {data.filters=Object.fromEntries(Object.entries(values).map(([k,v])=>[k,String(v).trim()]).filter(([k,v])=>v||k==='account_id'));data.offset=0;data.windowOffset=0;}
       await repaint();toast('已更新');
-    },{key:`sixth-save:${form.id || form.dataset.draftKey}`,label:form.id==='forecast-comparison-form'?'比较共同样本':'保存配置'});
+    },{key:`sixth-save:${form.id || form.dataset.draftKey}:${form.dataset.providerId || ''}`,label:form.id==='forecast-comparison-form'?'比较共同样本':'保存配置'});
   });
-  return {load, has:route=>routes.has(route), snapshot:()=>JSON.stringify(data), page:()=>state.route==='providers'?providerPage():state.route==='roles'?rolesPage():state.route==='account-models'?rolesPage(true):forecastsPage()};
+  const syncProviderForm = form => { const submit=form.querySelector('[type=submit]'); if(submit){ submit.disabled=!data.providerWritable; submit.textContent=form.dataset.uncertain==='true'?'核对保存结果':'保存连接并获取模型'; } };
+  const warning = () => {
+    const messages=[...Object.values(data.errors),...(state.route==='providers'?Object.values(data.catalogErrors).map(error=>`${providerTitle(error.providerId)} · 连接修订 ${error.revision}：${error.message}`):[])];
+    return messages.length ? `<div class="notice warning"><div>${messages.map(message=>`<p>${e(message)}</p>`).join('')}<p>此资源暂时不可用；本地服务连接状态单独检查，输入保留在当前页面。</p></div>${button('重试当前页面','resource-retry')}</div>` : '';
+  };
+  return {load, syncProviderForm, has:route=>routes.has(route), snapshot:()=>JSON.stringify(data), page:()=>warning()+(state.route==='providers'?providerPage():state.route==='roles'?rolesPage():state.route==='account-models'?rolesPage(true):forecastsPage())};
 }

@@ -195,6 +195,10 @@ SCHEMA += IDENTITY_SCHEMA
 
 class ForecastStore(ForecastIdentityStore):
     def migrate_forecasts(self, db):
+        columns = {r[1] for r in db.execute("PRAGMA table_info(forecast_preparations)")}
+        for name in ('lease_token', 'request_started_at'):
+            if name not in columns:
+                db.execute(f"ALTER TABLE forecast_preparations ADD COLUMN {name} TEXT")
         self.migrate_forecast_identity(db)
         # No backfill from historical reports; old accounts inherit disabled rules.
         db.execute("INSERT OR IGNORE INTO meta VALUES('forecast_migration',?)", (_dump({
@@ -280,7 +284,7 @@ class ForecastStore(ForecastIdentityStore):
             db.execute("INSERT OR IGNORE INTO forecast_preparations(batch_id,symbol,state,reason) VALUES(?,?,?,?)",
                        (batch_id, symbol, state, old.get("reason")))
 
-    def _forecast_batch(self, db, batch_id):
+    def _forecast_batch(self, db, batch_id, *, include_attribution=False):
         row = db.execute("SELECT * FROM forecast_batches WHERE id=?", (batch_id,)).fetchone()
         if not row:
             raise KeyError("预测批次不存在")
@@ -295,6 +299,8 @@ class ForecastStore(ForecastIdentityStore):
         research = db.execute("SELECT state FROM jobs WHERE id=?", (batch["job_id"],)).fetchone() if batch["job_id"] else None
         batch["research_state"] = research[0] if research else "not_queued"
         batch["attempts"] = [{**dict(r), "team_snapshot": _load(r["team_snapshot"]), "requests": _load(r["requests"])} for r in db.execute("SELECT * FROM forecast_execution_attempts WHERE batch_id=? ORDER BY id", (batch_id,))]
+        if include_attribution:
+            batch['sample_attribution'] = self.forecast_sample_attribution(db, batch_id)
         return batch
 
     def forecast_batches(self, account_id=None, limit=100, offset=0, summary=False):
@@ -308,14 +314,14 @@ class ForecastStore(ForecastIdentityStore):
                     FROM forecast_batches b LEFT JOIN forecast_rule_projections p ON p.batch_id=b.id
                     WHERE (? IS NULL OR b.account_id=?) ORDER BY b.created_at DESC,b.id LIMIT ? OFFSET ?""",
                     (account_id, account_id, min(200, max(1, limit)), max(0, offset))).fetchall()
-                return [{**dict(row), "coverage": dict(db.execute("SELECT state,count(*) FROM forecast_samples WHERE batch_id=? GROUP BY state", (row["id"],))),
+                return [{**dict(row), **self.forecast_sample_attribution(db, row['id']), "coverage": dict(db.execute("SELECT state,count(*) FROM forecast_samples WHERE batch_id=? GROUP BY state", (row["id"],))),
                          "preparation": dict(db.execute("SELECT state,count(*) FROM forecast_preparations WHERE batch_id=? GROUP BY state", (row["id"],))),
                          "research_state": (db.execute("SELECT state FROM jobs WHERE id=?", (row["job_id"],)).fetchone() or ["not_queued"])[0]} for row in rows]
             rows = db.execute("SELECT id FROM forecast_batches WHERE (? IS NULL OR account_id=?) ORDER BY created_at DESC,id LIMIT ? OFFSET ?",
                               (account_id, account_id, min(200, max(1, limit)), max(0, offset))).fetchall()
-            return [self._forecast_batch(db, r[0]) for r in rows]
+            return [self._forecast_batch(db, r[0], include_attribution=True) for r in rows]
 
-    def bind_forecast_job(self, batch_id, job_id):
+    def bind_forecast_job(self, batch_id, job_id, *, symbols=None, horizons=None):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             batch = self._forecast_batch(db, batch_id)
@@ -325,6 +331,15 @@ class ForecastStore(ForecastIdentityStore):
             if batch["job_id"] and batch["job_id"] != job_id:
                 raise ValueError("批次已经绑定任务")
             db.execute("UPDATE forecast_batches SET job_id=? WHERE id=?", (job_id, batch_id))
+            if symbols is not None or horizons is not None:
+                if job['state'] != 'queued' or job['config_snapshot']:
+                    raise ValueError('仅尚未领取且未冻结配置的任务可设置证券/期限子范围')
+                db.execute('DELETE FROM forecast_research_scope_samples WHERE job_id=?', (job_id,))
+                db.execute("""INSERT INTO forecast_research_scopes(job_id,batch_id,ready_symbols,assigned_at,purpose)
+                    VALUES(?,?,?,?,'explicit_subset') ON CONFLICT(job_id) DO UPDATE SET
+                    ready_symbols=excluded.ready_symbols,purpose='explicit_subset'""",
+                    (job_id, batch_id, _dump(sorted(symbols if symbols is not None else batch['symbols'])), now()))
+            self.assign_forecast_scope(db, job_id, batch_id, symbols=symbols, horizons=horizons)
             if job["config_snapshot"]:
                 self.bind_forecast_attempt(db, job_id, job["attempts"], _load(job["config_snapshot"]))
             if not batch["job_id"]:
@@ -397,7 +412,7 @@ class ForecastStore(ForecastIdentityStore):
             db.execute("INSERT OR IGNORE INTO forecast_research_scopes VALUES(?,?,?,?,?)", (job["id"], batch_id, _dump(sorted(ready)), stamp, purpose))
             db.execute("INSERT INTO forecast_job_bindings(batch_id,prior_job_id,job_id,reason,created_at) VALUES(?,?,?,?,?)",
                        (batch_id, batch["job_id"], job["id"], "bounded_baseline_supplement" if prior_job else "atomic_enqueue", stamp))
-            db.execute("UPDATE forecast_samples SET state='uncovered',reason='已入队补充判断；尚未发布' WHERE batch_id=? AND state='failed' AND symbol IN (SELECT symbol FROM forecast_preparations WHERE batch_id=? AND state='ready')", (batch_id, batch_id))
+            self.assign_forecast_scope(db, job["id"], batch_id, symbols=eligible, assigned_at=stamp)
             return job
 
     def reconcile_forecast_jobs(self, db, account_id, new_job_id, input_version, at=None):
@@ -417,11 +432,11 @@ class ForecastStore(ForecastIdentityStore):
             if (not already_bound and batch["kind"] in ("formal", "test") and unfinished
                     and batch["input_version"] == input_version and stamp < batch["deadline"]):
                 db.execute("UPDATE forecast_batches SET job_id=?,state='open' WHERE id=?", (new_job_id, batch["id"]))
-                db.execute("UPDATE forecast_samples SET state='uncovered',reason=NULL WHERE batch_id=? AND state='failed'", (batch["id"],))
                 db.execute("INSERT INTO forecast_job_bindings(batch_id,prior_job_id,job_id,reason,created_at) VALUES(?,?,?,?,?)",
                     (batch["id"], batch["job_id"], new_job_id, "同账户输入版本的执行重试/合并；保持原固定批次规则与范围", stamp))
                 db.execute("INSERT OR IGNORE INTO forecast_research_scopes VALUES(?,?,?,?,?)", (new_job_id, batch["id"],
                     _dump(sorted(s for s, v in _load(batch["baseline_evidence"], {}).items() if v.get("status") == "ready")), stamp, "explicit_retry"))
+                self.assign_forecast_scope(db, new_job_id, batch["id"], assigned_at=stamp)
                 already_bound = True
             else:
                 reason = "账户输入版本更新使原批次任务过时" if batch["input_version"] != input_version else "原批次执行已取消或被替代"
@@ -495,13 +510,23 @@ class ForecastStore(ForecastIdentityStore):
                 item["baseline_required_for_direction"] = batch["kind"] == "formal"
                 item["direction_eligible"] = bool(publication_open and not item["already_published"]
                     and (not item["baseline_required_for_direction"] or item["baseline_valid_for_direction"]))
-            scope = db.execute("SELECT ready_symbols FROM forecast_research_scopes WHERE job_id=?", (job_id,)).fetchone()
-            if scope:
+            scope = db.execute("SELECT ready_symbols,purpose FROM forecast_research_scopes WHERE job_id=?", (job_id,)).fetchone()
+            if scope and scope['purpose'] != 'explicit_subset':
                 delivered = set(_load(scope[0], [])) | {item["symbol"] for item in items if item["baseline_ready"]}
                 db.execute("UPDATE forecast_research_scopes SET ready_symbols=? WHERE job_id=?", (_dump(sorted(delivered)), job_id))
+                self.assign_forecast_scope(db, job_id, batch['id'], sample_ids=[item['id'] for item in items if item['baseline_ready']])
+                attempt = db.execute('SELECT id FROM forecast_execution_attempts WHERE job_id=? ORDER BY attempt DESC LIMIT 1', (job_id,)).fetchone()
+                if attempt:
+                    self.bind_sample_attempt(db, job_id, attempt['id'])
+            if scope and scope['purpose'] == 'explicit_subset':
+                allocated = {r[0] for r in db.execute('SELECT sample_id FROM forecast_research_scope_samples WHERE job_id=?', (job_id,))}
+                for item in items:
+                    item['assigned_to_execution'] = item['id'] in allocated
+                    item['direction_eligible'] = item['direction_eligible'] and item['assigned_to_execution']
             summary["preparation"] = batch["preparation"]
             summary["research_state"] = batch["research_state"]
-            team = batch["team_snapshot"]
+            active = db.execute('SELECT team_snapshot FROM forecast_execution_attempts WHERE job_id=? ORDER BY attempt DESC LIMIT 1', (job_id,)).fetchone()
+            team = _load(active[0]) if active else {}
             summary.update(team_id=team.get("team_id"), manager_model=team.get("manager_model"), manager_effort=team.get("manager_effort"))
             return {**summary, "items": items, "offset": offset, "has_more": offset + len(items) < batch["expected_count"],
                     "next_offset": offset + len(items) if offset + len(items) < batch["expected_count"] else None,
@@ -563,6 +588,15 @@ class ForecastStore(ForecastIdentityStore):
             prior = db.execute("SELECT id FROM forecasts WHERE sample_id=? AND (kind IN ('formal','test') OR job_id=?)", (sample["id"], job["id"])).fetchone()
             if prior:
                 saved.append(prior[0]); continue
+            restricted = db.execute("SELECT 1 FROM forecast_research_scopes WHERE job_id=? AND purpose='explicit_subset'", (job['id'],)).fetchone()
+            if restricted and not db.execute('SELECT 1 FROM forecast_research_scope_samples WHERE job_id=? AND sample_id=?', (job['id'], sample['id'])).fetchone():
+                raise ValueError('预测不在本次执行分配的证券/期限子范围内')
+            # A submitted decision proves this exact target was attempted, even
+            # when its baseline later prevents directional publication.
+            self.assign_forecast_scope(db, job['id'], batch['id'], sample_ids=[sample['id']])
+            current_attempt = db.execute('SELECT id FROM forecast_execution_attempts WHERE job_id=? ORDER BY attempt DESC LIMIT 1', (job['id'],)).fetchone()
+            if current_attempt:
+                self.bind_sample_attempt(db, job['id'], current_attempt['id'])
             if batch["kind"] == "formal" and direction != "abstain":
                 if not _valid_direction_baseline(batch, symbol):
                     db.execute("UPDATE forecast_samples SET state='waiting_data',reason='未取得本证券基准日精确收盘证据，方向预测未发布' WHERE id=?", (sample["id"],))
@@ -594,7 +628,10 @@ class ForecastStore(ForecastIdentityStore):
 
     def fail_forecast_job(self, job_id, reason="任务失败"):
         with self.connect() as db:
-            db.execute("UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN (SELECT id FROM forecast_batches WHERE job_id=?) AND state='uncovered'", (reason[:1000], job_id))
+            db.execute("""UPDATE forecast_samples SET state='failed',reason=? WHERE batch_id IN
+                (SELECT id FROM forecast_batches WHERE job_id=?) AND state='uncovered' AND id IN
+                (SELECT sa.sample_id FROM forecast_sample_attempts sa JOIN forecast_execution_attempts a ON a.id=sa.attempt_id
+                 WHERE a.job_id=?)""", (reason[:1000], job_id, job_id))
 
     def expire_forecast_batches(self, at=None):
         stamp = _local(at).isoformat()
@@ -638,7 +675,7 @@ class ForecastStore(ForecastIdentityStore):
             return "waiting_data"
         return "pending_maturity"
 
-    def record_forecast_evaluation(self, forecast_id, evidence, *, at=None):
+    def record_forecast_evaluation(self, forecast_id, evidence, *, at=None, lease_token=None, request_counted=False):
         at = _local(at)
         forecast = self.forecast_detail(forecast_id)
         target = forecast["effective_target_date"]
@@ -663,6 +700,8 @@ class ForecastStore(ForecastIdentityStore):
                            "status": status, "reason": reason})
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if lease_token is not None and not db.execute("SELECT 1 FROM forecast_evaluation_leases WHERE forecast_id=? AND token=? AND expires_at>?", (forecast_id, lease_token, at.isoformat())).fetchone():
+                return None
             previous = db.execute("SELECT revision,data_version,id,status FROM forecast_evaluations WHERE forecast_id=? ORDER BY revision DESC LIMIT 1", (forecast_id,)).fetchone()
             db.execute("INSERT INTO forecast_price_observations(forecast_id,observed_at,data_version,status,evidence) VALUES(?,?,?,?,?)", (forecast_id, at.isoformat(), version, status, _dump(evidence)))
             # A network outage is not a supplier correction. Retain a completed
@@ -678,8 +717,8 @@ class ForecastStore(ForecastIdentityStore):
             task = db.execute("SELECT attempts FROM forecast_evaluation_tasks WHERE forecast_id=?", (forecast_id,)).fetchone()
             attempts = task[0] if task else 0
             next_try = at + (timedelta(days=1) if status in ("evaluated", "unassessable") else timedelta(minutes=min(1440, 15 * 2 ** min(attempts, 7))))
-            db.execute("UPDATE forecast_evaluation_tasks SET state=?,attempts=attempts+1,next_attempt=?,last_error=?,updated_at=? WHERE forecast_id=?",
-                (status, next_try.isoformat(), reason, at.isoformat(), forecast_id))
+            db.execute("UPDATE forecast_evaluation_tasks SET state=?,attempts=attempts+?,next_attempt=?,last_error=?,updated_at=? WHERE forecast_id=?",
+                (status, 0 if request_counted else 1, next_try.isoformat(), reason, at.isoformat(), forecast_id))
         return evaluation_id
 
     def request_forecast_recheck(self, forecast_id, *, at=None):
@@ -725,14 +764,42 @@ class ForecastStore(ForecastIdentityStore):
 
         async def evaluate_one(forecast_id):
             async with semaphore:
-                token, lease_at = uuid.uuid4().hex, _local()
+                token, lease_at = uuid.uuid4().hex, current_time()
                 with self.connect() as db:
                     db.execute("BEGIN IMMEDIATE")
                     lease = db.execute("SELECT expires_at FROM forecast_evaluation_leases WHERE forecast_id=?", (forecast_id,)).fetchone()
                     if lease and lease["expires_at"] > lease_at.isoformat():
                         return None
                     db.execute("INSERT OR REPLACE INTO forecast_evaluation_leases VALUES(?,?,?)", (forecast_id, token, (lease_at + timedelta(minutes=5)).isoformat()))
-                calendar_validated = False
+                calendar_validated, network_started = False, False
+
+                def owns_lease(db):
+                    return db.execute('SELECT 1 FROM forecast_evaluation_leases WHERE forecast_id=? AND token=? AND expires_at>?',
+                        (forecast_id, token, current_time().isoformat())).fetchone() is not None
+
+                def begin_request():
+                    nonlocal network_started
+                    with self.connect() as db:
+                        db.execute('BEGIN IMMEDIATE')
+                        if not owns_lease(db):
+                            return False
+                        task = db.execute('SELECT attempts FROM forecast_evaluation_tasks WHERE forecast_id=?', (forecast_id,)).fetchone()
+                        delay = min(1440, 15 * 2 ** min(task[0] if task else 0, 7))
+                        db.execute('UPDATE forecast_evaluation_tasks SET attempts=attempts+1,next_attempt=?,updated_at=? WHERE forecast_id=?',
+                            ((current_time() + timedelta(minutes=delay)).isoformat(), current_time().isoformat(), forecast_id))
+                        network_started = True
+                    return True
+
+                def record_failure(error):
+                    with self.connect() as db:
+                        db.execute('BEGIN IMMEDIATE')
+                        if not owns_lease(db):
+                            return
+                        task = db.execute('SELECT attempts FROM forecast_evaluation_tasks WHERE forecast_id=?', (forecast_id,)).fetchone()
+                        delay = min(1440, 15 * 2 ** min(max(0, (task[0] if task else 0) - int(network_started)), 7))
+                        db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',attempts=attempts+?,last_error=?,next_attempt=?,updated_at=? WHERE forecast_id=?",
+                            (0 if network_started else 1, error, (current_time() + timedelta(minutes=delay)).isoformat(), current_time().isoformat(), forecast_id))
+
                 try:
                     with self.connect() as db:
                         row = db.execute("SELECT f.*,COALESCE(f.target_date,c.target_date) AS effective_target_date FROM forecasts f LEFT JOIN forecast_calendar_resolutions c ON c.forecast_id=f.id WHERE f.id=?", (forecast_id,)).fetchone()
@@ -751,42 +818,55 @@ class ForecastStore(ForecastIdentityStore):
                             "target_date": target_date, "status": "unassessable", "reason": reason,
                             "calendar_validation": target, "original_target_date": forecast["target_date"],
                             "note": "原预测目标日不可改写；新日历解析另存依据，停止按旧日期评分"}
-                        completed = self.record_forecast_evaluation(forecast_id, correction, at=current_time())
+                        completed = self.record_forecast_evaluation(forecast_id, correction, at=current_time(), lease_token=token)
                         with self.connect() as db:
+                            db.execute('BEGIN IMMEDIATE')
+                            if not owns_lease(db):
+                                return None
                             db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',last_error=?,next_attempt=?,updated_at=? WHERE forecast_id=?",
                                 (reason, (current_time() + timedelta(hours=6)).isoformat(), current_time().isoformat(), forecast_id))
                         return forecast_id if completed else None
                     if not target_date:
                         if not target.get("target_date"):
                             with self.connect() as db:
+                                db.execute('BEGIN IMMEDIATE')
+                                if not owns_lease(db):
+                                    return None
                                 db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',last_error='calendar_gap',next_attempt=?,updated_at=? WHERE forecast_id=?", ((current_time() + timedelta(hours=6)).isoformat(), current_time().isoformat(), forecast_id))
                             return None
                         target_date = target["target_date"]
                         with self.connect() as db:
+                            db.execute('BEGIN IMMEDIATE')
+                            if not owns_lease(db):
+                                return None
                             db.execute("INSERT OR IGNORE INTO forecast_calendar_resolutions VALUES(?,?,?,?)", (forecast_id, target_date, _dump(target), current_time().isoformat()))
                             db.execute("UPDATE forecast_samples SET target_date=? WHERE id=? AND target_date IS NULL", (target_date, forecast["sample_id"]))
                     calendar_validated = True
                     due = datetime.combine(date.fromisoformat(target_date), time(15, 30), SHANGHAI)
                     if current_time() < due:
                         with self.connect() as db:
+                            db.execute('BEGIN IMMEDIATE')
+                            if not owns_lease(db):
+                                return None
                             db.execute("UPDATE forecast_evaluation_tasks SET next_attempt=? WHERE forecast_id=?", (due.isoformat(), forecast_id))
                         return None
-                    evidence = await prices.pair(forecast["symbol"], forecast["base_date"], target_date)
-                    completed = self.record_forecast_evaluation(forecast_id, evidence, at=current_time())
+                    evidence = await prices.pair(forecast["symbol"], forecast["base_date"], target_date, on_start=begin_request)
+                    completed = self.record_forecast_evaluation(forecast_id, evidence, at=current_time(), lease_token=token, request_counted=network_started)
                     with self.connect() as db:
+                        db.execute('BEGIN IMMEDIATE')
+                        if not owns_lease(db):
+                            return None
                         task = db.execute("SELECT state FROM forecast_evaluation_tasks WHERE forecast_id=?", (forecast_id,)).fetchone()
                         if task and task["state"] in ("evaluated", "unassessable"):
                             days = config.get("forecast_review_interval_days", 7) if task["state"] == "evaluated" else config.get("forecast_unassessable_review_days", 14)
                             db.execute("UPDATE forecast_evaluation_tasks SET next_attempt=? WHERE forecast_id=?", ((current_time() + timedelta(days=max(1, min(365, int(days))))).isoformat(), forecast_id))
                     return forecast_id if completed else None
                 except asyncio.CancelledError:
+                    if network_started:
+                        record_failure('request_started_result_unknown')
                     raise
                 except Exception as exc:
-                    with self.connect() as db:
-                        task = db.execute("SELECT attempts FROM forecast_evaluation_tasks WHERE forecast_id=?", (forecast_id,)).fetchone()
-                        delay = min(1440, 15 * 2 ** min(task[0] if task else 0, 7))
-                        db.execute("UPDATE forecast_evaluation_tasks SET state='waiting_data',attempts=attempts+1,last_error=?,next_attempt=?,updated_at=? WHERE forecast_id=?",
-                            (type(exc).__name__ if calendar_validated else "calendar_revalidation_pending", (current_time() + timedelta(minutes=delay)).isoformat(), current_time().isoformat(), forecast_id))
+                    record_failure(type(exc).__name__ if calendar_validated else 'calendar_revalidation_pending')
                     return None
                 finally:
                     with self.connect() as db:
@@ -883,7 +963,7 @@ class ForecastStore(ForecastIdentityStore):
                 for batch, rows in queues if rank < len(rows)][:budget]
 
         async def prepare(batch, symbol):
-            claim_at = current_time()
+            claim_at, token = current_time(), uuid.uuid4().hex
             with self.connect() as db:
                 db.execute("BEGIN IMMEDIATE")
                 current = self._forecast_batch(db, batch["id"])
@@ -893,58 +973,99 @@ class ForecastStore(ForecastIdentityStore):
                         or (row["next_attempt_at"] and row["next_attempt_at"] > claim_at.isoformat())
                         or claim_at.isoformat() >= current["deadline"]):
                     return
-                attempts = row["attempts"] + 1
-                db.execute("UPDATE forecast_preparations SET state='preparing',attempts=?,last_attempt_at=?,lease_until=?,next_attempt_at=? WHERE batch_id=? AND symbol=?",
-                    (attempts, claim_at.isoformat(), (claim_at + timedelta(seconds=max(0.05, min(300, float(config.get("forecast_cycle_timeout_seconds", 45)))) + 5)).isoformat(),
-                     (claim_at + timedelta(seconds=min(600, 60 * 2 ** min(attempts - 1, 4)))).isoformat(), batch["id"], symbol))
+                attempts = row['attempts']
+                # A crashed, genuinely started fifth request still exhausts the
+                # budget. A capacity waiter has never incremented this counter.
+                if attempts >= 5:
+                    db.execute("UPDATE forecast_preparations SET state='terminal',lease_until=NULL,lease_token=NULL,reason='baseline_retry_budget_exhausted' WHERE batch_id=? AND symbol=?", (batch['id'], symbol))
+                    db.execute("UPDATE forecast_samples SET state='waiting_data',reason='基准准备已终止：baseline_retry_budget_exhausted' WHERE batch_id=? AND symbol=? AND state NOT IN ('predicted','abstain')", (batch['id'], symbol))
+                    return
+                db.execute("""UPDATE forecast_preparations SET state='preparing',lease_until=?,lease_token=?,request_started_at=NULL
+                    WHERE batch_id=? AND symbol=?""",
+                    ((claim_at + timedelta(seconds=max(0.05, min(300, float(config.get("forecast_cycle_timeout_seconds", 45)))) + 5)).isoformat(), token, batch['id'], symbol))
+            started_request = False
+
+            def on_start():
+                nonlocal attempts, started_request
+                began = current_time()
+                with self.connect() as db:
+                    db.execute('BEGIN IMMEDIATE')
+                    owned = db.execute("""SELECT p.attempts,b.deadline,b.input_version,b.account_id FROM forecast_preparations p
+                        JOIN forecast_batches b ON b.id=p.batch_id WHERE p.batch_id=? AND p.symbol=?
+                        AND p.lease_token=? AND p.state='preparing' AND p.lease_until>?""", (batch['id'], symbol, token, began.isoformat())).fetchone()
+                    if not owned:
+                        return False
+                    if began.isoformat() >= owned['deadline']:
+                        db.execute("UPDATE forecast_preparations SET state='expired',lease_until=NULL,lease_token=NULL,reason='deadline_before_request_start' WHERE batch_id=? AND symbol=? AND lease_token=?", (batch['id'], symbol, token))
+                        db.execute("UPDATE forecast_samples SET state='missed',reason='等待请求容量时已超过批次截止' WHERE batch_id=? AND symbol=? AND state NOT IN ('predicted','abstain')", (batch['id'], symbol))
+                        return False
+                    if self.account(owned['account_id'], db)['version'] != owned['input_version']:
+                        db.execute("UPDATE forecast_preparations SET state='terminal',lease_until=NULL,lease_token=NULL,reason='account_version_changed' WHERE batch_id=? AND symbol=? AND lease_token=?", (batch['id'], symbol, token))
+                        db.execute("UPDATE forecast_batches SET state='failed' WHERE id=?", (batch['id'],))
+                        db.execute("UPDATE forecast_samples SET state='failed',reason='等待请求容量期间账户输入已变化' WHERE batch_id=? AND state NOT IN ('predicted','abstain')", (batch['id'],))
+                        return False
+                    attempts = owned['attempts'] + 1
+                    db.execute("""UPDATE forecast_preparations SET attempts=?,last_attempt_at=?,request_started_at=?,next_attempt_at=?
+                        WHERE batch_id=? AND symbol=? AND lease_token=?""", (attempts, began.isoformat(), began.isoformat(),
+                        (began + timedelta(seconds=min(600, 60 * 2 ** min(attempts - 1, 4)))).isoformat(), batch['id'], symbol, token))
+                    started_request = True
+                return True
+
             try:
-                evidence = await prices.pair(symbol, batch["base_date"], batch["base_date"])
+                evidence = await prices.pair(symbol, batch['base_date'], batch['base_date'], on_start=on_start)
             except asyncio.CancelledError:
                 with self.connect() as db:
-                    db.execute("UPDATE forecast_preparations SET state=?,lease_until=NULL,reason='cycle_cancelled_or_timeout' WHERE batch_id=? AND symbol=? AND state='preparing'",
-                               ("terminal" if attempts >= 5 else "waiting_data", batch["id"], symbol))
+                    db.execute("""UPDATE forecast_preparations SET state=?,lease_until=NULL,lease_token=NULL,reason=?,
+                        next_attempt_at=CASE WHEN ? THEN next_attempt_at ELSE NULL END
+                        WHERE batch_id=? AND symbol=? AND lease_token=? AND state='preparing'""",
+                        ('terminal' if attempts >= 5 else 'waiting_data' if attempts else 'unattempted',
+                         'request_started_result_unknown' if started_request else 'capacity_wait_cancelled',
+                         started_request, batch['id'], symbol, token))
                 raise
             except Exception as exc:
-                evidence = {"symbol": symbol, "base_date": batch["base_date"], "target_date": batch["base_date"], "status": "waiting_data", "reason": "baseline_unavailable", "error": type(exc).__name__}
+                evidence = {'symbol': symbol, 'base_date': batch['base_date'], 'target_date': batch['base_date'],
+                            'status': 'waiting_data', 'reason': 'baseline_unavailable', 'error': type(exc).__name__}
             check_at = current_time()
-            evidence["last_checked_at"] = check_at.isoformat()
+            evidence['last_checked_at'] = check_at.isoformat()
             start_job = False
             with self.connect() as db:
-                db.execute("BEGIN IMMEDIATE")
-                current = self._forecast_batch(db, batch["id"])
-                if check_at.isoformat() >= current["deadline"]:
-                    db.execute("UPDATE forecast_preparations SET state='expired',lease_until=NULL,reason='request_completed_after_deadline' WHERE batch_id=? AND symbol=?", (batch["id"], symbol))
-                    db.execute("UPDATE forecast_samples SET state='missed',reason='精确基准请求完成时已超过批次截止' WHERE batch_id=? AND symbol=? AND state NOT IN ('predicted','abstain')", (batch["id"], symbol))
+                db.execute('BEGIN IMMEDIATE')
+                owned = db.execute("SELECT 1 FROM forecast_preparations WHERE batch_id=? AND symbol=? AND lease_token=? AND state='preparing' AND lease_until>?",
+                    (batch['id'], symbol, token, check_at.isoformat())).fetchone()
+                if not owned:
+                    return  # A late result cannot mutate another lease's state.
+                current = self._forecast_batch(db, batch['id'])
+                if check_at.isoformat() >= current['deadline']:
+                    db.execute("UPDATE forecast_preparations SET state='expired',lease_until=NULL,lease_token=NULL,reason='request_completed_after_deadline' WHERE batch_id=? AND symbol=? AND lease_token=?", (batch['id'], symbol, token))
+                    db.execute("UPDATE forecast_samples SET state='missed',reason='精确基准请求完成时已超过批次截止' WHERE batch_id=? AND symbol=? AND state NOT IN ('predicted','abstain')", (batch['id'], symbol))
                     return
-                if self.account(batch["account_id"], db)["version"] != current["input_version"]:
-                    db.execute("UPDATE forecast_preparations SET state='terminal',lease_until=NULL,reason='account_version_changed' WHERE batch_id=? AND symbol=?", (batch["id"], symbol))
-                    db.execute("UPDATE forecast_batches SET state='failed' WHERE id=?", (batch["id"],))
-                    db.execute("UPDATE forecast_samples SET state='failed',reason='等待基准期间账户输入已变化' WHERE batch_id=? AND state NOT IN ('predicted','abstain')", (batch["id"],))
+                if self.account(batch['account_id'], db)['version'] != current['input_version']:
+                    db.execute("UPDATE forecast_preparations SET state='terminal',lease_until=NULL,lease_token=NULL,reason='account_version_changed' WHERE batch_id=? AND symbol=? AND lease_token=?", (batch['id'], symbol, token))
+                    db.execute("UPDATE forecast_batches SET state='failed' WHERE id=?", (batch['id'],))
+                    db.execute("UPDATE forecast_samples SET state='failed',reason='等待基准期间账户输入已变化' WHERE batch_id=? AND state NOT IN ('predicted','abstain')", (batch['id'],))
                     return
-                # Ready evidence never changes. A different, unpublished security
-                # may become ready even after another security was published.
-                prior = current["baseline_evidence"].get(symbol)
-                if prior and prior.get("status") == "ready":
+                prior = current['baseline_evidence'].get(symbol)
+                if prior and prior.get('status') == 'ready':
                     evidence = prior
-                baseline = {**current["baseline_evidence"], symbol: evidence}
-                ready = evidence.get("status") == "ready"
-                state = "ready" if ready else "terminal" if evidence.get("status") == "unassessable" or attempts >= 5 else "waiting_data"
-                reason = evidence.get("reason") if attempts < 5 or ready else "baseline_retry_budget_exhausted"
-                db.execute("UPDATE forecast_preparations SET state=?,lease_until=NULL,ready_at=?,reason=? WHERE batch_id=? AND symbol=?",
-                           (state, check_at.isoformat() if ready else None, reason, batch["id"], symbol))
-                db.execute("UPDATE forecast_batches SET baseline_evidence=? WHERE id=?", (_dump(baseline), batch["id"]))
+                baseline = {**current['baseline_evidence'], symbol: evidence}
+                ready = evidence.get('status') == 'ready'
+                state = 'ready' if ready else 'terminal' if evidence.get('status') == 'unassessable' or attempts >= 5 else 'waiting_data'
+                reason = evidence.get('reason') if attempts < 5 or ready else 'baseline_retry_budget_exhausted'
+                db.execute("UPDATE forecast_preparations SET state=?,lease_until=NULL,lease_token=NULL,ready_at=?,reason=? WHERE batch_id=? AND symbol=? AND lease_token=?",
+                           (state, check_at.isoformat() if ready else None, reason, batch['id'], symbol, token))
+                db.execute('UPDATE forecast_batches SET baseline_evidence=? WHERE id=?', (_dump(baseline), batch['id']))
                 if ready:
-                    db.execute("UPDATE forecast_samples SET state='uncovered',reason='基准就绪，等待实际判断与发布' WHERE batch_id=? AND symbol=? AND state IN ('waiting_data','failed')", (batch["id"], symbol))
-                    if current["state"] == "waiting_data":
-                        db.execute("UPDATE forecast_batches SET state='open' WHERE id=?", (batch["id"],))
-                    start_job = not current["job_id"]
-                elif state == "terminal":
+                    db.execute("UPDATE forecast_samples SET state='uncovered',reason='基准就绪，等待实际判断与发布' WHERE batch_id=? AND symbol=? AND state IN ('waiting_data','failed')", (batch['id'], symbol))
+                    if current['state'] == 'waiting_data':
+                        db.execute("UPDATE forecast_batches SET state='open' WHERE id=?", (batch['id'],))
+                    start_job = not current['job_id']
+                elif state == 'terminal':
                     db.execute("UPDATE forecast_samples SET state='waiting_data',reason=? WHERE batch_id=? AND symbol=? AND state NOT IN ('predicted','abstain')",
-                               ("基准准备已终止：" + str(reason), batch["id"], symbol))
-                if ready and current["job_id"]:
-                    db.execute("INSERT INTO events(job_id,body) VALUES(?,?)", (current["job_id"], _dump({"type": "forecast_baseline_ready", "at": check_at.isoformat(), "agent": "system", "message": "新增基准已可通过 list_forecast_targets 读取；数据库到达不代表模型已经读取", "payload": {"batch_id": batch["id"], "symbol": symbol, "shared_evidence_id": evidence.get("shared_evidence_id")}})))
+                               ('基准准备已终止：' + str(reason), batch['id'], symbol))
+                if ready and current['job_id']:
+                    db.execute('INSERT INTO events(job_id,body) VALUES(?,?)', (current['job_id'], _dump({'type': 'forecast_baseline_ready', 'at': check_at.isoformat(), 'agent': 'system', 'message': '新增基准已可通过 list_forecast_targets 读取；数据库到达不代表模型已经读取', 'payload': {'batch_id': batch['id'], 'symbol': symbol, 'shared_evidence_id': evidence.get('shared_evidence_id')}})))
             if start_job:
-                self.enqueue_forecast_batch(batch["id"], at=current_time())
+                self.enqueue_forecast_batch(batch['id'], at=current_time())
 
         evaluation = asyncio.create_task(self.evaluate_due_forecasts(config, at=at, price_session=prices)) if config.get("forecast_evaluation_enabled", True) else None
         if evaluation:
@@ -978,4 +1099,4 @@ class ForecastStore(ForecastIdentityStore):
                 latest = self._forecast_batch(db, candidate["id"])
                 if latest["job_id"]:
                     created.append(latest)
-        return {"evaluated": evaluated, "batches": created, "window_runs": self.forecast_window_statistics()}
+        return {"evaluated": evaluated, "batches": created, "price_requests": dict(prices.metrics), "window_runs": self.forecast_window_statistics()}
