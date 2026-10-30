@@ -16,7 +16,8 @@ def fixture_store(tmp_path):
     store = Store(tmp_path / 'credential-runtime.sqlite3')
     store.set_meta('settings', {'quote_provider': 'manual', 'debounce_seconds': 0,
         'model_native_search': False, 'model_retries': 0, 'max_model_calls': 40,
-        'analysis_timeout_seconds': 10, 'agent_timeout_seconds': 5})
+        'analysis_timeout_seconds': 10, 'agent_timeout_seconds': 5,
+        'model_request_hard_timeout_seconds': 2, 'synthesis_request_hard_timeout_seconds': 2})
     cfg = {**store.settings(), 'model_name': 'fixture-model', 'model_base_url': 'https://fixture.test/v1'}
     provider = configure_test_team(store, cfg)
     return store, provider

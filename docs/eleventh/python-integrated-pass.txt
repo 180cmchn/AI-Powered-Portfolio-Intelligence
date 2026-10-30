@@ -1,0 +1,1119 @@
+...........................FF.F.F.........F...........................F. [  7%]
+..F...................F.....F........................................... [ 15%]
+..............................F......................................... [ 23%]
+............................F........................................... [ 31%]
+..........F...F......................................................... [ 38%]
+...........................................................F..F...F..... [ 46%]
+......................................F..FF....F...F.F.F..FF............ [ 54%]
+........................................................................ [ 62%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................................................ [ 85%]
+......................................................................F. [ 93%]
+F...F.F....F...F...............F...............F...............          [100%]
+=================================== FAILURES ===================================
+_______________ test_account_isolation_edit_versions_and_metrics _______________
+
+store = <app.store.Store object at 0x10c188c50>
+
+    def test_account_isolation_edit_versions_and_metrics(store):
+        quote(store)
+        a, b = store.save_account(payload(qty="100")), store.save_account(payload("乙", "350", cash="0", cost="8"))
+        svc = Service(store)
+        av, bv = svc.account(a["id"]), svc.account(b["id"])
+        assert av["metrics"]["securities_value"] == "1012.50"
+        assert bv["metrics"]["securities_value"] == "3543.75"
+        assert av["metrics"]["total_assets"] is None
+        assert av["metrics"]["unrealized_pnl"] is None
+        assert av["metrics"]["known_cost_pnl"] is None
+        assert bv["metrics"]["total_assets"] == "3543.75"
+        assert bv["metrics"]["unrealized_pnl"] == "743.75"
+        before_b = store.account(b["id"])
+>       changed = store.save_account(payload(qty="200"), a["id"])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_core.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c188c50>
+payload = AccountInput(name='甲', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, max_s...ntity='200', cost_price=None)], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = '8a59099564084a3e9f5296f637d676fa', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10b492e30>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+_____________ test_new_result_finishes_before_old_cannot_overwrite _____________
+
+store = <app.store.Store object at 0x10c1e5450>
+
+    def test_new_result_finishes_before_old_cannot_overwrite(store):
+        a = store.save_account(payload())
+        old = store.claim_jobs()[0]
+>       changed = store.save_account(payload(qty="300"), a["id"])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_core.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c1e5450>
+payload = AccountInput(name='甲', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, max_s...ntity='300', cost_price=None)], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = 'fc1c8b7ac6ca41e88b6adc1c99740674', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c1e04f0>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+______________________ test_debounce_and_duplicate_event _______________________
+
+store = <app.store.Store object at 0x10c1e16d0>
+
+    def test_debounce_and_duplicate_event(store):
+        a = store.save_account(payload())
+        for n in range(1, 5):
+>           a = store.save_account(payload(qty=str(n)), a["id"])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_core.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c1e16d0>
+payload = AccountInput(name='甲', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, max_s...uantity='1', cost_price=None)], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = 'ad9bf4d4d6c040d797e667b7b6917e37', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c1e1990>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+________________ test_recovery_only_current_and_inputs_survive _________________
+
+store = <app.store.Store object at 0x10c1967b0>
+
+    def test_recovery_only_current_and_inputs_survive(store):
+        a = store.save_account(payload())
+        old = store.claim_jobs()[0]
+>       a = store.save_account(payload(qty="500"), a["id"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_core.py:100: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c1967b0>
+payload = AccountInput(name='甲', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, max_s...ntity='500', cost_price=None)], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = '79ecd4b967e344418c970276573d44e3', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c1e24d0>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+_______________ test_api_validation_conflict_and_local_boundary ________________
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_api_validation_conflict_a0')
+
+    def test_api_validation_conflict_and_local_boundary(tmp_path):
+        app = create_app(tmp_path / "api.sqlite3", worker=False)
+        app.state.store.set_meta("settings", {"quote_provider": "manual"})
+        with TestClient(app) as c:
+            bad = c.post("/api/accounts", json={"name": "bad", "holdings": [{"symbol": "60x519", "quantity": "1"}]})
+            assert bad.status_code == 422
+            bad = c.post("/api/accounts", json={"name": "bad", "cash": "NaN"})
+            assert bad.status_code == 422
+            r = c.post("/api/accounts", json=payload().model_dump())
+            assert r.status_code == 201
+            a = r.json()
+            changed = {**payload(qty="200").model_dump(), "expected_version": 1}
+>           assert c.put(f"/api/accounts/{a['id']}", json=changed).status_code == 200
+E           AssertionError: assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E            +    where <Response [422 Unprocessable Entity]> = put('/api/accounts/5cbec5fbdf6c4eeca493d5d020969852', json={'name': '甲', 'cash': None, 'preferences': {'risk': 'balanced', 'horizon': '中长期', 'max_position_pct': None, 'max_sector_pct': None}, 'holdings': [{'symbol': 'SH:600519', 'quantity': '200', 'cost_price': None}], ...})
+E            +      where put = <starlette.testclient.TestClient object at 0x10c2c3130>.put
+
+tests/test_core.py:248: AssertionError
+_______ test_import_main_never_initializes_database_and_start_provenance _______
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_import_main_never_initial0')
+
+    def test_import_main_never_initializes_database_and_start_provenance(tmp_path):
+        path=tmp_path/'must-not-exist.sqlite3'
+        env={**os.environ,'APP_DB_PATH':str(path),'APP_MODE':'live'}
+        subprocess.run([sys.executable,'-c','import app.main; assert app.main.app._application is None'],env=env,check=True)
+        assert not path.exists()
+        from app.main import create_app
+        app=create_app(tmp_path/'independent.sqlite3',worker=False)
+        v=app.state.runtime_version
+>       assert v['schema_version']==10 and len(v['source_sha256_at_start'])==64 and v['started_at']
+E       assert (11 == 10)
+
+tests/test_eighth_data_calendar.py:186: AssertionError
+__ test_schema8_backup_idempotent_preserves_custom_role_and_immutable_ledger ___
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_schema8_backup_idempotent0')
+
+    def test_schema8_backup_idempotent_preserves_custom_role_and_immutable_ledger(tmp_path):
+        import sqlite3
+        s=Store(tmp_path/'upgrade.sqlite3');a=account(s)
+        role=s.list_agent_roles()[0]
+        custom_tools=['read','finish_analysis'] if role['role_id']=='manager' else ['read','submit_report']
+        s.update_agent_definition(role['role_id'],{'system_prompt':'User-authored unchanged instructions', 'tools':custom_tools})
+        before_role=next(r for r in s.list_agent_roles() if r['role_id']==role['role_id'])
+        with s.connect() as db:
+            db.execute("UPDATE meta SET value='7' WHERE key='schema_version'")
+            db.execute("DELETE FROM meta WHERE key='eighth_role_migration'")
+        upgraded=Store(s.path)
+        backup=s.path.with_name(s.path.name+'.before-v8.bak')
+>       assert backup.exists() and upgraded.meta('schema_version')==10
+E       AssertionError: assert (True and 11 == 10)
+E        +  where True = exists()
+E        +    where exists = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_schema8_backup_idempotent0/upgrade.sqlite3.before-v8.bak').exists
+E        +  and   11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10c4daf30>.meta
+
+tests/test_eighth_data_calendar.py:273: AssertionError
+_________ test_41_offline_symbols_cross_tick_restart_and_fair_accounts _________
+
+env = (<app.store.Store object at 0x10c83b290>, {'id': '2d1e005c5e2e456e9ac1df79f9d0f9b7', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+
+    @pytest.mark.asyncio
+    async def test_41_offline_symbols_cross_tick_restart_and_fair_accounts(env):
+        store, account, clock = env
+        symbols = [f'SZ:{100000 + n}' for n in range(41)]
+>       store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+            {'symbol': symbol, 'quantity': '1'} for symbol in symbols]}, account_id=account['id'])
+
+tests/test_eighth_forecast_preparation.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c83b290>
+payload = {'expected_version': 1, 'name': 'A', 'cash': '10000', 'holdings': [{'symbol': 'SZ:100000', 'quantity': '1'}, {'symbol'...SZ:100003', 'quantity': '1'}, {'symbol': 'SZ:100004', 'quantity': '1'}, {'symbol': 'SZ:100005', 'quantity': '1'}, ...]}
+account_id = '2d1e005c5e2e456e9ac1df79f9d0f9b7', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c5671f0>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+_________ test_account_change_during_fetch_invalidates_original_batch __________
+
+env = (<app.store.Store object at 0x10c95ae10>, {'id': 'a3034c09debe4914b4539bda43c8242f', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+
+    @pytest.mark.asyncio
+    async def test_account_change_during_fetch_invalidates_original_batch(env):
+        store, account, clock = env
+        began, release = asyncio.Event(), asyncio.Event()
+        class Controlled(Prices):
+            async def history(self, symbol, **options):
+                began.set(); await release.wait()
+                return await super().history(symbol, **options)
+        task = asyncio.create_task(tick(store, clock, Controlled()))
+        await began.wait()
+>       store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+            {'symbol': A, 'quantity': '20000'}]}, account_id=account['id'])
+
+tests/test_eighth_forecast_preparation.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10c95ae10>
+payload = {'expected_version': 1, 'name': 'A', 'cash': '10000', 'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}
+account_id = 'a3034c09debe4914b4539bda43c8242f', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c9e4400>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+___ test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deduction ____
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_etf_snapshot_edit_recompu0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cbc5c50>
+
+    async def test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deduction(tmp_path, monkeypatch):
+        store=Store(tmp_path/'controlled-etf.sqlite3')
+        store.set_meta('settings',{'quote_provider':'manual','debounce_seconds':0})
+        store.put_cache('quotes','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','price':'0.965',
+            'status':'ok','as_of':now(),'source':'controlled-test','fresh_for_triggers':False})
+        store.put_cache('securities','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','kind':'etf'})
+        async def runner(context, config, tools, emit):
+            return {'report':'受控测试报告；不是模型自然投资建议。'}
+        service=Service(store,runner=runner)
+        async def no_network(*args,**kwargs):return {'updated':0}
+        monkeypatch.setattr(service,'refresh_quotes',no_network)
+        a=store.save_account(AccountInput(name='A controlled',cash='10000',holdings=[{'symbol':'SZ:159278','quantity':'10000'}]))
+        b=store.save_account(AccountInput(name='B controlled',cash='20000'))
+        for job in store.claim_jobs(): await service.execute(job)
+        old=store.analyses(a['id'])[0]
+        before=store.account(b['id'])
+        first=store.analysis(old['id'])['result']['metrics']
+        assert first['known_priced_value']=='9650.00' and first['total_assets']=='19650.00'
+        assert first['positions'][0]['price']=='0.965' and first['positions'][0]['kind']=='etf'
+        assert first['unrealized_pnl'] is None
+        current=store.account(a['id'])
+>       edited=store.save_account({**current,'holdings':[{'symbol':'SZ:159278','quantity':'20000'}],
+                                  'expected_version':current['version']},a['id'])
+
+tests/test_fifth_etf_values.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10cc9f230>
+payload = {'id': 'ac160de6b0514dc6949682ecb63e2a07', 'name': 'A controlled', 'cash': '10000', 'preferences': {'risk': 'balanced', 'horizon': '中长期', 'max_position_pct': None, 'max_sector_pct': None}, ...}
+account_id = 'ac160de6b0514dc6949682ecb63e2a07', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10cc3fb50>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+___ test_v5_migration_backup_is_repeatable_and_never_persists_effort_default ___
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_v5_migration_backup_is_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d82b540>
+
+    def test_v5_migration_backup_is_repeatable_and_never_persists_effort_default(tmp_path, monkeypatch):
+        monkeypatch.setenv('REASONING_EFFORT', 'xhigh')
+        path = tmp_path / 'migrate.sqlite3'
+        original = Store(path)
+        account = original.save_account(AccountInput(name='preserved'))
+        original.set_meta('schema_version', 4)
+        with original.connect() as db:
+            db.execute('ALTER TABLE jobs DROP COLUMN config_snapshot')
+        updated = Store(path)
+>       assert updated.meta('schema_version') == 10
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10c4dba70>.meta
+
+tests/test_fifth_reasoning_effort.py:209: AssertionError
+______________ test_retry_cannot_spend_the_manager_final_request _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e06a040>
+
+    @pytest.mark.asyncio
+    async def test_retry_cannot_spend_the_manager_final_request(monkeypatch):
+        config = budget_config(monkeypatch, model_retries=1)
+        requests, events = [], []
+    
+        async def emit(event):
+            events.append(event)
+    
+        async def handler(request):
+            payload = json.loads(request.content)
+            state = json.loads(payload["input"][0]["content"])["runtime_status"]
+            requests.append(state["agent_id"])
+            if state["agent_id"] != "manager":
+                assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
+                return httpx.Response(503, json={"error": "fixture unavailable"})
+            assert state["remaining_shared_model_calls"] == 1
+            assert state["children"][0]["status"] == "failed"
+            assert state["children"][0]["report_count"] == 0
+            return model_response("finish_analysis", {"report": "Research failed before a child report. Available information is insufficient and all requested figures remain unknown."})
+    
+        use_transport(monkeypatch, handler)
+        runtime = agents.ResearchRuntime({"task_id": "retry-reservation"}, config, object(), emit)
+        try:
+            created = await runtime._spawn({"task": "Supplemental figures"})
+            runtime.calls = 28  # Earlier requests already used the ordinary budget.
+            child = runtime.children[created["agent_id"]]
+            result = await runtime.run()
+            assert requests == [child.id, "manager"]  # Retry was refused before HTTP.
+            assert result["model_calls"] == 30
+            assert child.status == "failed" and child.reports == []
+            assert "insufficient" in result["report"]
+>           assert any("最终汇总保留" in event["payload"].get("error", "") for event in events)
+E           assert False
+E            +  where False = any(<generator object test_retry_cannot_spend_the_manager_final_request.<locals>.<genexpr> at 0x10dfc6200>)
+
+tests/test_fourth_budget.py:249: AssertionError
+______ test_retry_crossing_shared_tail_rebuilds_child_payload_before_http ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e068fa0>
+
+    @pytest.mark.asyncio
+    async def test_retry_crossing_shared_tail_rebuilds_child_payload_before_http(monkeypatch):
+        config = budget_config(monkeypatch, model_retries=1)
+        requests = []
+        async def emit(event):
+            pass
+        async def handler(request):
+            payload = json.loads(request.content)
+            requests.append(payload)
+            if len(requests) == 1:
+                assert {"type": "web_search"} in payload["tools"]
+                return httpx.Response(503, json={"error": "fixture unavailable"})
+            assert len(requests) == 2
+            assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
+            state = json.loads(payload["input"][0]["content"])["runtime_status"]
+            assert state["closing"] is True
+            return model_response("submit_report", {"summary": "Earlier research retained; supplemental request failed.",
+                "open_questions": ["Supplemental figures remain unknown."]})
+        use_transport(monkeypatch, handler)
+        runtime = agents.ResearchRuntime({"task_id": "retry-transition"}, config, object(), emit)
+        try:
+            created = await runtime._spawn({"task": "Supplemental figures"})
+            runtime.calls = 26
+            child = runtime.children[created["agent_id"]]
+            await child.task_handle
+>           assert child.status == "completed" and child.reports[0]["open_questions"]
+E           AssertionError: assert ('failed' == 'completed'
+E             
+E             - completed
+E             + failed)
+
+tests/test_fourth_budget.py:364: AssertionError
+_______ test_waiting_config_resume_only_latest_snapshot_and_no_job_churn _______
+
+store = <app.store.Store object at 0x10ec40f50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10eb56900>
+
+    def test_waiting_config_resume_only_latest_snapshot_and_no_job_churn(store, monkeypatch):
+        a = account(store)
+        old = store.claim_jobs()[0]
+        store.set_job_state(old['id'], 'waiting_config')
+        for i in range(30):
+            store.request_analysis(a['id'],'scheduled',f'schedule:{i}')
+        assert len(store.jobs(a['id']))==1
+>       changed = store.save_account(AccountInput(name='new',holdings=[]), a['id'])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_iteration.py:99: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10ec40f50>
+payload = AccountInput(name='new', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, max_sector_pct=None), holdings=[], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = '30a82519d8284180bce0c7b01be5ff9a', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10ec6f3d0>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+>                       raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+E                       ValueError: 请分别保存账户名称/偏好与期初校正，避免混合不同业务语义
+
+app/store.py:324: ValueError
+______________ test_recommendation_price_expiry_and_input_change _______________
+
+store = <app.store.Store object at 0x10ec99010>
+
+    def test_recommendation_price_expiry_and_input_change(store):
+        stamp=datetime.now(TZ)
+        a=account(store)
+        job=store.claim_jobs()[0]
+        publish(store, job, suggestions=[suggestion((stamp+timedelta(hours=1)).isoformat())])
+        rid=store.recommendations(a['id'])[0]['id']
+        quote={'SH:600519':{'price':'10','status':'ok','as_of':stamp.isoformat()}}
+        store.review_recommendations(quote,stamp)
+        assert store.recommendations(a['id'])[0]['state']=='triggered'
+        assert len(store.recommendation_events(rid))==2
+        store.review_recommendations(quote,stamp)
+        assert len(store.recommendation_events(rid))==2
+        store.review_recommendations(quote,stamp+timedelta(hours=2))
+        assert store.recommendations(a['id'])[0]['state']=='expired'
+        follow=store.claim_jobs()[0]
+        publish(store,follow,suggestions=[suggestion((stamp+timedelta(days=1)).isoformat())])
+>       store.save_account(AccountInput(name='changed',holdings=[]),a['id'])
+
+tests/test_iteration.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10ec99010>
+payload = AccountInput(name='changed', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None,..._sector_pct=None), holdings=[], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = '00c6a53f5a2d442d8422c3b9b2ab0f04', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10e683970>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+>                       raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+E                       ValueError: 请分别保存账户名称/偏好与期初校正，避免混合不同业务语义
+
+app/store.py:324: ValueError
+___________ test_schema1_upgrade_preserves_ids_and_creates_snapshot ____________
+
+store = <app.store.Store object at 0x10ebb8530>
+
+    def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
+        a=account(store)
+        m=store.save_material({'content':'old text','scope':'public'})
+        with store.connect() as db:
+            db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
+            db.execute('DROP TABLE material_catalog')
+        upgraded=Store(store.path)
+>       assert upgraded.meta('schema_version')==10
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10ebb82f0>.meta
+
+tests/test_iteration.py:246: AssertionError
+________ test_schema8_migration_only_uses_proven_single_attempt_scopes _________
+
+env = (<app.store.Store object at 0x10e12b350>, {'id': '65e6c70fd071471c93619fdc4b37a938', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+
+    @pytest.mark.asyncio
+    async def test_schema8_migration_only_uses_proven_single_attempt_scopes(env):
+        store, account, clock = env
+        await tick(store, clock, Prices())
+        current = claim(store, clock, account)
+        old = store.forecast_attempts(job_id=current['id'])[0]
+        with store.connect() as db:
+            db.execute('DELETE FROM forecast_sample_attempts')
+            db.execute('DELETE FROM forecast_research_scope_samples')
+            db.execute("DELETE FROM meta WHERE key='forecast_sample_identity_v9'")
+            db.execute("UPDATE meta SET value='8' WHERE key='schema_version'")
+        store = Store(store.path)
+>       assert store.meta('schema_version') == 10
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10e12af90>.meta
+
+tests/test_ninth_forecast_identity.py:109: AssertionError
+___ test_eight_targets_one_second_cycles_count_actual_starts_not_waiters[1] ____
+
+env = (<app.store.Store object at 0x10e129670>, {'id': '0fbd35d47ace4689854f686c5f4e3e3b', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+concurrency = 1
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('concurrency', [1, 8])
+    async def test_eight_targets_one_second_cycles_count_actual_starts_not_waiters(env, concurrency):
+        store, account, clock = env
+        symbols = [f'SZ:{159270 + n}' for n in range(8)]
+>       store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+            {'symbol': s, 'quantity': '1'} for s in symbols]}, account_id=account['id'])
+
+tests/test_ninth_forecast_preparation.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10e129670>
+payload = {'expected_version': 1, 'name': 'A', 'cash': '10000', 'holdings': [{'symbol': 'SZ:159270', 'quantity': '1'}, {'symbol'...SZ:159273', 'quantity': '1'}, {'symbol': 'SZ:159274', 'quantity': '1'}, {'symbol': 'SZ:159275', 'quantity': '1'}, ...]}
+account_id = '0fbd35d47ace4689854f686c5f4e3e3b', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10e517880>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+___ test_eight_targets_one_second_cycles_count_actual_starts_not_waiters[8] ____
+
+env = (<app.store.Store object at 0x10e129fd0>, {'id': '6e03e609ff704d7c9626c9d93e5836a6', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+concurrency = 8
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('concurrency', [1, 8])
+    async def test_eight_targets_one_second_cycles_count_actual_starts_not_waiters(env, concurrency):
+        store, account, clock = env
+        symbols = [f'SZ:{159270 + n}' for n in range(8)]
+>       store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+            {'symbol': s, 'quantity': '1'} for s in symbols]}, account_id=account['id'])
+
+tests/test_ninth_forecast_preparation.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10e129fd0>
+payload = {'expected_version': 1, 'name': 'A', 'cash': '10000', 'holdings': [{'symbol': 'SZ:159270', 'quantity': '1'}, {'symbol'...SZ:159273', 'quantity': '1'}, {'symbol': 'SZ:159274', 'quantity': '1'}, {'symbol': 'SZ:159275', 'quantity': '1'}, ...]}
+account_id = '6e03e609ff704d7c9626c9d93e5836a6', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10e516e30>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if ('name' in data and data['name'] != old['name']) or ('preferences' in data and data['preferences'] != loads(old['preferences'], {})):
+                        raise ValueError('请分别保存账户名称/偏好与期初校正，避免混合不同业务语义')
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+E                       ValueError: 现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据
+
+app/store.py:326: ValueError
+____ test_failed_v9_migration_rolls_back_columns_tables_marker_and_version _____
+
+env = (<app.store.Store object at 0x10e0e1850>, {'id': '9f2cb24b17ff4d488c3423f43410b16b', 'name': 'A', 'cash': '10000', 'preferences': {}, ...}, [datetime.datetime(2026, 10, 28, 16, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Shanghai'))])
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10de32f90>
+
+    def test_failed_v9_migration_rolls_back_columns_tables_marker_and_version(env, monkeypatch):
+        store, account, clock = env
+        with store.connect() as db:
+            db.execute('DROP TABLE forecast_sample_attempts')
+            db.execute('DROP TABLE forecast_research_scope_samples')
+            db.execute('ALTER TABLE forecast_preparations DROP COLUMN lease_token')
+            db.execute('ALTER TABLE forecast_preparations DROP COLUMN request_started_at')
+            db.execute("DELETE FROM meta WHERE key='forecast_sample_identity_v9'")
+            db.execute("UPDATE meta SET value='8' WHERE key='schema_version'")
+        original = Store.migrate_forecast_identity
+        def fail(self, db):
+            original(self, db)
+            raise RuntimeError('controlled migration failure')
+        with monkeypatch.context() as patch:
+            patch.setattr(Store, 'migrate_forecast_identity', fail)
+            with pytest.raises(RuntimeError, match='controlled migration'):
+                Store(store.path)
+        with sqlite3.connect(store.path) as db:
+            assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '8'
+            assert not db.execute("SELECT 1 FROM meta WHERE key='forecast_sample_identity_v9'").fetchone()
+            assert not db.execute("SELECT 1 FROM sqlite_master WHERE name='forecast_sample_attempts'").fetchone()
+            assert not {'lease_token', 'request_started_at'} & {r[1] for r in db.execute('PRAGMA table_info(forecast_preparations)')}
+>       assert Store(store.path).meta('schema_version') == 10
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10e0e1f70>.meta
+E        +      where <app.store.Store object at 0x10e0e1f70> = Store(PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_failed_v9_migration_rolls0/isolated.sqlite3'))
+E        +        where PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_failed_v9_migration_rolls0/isolated.sqlite3') = <app.store.Store object at 0x10e0e1850>.path
+
+tests/test_ninth_forecast_preparation.py:154: AssertionError
+________ test_handbook_cold_start_idempotence_static_freeze_and_restart ________
+
+repository = (PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_handbook_cold_start_...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 59077)
+
+    def test_handbook_cold_start_idempotence_static_freeze_and_restart(repository):
+        repo, env, port = repository
+        started = control(repository, 'start', handbook=True)
+>       assert started.returncode == 0, started.stdout + started.stderr
+E       AssertionError: 启动检查超时（HTTPError）；本次子进程已退出。查看 /private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_handbook_cold_start_idemp0/copy with spaces/data/live.log
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/bin/zsh', '/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/t...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_handbook_cold_start_idemp0/copy with spaces/data/live.log\n').returncode
+
+tests/test_ninth_lifecycle.py:63: AssertionError
+_____________ test_stale_pid_recovers_but_pid_reuse_is_not_killed ______________
+
+repository = (PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_stale_pid_recovers_b...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 59743)
+
+    def test_stale_pid_recovers_but_pid_reuse_is_not_killed(repository):
+        repo, env, _ = repository
+        pidfile = repo / 'data/live.pid'
+        pidfile.write_text('99999999')
+>       assert control(repository, 'start').returncode == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python', '/private/var/folders/vt/4667ywcs17s0bg...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_stale_pid_recovers_but_pi0/copy with spaces/data/live.log\n').returncode
+E        +    where CompletedProcess(args=['/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python', '/private/var/folders/vt/4667ywcs17s0bg...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_stale_pid_recovers_but_pi0/copy with spaces/data/live.log\n') = control((PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_stale_pid_recovers_b...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 59743), 'start')
+
+tests/test_ninth_lifecycle.py:113: AssertionError
+________________ test_old_schema_upgrade_and_consistent_backup _________________
+
+repository = (PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_old_schema_upgrade_a...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 60469)
+
+    def test_old_schema_upgrade_and_consistent_backup(repository):
+        repo, env, _ = repository
+        path = Path(env['APP_DB_PATH'])
+        store = Store(path)
+        store.set_meta('schema_version', 3)
+        store.set_meta('ninth_preservation_marker', 'preserve')
+        result = control(repository, 'start')
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: 启动检查超时（HTTPError）；本次子进程已退出。查看 /private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_old_schema_upgrade_and_co0/copy with spaces/data/live.log
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python', '/private/var/folders/vt/4667ywcs17s0bg...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_old_schema_upgrade_and_co0/copy with spaces/data/live.log\n').returncode
+
+tests/test_ninth_lifecycle.py:145: AssertionError
+______________ test_handbook_environment_connection_without_model ______________
+
+repository = (PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_handbook_environment...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 61107)
+
+    def test_handbook_environment_connection_without_model(repository):
+        import uuid
+        repo, env, port = repository
+        env.pop('PYTHON_DOTENV_DISABLED')
+        env.pop('MODEL_NAME')
+        env.pop('MODEL_KEY_ENV')
+        secret = uuid.uuid4().hex + uuid.uuid4().hex
+        (repo / '.env').write_text('MODEL_BASE_URL=https://example.invalid/v1\nMODEL_PROTOCOL=responses\nMODEL_API_KEY=' + secret + '\n')
+        result = control(repository, 'start', handbook=True)
+>       assert result.returncode == 0, 'Isolated handbook environment startup failed'
+E       AssertionError: Isolated handbook environment startup failed
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/bin/zsh', '/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/t...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_handbook_environment_conn0/copy with spaces/data/live.log\n').returncode
+
+tests/test_ninth_lifecycle.py:184: AssertionError
+_________ test_legacy_pidfile_stop_requires_mode_and_database_evidence _________
+
+repository = (PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_pidfile_stop_...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 61709)
+
+    def test_legacy_pidfile_stop_requires_mode_and_database_evidence(repository):
+        repo, env, port = repository
+>       assert control(repository, 'start').returncode == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python', '/private/var/folders/vt/4667ywcs17s0bg...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_pidfile_stop_requi0/copy with spaces/data/live.log\n').returncode
+E        +    where CompletedProcess(args=['/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python', '/private/var/folders/vt/4667ywcs17s0bg...ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_pidfile_stop_requi0/copy with spaces/data/live.log\n') = control((PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_pidfile_stop_...', 'HOME': '/Users/chn', 'TMPDIR': '/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/', 'LANG': 'C.UTF-8', ...}, 61709), 'start')
+
+tests/test_ninth_lifecycle.py:206: AssertionError
+_____ test_fastapi_account_switch_versions_quantities_and_single_security ______
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_fastapi_account_switch_ve0')
+
+    def test_fastapi_account_switch_versions_quantities_and_single_security(tmp_path):
+        app = api_fixture(tmp_path)
+        with TestClient(app) as client:
+            a = client.post("/api/accounts", json={"name": "虚拟 A", "cash": "10000", "holdings": [{"symbol": "159278", "quantity": "10000"}]}).json()
+            b = client.post("/api/accounts", json={"name": "虚拟 B", "cash": "30000"}).json()
+            assert a["holdings"][0] == {"symbol": "SZ:159278", "quantity": "10000", "cost_price": None}
+            before_b = client.get(f"/api/accounts/{b['id']}").json()
+            updated = client.put(f"/api/accounts/{a['id']}", json={"name": "虚拟 A", "cash": "10000", "expected_version": 1,
+                "holdings": [{"symbol": "SZ:159278", "quantity": "20000"}]}).json()
+>           assert updated["version"] == 2 and updated["cash"] == "10000"
+                   ^^^^^^^^^^^^^^^^^^
+E           KeyError: 'version'
+
+tests/test_tenth_symbols.py:254: KeyError
+_______ test_scope_freezes_at_submission_and_retry_uses_current_version ________
+
+app = <fastapi.applications.FastAPI object at 0x1105c6a50>
+
+    def test_scope_freezes_at_submission_and_retry_uses_current_version(app):
+        with TestClient(app) as c:
+            a = account(c)
+            first = c.post(f"/api/accounts/{a['id']}/analyze", json={'symbol': 'SH:518880', 'operation_id':'security-1'}).json()
+            assert first['task_kind'] == 'security_research'
+            app.state.store.set_meta('universe', {'watchlist':['SH:688825'], 'candidates':['SH:562500']})
+            job = c.get('/api/jobs/' + first['id']).json()
+            assert job['universe']['candidates'] == []
+            changed = c.put(f"/api/accounts/{a['id']}", json={'name':'A','cash':'10000', 'expected_version':1,
+                         'holdings':[{'symbol':'SZ:159278','quantity':'20000'}]}).json()
+            retried = c.post('/api/jobs/' + first['id'] + '/retry', json={'operation_id':'retry-current-1'}).json()
+            assert retried['parent_job_id'] == first['id'] and retried['task_kind'] == 'manual_retry'
+>           assert retried['input_version'] == 2 and retried['target']['holdings'][0]['quantity'] == '20000'
+E           assert (1 == 2)
+
+tests/test_tenth_tasks.py:65: AssertionError
+______________ test_legacy_origin_unknown_and_v9_backup_preserved ______________
+
+app = <fastapi.applications.FastAPI object at 0x110a3e900>
+
+    def test_legacy_origin_unknown_and_v9_backup_preserved(app):
+        s = app.state.store
+        a = s.save_account(AccountInput(name='legacy'))
+        with s.connect() as db:
+            db.execute('UPDATE jobs SET task_metadata=NULL WHERE id=?', (a['latest_job_id'],))
+            db.execute("UPDATE meta SET value='9' WHERE key='schema_version'")
+        upgraded = Store(s.path)
+        job = upgraded.job(a['latest_job_id'])
+        assert job['trigger_source'] == 'unknown' and job['origin']['action'] == '历史来源未知'
+        assert job['target']['candidates'] is None and job['target']['scope_unknown']
+        with sqlite3.connect(str(s.path) + '.before-v10.bak') as db:
+            assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '9'
+>       assert Store(s.path).meta('schema_version') == 11
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x1107c4f50>.meta
+E        +      where <app.store.Store object at 0x1107c4f50> = Store(PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_origin_unknown_and0/tasks.sqlite3'))
+E        +        where PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-38/test_legacy_origin_unknown_and0/tasks.sqlite3') = <app.store.Store object at 0x1107c47d0>.path
+
+tests/test_tenth_tasks.py:121: AssertionError
+_ test_account_update_receipt_keeps_original_version_and_job_after_newer_save __
+
+app = <fastapi.applications.FastAPI object at 0x1106ba900>
+
+    def test_account_update_receipt_keeps_original_version_and_job_after_newer_save(app):
+        with TestClient(app) as c:
+            a, b = account(c), account(c, 'B')
+            payload = {'name': 'A', 'cash': '10000', 'expected_version': 1,
+                       'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}
+            headers = {'X-Operation-ID': 'account-update-intent-1'}
+            first = c.put(f"/api/accounts/{a['id']}", json=payload, headers=headers)
+>           assert first.status_code == 200
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_tenth_tasks.py:154: AssertionError
+______ test_retry_merged_into_newer_task_keeps_original_parent_in_source _______
+
+app = <fastapi.applications.FastAPI object at 0x110810980>
+
+    def test_retry_merged_into_newer_task_keeps_original_parent_in_source(app):
+        s = app.state.store
+        with TestClient(app) as c:
+            a = account(c)
+            original = s.claim_jobs(account_id=a['id'])[0]
+            s.set_job_state(original['id'], 'failed', '受控旧任务失败')
+            changed = c.put(f"/api/accounts/{a['id']}", json={'name': 'A', 'cash': '10000',
+                'expected_version': 1, 'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}).json()
+            response = c.post('/api/jobs/' + original['id'] + '/retry', json={
+                'operation_id': 'merged-parent-retry-body', 'origin': {'page': 'agents', 'action': 'retry-job'}})
+            assert response.status_code == 200
+            merged = response.json()
+>           assert merged['merged'] and merged['id'] == changed['latest_job_id']
+E           assert (False)
+
+tests/test_tenth_tasks.py:287: AssertionError
+______ test_superseded_input_cannot_prepare_exploration_from_new_account _______
+
+app = <fastapi.applications.FastAPI object at 0x10fab4830>
+
+    def test_superseded_input_cannot_prepare_exploration_from_new_account(app):
+        s = app.state.store
+        with TestClient(app) as c:
+            a = account(c)
+            old = s.claim_jobs(account_id=a['id'])[0]
+            c.put(f"/api/accounts/{a['id']}", json={'name': 'A', 'cash': '10000', 'expected_version': 1,
+                'holdings': [{'symbol': 'SH:518880', 'quantity': '100'}]})
+>           assert s.job(old['id'])['state'] == 'superseded'
+E           AssertionError: assert 'running' == 'superseded'
+E             
+E             - superseded
+E             + running
+
+tests/test_tenth_tasks.py:356: AssertionError
+_______ test_legacy_public_scope_stays_unknown_and_backup_preserves_ids ________
+
+store = <app.store.Store object at 0x10fdf4950>
+
+    
+    def test_legacy_public_scope_stays_unknown_and_backup_preserves_ids(store):
+        import sqlite3
+        a = store.save_account(AccountInput(name='legacy account', holdings=[]))
+        m = store.save_material({'content': 'legacy summary', 'scope': 'public'})
+        store.save_research_records([{'kind': 'market', 'title': 'legacy', 'reason': 'old'}], 'old')
+        with store.connect() as db:
+            db.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+            db.execute("UPDATE research_records SET universe_version=NULL,applicability='legacy_unknown',logical_identity=NULL")
+>       upgraded = Store(store.path)
+E       AssertionError: assert 11 == 10
+E        +  where 11 = meta('schema_version')
+E        +    where meta = <app.store.Store object at 0x10fdf4d10>.meta
+
+tests/test_third_consistency.py:162: AssertionError
+________ test_maintain_and_update_bind_verified_current_account_version ________
+
+store = <app.store.Store object at 0x10fd78a70>
+
+    
+    def test_maintain_and_update_bind_verified_current_account_version(store):
+        account = store.save_account(AccountInput(name="版本受控账户", holdings=[]))
+        publish(store, suggestions=[suggestion()])
+>       rid = store.recommendations(account["id"])[0]["id"]
+
+tests/test_third_recommendations.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/store.py:309: in save_account
+    return self.save_account(payload, account_id, reason, conn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.store.Store object at 0x10fd78a70>
+payload = AccountInput(name='已修改持仓', cash=None, preferences=Preferences(risk='balanced', horizon='中长期', max_position_pct=None, m...uantity='1', cost_price=None)], expected_version=None, research_scope=None, ledger_action=None, adjustment_reason=None)
+account_id = 'a1f082f75711493281193cb9c02686f3', reason = 'account_saved'
+db = <sqlite3.Connection object at 0x10c567c40>
+
+    def save_account(self, payload, account_id=None, reason="account_saved", db=None):
+        if db is None:
+            with self.connect() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                return self.save_account(payload, account_id, reason, conn)
+        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        account_id, stamp = account_id or uid(), now()
+        delay = self.settings()["debounce_seconds"]
+        if db is not None:
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+>                       raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                       ValueError: 请分别保存账户名称/偏好与期初校正，避免混合不同业务语义
+
+app/store.py:324: ValueError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/chn/Documents/ChatGPT/金融股票 2/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_core.py::test_account_isolation_edit_versions_and_metrics
+FAILED tests/test_core.py::test_new_result_finishes_before_old_cannot_overwrite
+FAILED tests/test_core.py::test_debounce_and_duplicate_event - ValueError: 现...
+FAILED tests/test_core.py::test_recovery_only_current_and_inputs_survive - Va...
+FAILED tests/test_core.py::test_api_validation_conflict_and_local_boundary - ...
+FAILED tests/test_eighth_data_calendar.py::test_import_main_never_initializes_database_and_start_provenance
+FAILED tests/test_eighth_data_calendar.py::test_schema8_backup_idempotent_preserves_custom_role_and_immutable_ledger
+FAILED tests/test_eighth_forecast_preparation.py::test_41_offline_symbols_cross_tick_restart_and_fair_accounts
+FAILED tests/test_eighth_forecast_preparation.py::test_account_change_during_fetch_invalidates_original_batch
+FAILED tests/test_fifth_etf_values.py::test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deduction
+FAILED tests/test_fifth_reasoning_effort.py::test_v5_migration_backup_is_repeatable_and_never_persists_effort_default
+FAILED tests/test_fourth_budget.py::test_retry_cannot_spend_the_manager_final_request
+FAILED tests/test_fourth_budget.py::test_retry_crossing_shared_tail_rebuilds_child_payload_before_http
+FAILED tests/test_iteration.py::test_waiting_config_resume_only_latest_snapshot_and_no_job_churn
+FAILED tests/test_iteration.py::test_recommendation_price_expiry_and_input_change
+FAILED tests/test_iteration.py::test_schema1_upgrade_preserves_ids_and_creates_snapshot
+FAILED tests/test_ninth_forecast_identity.py::test_schema8_migration_only_uses_proven_single_attempt_scopes
+FAILED tests/test_ninth_forecast_preparation.py::test_eight_targets_one_second_cycles_count_actual_starts_not_waiters[1]
+FAILED tests/test_ninth_forecast_preparation.py::test_eight_targets_one_second_cycles_count_actual_starts_not_waiters[8]
+FAILED tests/test_ninth_forecast_preparation.py::test_failed_v9_migration_rolls_back_columns_tables_marker_and_version
+FAILED tests/test_ninth_lifecycle.py::test_handbook_cold_start_idempotence_static_freeze_and_restart
+FAILED tests/test_ninth_lifecycle.py::test_stale_pid_recovers_but_pid_reuse_is_not_killed
+FAILED tests/test_ninth_lifecycle.py::test_old_schema_upgrade_and_consistent_backup
+FAILED tests/test_ninth_lifecycle.py::test_handbook_environment_connection_without_model
+FAILED tests/test_ninth_lifecycle.py::test_legacy_pidfile_stop_requires_mode_and_database_evidence
+FAILED tests/test_tenth_symbols.py::test_fastapi_account_switch_versions_quantities_and_single_security
+FAILED tests/test_tenth_tasks.py::test_scope_freezes_at_submission_and_retry_uses_current_version
+FAILED tests/test_tenth_tasks.py::test_legacy_origin_unknown_and_v9_backup_preserved
+FAILED tests/test_tenth_tasks.py::test_account_update_receipt_keeps_original_version_and_job_after_newer_save
+FAILED tests/test_tenth_tasks.py::test_retry_merged_into_newer_task_keeps_original_parent_in_source
+FAILED tests/test_tenth_tasks.py::test_superseded_input_cannot_prepare_exploration_from_new_account
+FAILED tests/test_third_consistency.py::test_legacy_public_scope_stays_unknown_and_backup_preserves_ids
+FAILED tests/test_third_recommendations.py::test_maintain_and_update_bind_verified_current_account_version
+33 failed, 894 passed, 1 warning in 131.16s (0:02:11)

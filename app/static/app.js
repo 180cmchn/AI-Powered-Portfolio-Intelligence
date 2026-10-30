@@ -643,6 +643,20 @@ function taskSubmissionNotice() {
   const [intent, value] = pending;
   return `<p class="task-submission-notice" role="status">${value.status === "submitting" ? "正在提交研究请求…" : "研究提交结果待核对"}${value.status === "unknown" ? `<button class="button compact" data-action="reconcile-task" data-intent="${e(intent)}">核对提交结果</button>` : ""}</p>`;
 }
+async function presentAcceptedTask(job, accountId, message) {
+  if (state.accountId === accountId) {
+    state.pages.jobs=0; state.latestJob=job;
+    state.jobs=[job,...state.jobs.filter(item=>item.id!==job.id)]; render();
+  }
+  // The write receipt is authoritative. A later optional read must not delay
+  // its feedback or turn an accepted task into an apparent submission failure.
+  toast(message, false, accountId, {id:job.id});
+  if (state.accountId !== accountId) return;
+  try { await loadAccount(); if (state.accountId === accountId) render(); }
+  catch (error) {
+    if (error.code !== 'superseded_read') toast(`研究任务 ${job.id} 已接受；本页资料刷新暂不可用：${error.message}。可直接查看已保存任务，无需重新提交。`, true, accountId, {id:job.id});
+  }
+}
 async function reconcileTask(intent) {
   const submission = state.taskSubmissions.get(intent);
   if (!submission) return null;
@@ -652,8 +666,7 @@ async function reconcileTask(intent) {
   const job = response.job || response;
   if (!job.id || job.account_id !== submission.accountId) return null;
   persistSubmission(intent, null);
-  if (state.accountId === submission.accountId) { state.pages.jobs=0; state.latestJob=job; state.jobs=[job,...state.jobs.filter(item=>item.id!==job.id)]; render(); await loadAccount(); render(); }
-  toast(`已核对真实任务 ${job.id} · ${statusNames[job.state] || job.state}，未重复提交。`, false, submission.accountId, {id:job.id});
+  await presentAcceptedTask(job, submission.accountId, `已核对真实任务 ${job.id} · ${statusNames[job.state] || job.state}，未重复提交。`);
   return job;
 }
 async function submitTask({accountId, symbol, path, body, intent, parentId}) {
@@ -668,8 +681,7 @@ async function submitTask({accountId, symbol, path, body, intent, parentId}) {
     persistSubmission(intent,null); render(); throw error;
   }
   persistSubmission(intent,null);
-  if (state.accountId === accountId) { state.pages.jobs=0; state.latestJob=job; state.jobs=[job,...state.jobs.filter(item=>item.id!==job.id)]; render(); await loadAccount(); render(); }
-  toast(`${job.merged ? "已合并到已有任务" : "请求已接受"} ${job.id} · ${statusNames[job.state] || job.state}。`, false, accountId, {id:job.id});
+  await presentAcceptedTask(job, accountId, `${job.merged ? "已合并到已有任务" : "请求已接受"} ${job.id} · ${statusNames[job.state] || job.state}。`);
   return job;
 }
 

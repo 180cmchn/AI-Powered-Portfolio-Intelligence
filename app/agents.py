@@ -492,7 +492,11 @@ class ResearchRuntime:
         # report plus, when available, citation correction / a failed request).
         if remaining <= active + 2:
             self.budget_closing = True
-        if self.deadline is not None and self.deadline - time.monotonic() <= self._synthesis_reserve():
+        # Do not launch another full ordinary request if its allowed duration
+        # could consume the reserved final window. This also tells children to
+        # submit their visible work early enough for the manager to use it.
+        if self.deadline is not None and self.deadline - time.monotonic() <= (
+                self._synthesis_reserve() + timeout_policy(self.config)['request_hard_seconds']):
             self.budget_closing = True
         return self.budget_closing
 
@@ -649,6 +653,7 @@ class ResearchRuntime:
                 return json.loads(json.dumps(result, ensure_ascii=False, default=str, allow_nan=False))
         except TimeoutError as exc:
             self.cancelled_by = 'analysis_budget_exhausted'
+            self.client.resolve_pending(self.manager_session, '整轮总预算耗尽；此调用未完成续接，未完成部分保持未知')
             await self._save_interrupted_checkpoint('analysis_deadline')
             await self._publish("agent_failed", "manager", {"error": "账户分析超过配置时限；阶段材料已保留", 'failure_stage': 'analysis_deadline',
                 'error_code': 'analysis_budget_exhausted', 'cancelled_by': 'analysis_budget_exhausted',
@@ -658,6 +663,7 @@ class ResearchRuntime:
             # Service's outer total deadline also arrives as cancellation.
             # Preserve completed work without guessing whether the cause was
             # that deadline, an explicit cancel or service interruption.
+            self.client.resolve_pending(self.manager_session, '整轮已取消；此调用未完成续接，未完成部分保持未知')
             await self._save_interrupted_checkpoint('cancelled_or_interrupted')
             expired = self.deadline is not None and time.monotonic() >= self.deadline
             self.cancelled_by = 'analysis_budget_exhausted' if expired else cancellation_source(exc)
@@ -668,6 +674,7 @@ class ResearchRuntime:
         except Exception as exc:
             self.cancelled_by = 'parent_failed'
             if isinstance(exc, ModelError):
+                self.client.resolve_pending(self.manager_session, '模型或共享预算失败；此调用未完成续接，未完成部分保持未知')
                 await self._save_interrupted_checkpoint('model_request_or_budget')
             await self._publish("agent_failed", "manager", {"error": self._safe_error(exc), 'error_code': getattr(exc, 'code', type(exc).__name__)})
             raise

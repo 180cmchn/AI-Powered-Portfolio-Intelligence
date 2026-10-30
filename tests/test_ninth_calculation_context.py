@@ -23,7 +23,8 @@ def config(monkeypatch, **extra):
         'model_key_env': 'NINTH_CALCULATION_TEST_KEY', 'model_protocol': 'responses',
         'model_native_search': False, 'model_retries': 0, 'max_context_chars': 240000,
         'max_tool_result_chars': 6000, 'max_model_calls': 4, 'max_agent_turns': 8,
-        'analysis_timeout_seconds': 20, **extra}
+        'analysis_timeout_seconds': 20, 'model_request_hard_timeout_seconds': 2,
+        'synthesis_request_hard_timeout_seconds': 2, **extra}
 
 
 def output(protocol, calls):

@@ -30,7 +30,8 @@ def configure(monkeypatch, handler, **overrides):
             "model_key_env": "FINAL_SUBMISSION_TEST_KEY", "model_protocol": "responses",
             "model_native_search": False, "model_retries": 0, "max_model_calls": 8,
             "max_agent_turns": 4, "agent_timeout_seconds": 2,
-            "analysis_timeout_seconds": 4, **overrides}
+            "analysis_timeout_seconds": 4, "model_request_hard_timeout_seconds": 1,
+            "synthesis_request_hard_timeout_seconds": 1, **overrides}
 
 
 class Tools:

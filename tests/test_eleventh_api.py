@@ -108,3 +108,25 @@ def test_metrics_use_exact_total_cost_and_no_double_fee_subtraction():
     result = metrics(a, {'SZ:002354': {'price': '4', 'status': 'ok'}}, {})
     assert result['total_assets'] == '22.00' and result['unrealized_pnl'] == '2.00'
     assert result['positions'][0]['total_cost'] == '10'
+
+
+def test_fee_correction_and_available_baseline_http(api):
+    app, client = api
+    a = account(client)
+    _, receipt = buy(client, a, '002354', '1000', '10.00', 'fee-http-buy-1')
+    path = f"/api/accounts/{a['id']}/ledger/{receipt['trade_id']}/fees"
+    data = {'operation_id': 'fee-http-fix-1', 'expected_version': 2,
+        'fees': {'commission': '2.50', 'transfer': '0.10', 'stamp': '0.00'}, 'reason': '受控交割单费用夹具'}
+    fixed = client.post(path, json=data)
+    assert fixed.status_code == 201, fixed.text
+    assert fixed.json()['cash_after'] == '89997.40'
+    assert client.post(path, json=data).json()['replayed']
+    assert app.state.store.account(a['id'])['ledger']['positions']['SZ:002354']['total_cost'] == '10002.60'
+    current = client.get('/api/accounts/' + a['id']).json()
+    corrected = client.post(f"/api/accounts/{a['id']}/corrections", json={'operation_id': 'available-http-fix',
+        'expected_version': current['version'], 'cash': current['cash'], 'reason': '期初可卖依据夹具',
+        'holdings': [{'symbol': '002354', 'quantity': '1000', 'cost_price': None, 'available_quantity': '500'}]})
+    assert corrected.status_code == 201, corrected.text
+    pos = client.get(f"/api/accounts/{a['id']}/ledger").json()['positions'][0]
+    assert pos['available_quantity'] == '500' and pos['availability_unknown_quantity'] == '500'
+    assert pos['total_cost'] is None

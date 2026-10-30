@@ -310,3 +310,34 @@ def test_new_job_freezes_migrated_policy_and_current_edits_do_not_change_old_sna
     assert store.settings()['synthesis_request_hard_timeout_seconds'] == 500
     assert store.job(job['id'])['config_snapshot'] == frozen
     assert frozen['reasoning_effort'] == store.job(job['id'])['config_snapshot']['reasoning_effort']
+
+
+async def test_manager_does_not_start_ordinary_request_that_could_consume_final_reserve(monkeypatch):
+    sent = []
+    def handler(request):
+        payload = json.loads(request.content)
+        sent.append(payload)
+        assert {tool.get('name') for tool in payload['tools']} == {'finish_analysis'}
+        return httpx.Response(200, json={'status': 'completed', 'output': [
+            {'type': 'function_call', 'call_id': 'final', 'name': 'finish_analysis',
+             'arguments': json.dumps({'report': '预算内汇总；尚未完成的研究保持未知。'})}]})
+    transport = httpx.MockTransport(handler)
+    monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))
+    async def emit(value):
+        pass
+    cfg = config(model_request_hard_timeout_seconds=.3,
+        synthesis_request_hard_timeout_seconds=.36, analysis_timeout_seconds=1.2,
+        max_model_calls=20, max_agent_turns=12)
+    runtime = agents.ResearchRuntime({'job_id': 'reserve-boundary'}, cfg, object(), emit)
+    try:
+        # Reserve .36 + an ordinary request .30: .70 has room, .64 does not.
+        runtime.deadline = time.monotonic() + .70
+        assert not runtime._shared_closeout()
+        runtime.inherited_deadline = time.monotonic() + .64
+        result = await runtime.run()
+        assert result['report'].startswith('预算内汇总')
+        assert len(sent) == 1
+        assert runtime.client.requests[0]['stage'] == 'synthesis'
+        assert runtime.client.requests[0]['timeout_policy']['request_hard_seconds'] == .36
+    finally:
+        await runtime.close()

@@ -172,7 +172,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
       if(action==='provider-clear') {if(!confirm('明确清除该供应商凭据？冻结的旧凭据将撤销，相关运行任务可能失败。历史预测保留。'))return;await api(`/api/providers/${enc(id)}/credential`,{method:'DELETE'});}
       if(action==='provider-archive') {if(!confirm('归档此连接后，新研究的引用绑定将显示不可用；历史记录保留。'))return;await api(`/api/providers/${enc(id)}/archive`,{method:'POST'});}
       if(action==='role-reload') { const form=target.closest('form'); form.dataset.discard='true'; state.drafts.delete(form.dataset.draftKey); await repaint(); return; }
-      if(action==='role-reset')await api(`/api/accounts/${enc(account)}/agent-models/${enc(id)}`,{method:'DELETE'});
+      if(action==='role-reset') { await api(`/api/accounts/${enc(account)}/agent-models/${enc(id)}`,{method:'DELETE'}); const form=target.closest('form'); form.dataset.discard='true';state.drafts.delete(form.dataset.draftKey); }
       if(action==='forecast-detail'){const row=await api(`/api/forecasts/${enc(id)}`);dialog('不可变预测 · 报告与评估修订',(row.calendar_revalidation_pending?info('日历已修订，旧评分暂不有效，等待独立重核；原目标日与预测保持不变。'):'')+objectView(row)+button('请求重新检查行情更正','forecast-recheck',id));return;}
       if(action==='forecast-batch-detail'){const row=await api(`/api/forecast-batches/${enc(id)}`);dialog('批次 · 配置归属与执行尝试',info('研究运行中仍可有目标等待基准；已发布的方向和弃权保持不变，补充判断只覆盖截止前尚未发布目标。')+objectView(row));return;}
       if(action==='forecast-recheck'){await api(`/api/forecasts/${enc(id)}/recheck`,{method:'POST'});toast('已登记重新检查；原有效评分在取得更正证据前保留。');return;}
@@ -264,7 +264,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     const notice=form.querySelector('.role-version-notice'); if (!notice) return;
     const changed=form.dataset.serverRevision !== incoming.dataset.serverRevision;
     notice.hidden=!changed;
-    if (changed) { notice.className='role-version-notice notice warning'; notice.textContent=`后台配置已更新（当前已保存 v${incoming.dataset.roleVersion}）。阅读位置与本地草稿保留；请点击“重新载入已保存值”查看新版。保存前会核对原版本 v${form.dataset.roleVersion}，不会静默覆盖。`; }
+    if (changed) { notice.className='role-version-notice notice warning'; notice.textContent=form.dataset.accountId ? `后台账户覆盖或全局配置已更新（全局角色 v${incoming.dataset.roleVersion}）。本地草稿保留；请先“重新载入已保存值”核对。本账户覆盖按本次提交值更新，不使用全局角色版本校验。` : `后台配置已更新（当前已保存 v${incoming.dataset.roleVersion}）。阅读位置与本地草稿保留；请点击“重新载入已保存值”查看新版。保存前会核对原版本 v${form.dataset.roleVersion}，不会静默覆盖。`; }
   };
   const syncProviderForm = form => { const submit=form.querySelector('[type=submit]'); if(submit){ submit.disabled=!data.providerWritable; submit.textContent=form.dataset.uncertain==='true'?'核对保存结果':'保存连接并获取模型'; } };
   const warning = () => {

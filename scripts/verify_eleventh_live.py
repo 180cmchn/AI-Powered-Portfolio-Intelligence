@@ -2,7 +2,8 @@
 """Two bounded real research rounds after manual simulated trades in an isolated DB.
 
 Reads only the authorized daily account's model matrix and safe credential refs.
-No daily writes, endpoint/effort changes, automatic retries or formal clock shifts.
+No daily writes, endpoint/effort changes, business retries or formal clock shifts.
+Finite pre-connection/HTTP-rejection retries follow the frozen application policy.
 """
 from __future__ import annotations
 import argparse
@@ -36,7 +37,7 @@ def configure(source, target, account_id):
         raw = origin.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
         cfg = {**defaults(), **migrate_timeout_policy(json.loads(raw[0]) if raw else {})}
         cfg.update(scheduled_research_enabled=False, market_refresh_enabled=False,
-            forecast_evaluation_enabled=False, news_queries=[], debounce_seconds=4, max_job_attempts=1)
+            forecast_evaluation_enabled=False, news_queries=[], debounce_seconds=600, max_job_attempts=1)
         for table in ('model_providers', 'provider_connections', 'provider_catalogs', 'agent_definitions'):
             dest.execute('DELETE FROM ' + table)
             for row in origin.execute('SELECT * FROM ' + table):
@@ -63,6 +64,8 @@ async def run(args):
         'source_sha256': digest, 'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
         'market_state': market_state(), 'formal_prediction': 'No clock/window change; ordinary exploratory research only',
         'maximum_business_jobs': 2, 'automatic_business_retry': False,
+        'preparation_gate': 'Isolated queue only: 600s debounce while recording the three HTTP buys; release only latest job after all inputs are committed, then restore 4s debounce. No market or forecast clock shift.',
+        'binding_origin': 'Daily effective account overrides expanded into isolated role defaults; daily roles unchanged',
         'limits': {k: cfg.get(k) for k in ('model_first_event_timeout_seconds', 'model_stream_idle_timeout_seconds',
             'model_request_hard_timeout_seconds', 'synthesis_request_hard_timeout_seconds',
             'agent_timeout_seconds', 'analysis_timeout_seconds', 'max_model_calls', 'max_output_tokens')},
@@ -75,6 +78,17 @@ async def run(args):
     def save():
         (out / 'summary.json').write_text(scrubbed(summary, cfg) + '\n')
         (out / 'summary.json').chmod(0o600)
+    def request_evidence(task_id):
+        events = all_events(store, task_id)
+        return events, [{**r, 'event_at': e.get('timestamp', e.get('at')), 'agent_id': e.get('agent_id')}
+            for e in events for r in (e.get('payload') or {}).get('requests', [])]
+    def forecasts_for(job_id):
+        with store.connect() as db:
+            batches = [dict(row) for row in db.execute('SELECT id,kind,state,base_date,deadline,expected_count FROM forecast_batches WHERE job_id=?', (job_id,))]
+            forecasts = [dict(row) for row in db.execute('SELECT id,symbol,horizon,direction,kind,published_at,target_date FROM forecasts WHERE job_id=?', (job_id,))]
+            samples = [dict(row) for row in db.execute('SELECT s.symbol,s.horizon,s.state,s.reason,s.target_date FROM forecast_samples s JOIN forecast_batches b ON b.id=s.batch_id WHERE b.job_id=?', (job_id,))]
+        return {'batches': batches, 'published': forecasts, 'samples': samples,
+            'note': 'Structured persisted rows only; prose abstention is not a published forecast'}
     process = log = None
     try:
         with socket.socket() as sock:
@@ -119,6 +133,13 @@ async def run(args):
             for i, values in enumerate(summary['test_inputs']):
                 receipt = await trade({**values, 'side': 'buy'}, f'eleventh-initial-buy-{i}')
             assert receipt['cash_after'] == '86484.90'
+            cfg['debounce_seconds'] = 4
+            store.set_meta('settings', cfg)
+            with store.connect() as db:
+                if db.execute('SELECT count(*) FROM jobs WHERE attempts>0').fetchone()[0]:
+                    raise RuntimeError('Preparation exceeded isolated queue gate; audit all attempts without starting additional work')
+                db.execute("UPDATE jobs SET due_at=? WHERE id=? AND state='queued'", (now(), receipt['research']['job_id']))
+            summary['preparation_gate_released_at'] = now()
             async def collect(job_id, label):
                 last = None
                 async with asyncio.timeout(float(cfg['analysis_timeout_seconds']) + 90):
@@ -130,14 +151,14 @@ async def run(args):
                             last = state
                         if job['state'] not in ('queued', 'running'): break
                         await asyncio.sleep(2)
-                events = all_events(store, job_id)
-                requests = [{**r, 'event_at': e.get('at')} for e in events for r in (e.get('payload') or {}).get('requests', [])]
+                events, requests = request_evidence(job_id)
                 snap = store.snapshot(a['id'], job['input_version'])
                 result = job.get('result') or {}
                 report = result.get('report')
                 summary['rounds'].append({'label': label, 'job': job, 'request_count': len(requests), 'requests': requests,
-                    'event_counts': dict(Counter(e['type'] for e in events)), 'report_published': bool(job.get('report_id')),
-                    'frozen_account': snap, 'forecast_submission': result.get('forecast_submission'),
+                    'event_counts': dict(Counter(e['type'] for e in events)),
+                    'report_published': job['state'] == 'completed' and job.get('report_status') == 'current' and bool(job.get('report_id')),
+                    'frozen_account': snap, 'forecast_submission': forecasts_for(job_id),
                     'cost_note': 'Provider usage retained when returned; interrupted requests may have unknown cost; no invoice reconciliation',
                     'provider_log_comparison': 'Provider-side account/log access unavailable; compare returned request/response IDs only',
                     'source_unchanged': source_digest() == digest})
@@ -168,6 +189,23 @@ async def run(args):
             try: process.wait(timeout=15)
             except subprocess.TimeoutExpired: process.kill(); process.wait(timeout=5)
         if log: log.close()
+        # Include superseded, failed, cancelled and unexpected work, even if
+        # the HTTP orchestration itself failed before collect() could finish.
+        with store.connect() as db:
+            tasks = [dict(row) for row in db.execute('SELECT id,account_id,state,stage,input_version,attempts,error FROM jobs ORDER BY created_at')]
+            global_tasks = [dict(row) for row in db.execute('SELECT id,state,attempts,error FROM global_runs ORDER BY created_at')]
+        attempts = []
+        for task in [*tasks, *global_tasks]:
+            events, requests = request_evidence(task['id'])
+            attempts.append({'task': task, 'event_counts': dict(Counter(e['type'] for e in events)), 'requests': requests})
+        summary['all_attempts_after_shutdown'] = attempts
+        summary['total_http_attempts'] = sum(len(task['requests']) for task in attempts)
+        summary['business_jobs_with_http'] = sum(bool(task['requests']) for task in attempts)
+        summary['business_job_bound_observed'] = summary['business_jobs_with_http'] <= 2
+        summary['final_source_unchanged'] = source_digest() == digest
+        summary['final_environment_unchanged'] = env_file_stamp() == stamp
+        summary['audit_completed_at'] = now()
+        save()
 
 
 if __name__ == '__main__':

@@ -19,6 +19,7 @@ def config(monkeypatch, **overrides):
             'model_key_env': 'CLOSEOUT_TEST_KEY', 'model_protocol': 'responses',
             'model_native_search': False, 'model_retries': 0, 'max_model_calls': 16,
             'max_agent_turns': 6, 'analysis_timeout_seconds': 5,
+            'model_request_hard_timeout_seconds': 1, 'synthesis_request_hard_timeout_seconds': 1,
             'max_context_chars': 100000, 'max_tool_result_chars': 6000, **overrides}
 
 

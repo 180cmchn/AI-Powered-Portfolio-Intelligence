@@ -344,3 +344,87 @@ def test_last_trade_fee_correction_buy_sell_unknown_and_reversal(store):
     assert store.ledger(a['id'])['positions'][0]['total_cost'] == '6003.06'
     with pytest.raises(ValueError, match='末笔'):
         store.adjust_trade_fees(a['id'], bought['entry_id'], {'operation_id': 'fee-correct-oldest', 'expected_version': fee_sale['input_version'], 'fees': {'commission': '1'}, 'reason': '禁止旧账回放'})
+
+
+def test_integral_decimal_quantity_survives_ledger_and_sell(store):
+    a = account(store)
+    bought = store.record_trade(a['id'], trade(store, a, symbol='SH:518880', quantity='100.0', price='10'))
+    assert Decimal(store.ledger(a['id'])['positions'][0]['available_quantity']) == 100
+    sold = store.record_trade(a['id'], trade(store, a, operation_id='decimal-quantity-sell', symbol='SH:518880', side='sell', quantity='100.00', price='10'))
+    assert sold['quantity_after'] == '0'
+
+
+def test_legacy_subcent_cash_requires_explicit_correction_before_booking(store):
+    a = store.save_account(AccountInput(name='legacy subcent', cash='100000.005'))
+    with pytest.raises(ValueError, match='分|精度|校正'):
+        store.record_trade(a['id'], trade(store, a, symbol='SH:518880', quantity='100', price='10'))
+    with pytest.raises(ValueError, match='分|精度|校正'):
+        store.adjust_funds(a['id'], {'operation_id': 'subcent-cash-deposit', 'expected_version': 1, 'kind': 'deposit', 'amount': '1', 'reason': '不允许隐式舍入'})
+    assert store.account(a['id'])['cash'] == '100000.005'
+    assert len(store.ledger(a['id'])['entries']) == 1
+
+
+def test_subcent_legacy_correction_and_reversal_reconcile_exactly(store):
+    a = store.save_account(AccountInput(name='subcent migration', cash='100000.005'))
+    with store.connect() as db:
+        for table in ('ledger_operations', 'cash_entries', 'ledger_entries', 'ledger_positions', 'fee_plans', 'ledger_accounts'):
+            db.execute('DROP TABLE ' + table)
+        db.execute("UPDATE meta SET value='10' WHERE key='schema_version'")
+    migrated = Store(store.path, mode='demo')
+    assert migrated.account(a['id'])['cash'] == '100000.005'
+    corrected = migrated.correct_snapshot(a['id'], {'operation_id': 'subcent-correction-1', 'expected_version': 1, 'reason': '受控期初余额明确到分', 'cash': '100000.01', 'holdings': []})
+    assert corrected['entry']['cash_effect'] == '0.005'
+    reversed_entry = migrated.reverse_last_entry(a['id'], corrected['entry_id'], {'operation_id': 'subcent-reversal-1', 'expected_version': 2, 'reason': '撤销受控校正'})
+    assert reversed_entry['entry']['cash_effect'] == '-0.005'
+    ledger = migrated.ledger(a['id'])
+    assert sum(Decimal(row['amount']) for row in ledger['cash_entries']) == Decimal(ledger['cash'])
+    assert ledger['cash'] == '100000.005'
+
+
+def test_reason_only_fee_override_cannot_mark_estimate_actual(store):
+    a = account(store)
+    with pytest.raises(ValueError, match='费用数值'):
+        store.record_trade(a['id'], trade(store, a, fees_override={'reason': '没有实际费用金额'}))
+    assert len(store.ledger(a['id'])['entries']) == 1
+
+
+def test_empty_unknown_baseline_does_not_taint_new_cost(store):
+    a = account(store, holdings=[{'symbol': 'SZ:002354', 'quantity': '0', 'cost_price': None}])
+    result = store.record_trade(a['id'], trade(store, a))
+    assert result['entry']['total_cost_after'] == '10005.10'
+    assert store.account(a['id'])['ledger']['positions']['SZ:002354']['cost_basis'] == 'trade_cost'
+
+
+def test_reversing_correction_preserves_later_metadata(store):
+    a = account(store)
+    corrected = store.correct_snapshot(a['id'], {'operation_id': 'metadata-correction-1', 'expected_version': 1, 'reason': '受控综合校正', 'cash': '99999', 'holdings': [], 'name': '校正时名称'})
+    latest = store.account(a['id'])
+    edited = store.save_account_metadata_operation(a['id'], {'name': '后来保存的名称', 'preferences': {**latest['preferences'], 'horizon': '后来保存的周期'}, 'expected_version': 2}, 'later-metadata-1')
+    reversed_entry = store.reverse_last_entry(a['id'], corrected['entry_id'], {'operation_id': 'metadata-reversal-1', 'expected_version': edited['version'], 'reason': '仅撤销末笔账务，不覆盖后续元信息'})
+    after = store.account(a['id'])
+    assert after['name'] == '后来保存的名称'
+    assert after['preferences']['horizon'] == '后来保存的周期'
+    assert after['cash'] == '100000'
+    assert reversed_entry['entry']['metadata_reversal_policy'] == 'restore_only_without_later_account_version'
+
+
+def test_reversing_immediate_combined_correction_restores_metadata(store):
+    a = account(store)
+    corrected = store.correct_snapshot(a['id'], {'operation_id': 'immediate-correction-1', 'expected_version': 1, 'reason': '受控综合校正', 'cash': '99999', 'holdings': [], 'name': '校正时名称'})
+    store.reverse_last_entry(a['id'], corrected['entry_id'], {'operation_id': 'immediate-reversal-1', 'expected_version': 2, 'reason': '立即撤销'})
+    assert store.account(a['id'])['name'] == a['name']
+
+
+def test_tax_only_override_keeps_unconfirmed_commission_estimated(store):
+    a = account(store)
+    result = store.record_trade(a['id'], trade(store, a, fees_override={'transfer': '0.09', 'reason': '只核实过户费，佣金协议未知'}))
+    assert result['fees']['estimated_only'] is True
+    assert result['fees']['actual_override_components'] == ['transfer']
+    fixed = store.adjust_trade_fees(a['id'], result['entry_id'], {'operation_id': 'tax-only-fee-fix', 'expected_version': 2, 'fees': {'transfer': '0.10'}, 'reason': '只更正过户费'})
+    assert fixed['fees']['estimated_only'] is True
+    assert fixed['fees']['actual_override_components'] == ['transfer']
+    b = account(store)
+    actual = store.record_trade(b['id'], trade(store, b, fees_override={'commission': '2.50', 'reason': '佣金已由交割单核实'}))
+    changed_tax = store.adjust_trade_fees(b['id'], actual['entry_id'], {'operation_id': 'actual-commission-tax-fix', 'expected_version': 2, 'fees': {'transfer': '0.09'}, 'reason': '过户费用更正'})
+    assert changed_tax['fees']['estimated_only'] is False
+    assert changed_tax['fees']['actual_override_components'] == ['commission', 'transfer']

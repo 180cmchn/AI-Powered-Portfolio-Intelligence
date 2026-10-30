@@ -1,0 +1,4439 @@
+{
+  "access": "SQLite mode=ro; no Store initialization or daily mutations",
+  "baseline": "874b9875a9649480cde78bca804af2693ba5d1d8",
+  "job": {
+    "id": "085542c56c534e3b9e7851ff1d35616b",
+    "account_id": "96b91df38e854008b989206c63808c3a",
+    "input_version": 4,
+    "reason": "account_saved",
+    "state": "failed",
+    "stage": "synthesizing",
+    "created_at": "2026-10-30T22:12:54.446497+08:00",
+    "started_at": "2026-10-30T22:12:56.108955+08:00",
+    "completed_at": "2026-10-30T22:21:43.486780+08:00",
+    "error": "模型单次请求超过时限；已完成研究可从汇总检查点恢复"
+  },
+  "frozen_limits": {
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "agent_timeout_seconds": 120,
+    "analysis_timeout_seconds": 600,
+    "max_model_calls": 40,
+    "max_total_agents": null,
+    "max_concurrent_agents": 3,
+    "max_output_tokens": 4000,
+    "model_retries": null
+  },
+  "scope": [
+    "SH:518880",
+    "SZ:002354",
+    "SZ:159599"
+  ],
+  "request_count": 40,
+  "request_errors": {
+    "completed": 34,
+    "cancelled": 3,
+    "RemoteProtocolError": 1,
+    "RequestDeadlineExceeded": 2
+  },
+  "requests": [
+    {
+      "event_at": "2026-10-30T22:13:11.888375+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "eba16b9a-2762-929f-aa6a-2040818fe43a",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 86,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3881.03,
+      "stream_first_byte_ms": 3784.52,
+      "duration_ms": 15336.21,
+      "output_bytes": 144884,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.18
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.25
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.31
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.32
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.33
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.34
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.52
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 719.38
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 719.87
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 720.13
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 720.14
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 720.41
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 720.42
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3783.99
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3784.46
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:30.045892+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "eead5856-c550-9445-b57b-87d6b3329059",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 64,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3535.61,
+      "stream_first_byte_ms": 3343.13,
+      "duration_ms": 18099.11,
+      "output_bytes": 138103,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 10.21
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.31
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.39
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.4
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.42
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.42
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 10.61
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 10.62
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 343.18
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 343.57
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 343.75
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 343.76
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 343.97
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 343.98
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3342.91
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3343.11
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:35.792962+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-8921f6b78977",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "897cdf2b-29be-9ed0-876d-3b1b4ec9e6d2",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 79,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4700.61,
+      "stream_first_byte_ms": 4543.35,
+      "duration_ms": 5673.8,
+      "output_bytes": 78668,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 9.23
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.38
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.49
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.5
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.51
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.51
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.95
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 9.96
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 646.66
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 647.08
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 647.34
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 647.35
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 647.6
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 647.62
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4542.76
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4543.28
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:48.014894+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-8921f6b78977",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "d08ea117-7a64-9bab-acb6-f0e89aa391e3",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 75,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7547.17,
+      "stream_first_byte_ms": 7389.09,
+      "duration_ms": 11971.84,
+      "output_bytes": 82457,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.03
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.13
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.21
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.21
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.23
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.24
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.38
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.39
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 755.31
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 757.65
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 757.91
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 757.92
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 758.17
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 758.18
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7388.39
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7389.02
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:48.876132+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "fc1b529b-2a4c-9f52-a02e-d12bb31d5e7c",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 185,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7161.72,
+      "stream_first_byte_ms": 7007.28,
+      "duration_ms": 18755.93,
+      "output_bytes": 918883,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 13.41
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 13.51
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 13.68
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 13.69
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 13.7
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 13.71
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.0
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 14.01
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1183.03
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1183.21
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1183.3
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1183.31
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1183.39
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1183.39
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7006.53
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7007.2
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:54.775566+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "18c47562-053c-9b29-b3a7-11d2c2e50544",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 45,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3590.05,
+      "stream_first_byte_ms": 3407.54,
+      "duration_ms": 4330.91,
+      "output_bytes": 67960,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.52
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.66
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.76
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.77
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.8
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.8
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.05
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.08
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 702.75
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 703.05
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 703.2
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 703.2
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 703.33
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 703.33
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3406.85
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3407.46
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:56.769433+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "9bee66ad-fdf0-9626-9835-515bb800bde9",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 270,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4517.48,
+      "stream_first_byte_ms": 4422.91,
+      "duration_ms": 26648.22,
+      "output_bytes": 820594,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 11.42
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 11.59
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 11.69
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 11.69
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 11.7
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 11.7
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 12.07
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 12.08
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 635.49
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 636.31
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 636.74
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 636.76
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 637.05
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 637.06
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4422.23
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4422.83
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:13:59.052451+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "4ee62713-e6f7-987a-bf91-cba91aedbd29",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 25,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3947.86,
+      "stream_first_byte_ms": 3791.3,
+      "duration_ms": 4247.47,
+      "output_bytes": 63784,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.57
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.72
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.88
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.88
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.92
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.92
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.11
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.14
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 606.6
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 607.22
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 607.55
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 607.56
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 607.88
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 607.9
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3790.58
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3791.22
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:02.435631+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "573ac5ae-6565-9f8b-8c23-77ee6d5fc34b",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 47,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4255.73,
+      "stream_first_byte_ms": 4195.77,
+      "duration_ms": 4367.51,
+      "output_bytes": 68182,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.88
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 0.94
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.0
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.0
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.02
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.02
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.2
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.21
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 861.35
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 862.02
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 862.5
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 862.51
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 862.84
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 862.85
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4195.01
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4195.68
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:06.834270+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "7d785f9f-a5f3-910f-a2d8-65582d12fb97",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 21,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4172.56,
+      "stream_first_byte_ms": 4069.62,
+      "duration_ms": 4373.75,
+      "output_bytes": 61567,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.27
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.39
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.52
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.53
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.56
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.56
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.8
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.82
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1368.97
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1369.63
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1370.0
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1370.02
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1370.46
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1370.56
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4068.89
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4069.54
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:09.516853+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "e3752e98-33e5-999f-ab01-089996b289dd",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 130,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4696.37,
+      "stream_first_byte_ms": 4565.7,
+      "duration_ms": 37281.51,
+      "output_bytes": 380604,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.21
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.32
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.4
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.41
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.43
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.44
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.62
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.63
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 394.44
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 395.13
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 395.55
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 395.57
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 396.3
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 396.32
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4565.05
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4565.62
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:10.294290+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "d16bb7c0-8389-98f1-b21c-6dd467f2090e",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 99,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6788.0,
+      "stream_first_byte_ms": 6638.61,
+      "duration_ms": 11212.14,
+      "output_bytes": 403071,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.69
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.87
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.04
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.05
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.08
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.08
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.23
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.25
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 725.32
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 725.89
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 726.17
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 726.18
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 726.4
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 726.41
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6637.95
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6638.53
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:15.232788+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "a5ced344-f509-9131-965c-cb270efe790b",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 79,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 5845.12,
+      "stream_first_byte_ms": 5773.56,
+      "duration_ms": 8374.16,
+      "output_bytes": 210502,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.4
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.52
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.65
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.66
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.69
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.7
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.83
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.85
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 689.97
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 690.53
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 690.88
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 690.9
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 691.24
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 691.25
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5772.8
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5773.46
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:18.575109+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "6b9e8a79-6148-9b96-8111-58932371434c",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 49,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3952.61,
+      "stream_first_byte_ms": 3800.24,
+      "duration_ms": 7483.89,
+      "output_bytes": 70996,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.58
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.71
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.81
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.82
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.08
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.1
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 637.43
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 638.17
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 638.59
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 638.61
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 638.95
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 638.97
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3799.52
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3800.17
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:21.388048+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "874858b4-2087-9e9f-8729-397806a961d3",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 49,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4205.36,
+      "stream_first_byte_ms": 4012.19,
+      "duration_ms": 5868.94,
+      "output_bytes": 70439,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.31
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.38
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.43
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.45
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.45
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.65
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 265.13
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 265.67
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 266.04
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 266.06
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 266.61
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 266.63
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4011.47
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4012.11
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:22.121289+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "3359e82c-e202-9e9a-9a1e-d69ed9758bcd",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 57,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6092.47,
+      "stream_first_byte_ms": 5992.22,
+      "duration_ms": 12464.38,
+      "output_bytes": 130053,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.49
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.55
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.61
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.61
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.63
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.63
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.74
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.75
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1682.45
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1682.94
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1683.16
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1683.17
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1683.38
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1683.39
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5991.99
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5992.19
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:29.901578+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "661cb5cc-98b0-980b-8af9-9aab7d3cd85d",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 21,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6959.66,
+      "stream_first_byte_ms": 6893.5,
+      "duration_ms": 7108.9,
+      "output_bytes": 63584,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 14.33
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.56
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.69
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.7
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.73
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.73
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 14.97
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 14.99
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 680.29
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 681.05
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 681.48
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 681.49
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 682.03
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 682.05
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6892.83
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6893.42
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:31.528379+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "e93baf83-fda2-9273-a683-622263242006",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 114,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7936.12,
+      "stream_first_byte_ms": 7700.94,
+      "duration_ms": 12924.72,
+      "output_bytes": 356066,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.04
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.16
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.27
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.28
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.3
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.31
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.46
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.48
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 647.57
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 647.75
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 647.86
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 647.86
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 647.97
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 647.98
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7700.22
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7700.85
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:35.455802+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "cece7c49-0245-9a1d-b791-ae25d0d7136b",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 63,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7460.08,
+      "stream_first_byte_ms": 7221.67,
+      "duration_ms": 13297.54,
+      "output_bytes": 129919,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.66
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.78
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.9
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.9
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.93
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.94
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.16
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.18
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 2811.14
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2811.66
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 2812.1
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 2812.12
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 2812.75
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2812.78
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7220.96
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7221.6
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:39.722372+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "cc2892d3-0cc2-981d-900a-6fb80329eafa",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 82,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6800.18,
+      "stream_first_byte_ms": 6732.5,
+      "duration_ms": 9572.55,
+      "output_bytes": 256380,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.48
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.56
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.62
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.62
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.63
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.63
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.73
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.74
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 289.67
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 290.21
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 290.54
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 290.56
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 291.31
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 291.32
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6731.98
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6732.46
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:42.807606+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "2edb8bd7-e55f-941d-bb2a-6e71f1d9f638",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 48,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 2475.7,
+      "stream_first_byte_ms": 2415.92,
+      "duration_ms": 2939.98,
+      "output_bytes": 67775,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.93
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.0
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.06
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.06
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.07
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.07
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.2
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.21
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 319.08
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 319.37
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 319.53
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 319.54
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 319.66
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 319.66
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 2415.55
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 2415.88
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:46.628305+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "3343a0c7-d31b-990d-9a74-72f08a0ab4de",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 13,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3668.78,
+      "stream_first_byte_ms": 3511.48,
+      "duration_ms": 3795.16,
+      "output_bytes": 58891,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.93
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.05
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.15
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.15
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.18
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.18
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.35
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.37
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 604.69
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 605.47
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 605.92
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 605.94
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 606.3
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 606.31
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3511.12
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3511.44
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:49.461115+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "785fef6c-2524-92e6-9be2-54181b17d2e6",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 32,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 5467.97,
+      "stream_first_byte_ms": 4983.0,
+      "duration_ms": 13960.43,
+      "output_bytes": 125760,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.6
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.73
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.85
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.85
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.88
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.88
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.13
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.16
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1627.37
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1627.91
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1628.19
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1628.2
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1628.65
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1628.67
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4982.69
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4982.97
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:54.953622+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "f0978f89-8417-96c7-bd03-1a52b6effb45",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 68,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6110.99,
+      "stream_first_byte_ms": 5920.42,
+      "duration_ms": 8310.37,
+      "output_bytes": 174912,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.86
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.1
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.21
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.22
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.25
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.25
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.39
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.41
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 531.96
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 532.31
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 532.5
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 532.51
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 532.65
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 532.65
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5919.88
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5920.36
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:14:56.439785+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "1b3e880b-34cc-9cec-b55c-64392e99e668",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 97,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 9586.99,
+      "stream_first_byte_ms": 9400.23,
+      "duration_ms": 24716.89,
+      "output_bytes": 349204,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 9.35
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.43
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.49
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.49
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.51
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.51
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 9.66
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 9.68
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 277.56
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 278.21
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 278.55
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 278.56
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 279.32
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 279.35
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 9399.7
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 9400.17
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:02.460525+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "4df64095-2e57-9af5-828c-635c9396b6d2",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 40,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 6371.68,
+      "stream_first_byte_ms": 6207.39,
+      "duration_ms": 7446.18,
+      "output_bytes": 68186,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.39
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.46
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.53
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.53
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.68
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.69
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 891.69
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 891.99
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 892.16
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 892.17
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 892.39
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 892.4
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6207.14
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6207.36
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:05.696002+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "5786393f-e7c8-938b-a671-3d9289afc187",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 54,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 3906.24,
+      "stream_first_byte_ms": 3730.94,
+      "duration_ms": 7658.13,
+      "output_bytes": 72084,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.4
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.47
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.53
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.54
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.55
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.55
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.65
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 636.79
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 637.04
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 637.18
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 637.19
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 637.3
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 637.3
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3730.67
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3730.91
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:05.903617+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "94f2e74a-a597-90d8-a618-47972445ffbc",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 80,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 5992.88,
+      "stream_first_byte_ms": 5797.88,
+      "duration_ms": 16404.42,
+      "output_bytes": 139498,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.8
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.92
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.02
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.02
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.05
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.05
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.24
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.26
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 641.83
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 642.54
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 642.89
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 642.9
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 643.46
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 643.47
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5797.74
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5797.86
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:06.794913+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-8921f6b78977",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": "medium",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "294c8eac-7743-9795-b277-47cc1c4e8e8c",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 178,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 5734.53,
+      "stream_first_byte_ms": 5282.91,
+      "duration_ms": 78693.29,
+      "output_bytes": 200686,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.56
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.71
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.71
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.73
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.73
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.89
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.9
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 581.45
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 581.98
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 582.3
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 582.32
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 582.71
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 582.73
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5282.3
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5282.85
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:15.420178+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "c368bd24-65f0-9fd7-bc1d-a525cf0fb149",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 62,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7769.38,
+      "stream_first_byte_ms": 7688.42,
+      "duration_ms": 9689.42,
+      "output_bytes": 74757,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.48
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.58
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.67
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.67
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.69
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.7
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.77
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.78
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1730.73
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1731.1
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1731.33
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1731.34
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1731.57
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1731.58
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7687.95
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7688.37
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:30.115448+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.6",
+      "protocol": "responses",
+      "agent_id": "research-bada5d04110a",
+      "stage": "research",
+      "reasoning_effort_sent": "high",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 52,
+      "stream_terminal": null,
+      "stream_first_event_ms": 8423.11,
+      "stream_first_byte_ms": 8072.41,
+      "duration_ms": 14649.05,
+      "output_bytes": 55269,
+      "error": "cancelled",
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.42
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.51
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.52
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.54
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.54
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.67
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.69
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 558.34
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 558.6
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 558.76
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 558.77
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 558.94
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 558.94
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 8072.05
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 8072.37
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 14647.69
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:30.130556+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-c92d40065826",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 22,
+      "stream_terminal": null,
+      "stream_first_event_ms": 6610.88,
+      "stream_first_byte_ms": 6605.07,
+      "duration_ms": 27038.82,
+      "output_bytes": 25390,
+      "error": "cancelled",
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.9
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.08
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.09
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.19
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.2
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.62
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.69
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 673.28
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 673.59
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 673.81
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 673.82
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 674.02
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 674.03
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6604.72
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6605.04
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 27037.88
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:30.139273+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "research-8921f6b78977",
+      "stage": "research",
+      "reasoning_effort_sent": "medium",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 13,
+      "stream_terminal": null,
+      "stream_first_event_ms": 11377.24,
+      "stream_first_byte_ms": 10914.18,
+      "duration_ms": 23291.06,
+      "output_bytes": 40094,
+      "error": "cancelled",
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.82
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.88
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.88
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.89
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.89
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.1
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.11
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1711.25
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1711.53
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1711.67
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1711.68
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1711.93
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1711.94
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 10913.54
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 10914.11
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 23281.64
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:47.817154+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "0ce327bb-1bed-9c29-9c7f-e6df86189094",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 57,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 8741.57,
+      "stream_first_byte_ms": 8621.66,
+      "duration_ms": 41666.76,
+      "output_bytes": 163346,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.01
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.11
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.21
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.22
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.27
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.27
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.41
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.43
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 2218.59
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2218.88
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 2219.16
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 2219.17
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 2219.66
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2219.66
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 8621.41
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 8621.63
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:15:59.417228+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "8f47f16f-585a-95a1-b8ba-de733d89919a",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 24,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 7799.21,
+      "stream_first_byte_ms": 7610.71,
+      "duration_ms": 11547.03,
+      "output_bytes": 117612,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 3.19
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.3
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.4
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.4
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.42
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.43
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.63
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.66
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 1364.93
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1365.3
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1365.54
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1365.55
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1366.06
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1366.07
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7609.91
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7610.61
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:16:17.501367+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "9cc147b9-4284-9c22-8b13-12c6ddb95b0e",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 65,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 4700.44,
+      "stream_first_byte_ms": 4594.86,
+      "duration_ms": 17853.38,
+      "output_bytes": 139961,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.37
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.52
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.62
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.63
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.65
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.66
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.86
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.89
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 308.52
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 309.28
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 309.72
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 309.74
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 310.22
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 310.24
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4594.39
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4594.81
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:17:42.254863+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 38,
+      "stream_terminal": null,
+      "stream_first_event_ms": 4657.49,
+      "stream_first_byte_ms": 4523.59,
+      "duration_ms": 62290.29,
+      "output_bytes": 84308,
+      "error": "RemoteProtocolError",
+      "transport_failure_kind": "incomplete_response_body",
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.97
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.09
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.1
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.13
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.13
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 3.38
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 3.4
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 702.02
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 702.34
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 702.52
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 702.52
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 702.79
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 702.79
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4522.69
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4523.47
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 62289.17
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:17:42.254863+08:00",
+      "attempt": 2,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "research",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": "high",
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": "8d57d351-3175-9502-9ebf-1b0393e30d52",
+      "status_code": 200,
+      "request_timeout_seconds": 90.0,
+      "response_format": "sse",
+      "stream_event_count": 50,
+      "stream_terminal": "response.completed",
+      "stream_first_event_ms": 5364.94,
+      "stream_first_byte_ms": 5177.94,
+      "duration_ms": 21413.23,
+      "output_bytes": 142076,
+      "error": null,
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 5.24
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 5.59
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 5.87
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 5.87
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 5.92
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 5.93
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 6.14
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 6.22
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 717.05
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 717.78
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 718.2
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 718.21
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 718.84
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 718.85
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5176.75
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5177.86
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:21:43.417914+08:00",
+      "attempt": 1,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 120.0,
+      "response_format": "sse",
+      "stream_event_count": 112,
+      "stream_terminal": null,
+      "stream_first_event_ms": 9776.97,
+      "stream_first_byte_ms": 8963.27,
+      "duration_ms": 120001.74,
+      "output_bytes": 146051,
+      "error": "RequestDeadlineExceeded",
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.55
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.62
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.62
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.63
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.82
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.84
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 244.82
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 245.28
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 245.5
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 245.51
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 246.04
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 246.05
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 8963.02
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 8963.24
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 120001.45
+        }
+      ]
+    },
+    {
+      "event_at": "2026-10-30T22:21:43.417914+08:00",
+      "attempt": 2,
+      "endpoint": "responses",
+      "model": "grok-4.7",
+      "protocol": "responses",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "request_timeout_seconds": 120.0,
+      "response_format": "sse",
+      "stream_event_count": 87,
+      "stream_terminal": null,
+      "stream_first_event_ms": 7822.45,
+      "stream_first_byte_ms": 7663.22,
+      "duration_ms": 120002.01,
+      "output_bytes": 127427,
+      "error": "RequestDeadlineExceeded",
+      "transport_failure_kind": null,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.49
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.49
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.61
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 1.62
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 859.7
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 859.9
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 862.24
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 862.24
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 862.39
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 862.39
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7662.69
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7663.16
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 120001.51
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "at": "2026-10-30T22:12:56.548132+08:00",
+      "agent_id": "manager",
+      "model_config": {
+        "model_protocol": "responses",
+        "model_name": "grok-4.7",
+        "provider_id": "legacy-09a15ec53c70",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "manager",
+        "role_version": 2,
+        "prompt_version": 2,
+        "tool_version": 1,
+        "reasoning_effort": "max"
+      },
+      "limits": {
+        "request_timeout_seconds": 90,
+        "child_timeout_seconds": 120,
+        "analysis_timeout_seconds": 600,
+        "max_model_calls": 40,
+        "synthesis_max_calls": 4
+      }
+    },
+    {
+      "at": "2026-10-30T22:13:30.112245+08:00",
+      "agent_id": "research-bada5d04110a",
+      "model_config": {
+        "model_protocol": "responses",
+        "model_name": "grok-4.6",
+        "provider_id": "legacy-09a15ec53c70",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "filing_researcher",
+        "role_version": 1,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "reasoning_effort": "high"
+      },
+      "limits": {
+        "request_timeout_seconds": 90,
+        "child_timeout_seconds": 120
+      }
+    },
+    {
+      "at": "2026-10-30T22:13:30.114635+08:00",
+      "agent_id": "research-c92d40065826",
+      "model_config": {
+        "model_protocol": "responses",
+        "model_name": "grok-4.7",
+        "provider_id": "legacy-09a15ec53c70",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "etf_researcher",
+        "role_version": 1,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "reasoning_effort": "medium"
+      },
+      "limits": {
+        "request_timeout_seconds": 90,
+        "child_timeout_seconds": 120
+      }
+    },
+    {
+      "at": "2026-10-30T22:13:30.116755+08:00",
+      "agent_id": "research-8921f6b78977",
+      "model_config": {
+        "model_protocol": "responses",
+        "model_name": "grok-4.7",
+        "provider_id": "legacy-09a15ec53c70",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "role_id": "market_researcher",
+        "role_version": 1,
+        "prompt_version": 1,
+        "tool_version": 1,
+        "reasoning_effort": "medium"
+      },
+      "limits": {
+        "request_timeout_seconds": 90,
+        "child_timeout_seconds": 120
+      }
+    }
+  ],
+  "checkpoint": {
+    "exists": true,
+    "created_at": "2026-10-30T22:17:42.367292+08:00",
+    "resume_count": 0
+  },
+  "event_counts": {
+    "model_configuration_bound": 1,
+    "agent_started": 4,
+    "model_usage": 34,
+    "agent_message": 25,
+    "tool_started": 141,
+    "tool_result": 141,
+    "calculation_context_coverage": 13,
+    "agent_created": 3,
+    "native_search": 9,
+    "context_compacted": 7,
+    "final_calculation_coverage": 3,
+    "model_error": 4,
+    "agent_failed": 4,
+    "budget_closeout": 1,
+    "synthesis_checkpoint": 1,
+    "synthesis_context_projected": 1,
+    "failed": 1
+  },
+  "unavailable": [
+    "last semantic progress",
+    "max idle",
+    "first content delta",
+    "precise per-attempt start wall-clock",
+    "provider-side logs/request IDs on failed streams",
+    "OS sleep/wake correlation"
+  ],
+  "cost_note": "No invoice or authoritative unit conversion; failed stream usage missing. No estimated fee claimed."
+}

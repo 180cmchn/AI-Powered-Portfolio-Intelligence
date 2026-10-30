@@ -233,7 +233,8 @@ def test_restore_accepts_v5_backup(tmp_path):
 async def test_manager_child_followup_synthesis_and_recovery_keep_same_effort(monkeypatch):
     from app import agents
     cfg = {**config('max'), 'max_agent_turns': 20, 'max_model_calls': 40,
-           'analysis_timeout_seconds': 5, 'agent_timeout_seconds': 2}
+           'analysis_timeout_seconds': 5, 'agent_timeout_seconds': 2,
+           'model_request_hard_timeout_seconds': 1, 'synthesis_request_hard_timeout_seconds': 1}
     payloads, events, checkpoints = [], [], []
     state = {'child': None, 'round': 0, 'followed': False}
     def response(name, args):

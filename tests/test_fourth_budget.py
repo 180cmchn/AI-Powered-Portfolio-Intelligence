@@ -19,7 +19,8 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
     config = {"model_base_url": "https://model.example/v1", "model_name": "budget-regression",
               "model_key_env": "FOURTH_BUDGET_KEY", "model_protocol": "responses",
               "model_native_search": True, "model_retries": 0,
-              "max_agent_turns": 6, "max_model_calls": 20, "analysis_timeout_seconds": 5}
+              "max_agent_turns": 6, "max_model_calls": 20, "analysis_timeout_seconds": 5,
+              "model_request_hard_timeout_seconds": 1, "synthesis_request_hard_timeout_seconds": 1}
     store = Store(tmp_path / "budget.sqlite3")
     store.set_meta("settings", {"quote_provider": "manual", "debounce_seconds": 0})
     account = store.save_account(AccountInput(name="Budget regression", holdings=[]))

@@ -1,0 +1,308 @@
+{
+  "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+  "python": "/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python",
+  "python_version": "3.14.4",
+  "repository_source_sha256": "7e992ec297e7e887e62ac59efd59f0e34fabc1434f5b9e243aeb39011502fdf3",
+  "api_contract": 10,
+  "env_file": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+  "database_access": "read_only",
+  "runtime_version": {
+    "started_at": "2026-10-30T21:54:01.260932+08:00",
+    "commit_at_start": "874b9875a9649480cde78bca804af2693ba5d1d8",
+    "api_contract": 10,
+    "instance_id": "c18ad733cdce4cbd9d412e98162278a1",
+    "pid": 84554,
+    "port": 8765,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+    "database_identity": "a1c024e1463926d3e55014e140e6cd465f9e44afe515ac056d187516e0cc76b1",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "c46742122e9b8872e1d992b975f9ad77aa2758fb7069335e4c9386e81c7e40bc",
+    "working_tree_dirty_at_start": false,
+    "source_sha256_at_start": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+    "schema_version": 10,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/status",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/openapi.json",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent-roles",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/accounts",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/research",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/forecasts",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/forecast-batches",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/environment-connection",
+      "status": 200,
+      "content_type": "application/json",
+      "instance": "c18ad733cdce4cbd9d412e98162278a1"
+    }
+  ],
+  "disk_commit": "874b9875a9649480cde78bca804af2693ba5d1d8",
+  "disk_dirty": true,
+  "lockfile_sha256": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+  "database_schema_version": 10,
+  "database_mode": "live",
+  "database_has_saved_settings": true,
+  "agent_config_migrated": true,
+  "legacy_configuration": {
+    "source": "saved_settings_over_environment_defaults",
+    "endpoint_host": "api.xxyapi.com",
+    "protocol": "responses",
+    "legacy_model_present": true,
+    "key_present_in_current_diagnostic_environment": true,
+    "note": "These are not proof of the running process environment or a selected Agent model."
+  },
+  "pidfiles": {
+    "live": {
+      "pid": 84554,
+      "started": "五 10月/30 21:54:00 2026",
+      "mode": "live",
+      "port": 8765,
+      "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+      "process": {
+        "pid": 84554,
+        "started": "Fri Oct 30 21:54:00 2026",
+        "owned_entry": true,
+        "alive": true
+      }
+    },
+    "demo": {
+      "pid": 31017,
+      "legacy": true,
+      "process": null
+    }
+  },
+  "listeners": [
+    {
+      "pid": 84554,
+      "started": "Fri Oct 30 21:54:00 2026",
+      "owned_entry": true,
+      "alive": true,
+      "cwd": "/Users/chn/Documents/ChatGPT/金融股票 2"
+    }
+  ],
+  "service_mode": "live",
+  "configuration_readiness": {
+    "account_id": null,
+    "local_api": "ready",
+    "provider_saved": true,
+    "manager_provider_saved": true,
+    "key_state": "available",
+    "catalog_status": "success",
+    "manager_binding": {
+      "provider_id": "legacy-09a15ec53c70",
+      "model_id": "grok-4.7",
+      "validation": "discovered",
+      "discovered_revision": 1,
+      "reasoning_effort": "medium",
+      "binding_source": "global_default",
+      "effort_source": "global_default",
+      "provider_revision": 1,
+      "credential_revision": 1,
+      "provider_display_name": "供应商 1（迁移）",
+      "protocol": "responses"
+    },
+    "manager_ready": true,
+    "manager_error": null,
+    "next_step": "模型已绑定；函数和原生搜索能力以明确探测或实际请求为准",
+    "roles": [
+      {
+        "role_id": "manager",
+        "binding_source": "global_default",
+        "error": null
+      },
+      {
+        "role_id": "filing_researcher",
+        "binding_source": "global_default",
+        "error": null
+      },
+      {
+        "role_id": "market_researcher",
+        "binding_source": "global_default",
+        "error": null
+      },
+      {
+        "role_id": "industry_researcher",
+        "binding_source": "global_default",
+        "error": null
+      },
+      {
+        "role_id": "etf_researcher",
+        "binding_source": "global_default",
+        "error": null
+      },
+      {
+        "role_id": "portfolio_researcher",
+        "binding_source": "global_default",
+        "error": null
+      }
+    ],
+    "functions": "unverified",
+    "native_search": "unverified"
+  },
+  "missing_routes": [],
+  "environment_connection": {
+    "base_url": "https://api.xxyapi.com/v1",
+    "protocol": "responses",
+    "key_present": true,
+    "key_name": "MODEL_API_KEY",
+    "source": {
+      "dotenv_path": "/Users/chn/Documents/ChatGPT/金融股票 2/.env",
+      "dotenv_enabled": true,
+      "fields": {
+        "MODEL_BASE_URL": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        },
+        "MODEL_PROTOCOL": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        },
+        "MODEL_KEY_ENV": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        },
+        "MODEL_API_KEY": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        },
+        "MODEL_NAME": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        },
+        "REASONING_EFFORT": {
+          "present": true,
+          "source": "dotenv",
+          "file_differs": false,
+          "shell_overrides_file": false
+        }
+      },
+      "restart_required": false,
+      "note": ".env 修改需要安全重启；已有 shell 环境优先。环境连接导入不会覆盖角色或账户模型选择。"
+    },
+    "provider_id": "legacy-09a15ec53c70",
+    "provider_revision": 1,
+    "status": "current",
+    "can_import": true,
+    "changed": false,
+    "preview_id": "760cf14d91d34ac4a81ed14ae8bd9fde",
+    "error": null,
+    "action": "供应商已识别；请从实际目录为主 Agent 选择模型",
+    "existing_saved_connections": 1,
+    "migration_completed": true
+  },
+  "source_matches_disk": false,
+  "static_matches_disk": true,
+  "database_matches_requested": true,
+  "api_compatible": true,
+  "static_responses": {
+    "index.html": {
+      "status": 200,
+      "sha256": "04b6782cd8d3f4fe60115fd2d8c4216e4a683dd00deee875cc8bd75112e3fb11",
+      "content_type": "text/html; charset=utf-8",
+      "matches_disk": true
+    },
+    "app.js": {
+      "status": 200,
+      "sha256": "12ddfba86af27db4eeafe883401ea76280d2a45c475e54f584656b9a4a4db493",
+      "content_type": "text/javascript; charset=utf-8",
+      "matches_disk": true
+    },
+    "sixth.js": {
+      "status": 200,
+      "sha256": "1fde125d9d364b9fb9835b790133d9b52b8754896b6d6358cdd971438bc7b1a6",
+      "content_type": "text/javascript; charset=utf-8",
+      "matches_disk": true
+    }
+  }
+}

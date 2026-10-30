@@ -33,7 +33,9 @@ def config(monkeypatch):
     monkeypatch.setenv("TEST_MODEL_API_KEY", "not-a-real-key-test-only")
     return {"model_name": "scripted-test-only", "model_key_env": "TEST_MODEL_API_KEY",
             "model_protocol": "responses", "model_retries": 0, "max_model_calls": 80,
-            "max_agent_turns": 30, "agent_timeout_seconds": 2, "analysis_timeout_seconds": 5}
+            "max_agent_turns": 30, "agent_timeout_seconds": 2, "analysis_timeout_seconds": 5,
+            "model_first_event_timeout_seconds": 1, "model_stream_idle_timeout_seconds": 1,
+            "model_request_hard_timeout_seconds": 1, "synthesis_request_hard_timeout_seconds": 1}
 
 
 def install_transport(monkeypatch, handler):

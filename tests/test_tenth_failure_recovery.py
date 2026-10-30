@@ -17,7 +17,18 @@ async def test_early_failure_keeps_completed_calculate_then_reuses_without_resea
     account=store.save_account(AccountInput(name='early failure fixture',cash='10000',holdings=[],research_scope='cash_only'))
     manager=next(r for r in store.list_agent_roles() if r['role_id']=='manager')
     store.update_agent_definition('manager',{'default_binding':{**{k:manager['default_binding'][k] for k in ('provider_id','model_id')},'reasoning_effort':'max'}})
-    if failure=='deadline':store.set_meta('settings',{**store.settings(),'analysis_timeout_seconds':.2})
+    if failure=='deadline':
+        # Keep the request policy proportional to the shortened parent budget.
+        # A completed calculation precedes a stalled *tool* stage; a normal HTTP
+        # request may no longer be started across the reserved final window.
+        store.set_meta('settings',{**store.settings(),'analysis_timeout_seconds':.2,
+            'model_request_hard_timeout_seconds':.04, 'synthesis_request_hard_timeout_seconds':.04})
+        original_calculate = ResearchTools.calculate
+        async def controlled_calculate(self, operation, values):
+            if operation == 'sum':
+                await asyncio.sleep(2)
+            return await original_calculate(self, operation, values)
+        monkeypatch.setattr(ResearchTools, 'calculate', controlled_calculate)
     calls=[]
     async def handler(request):
         payload=json.loads(request.content);calls.append(payload)
@@ -31,12 +42,14 @@ async def test_early_failure_keeps_completed_calculate_then_reuses_without_resea
             assert not any(t.get('name')=='spawn_research' or t['type']=='web_search' for t in payload['tools'])
             return response(call('finish_analysis',{'report':'有限分析：已完成持仓估值计算8850；原专题尚未完成，保留未知。'}))
         if len(calls)==1:return response(call('calculate',{'operation':'multiply','values':['10000','.885']}))
-        if failure=='deadline':await asyncio.sleep(2)
+        if failure=='deadline':return response(call('calculate',{'operation':'sum','values':['1','2']}))
         raise httpx.ReadTimeout('controlled early failure',request=request)
     install(monkeypatch,handler)
     service=Service(store);first=store.claim_jobs(account_id=account['id'])[0]
     await service.execute(first)
     assert store.job(first['id'])['state']=='failed' and not store.analyses(account['id'])
+    if failure=='deadline':
+        assert any(e.get('error_code')=='analysis_budget_exhausted' for e in store.job(first['id'],events=True)['events'])
     with store.connect() as db:
         body=json.loads(db.execute('SELECT body FROM synthesis_checkpoints WHERE job_id=?',(first['id'],)).fetchone()[0])
     assert body['partial_research'] and Decimal(body['calculations'][0]['output']['result'])==Decimal('8850')

@@ -47,7 +47,7 @@ def dec(value, *, scale=6, positive=False, signed=False):
         result = Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         raise ValueError('金额、价格和数量须为有限十进制数') from None
-    if not result.is_finite() or abs(result) > Decimal('1000000000000') or (not signed and result < 0):
+    if not result.is_finite() or result.copy_abs() > Decimal('1000000000000') or (not signed and result < 0):
         raise ValueError('数值超出范围，禁止负数或非有限数')
     if positive and result <= 0:
         raise ValueError('数量或价格必须大于0')
@@ -55,7 +55,7 @@ def dec(value, *, scale=6, positive=False, signed=False):
         raise ValueError('数量必须为整数股/份')
     if scale != 0 and result.as_tuple().exponent < -scale:
         raise ValueError(f'最多支持{scale}位小数')
-    return result
+    return result.to_integral_value() if scale == 0 else result
 
 
 def text(value):
@@ -64,6 +64,13 @@ def text(value):
 
 def money(value):
     return format(Decimal(value).quantize(Decimal('.01'), rounding=ROUND_HALF_UP), 'f')
+
+
+def posting_cash(value):
+    cash = Decimal(value)
+    if cash != cash.quantize(Decimal('.01'), rounding=ROUND_HALF_UP):
+        raise ValueError('现有现金包含不足一分的精度；原值已保留，请先通过有依据的期初/校正明确到分，禁止记账时静默取整')
+    return cash
 
 
 def default_plan():
@@ -167,7 +174,7 @@ def timestamp(value):
 
 
 def available(position, on):
-    return sum(int(lot['quantity']) for lot in position.get('lots', []) if lot.get('sellable_on') and lot['sellable_on'] <= on)
+    return sum(int(dec(lot['quantity'], scale=0)) for lot in position.get('lots', []) if lot.get('sellable_on') and lot['sellable_on'] <= on)
 
 
 def accounting_precision(function):
@@ -215,7 +222,7 @@ class LedgerStore:
         for holding in holdings:
             qty = dec(holding['quantity'], scale=0)
             known = holding.get('cost_price') is not None
-            total = text(qty * dec(holding['cost_price'])) if known else None
+            total = text(qty * dec(holding['cost_price'])) if known else '0' if not qty else None
             sellable = holding.get('available_quantity')
             if sellable is not None:
                 sellable = dec(sellable, scale=0)
@@ -227,7 +234,7 @@ class LedgerStore:
             if qty - (sellable or 0):
                 lots.append({'quantity': text(qty - (sellable or 0)), 'sellable_on': None, 'source': source})
             body = {'symbol': holding['symbol'], 'quantity': text(qty), 'total_cost': total,
-                    'cost_basis': 'known_opening_cost' if known else 'unknown_opening_cost', 'lots': lots,
+                    'cost_basis': 'known_opening_cost' if known else 'empty_position' if not qty else 'unknown_opening_cost', 'lots': lots,
                     'fees_included_in_cost': False, 'source': source}
             db.execute('INSERT INTO ledger_positions VALUES(?,?,?)', (account_id, holding['symbol'], dump(body)))
 
@@ -288,7 +295,7 @@ class LedgerStore:
             positions = self._positions(account_id, db)
             for pos in positions.values():
                 pos['available_quantity'] = str(available(pos, now()[:10]))
-                pos['availability_unknown_quantity'] = str(sum(int(l['quantity']) for l in pos['lots'] if l.get('sellable_on') is None))
+                pos['availability_unknown_quantity'] = str(sum(int(dec(l['quantity'], scale=0)) for l in pos['lots'] if l.get('sellable_on') is None))
             entries = [json.loads(r[0]) for r in db.execute('SELECT body FROM ledger_entries WHERE account_id=? ORDER BY sequence DESC LIMIT 200', (account_id,))]
             cash = [{**dict(r), 'body': json.loads(r['body'])} for r in db.execute('SELECT * FROM cash_entries WHERE account_id=? ORDER BY recorded_at DESC LIMIT 200', (account_id,))]
             return {'account_id': account_id, 'input_version': account['version'], 'cash': account['cash'],
@@ -361,6 +368,7 @@ class LedgerStore:
             raise ValueError('不支持在已记账成交之前插单；请使用有依据的期初校正或先撤销末笔')
         if account['cash'] is None:
             raise ValueError('现金未知，请先录入有来源的期初现金；不会自动当作0')
+        cash_before = posting_cash(account['cash'])
         before = self._positions(account_id, db)
         position = deepcopy(before.get(sid, {'symbol': sid, 'quantity': '0', 'total_cost': '0', 'lots': [], 'cost_basis': 'trade_cost', 'fees_included_in_cost': True}))
         old_qty = Decimal(position['quantity'])
@@ -391,6 +399,8 @@ class LedgerStore:
         if fee_override is not None:
             if not isinstance(fee_override, dict) or not isinstance(fee_override.get('reason'), str) or not fee_override['reason'].strip():
                 raise ValueError('单笔实际费用覆盖必须填写交割单等依据')
+            if not ({'commission', 'transfer', 'stamp'} & set(fee_override)):
+                raise ValueError('实际费用覆盖至少填写一个费用数值，不能仅凭原因把估算标为实际费用')
             if set(fee_override) - {'commission', 'transfer', 'stamp', 'reason'}:
                 raise ValueError('单笔费用覆盖包含未知费目')
             for key in ('commission', 'transfer', 'stamp'):
@@ -402,13 +412,16 @@ class LedgerStore:
                 raise ValueError('该品种/方向不适用股票印花税或过户费')
         fee_total = sum(Decimal(v) for v in actual.values())
         delta = -gross - fee_total if side == 'buy' else gross - fee_total
-        cash = Decimal(account['cash']) + delta
+        cash = cash_before + delta
         if cash < 0:
             raise ValueError('可用现金不足，禁止融资或负现金')
         new_qty = old_qty + qty if side == 'buy' else old_qty - qty
         cost = Decimal(position['total_cost']) if position.get('total_cost') is not None else None
         realized, relieved = None, None
         if side == 'buy':
+            if not old_qty:
+                cost = Decimal(0)
+                position['cost_basis'] = 'trade_cost'
             if cost is not None:
                 cost += gross + fee_total
             sellable_on = day
@@ -435,13 +448,13 @@ class LedgerStore:
             remaining = int(qty)
             for lot in position['lots']:
                 if remaining and lot.get('sellable_on') and lot['sellable_on'] <= day:
-                    used = min(remaining, int(lot['quantity']))
-                    lot['quantity'] = str(int(lot['quantity']) - used)
+                    used = min(remaining, int(dec(lot['quantity'], scale=0)))
+                    lot['quantity'] = str(int(dec(lot['quantity'], scale=0)) - used)
                     remaining -= used
-            position['lots'] = [lot for lot in position['lots'] if int(lot['quantity'])]
+            position['lots'] = [lot for lot in position['lots'] if int(dec(lot['quantity'], scale=0))]
         if not new_qty:
             cost, position['lots'] = Decimal(0), []
-        position.update(quantity=text(new_qty), total_cost=text(cost), fees_included_in_cost=True)
+        position.update(quantity=str(int(new_qty)), total_cost=text(cost), fees_included_in_cost=True)
         positions = {**before, sid: position}
         holdings = []
         for symbol, pos in positions.items():
@@ -452,9 +465,11 @@ class LedgerStore:
             'quantity': text(qty), 'price': text(price), 'traded_at': at.isoformat(), 'mode': mode,
             'gross': money(gross), 'gross_raw': text(gross_raw), 'gross_rounding': 'ROUND_HALF_UP_to_cent', 'fees': {'components': actual, 'estimated': estimated, 'raw': {k: text(v) for k, v in raw.items()}, 'total': money(fee_total),
                 'plan_version': plan['version'], 'plan_snapshot': plan, 'rule': settings, 'override': fee_override,
-                'estimated_only': not plan['confirmed'] and fee_override is None, 'included_in_cost': side == 'buy'},
+                'estimated_only': not plan['confirmed'] and (fee_override is None or 'commission' not in fee_override),
+                'actual_override_components': sorted(set(fee_override or {}) & {'commission', 'transfer', 'stamp'}),
+                'included_in_cost': side == 'buy'},
             'fee_effect': money(fee_total), 'cash_effect': money(delta), 'cash_before': account['cash'], 'cash_after': money(cash),
-            'quantity_before': text(old_qty), 'quantity_after': text(new_qty), 'available_before': str(sellable),
+            'quantity_before': text(old_qty), 'quantity_after': str(int(new_qty)), 'available_before': str(sellable),
             'total_cost_after': text(cost), 'cost_relieved': text(relieved), 'realized_pnl': money(realized) if realized is not None else None,
             'realized_pnl_effect': text(realized), 'cost_basis': 'known' if realized is not None or side == 'buy' and cost is not None else '成本依据不足',
             'rule': rule, 'note': str(payload.get('note', ''))[:1000], 'before_positions': before,
@@ -524,7 +539,7 @@ class LedgerStore:
                 raise ValueError('期初现金已存在，请使用转入/转出或明确校正')
             if kind != 'opening' and account['cash'] is None:
                 raise ValueError('现金未知，请先录入有来源的期初现金')
-            cash = Decimal(account['cash'] or '0')
+            cash = posting_cash(account['cash']) if account['cash'] is not None else Decimal(0)
             delta = -amount if kind == 'withdraw' else amount
             if cash + delta < 0:
                 raise ValueError('资金转出超过模拟可用现金；本系统不处理券商提现清算')
@@ -562,7 +577,7 @@ class LedgerStore:
         cash = money(dec(cash_value, scale=2)) if cash_value is not None else None
         self._replace_ledger_positions(db, account_id, holdings, source='explicit_correction')
         after = self._positions(account_id, db)
-        cash_effect = money(Decimal(cash) - Decimal(account['cash'])) if cash is not None and account['cash'] is not None else None
+        cash_effect = text(Decimal(cash) - Decimal(account['cash'])) if cash is not None and account['cash'] is not None else None
         entry = {'kind': 'correction', 'cash_before': account['cash'], 'cash_after': cash, 'cash_effect': cash_effect,
                  'external_flow': True, 'before_positions': before, 'after_positions': after,
                  'before_holdings': account['holdings'], 'after_holdings': holdings,
@@ -585,17 +600,19 @@ class LedgerStore:
             if not latest or latest['id'] != entry_id or latest['kind'] in ('opening', 'reversal'):
                 raise ValueError('仅支持撤销账户末笔非期初记录；更早记录请使用有依据的校正，不进行任意历史重算')
             original = json.loads(latest['body'])
+            restore_metadata = account['version'] == original.get('account_version')
             entry = {'kind': 'reversal', 'reference_entry_id': entry_id,
                      'cash_before': account['cash'], 'cash_after': original['cash_before'],
-                     'cash_effect': money(-Decimal(original['cash_effect'])) if original.get('cash_effect') is not None else None,
+                     'cash_effect': text(-Decimal(original['cash_effect'])) if original.get('cash_effect') is not None else None,
                      'external_flow': original.get('external_flow', False), 'fee_effect': money(-Decimal(original.get('fee_effect', '0'))),
                      'realized_pnl_effect': text(-Decimal(original['realized_pnl_effect'])) if original.get('realized_pnl_effect') is not None else None,
                      'unknown_realized_effect': -1 if original.get('kind') == 'trade' and original.get('side') == 'sell' and original.get('realized_pnl_effect') is None else 0,
                      'before_positions': self._positions(account_id, db), 'after_positions': original['before_positions'],
                      'before_holdings': account['holdings'], 'after_holdings': original['before_holdings'],
                      'no_new_trading_fees': True,
-                     'before_name': account['name'], 'after_name': original.get('before_name', account['name']),
-                     'before_preferences': account['preferences'], 'after_preferences': original.get('before_preferences', account['preferences'])}
+                     'before_name': account['name'], 'after_name': original.get('before_name', account['name']) if restore_metadata else account['name'],
+                     'before_preferences': account['preferences'], 'after_preferences': original.get('before_preferences', account['preferences']) if restore_metadata else account['preferences'],
+                     'metadata_reversal_policy': 'restore_only_without_later_account_version'}
             return self._commit_entry(db, account_id, payload, entry, fingerprint)
 
     def adjust_trade_fees(self, account_id, entry_id, payload):
@@ -622,12 +639,16 @@ class LedgerStore:
                 raise ValueError('过户费已包含佣金，不可再次另扣')
             if kind == 'etf' and (Decimal(actual['transfer']) or Decimal(actual['stamp'])) or side == 'buy' and Decimal(actual['stamp']):
                 raise ValueError('该品种/方向不适用股票印花税或过户费')
+            overridden = set(original['fees'].get('actual_override_components', []))
+            overridden.update(set(original['fees'].get('override') or {}) & {'commission', 'transfer', 'stamp'})
+            overridden.update(supplied)
+            estimated_commission = not original['fees']['plan_snapshot']['confirmed'] and 'commission' not in overridden
             actual_total = sum(Decimal(value) for value in actual.values())
             previous_total = Decimal(original['fees']['total'])
             delta = actual_total - previous_total
             if not delta and actual == original['fees']['components']:
                 raise ValueError('费用未变化，无需重复更正')
-            cash = Decimal(account['cash']) - delta
+            cash = posting_cash(account['cash']) - delta
             if cash < 0:
                 raise ValueError('补扣费用后现金不足，禁止负现金')
             before = self._positions(account_id, db)
@@ -652,7 +673,8 @@ class LedgerStore:
                 'fees': {'components': actual, 'previous': original['fees']['components'],
                          'original_estimate': original['fees']['estimated'], 'total': money(actual_total),
                          'previous_total': money(previous_total), 'delta': money(delta),
-                         'plan_version': original['fees']['plan_version'], 'estimated_only': False},
+                         'plan_version': original['fees']['plan_version'], 'estimated_only': estimated_commission,
+                         'actual_override_components': sorted(overridden)},
                 'fee_effect': money(delta), 'cash_before': account['cash'], 'cash_after': money(cash),
                 'cash_effect': money(-delta), 'realized_pnl_effect': realized_effect,
                 'total_cost_after': position.get('total_cost'), 'no_new_trading_fees': True,

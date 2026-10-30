@@ -1,0 +1,280 @@
+{
+  "baseline": [
+    {
+      "kind": "unfocused",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 0,
+        "start": 0,
+        "end": 0,
+        "direction": "none",
+        "focus": false,
+        "details": true,
+        "windowY": 667,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 0,
+          "scrollLeft": 0,
+          "start": 0,
+          "end": 0,
+          "direction": "none",
+          "focus": false,
+          "details": false,
+          "windowY": 667,
+          "sameNode": false,
+          "sameForm": false,
+          "sameValue": true
+        }
+      ]
+    },
+    {
+      "kind": "focused",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 0,
+        "start": 0,
+        "end": 4,
+        "direction": "backward",
+        "focus": true,
+        "details": true,
+        "windowY": 667,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 0,
+          "scrollLeft": 0,
+          "start": 0,
+          "end": 4,
+          "direction": "none",
+          "focus": true,
+          "details": true,
+          "windowY": 667,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        }
+      ]
+    },
+    {
+      "kind": "dirty",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 0,
+        "start": 17557,
+        "end": 17557,
+        "direction": "none",
+        "focus": true,
+        "details": true,
+        "windowY": 667,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 0,
+          "scrollLeft": 0,
+          "start": 17557,
+          "end": 17557,
+          "direction": "none",
+          "focus": true,
+          "details": true,
+          "windowY": 667,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        }
+      ]
+    }
+  ],
+  "fixed": [
+    {
+      "kind": "unfocused",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 180,
+        "start": 0,
+        "end": 0,
+        "direction": "none",
+        "focus": false,
+        "details": true,
+        "windowY": 43,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 0,
+          "end": 0,
+          "direction": "none",
+          "focus": false,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        },
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 0,
+          "end": 0,
+          "direction": "none",
+          "focus": false,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        }
+      ]
+    },
+    {
+      "kind": "focused",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 180,
+        "start": 0,
+        "end": 4,
+        "direction": "backward",
+        "focus": true,
+        "details": true,
+        "windowY": 43,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 0,
+          "end": 4,
+          "direction": "backward",
+          "focus": true,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        },
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 0,
+          "end": 4,
+          "direction": "backward",
+          "focus": true,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        }
+      ]
+    },
+    {
+      "kind": "dirty",
+      "before": {
+        "scrollTop": 1200,
+        "scrollLeft": 180,
+        "start": 17557,
+        "end": 17557,
+        "direction": "none",
+        "focus": true,
+        "details": true,
+        "windowY": 43,
+        "sameNode": true,
+        "sameForm": true,
+        "sameValue": true
+      },
+      "after": [
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 17557,
+          "end": 17557,
+          "direction": "none",
+          "focus": true,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        },
+        {
+          "scrollTop": 1200,
+          "scrollLeft": 180,
+          "start": 17557,
+          "end": 17557,
+          "direction": "none",
+          "focus": true,
+          "details": true,
+          "windowY": 43,
+          "sameNode": true,
+          "sameForm": true,
+          "sameValue": true
+        }
+      ]
+    }
+  ],
+  "navigation": [
+    {
+      "route": "overview",
+      "fullCards": 1
+    },
+    {
+      "route": "holdings",
+      "fullCards": 0
+    },
+    {
+      "route": "market",
+      "fullCards": 0
+    },
+    {
+      "route": "research",
+      "fullCards": 0
+    },
+    {
+      "route": "agents",
+      "fullCards": 0
+    },
+    {
+      "route": "providers",
+      "fullCards": 0
+    },
+    {
+      "route": "roles",
+      "fullCards": 0
+    },
+    {
+      "route": "account-models",
+      "fullCards": 0
+    },
+    {
+      "route": "forecasts",
+      "fullCards": 0
+    },
+    {
+      "route": "settings",
+      "fullCards": 0
+    }
+  ],
+  "checks": [
+    "same connected DOM and active selection survive composition event + poll; no synthetic compositionend",
+    "server revision leaves dirty prompt intact, stale save conflicts, explicit reload and current save succeed",
+    "account-role drafts use account + role identity and never cross accounts",
+    "only overview shows full card; completion outranks synthesis; account isolation",
+    "three securities through production trade form; exact cash, ETF fees, T+0 full sale, explicit fee adjustment, external deposit excluded from PnL, lost-response receipt, double-click and account isolation"
+  ]
+}

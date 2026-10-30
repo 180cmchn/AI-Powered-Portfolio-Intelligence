@@ -98,9 +98,12 @@ try {
   await page.getByText('公共研究协议样例', {exact:true}).waitFor();
   assert.ok((await page.locator('#dialog').textContent()).includes('候选范围 v1'));
   await page.locator('#dialog .dialog-header button').click();
+  const holdingsRead=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/accounts/${id}` && response.request().method()==='GET');
   await page.locator('nav a[href="#holdings"]').click();
-  await page.locator('details[data-key^="account-metadata:"]').evaluate(el=>el.open=true);
-  await page.locator('#snapshot-correction').evaluate(el=>el.open=true);
+  await holdingsRead;await page.locator('.loading-line').waitFor({state:'hidden'});
+  await page.locator('details[data-key^="account-metadata:"] > summary').click();
+  await page.locator('#snapshot-correction > summary').click();
+  await page.locator('#account-name').waitFor({state:'visible'});
   await page.locator('#account-name').fill('未保存账户草稿');
   await page.locator('input[name^="quantity-"]').fill('321');
   version = 2;

@@ -20,7 +20,7 @@ def config(monkeypatch, **extra):
             "model_key_env": "LATE_CHILD_TEST_KEY", "model_protocol": "responses",
             "model_native_search": True, "model_retries": 0, "max_model_calls": 30,
             "max_agent_turns": 18, "max_concurrent_agents": 2, "agent_timeout_seconds": 3,
-            "analysis_timeout_seconds": 5, "synthesis_request_timeout_seconds": 1, **extra}
+            "analysis_timeout_seconds": 5, "model_request_hard_timeout_seconds": 1, "synthesis_request_timeout_seconds": 1, **extra}
 
 
 def response(tool, args):
