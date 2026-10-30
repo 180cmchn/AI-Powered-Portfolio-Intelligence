@@ -42,6 +42,7 @@ try {
   const navigate=async name=>{
     await page.locator(`nav a[href="#${name}"]`).click();
     await page.locator(`nav a[href="#${name}"][aria-current="page"]`).waitFor();
+    if(name==='holdings') await page.locator('details[data-key^="account-metadata:"]').evaluate(el=>el.open=true);
   };
   const assertIdle=async()=>{
     await page.locator('.loading-line').waitFor({state:'hidden'});
@@ -105,7 +106,7 @@ try {
   await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   const draftName='账户 A 未保存草稿';
-  await page.locator('#account-form #name').fill(draftName);
+  await page.locator('#account-meta-form #account-name').fill(draftName);
   // Hold navigation's status request so an account choice occurs while the UI is busy.
   // The user's latest choice must be applied after that read, without a reload.
   let releaseNavigation, observeNavigation;
@@ -147,10 +148,10 @@ try {
   assert.equal((await (await fetch(base+`/api/jobs/${fixture.checkpoint_job_id}`)).json()).synthesis_checkpoint.available,true);
   await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  assert.notEqual(await page.locator('#account-form #name').inputValue(),draftName,'account A draft must not appear in account B');
+  assert.notEqual(await page.locator('#account-meta-form #account-name').inputValue(),draftName,'account A draft must not appear in account B');
   await page.locator('#account-switch').selectOption(fixture.account_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  assert.equal(await page.locator('#account-form #name').inputValue(),draftName,'account A draft survives the deferred switch');
+  assert.equal(await page.locator('#account-meta-form #account-name').inputValue(),draftName,'account A draft survives the deferred switch');
   // Writes proceed while GET navigation is paused, keep the clicked account and
   // version, coalesce rapid repeats, and preserve edits made before the response.
   const gates=[];
@@ -184,23 +185,23 @@ try {
   const saveNavigation=await pauseRoute('**/api/status*');
   await navigate('holdings');
   await waitGate(saveNavigation.started,'saveNavigation.started');
-  const versionAtClick=Number(await page.locator('#account-form').getAttribute('data-version'));
-  await page.locator('#name').fill('账户 A 提交时输入');
-  const saveGate=await pauseRoute(`**/api/accounts/${fixture.account_id}`,'PUT',true);
-  await page.locator('#account-form button[type="submit"]').click();
+  const versionAtClick=Number(await page.locator('#account-meta-form').getAttribute('data-version'));
+  await page.locator('#account-name').fill('账户 A 提交时输入');
+  const saveGate=await pauseRoute(`**/api/accounts/${fixture.account_id}`,'PATCH',true);
+  await page.locator('#account-meta-form button[type="submit"]').click();
   const saveRequest=await waitGate(saveGate.started,'saveGate.started');
-  await page.locator('#account-form button[type="submit"]').click();
+  await page.locator('#account-meta-form button[type="submit"]').click();
   await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).last().waitFor();
-  await page.locator('#name').fill('账户 A 保存后继续输入');
+  await page.locator('#account-name').fill('账户 A 保存后继续输入');
   await page.locator('#account-switch').selectOption(fixture.other_id);
-  await page.waitForFunction(other=>document.querySelector('#account-form')?.dataset.accountId===other,fixture.other_id);
+  await page.waitForFunction(other=>document.querySelector('#account-meta-form')?.dataset.accountId===other,fixture.other_id);
   assert.equal(saveRequest.postDataJSON().name,'账户 A 提交时输入');
   assert.equal(saveRequest.postDataJSON().expected_version,versionAtClick);
   if (raceRound===0) {saveGate.release();saveNavigation.release();}
   else if (raceRound===1) {saveGate.release();await page.waitForResponse(r=>r.request()===saveRequest);saveNavigation.release();}
   else {saveNavigation.release();await page.waitForTimeout(35);saveGate.release();}
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='PUT' && item.path===`/api/accounts/${fixture.account_id}`).length,raceRound+1);
+  assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='PATCH' && item.path===`/api/accounts/${fixture.account_id}`).length,raceRound+1);
   const savedA=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
   const afterB=await (await fetch(base+`/api/accounts/${fixture.other_id}`)).json();
   assert.equal(savedA.name,'账户 A 提交时输入');
@@ -208,53 +209,53 @@ try {
   assert.deepEqual([afterB.name,afterB.version,afterB.holdings,afterB.preferences],[beforeB.name,beforeB.version,beforeB.holdings,beforeB.preferences]);
   await page.locator('#account-switch').selectOption(fixture.account_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
-  assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入','late success must retain newer draft');
-  assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),savedA.version);
+  assert.equal(await page.locator('#account-name').inputValue(),'账户 A 保存后继续输入','late success must retain newer draft');
+  assert.equal(Number(await page.locator('#account-meta-form').getAttribute('data-version')),savedA.version);
   await assertIdle();
   }
   await page.route(`**/api/accounts/${fixture.account_id}`,async route=>{
-    if(route.request().method()!=='PUT') return route.fallback();
+    if(route.request().method()!=='PATCH') return route.fallback();
     await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({detail:'受控保存冲突，草稿应保留'})});
   },{times:1});
-  await page.locator('#account-form button[type="submit"]').click();
+  await page.locator('#account-meta-form button[type="submit"]').click();
   await page.getByText('受控保存冲突，草稿应保留',{exact:false}).waitFor();
-  assert.equal(await page.locator('#name').inputValue(),'账户 A 保存后继续输入');
-  await page.locator('#account-form button[type="submit"]').click();
+  assert.equal(await page.locator('#account-name').inputValue(),'账户 A 保存后继续输入');
+  await page.locator('#account-meta-form button[type="submit"]').click();
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal((await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json()).name,'账户 A 保存后继续输入');
   // A transport failure after the server commits is reconciled by GET of the
   // clicked account, never by resending the write. Later draft/B remain intact.
   const beforeUncertain=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
-  const putsBefore=requestTrace.filter(x=>x.event==='request' && x.method==='PUT').length;
-  await page.locator('#name').fill('账户 A 已提交但响应丢失');
+  const putsBefore=requestTrace.filter(x=>x.event==='request' && x.method==='PATCH').length;
+  await page.locator('#account-name').fill('账户 A 已提交但响应丢失');
   let failCommitted, observedCommitted;
   const committedGate=new Promise(resolve=>{failCommitted=resolve;});
   const committedStarted=new Promise(resolve=>{observedCommitted=resolve;});
   let committedMatched=false;
   await page.route(`**/api/accounts/${fixture.account_id}`,async route=>{
-    if(route.request().method()!=='PUT' || committedMatched)return route.fallback();
+    if(route.request().method()!=='PATCH' || committedMatched)return route.fallback();
     committedMatched=true;
     assert.equal((await route.fetch()).status(),200);
     observedCommitted();await committedGate;await route.abort('connectionreset');
   });
-  await page.locator('#account-form button[type="submit"]').click();
+  await page.locator('#account-meta-form button[type="submit"]').click();
   await waitGate(committedStarted,'committed write before lost response');
-  await page.locator('#name').fill('账户 A 响应丢失后新草稿');
+  await page.locator('#account-name').fill('账户 A 响应丢失后新草稿');
   await page.locator('#account-switch').selectOption(fixture.other_id);
-  await page.waitForFunction(id=>document.querySelector('#account-form')?.dataset.accountId===id,fixture.other_id);
+  await page.waitForFunction(id=>document.querySelector('#account-meta-form')?.dataset.accountId===id,fixture.other_id);
   failCommitted();
   await assertIdle();
   assert.equal(await page.getByText('保存响应中断；已按操作标识确认原账户、输入版本与研究任务，未重复写入。',{exact:true}).count(),0,'account A save feedback must not appear in account B');
   assert.ok((await page.evaluate(()=>window.__guanlanDiagnostics.snapshot())).counts.save_reconciled>=1,'the original write is still reconciled by its receipt');
-  assert.equal(requestTrace.filter(x=>x.event==='request' && x.method==='PUT').length,putsBefore+1);
+  assert.equal(requestTrace.filter(x=>x.event==='request' && x.method==='PATCH').length,putsBefore+1);
   const uncertainSaved=await (await fetch(base+`/api/accounts/${fixture.account_id}`)).json();
   assert.equal(uncertainSaved.version,beforeUncertain.version+1);
   assert.equal(uncertainSaved.name,'账户 A 已提交但响应丢失');
   assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id);
   await page.locator('#account-switch').selectOption(fixture.account_id);
   await assertIdle();
-  assert.equal(await page.locator('#name').inputValue(),'账户 A 响应丢失后新草稿');
-  assert.equal(Number(await page.locator('#account-form').getAttribute('data-version')),uncertainSaved.version);
+  assert.equal(await page.locator('#account-name').inputValue(),'账户 A 响应丢失后新草稿');
+  assert.equal(Number(await page.locator('#account-meta-form').getAttribute('data-version')),uncertainSaved.version);
   // Exercise the real bounded GET lifecycle without a 15-second test sleep.
   await page.clock.install();
   const timeoutNavigation=await pauseRoute('**/api/status*');
@@ -283,6 +284,7 @@ try {
   assert.equal(requestTrace.filter(item=>item.event==='request' && item.method==='POST' && item.path===`/api/accounts/${fixture.account_id}/analyze`).length,1);
   await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
+  await page.locator('#snapshot-correction').evaluate(el=>el.open=true);
   await page.getByText('查找证券代码与基础资料',{exact:true}).click();
   let releaseLookup, observeLookup;
   const lookupGate=new Promise(resolve=>{releaseLookup=resolve;});
@@ -467,7 +469,7 @@ try {
   await page.locator('[data-action="probe"]').click();
   await waitGate(localProbeStarted,'localProbeStarted');
   await navigate('holdings');
-  await page.locator('#account-form').waitFor();
+  await page.locator('#account-meta-form').waitFor();
   releaseProbe();
   await page.locator('#dialog').getByText('本地工具续接实测结果',{exact:true}).waitFor();
   assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));

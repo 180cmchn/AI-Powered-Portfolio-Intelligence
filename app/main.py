@@ -30,6 +30,10 @@ class Settings(BaseModel):
     model_key_env: str = "MODEL_API_KEY"
     model_allow_no_key: bool = False
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
+    model_first_event_timeout_seconds: int = Field(default=90, ge=5, le=600)
+    model_stream_idle_timeout_seconds: int = Field(default=120, ge=5, le=600)
+    model_request_hard_timeout_seconds: int = Field(default=300, ge=5, le=1800)
+    synthesis_request_hard_timeout_seconds: int = Field(default=360, ge=5, le=1800)
     model_responses_stream: bool = True
     model_native_search: bool = True
     reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
@@ -44,8 +48,8 @@ class Settings(BaseModel):
     quote_fallback_provider: str = "sina"
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
     max_model_calls: int = Field(default=40, ge=2, le=300)
-    agent_timeout_seconds: int = Field(default=120, ge=5, le=1800)
-    analysis_timeout_seconds: int = Field(default=600, ge=10, le=3600)
+    agent_timeout_seconds: int = Field(default=600, ge=5, le=1800)
+    analysis_timeout_seconds: int = Field(default=1200, ge=10, le=3600)
     max_agent_turns: int = Field(default=12, ge=2, le=60)
     max_output_tokens: int = Field(default=4000, ge=256, le=32000)
     quote_interval_seconds: int = Field(default=60, ge=30, le=3600)
@@ -243,6 +247,8 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     from .sixth_api import register_sixth_routes
     register_sixth_routes(app, store, service)
+    from .ledger_api import register_ledger_routes
+    register_ledger_routes(app, store, service, resolver)
 
     @app.exception_handler(KeyError)
     async def missing_handler(request, exc):
@@ -416,7 +422,7 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         store.set_job_state(job_id, "cancelled", "用户取消")
         task = service.active.get(job_id)
         if task:
-            task.cancel()
+            task.cancel('user_cancelled')
         return store.job(job_id)
 
     @app.post("/api/jobs/{job_id}/retry")
@@ -485,6 +491,16 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.get("/api/settings")
     async def settings():
         return store.settings()
+
+    @app.get('/api/settings/timeout-policy')
+    async def effective_timeout_policy():
+        from .config import timeout_policy, timeout_policy_warnings
+        cfg = store.settings()
+        return {'research': timeout_policy(cfg), 'synthesis': timeout_policy(cfg, 'synthesis'),
+                'child_budget_seconds': cfg['agent_timeout_seconds'],
+                'analysis_budget_seconds': cfg['analysis_timeout_seconds'],
+                'warnings': timeout_policy_warnings(cfg),
+                'priority': '有效截止取请求硬上限与父任务剩余预算的较早者；首事件和空闲另计，心跳不续期'}
 
     @app.put("/api/settings")
     async def update_settings(data: Settings):

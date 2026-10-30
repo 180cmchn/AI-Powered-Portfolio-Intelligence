@@ -152,6 +152,11 @@ def budget_config(monkeypatch, **overrides):
             "model_native_search": True, "model_retries": 0,
             "max_agent_turns": 18, "max_model_calls": 30, "max_concurrent_agents": 2,
             "analysis_timeout_seconds": 10, "agent_timeout_seconds": 5,
+            # Scaled whole-task budgets also need a scaled first-event policy:
+            # retry feasibility must not compare this 5s child with a 90s wait.
+            "model_first_event_timeout_seconds": .25,
+            "model_stream_idle_timeout_seconds": .25,
+            "model_request_hard_timeout_seconds": 1,
             "synthesis_request_timeout_seconds": 1, **overrides}
 
 

@@ -1,4 +1,6 @@
 """Deterministic persistence/integration tests; these are not LLM-quality evaluations."""
+from ledger_helpers import snapshot_payload
+from ledger_helpers import save_snapshot_correction
 import asyncio
 from datetime import datetime
 from decimal import Decimal
@@ -40,7 +42,7 @@ def test_account_isolation_edit_versions_and_metrics(store):
     assert bv["metrics"]["total_assets"] == "3543.75"
     assert bv["metrics"]["unrealized_pnl"] == "743.75"
     before_b = store.account(b["id"])
-    changed = store.save_account(payload(qty="200"), a["id"])
+    changed = save_snapshot_correction(store, payload(qty="200"), a["id"])
     assert changed["version"] == 2
     assert svc.account(a["id"])["metrics"]["securities_value"] == "2025.00"
     assert store.account(b["id"]) == before_b
@@ -51,7 +53,7 @@ def test_account_isolation_edit_versions_and_metrics(store):
 def test_new_result_finishes_before_old_cannot_overwrite(store):
     a = store.save_account(payload())
     old = store.claim_jobs()[0]
-    changed = store.save_account(payload(qty="300"), a["id"])
+    changed = save_snapshot_correction(store, payload(qty="300"), a["id"])
     new = store.claim_jobs()[0]
     assert store.publish(new["id"], {"report": "new result"}, None)
     assert not store.publish(old["id"], {"report": "late old result"}, None)
@@ -78,7 +80,7 @@ def test_same_version_latest_job_fence_and_cancellation(store):
 def test_debounce_and_duplicate_event(store):
     a = store.save_account(payload())
     for n in range(1, 5):
-        a = store.save_account(payload(qty=str(n)), a["id"])
+        a = save_snapshot_correction(store, payload(qty=str(n)), a["id"])
     assert len(store.claim_jobs()) == 1
     first = store.enqueue(a["id"], "news", event_key="same-news")
     second = store.enqueue(a["id"], "news", event_key="same-news")
@@ -97,7 +99,7 @@ def test_monitor_union_and_deleted_account(store):
 def test_recovery_only_current_and_inputs_survive(store):
     a = store.save_account(payload())
     old = store.claim_jobs()[0]
-    a = store.save_account(payload(qty="500"), a["id"])
+    a = save_snapshot_correction(store, payload(qty="500"), a["id"])
     new = store.claim_jobs()[0]
     store.recover()
     assert store.job(old["id"])["state"] == "superseded"
@@ -245,8 +247,8 @@ def test_api_validation_conflict_and_local_boundary(tmp_path):
         assert r.status_code == 201
         a = r.json()
         changed = {**payload(qty="200").model_dump(), "expected_version": 1}
-        assert c.put(f"/api/accounts/{a['id']}", json=changed).status_code == 200
-        assert c.put(f"/api/accounts/{a['id']}", json=changed).status_code == 409
+        assert c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(changed)).status_code == 200
+        assert c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(changed)).status_code == 409
         assert c.post("/api/backup", headers={"origin": "https://evil.example"}).status_code == 403
         assert c.post("/api/demo/seed").status_code == 409
         assert c.get('/api/status').json()['model_configured'] is False

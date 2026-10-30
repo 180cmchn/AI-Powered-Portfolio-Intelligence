@@ -17,6 +17,10 @@ def task_identity(reason):
         return 'account_analysis', 'user_click'
     if reason == 'account_saved':
         return 'holdings_update', 'save_holdings'
+    if reason in ('ledger_trade', 'ledger_correction', 'ledger_reversal', 'ledger_fee_adjustment'):
+        return 'holdings_update', 'manual_ledger'
+    if reason in ('ledger_opening', 'ledger_deposit', 'ledger_withdraw'):
+        return 'account_analysis', 'funds_adjustment'
     if 'close_summary' in reason:
         return 'close_summary', 'timer'
     if 'forecast' in reason:
@@ -204,6 +208,26 @@ class TaskTrackingStore:
             return {**self.account(account['id'], db), 'save_receipt': {
                 'operation_id':operation_id,'account_id':account['id'],
                 'job_id':job['id'],'input_version':account['version'],'replayed':False}}
+
+    def save_account_metadata_operation(self, account_id, payload, operation_id):
+        """Idempotent metadata edit without round-tripping derived quantities/cost."""
+        from .store import Conflict, dumps
+        fingerprint = hashlib.sha256(dumps({'account_id': account_id, 'metadata': payload}).encode()).hexdigest()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            old = db.execute('SELECT * FROM account_operations WHERE operation_id=?', (operation_id,)).fetchone() if operation_id else None
+            if old:
+                if old['fingerprint'] != fingerprint:
+                    raise Conflict('保存操作ID已对应其他输入，请核对原保存结果')
+                return {**self.account(account_id, db), 'save_receipt': {'operation_id': operation_id,
+                    'account_id': account_id, 'job_id': old['job_id'], 'input_version': old['input_version'], 'replayed': True}}
+            current = self.account(account_id, db)
+            account = self.save_account({**current, **payload}, account_id, db=db)
+            if operation_id:
+                db.execute('INSERT INTO account_operations VALUES(?,?,?,?,?,?)',
+                    (operation_id, fingerprint, account_id, account['latest_job_id'], account['version'], now()))
+            return {**account, 'save_receipt': {'operation_id': operation_id, 'account_id': account_id,
+                'job_id': account['latest_job_id'], 'input_version': account['version'], 'replayed': False}}
 
     def account_operation(self, operation_id):
         with self.connect() as db:

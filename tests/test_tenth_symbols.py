@@ -1,4 +1,5 @@
 """Exact public-directory protocol doubles; separate live evidence is archived."""
+from ledger_helpers import snapshot_payload
 import asyncio
 
 import httpx
@@ -249,14 +250,14 @@ def test_fastapi_account_switch_versions_quantities_and_single_security(tmp_path
         b = client.post("/api/accounts", json={"name": "虚拟 B", "cash": "30000"}).json()
         assert a["holdings"][0] == {"symbol": "SZ:159278", "quantity": "10000", "cost_price": None}
         before_b = client.get(f"/api/accounts/{b['id']}").json()
-        updated = client.put(f"/api/accounts/{a['id']}", json={"name": "虚拟 A", "cash": "10000", "expected_version": 1,
-            "holdings": [{"symbol": "SZ:159278", "quantity": "20000"}]}).json()
-        assert updated["version"] == 2 and updated["cash"] == "10000"
+        updated = client.put(f"/api/accounts/{a['id']}", json=snapshot_payload({"name": "虚拟 A", "cash": "10000", "expected_version": 1,
+            "holdings": [{"symbol": "SZ:159278", "quantity": "20000"}]})).json()
+        assert updated["version"] == 2 and updated["cash"] == "10000.00"
         after_b = client.get(f"/api/accounts/{b['id']}").json()
         for field in ("id", "version", "holdings", "cash", "preferences", "latest_job_id", "updated_at"):
             assert after_b[field] == before_b[field]
-        conflict = client.put(f"/api/accounts/{a['id']}", json={"name": "虚拟 A", "cash": "10000", "expected_version": 1,
-            "holdings": [{"symbol": "159278", "quantity": "10000"}]})
+        conflict = client.put(f"/api/accounts/{a['id']}", json=snapshot_payload({"name": "虚拟 A", "cash": "10000", "expected_version": 1,
+            "holdings": [{"symbol": "159278", "quantity": "10000"}]}))
         assert conflict.status_code == 409
         task = client.post(f"/api/accounts/{b['id']}/analyze", json={"symbol": "518880", "operation_id": "tenth-symbol-fixture-1"})
         assert task.status_code == 200

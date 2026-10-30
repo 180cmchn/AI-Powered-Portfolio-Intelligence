@@ -765,7 +765,7 @@ class AgentConfigStore:
         return result
 
     def update_agent_definition(self, role_id, payload):
-        allowed = {'name', 'responsibility', 'system_prompt', 'tools', 'enabled', 'default_binding'}
+        allowed = {'name', 'responsibility', 'system_prompt', 'tools', 'enabled', 'default_binding', 'expected_version'}
         if not isinstance(payload, dict) or set(payload) - allowed:
             raise ValueError('角色配置包含不支持的字段')
         if not re.fullmatch(r'[a-z][a-z0-9_]{1,63}', role_id):
@@ -777,6 +777,9 @@ class AgentConfigStore:
                 'enabled': True, 'custom': True, 'tools': CHILD_TOOL_NAMES,
                 'default_binding': _loads(db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()[0])['default_binding']}
             original = copy.deepcopy(role)
+            if payload.get('expected_version') is not None and payload['expected_version'] != role['version']:
+                from .store import Conflict
+                raise Conflict('角色版本已更新；草稿已保留，请重新载入或确认后保存到新版本')
             for name in ('name', 'responsibility', 'system_prompt'):
                 if name in payload and (not isinstance(payload[name], str) or not payload[name].strip() or len(payload[name]) > (40000 if name == 'system_prompt' else 2000)):
                     raise ValueError(f'{name} 必须是非空且长度合理的文本')
@@ -801,7 +804,7 @@ class AgentConfigStore:
                 role['prompt_version'] += 1
             if 'tools' in payload and payload['tools'] != role.get('tools'):
                 role['tool_version'] += 1
-            role.update({k: v for k, v in payload.items() if k != 'default_binding'})
+            role.update({k: v for k, v in payload.items() if k not in ('default_binding', 'expected_version')})
             if row and role == original:
                 return next(r for r in self._roles(None, db, True) if r['role_id'] == role_id)
             role.update(version=role['version'] + 1, updated_at=now())

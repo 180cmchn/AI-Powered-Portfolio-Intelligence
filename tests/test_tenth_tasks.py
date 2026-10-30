@@ -1,4 +1,5 @@
 """Real HTTP/SQLite submission identity, frozen scope and delivery semantics."""
+from ledger_helpers import snapshot_payload
 import json
 import sqlite3
 import asyncio
@@ -58,12 +59,12 @@ def test_scope_freezes_at_submission_and_retry_uses_current_version(app):
         app.state.store.set_meta('universe', {'watchlist':['SH:688825'], 'candidates':['SH:562500']})
         job = c.get('/api/jobs/' + first['id']).json()
         assert job['universe']['candidates'] == []
-        changed = c.put(f"/api/accounts/{a['id']}", json={'name':'A','cash':'10000', 'expected_version':1,
-                     'holdings':[{'symbol':'SZ:159278','quantity':'20000'}]}).json()
+        changed = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({'name':'A','cash':'10000', 'expected_version':1,
+                     'holdings':[{'symbol':'SZ:159278','quantity':'20000'}]})).json()
         retried = c.post('/api/jobs/' + first['id'] + '/retry', json={'operation_id':'retry-current-1'}).json()
         assert retried['parent_job_id'] == first['id'] and retried['task_kind'] == 'manual_retry'
         assert retried['input_version'] == 2 and retried['target']['holdings'][0]['quantity'] == '20000'
-        assert changed['cash'] == '10000' and retried['target']['candidates'] == ['SH:562500']
+        assert changed['cash'] == '10000.00' and retried['target']['candidates'] == ['SH:562500']
 
 
 def test_empty_scope_requires_explicit_choice_and_does_not_run(app):
@@ -118,7 +119,7 @@ def test_legacy_origin_unknown_and_v9_backup_preserved(app):
     assert job['target']['candidates'] is None and job['target']['scope_unknown']
     with sqlite3.connect(str(s.path) + '.before-v10.bak') as db:
         assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == '9'
-    assert Store(s.path).meta('schema_version') == 10
+    assert Store(s.path).meta('schema_version') == 11
 
 
 def test_account_create_receipt_double_click_and_response_loss(app):
@@ -139,7 +140,7 @@ def test_account_create_receipt_double_click_and_response_loss(app):
         assert receipt['input_version'] == 1 and receipt['job_id'] == a['latest_job_id']
         assert receipt['job']['target']['holdings'][0]['quantity'] == '10000'
         assert c.post('/api/accounts', json={**payload, 'cash': '0'}, headers=headers).status_code == 409
-        assert c.put(f"/api/accounts/{a['id']}", json=payload, headers=headers).status_code == 409
+        assert c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers).status_code == 409
         reopened = Store(app.state.store.path)
         assert reopened.account_operation('account-create-intent-1')['job_id'] == a['latest_job_id']
 
@@ -150,18 +151,18 @@ def test_account_update_receipt_keeps_original_version_and_job_after_newer_save(
         payload = {'name': 'A', 'cash': '10000', 'expected_version': 1,
                    'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}
         headers = {'X-Operation-ID': 'account-update-intent-1'}
-        first = c.put(f"/api/accounts/{a['id']}", json=payload, headers=headers)
+        first = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers)
         assert first.status_code == 200
         saved = first.json()
-        assert saved['version'] == 2 and saved['cash'] == '10000'
-        repeated = c.put(f"/api/accounts/{a['id']}", json=payload, headers=headers)
+        assert saved['version'] == 2 and saved['cash'] == '10000.00'
+        repeated = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers)
         assert repeated.status_code == 200 and repeated.json()['version'] == 2
         assert repeated.json()['latest_job_id'] == saved['latest_job_id']
-        assert c.put(f"/api/accounts/{b['id']}", json=payload, headers=headers).status_code == 409
-        assert c.put(f"/api/accounts/{a['id']}", json={**payload, 'cash': '0'}, headers=headers).status_code == 409
+        assert c.put(f"/api/accounts/{b['id']}", json=snapshot_payload(payload), headers=headers).status_code == 409
+        assert c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({**payload, 'cash': '0'}), headers=headers).status_code == 409
         assert c.get(f"/api/accounts/{b['id']}").json()['version'] == 1
-        newer = c.put(f"/api/accounts/{a['id']}", json={**payload, 'expected_version': 2,
-            'holdings': [{'symbol': 'SZ:159278', 'quantity': '30000'}]},
+        newer = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({**payload, 'expected_version': 2,
+            'holdings': [{'symbol': 'SZ:159278', 'quantity': '30000'}]}),
             headers={'X-Operation-ID': 'account-update-intent-2'}).json()
         assert newer['version'] == 3
         receipt = c.get('/api/account-operations/account-update-intent-1').json()
@@ -171,7 +172,7 @@ def test_account_update_receipt_keeps_original_version_and_job_after_newer_save(
         assert receipt['account']['version'] == 3, 'current account is separate from the original save receipt'
         assert receipt['job']['id'] != receipt['account']['latest_job_id']
         before_count = len(c.get(f"/api/accounts/{a['id']}/jobs").json())
-        assert c.put(f"/api/accounts/{a['id']}", json=payload, headers=headers).status_code == 200
+        assert c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers).status_code == 200
         assert c.get(f"/api/accounts/{a['id']}").json()['version'] == 3
         assert len(c.get(f"/api/accounts/{a['id']}/jobs").json()) == before_count
 
@@ -278,8 +279,8 @@ def test_retry_merged_into_newer_task_keeps_original_parent_in_source(app):
         a = account(c)
         original = s.claim_jobs(account_id=a['id'])[0]
         s.set_job_state(original['id'], 'failed', '受控旧任务失败')
-        changed = c.put(f"/api/accounts/{a['id']}", json={'name': 'A', 'cash': '10000',
-            'expected_version': 1, 'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}).json()
+        changed = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({'name': 'A', 'cash': '10000',
+            'expected_version': 1, 'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]})).json()
         response = c.post('/api/jobs/' + original['id'] + '/retry', json={
             'operation_id': 'merged-parent-retry-body', 'origin': {'page': 'agents', 'action': 'retry-job'}})
         assert response.status_code == 200
@@ -351,8 +352,8 @@ def test_superseded_input_cannot_prepare_exploration_from_new_account(app):
     with TestClient(app) as c:
         a = account(c)
         old = s.claim_jobs(account_id=a['id'])[0]
-        c.put(f"/api/accounts/{a['id']}", json={'name': 'A', 'cash': '10000', 'expected_version': 1,
-            'holdings': [{'symbol': 'SH:518880', 'quantity': '100'}]})
+        c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({'name': 'A', 'cash': '10000', 'expected_version': 1,
+            'holdings': [{'symbol': 'SH:518880', 'quantity': '100'}]}))
         assert s.job(old['id'])['state'] == 'superseded'
         assert s.prepare_exploratory_forecast_job(old['id'], at=datetime(2026, 10, 30, 16, tzinfo=TZ)) is None
         assert s.forecast_batches(account_id=a['id']) == []

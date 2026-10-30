@@ -18,7 +18,8 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable
 from zoneinfo import ZoneInfo
 
-from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelSession, ToolCall
+from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelTimeoutError, ModelSession, ToolCall, cancellation_source
+from .config import timeout_policy, timeout_policy_warnings
 from .context import archive, recall, references, visible_message
 from .calculation_context import checkpoint_summaries, projection as calculation_projection, signature as calculation_signature
 
@@ -27,7 +28,7 @@ SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 
 class ResearchTimeout(ModelError):
-    pass
+    code = 'analysis_budget_exhausted'
 
 
 def _team_context(team):
@@ -128,7 +129,7 @@ def _research_context(value):
     return {key: (_team_context(item) if key in
         {'team_snapshot', '_agent_team', 'previous_team_snapshot', 'current_team_snapshot'} else
         _previous_analysis_context(item) if key == 'previous_analysis' else _research_context(item))
-        for key, item in value.items() if key not in {'_model_api_key', 'credential_reference'}}
+        for key, item in value.items() if key not in {'_model_api_key', 'credential_reference', '_analysis_deadline'}}
 
 
 class _CloseoutRequired(ModelBudgetExceeded):
@@ -280,6 +281,7 @@ class ResearchRuntime:
         self.budget_closing = False
         self.closeout_waited = False
         self.deadline: float | None = None
+        self.inherited_deadline = context.get('_analysis_deadline')
         self.team = copy.deepcopy(config.get('_agent_team'))
         manager_config = self._role_config('manager') if self.team else config
         self.model_config = model_config_summary(manager_config)
@@ -304,6 +306,7 @@ class ResearchRuntime:
         self.synthesis_started_calls = 0
         self.checkpoint_signature = ""
         self.closed = False
+        self.cancelled_by = 'parent_finished'
         self.reference_feedback_sent = False
         self.manager_session = self.client.session(self.team["roles"]["manager"]["system_prompt"] if self.team else (PROMPTS / "manager.txt").read_text(), self.context)
         self.manager_session.task_id = self.task_id
@@ -450,6 +453,10 @@ class ResearchRuntime:
     async def _use_budget(self) -> None:
         async with self.budget_lock:
             agent_id, final_request = self.request_owner.get()
+            session = self.manager_session if agent_id == 'manager' else self.children[agent_id].session
+            expired = [(key, value) for key, value in session.deadlines.items() if value <= time.monotonic()]
+            if expired:
+                raise ModelTimeoutError(min(expired, key=lambda item: item[1])[0])
             if self.team:
                 role_id = 'manager' if agent_id == 'manager' else self.children[agent_id].role_id
                 try:
@@ -485,7 +492,14 @@ class ResearchRuntime:
         # report plus, when available, citation correction / a failed request).
         if remaining <= active + 2:
             self.budget_closing = True
+        if self.deadline is not None and self.deadline - time.monotonic() <= self._synthesis_reserve():
+            self.budget_closing = True
         return self.budget_closing
+
+    def _synthesis_reserve(self):
+        # Reserve is part of the existing total, not extra time after expiry.
+        return min(timeout_policy(self.config, 'synthesis')['request_hard_seconds'],
+                   float(self.config.get('analysis_timeout_seconds', 1200)) * .30)
 
     def _remaining_calls(self) -> int:
         remaining = int(self.config.get("max_model_calls", 40)) - self.calls
@@ -501,7 +515,7 @@ class ResearchRuntime:
                   if child.task_handle and not child.task_handle.done()]
         wait_seconds = 30.0
         if self.deadline is not None:
-            request_time = float(self.config.get("synthesis_request_timeout_seconds", self.config.get("model_request_timeout_seconds", 90)))
+            request_time = timeout_policy(self.config, 'synthesis')['request_hard_seconds']
             remaining_time = max(0.0, self.deadline - time.monotonic())
             wait_seconds = min(wait_seconds, max(0.0, remaining_time - min(request_time, remaining_time / 2)))
         await self._publish("budget_closeout", "manager", {"remaining_model_calls": self._remaining_calls(),
@@ -587,18 +601,24 @@ class ResearchRuntime:
         return event
 
     async def run(self) -> dict:
-        self.deadline = time.monotonic() + float(self.config.get("analysis_timeout_seconds", 600))
+        self.deadline = min(time.monotonic() + float(self.config.get("analysis_timeout_seconds", 1200)),
+                            self.inherited_deadline if self.inherited_deadline is not None else float('inf'))
+        self.manager_session.deadlines = {'analysis_budget_exhausted': self.deadline}
         await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason"), "model_config": self.model_config,
-            'resource_limits': {'request_timeout_seconds': self.config.get('model_request_timeout_seconds', 90),
-                'child_timeout_seconds': self.config.get('agent_timeout_seconds', 120),
-                'analysis_timeout_seconds': self.config.get('analysis_timeout_seconds', 600),
+            'resource_limits': {'request_timeout_seconds': timeout_policy(self.config)['request_hard_seconds'],
+                'timeout_policy': timeout_policy(self.config), 'synthesis_timeout_policy': timeout_policy(self.config, 'synthesis'),
+                'policy_warnings': timeout_policy_warnings(self.config),
+                'remaining_analysis_seconds': max(0, self.deadline - time.monotonic()),
+                'synthesis_reserve_seconds': self._synthesis_reserve(),
+                'child_timeout_seconds': self.config.get('agent_timeout_seconds', 600),
+                'analysis_timeout_seconds': self.config.get('analysis_timeout_seconds', 1200),
                 'max_model_calls': self.config.get('max_model_calls', 40),
                 'synthesis_max_calls': self.config.get('synthesis_max_calls', 4)}})
         if self.synthesis_only:
             await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4),
                 "configuration_relation": self.synthesis_checkpoint.get("configuration_relation"), "model_config": self.model_config})
         try:
-            async with asyncio.timeout(float(self.config.get("analysis_timeout_seconds", 600))):
+            async with asyncio.timeout_at(self.deadline):
                 result = await self._loop("manager", self.manager_session, manager=True)
                 await self._cancel_children()
                 result.setdefault("report", result.pop("summary", ""))
@@ -628,21 +648,28 @@ class ResearchRuntime:
                 await self._publish("agent_completed", "manager", {"report": result["report"], "model_calls": self.calls, "model_usage": result["model_usage"]})
                 return json.loads(json.dumps(result, ensure_ascii=False, default=str, allow_nan=False))
         except TimeoutError as exc:
+            self.cancelled_by = 'analysis_budget_exhausted'
             await self._save_interrupted_checkpoint('analysis_deadline')
             await self._publish("agent_failed", "manager", {"error": "账户分析超过配置时限；阶段材料已保留", 'failure_stage': 'analysis_deadline',
-                'timeout_seconds': self.config.get('analysis_timeout_seconds', 600), 'model_calls': self.calls})
+                'error_code': 'analysis_budget_exhausted', 'cancelled_by': 'analysis_budget_exhausted',
+                'timeout_seconds': self.config.get('analysis_timeout_seconds', 1200), 'model_calls': self.calls})
             raise ResearchTimeout("账户分析超过配置时限；可查看阶段材料并重试") from exc
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
             # Service's outer total deadline also arrives as cancellation.
             # Preserve completed work without guessing whether the cause was
             # that deadline, an explicit cancel or service interruption.
             await self._save_interrupted_checkpoint('cancelled_or_interrupted')
-            await self._publish("agent_cancelled", "manager", {"reason": "分析被取消或账户版本已更新"})
+            expired = self.deadline is not None and time.monotonic() >= self.deadline
+            self.cancelled_by = 'analysis_budget_exhausted' if expired else cancellation_source(exc)
+            await self._publish("agent_cancelled", "manager", {"reason": "账户总预算耗尽" if expired else "父任务取消；实际用户/版本/停机原因见任务事件",
+                'error_code': 'analysis_budget_exhausted' if expired else 'cancelled',
+                'cancelled_by': self.cancelled_by})
             raise
         except Exception as exc:
+            self.cancelled_by = 'parent_failed'
             if isinstance(exc, ModelError):
                 await self._save_interrupted_checkpoint('model_request_or_budget')
-            await self._publish("agent_failed", "manager", {"error": self._safe_error(exc)})
+            await self._publish("agent_failed", "manager", {"error": self._safe_error(exc), 'error_code': getattr(exc, 'code', type(exc).__name__)})
             raise
         finally:
             await self.close()
@@ -656,7 +683,7 @@ class ResearchRuntime:
         active = list(self.handles)
         for task in active:
             if not task.done():
-                task.cancel()
+                task.cancel(self.cancelled_by)
         if active:
             await asyncio.gather(*active, return_exceptions=True)
 
@@ -752,7 +779,7 @@ class ResearchRuntime:
                 partial = getattr(exc, "native_turn", None)
                 if partial is not None:
                     await self._record_native(agent_id, partial)
-                await self._publish("model_error", agent_id, {"error": self._safe_error(exc), "requests": copy.deepcopy(session.requests[request_start:]),
+                await self._publish("model_error", agent_id, {"error": self._safe_error(exc), 'error_code': getattr(exc, 'code', type(exc).__name__), "requests": copy.deepcopy(session.requests[request_start:]),
                     "native_search": client.native_status()})
                 if isinstance(exc, ModelConfigurationError):
                     raise
@@ -1373,7 +1400,7 @@ class ResearchRuntime:
         if name == "cancel_agent":
             child = self._child(self._text(args, "agent_id"))
             if child.task_handle and not child.task_handle.done():
-                child.task_handle.cancel()
+                child.task_handle.cancel('manager_cancelled_child')
                 await asyncio.gather(child.task_handle, return_exceptions=True)
             return child.snapshot()
         if name == "report_progress":
@@ -1449,55 +1476,70 @@ class ResearchRuntime:
         task.add_done_callback(self.handles.discard)
 
     async def _run_child(self, child: AgentState) -> None:
+        queued_at = time.monotonic()
+        child_deadline = queued_at + float(self.config.get('agent_timeout_seconds', 600))
+        if self.deadline is not None:
+            child_deadline = min(child_deadline, self.deadline - self._synthesis_reserve())
+        child.session.deadlines = {'child_budget_exhausted': child_deadline}
+        if self.deadline is not None:
+            child.session.deadlines['analysis_budget_exhausted'] = self.deadline
         try:
-            async with self.semaphore:
+            async with asyncio.timeout_at(child_deadline), self.semaphore:
+                child.session.queue_wait_ms = round((time.monotonic() - queued_at) * 1000, 2)
                 child.status = "running"
                 await self._publish("agent_started", child.id, {"title": child.title, "round": child.round,
                     'model_config': child.model_config, 'resource_limits': {
-                        'request_timeout_seconds': self.config.get('model_request_timeout_seconds', 90),
-                        'child_timeout_seconds': self.config.get('agent_timeout_seconds', 120)}})
-                async with asyncio.timeout(float(self.config.get("agent_timeout_seconds", 120))):
-                    while True:
-                        report = await self._loop(child.id, child.session, manager=False)
-                        # Runtime identity cannot be supplied by the model.
-                        report.update(report_id=uuid.uuid4().hex, agent_id=child.id,
-                            role_id=child.role_id, model_config=copy.deepcopy(child.model_config),
-                            research_round=child.round,
-                            calculation_ids=[record['calculation_id'] for record in self.calculations
-                                if record['agent_id'] == child.id and record['research_round'] == child.round])
-                        child.reports.append(report)
-                        # Messages delivered before this completed report have
-                        # been covered; messages received during the request are
-                        # still in the inbox and remain visibly unresolved.
-                        child.pending_messages = list(child.inbox)
-                        if child.inbox:
-                            # Message arrived while the last model response was pending.
-                            # Do not lose it just because that response ended a report.
-                            await self._save_checkpoint()
-                            await self._publish("agent_progress", child.id, {"summary": report.get("summary", ""), "follow_up_pending": True})
-                            continue
-                        child.status = "completed"
-                        # Persist before the parent HTTP returns or fails. A next
-                        # manager turn is not guaranteed after this completion.
+                        'request_timeout_seconds': timeout_policy(self.config)['request_hard_seconds'],
+                        'timeout_policy': timeout_policy(self.config),
+                        'queue_wait_ms': child.session.queue_wait_ms,
+                        'remaining_child_seconds': max(0, child_deadline - time.monotonic()),
+                        'child_timeout_seconds': self.config.get('agent_timeout_seconds', 600)}})
+                while True:
+                    report = await self._loop(child.id, child.session, manager=False)
+                    # Runtime identity cannot be supplied by the model.
+                    report.update(report_id=uuid.uuid4().hex, agent_id=child.id,
+                        role_id=child.role_id, model_config=copy.deepcopy(child.model_config),
+                        research_round=child.round,
+                        calculation_ids=[record['calculation_id'] for record in self.calculations
+                            if record['agent_id'] == child.id and record['research_round'] == child.round])
+                    child.reports.append(report)
+                    # Messages delivered before this completed report have
+                    # been covered; messages received during the request are
+                    # still in the inbox and remain visibly unresolved.
+                    child.pending_messages = list(child.inbox)
+                    if child.inbox:
+                        # Message arrived while the last model response was pending.
+                        # Do not lose it just because that response ended a report.
                         await self._save_checkpoint()
-                        await self._publish("agent_completed", child.id, {"report": report, "round": child.round})
-                        return
+                        await self._publish("agent_progress", child.id, {"summary": report.get("summary", ""), "follow_up_pending": True})
+                        continue
+                    child.status = "completed"
+                    # Persist before the parent HTTP returns or fails. A next
+                    # manager turn is not guaranteed after this completion.
+                    await self._save_checkpoint()
+                    await self._publish("agent_completed", child.id, {"report": report, "round": child.round})
+                    return
         except TimeoutError:
             child.status = "failed"
             child.error = "子任务超过配置时限；已保存材料和阶段报告保留"
             (child.client or self.client).resolve_pending(child.session, child.error)
             await self._publish("agent_failed", child.id, {"error": child.error, 'failure_stage': 'child_deadline',
-                'timeout_seconds': self.config.get('agent_timeout_seconds', 120), 'saved_report_count': len(child.reports)})
-        except asyncio.CancelledError:
+                'error_code': 'child_budget_exhausted', 'cancelled_by': 'child_budget_exhausted',
+                'queue_wait_ms': child.session.queue_wait_ms or round((time.monotonic() - queued_at) * 1000, 2),
+                'timeout_seconds': self.config.get('agent_timeout_seconds', 600), 'saved_report_count': len(child.reports)})
+        except asyncio.CancelledError as exc:
             child.status = "cancelled"
             (child.client or self.client).resolve_pending(child.session, "子任务已取消；此工具调用未完成")
-            await self._publish("agent_cancelled", child.id, {"reason": "父任务结束、取消或账户版本更新"})
+            expired = [(key, value) for key, value in child.session.deadlines.items() if value <= time.monotonic()]
+            source = min(expired, key=lambda item: item[1])[0] if expired else cancellation_source(exc)
+            await self._publish("agent_cancelled", child.id, {"reason": "父任务结束、取消或账户版本更新",
+                'error_code': source if expired else 'cancelled', 'cancelled_by': source})
             raise
         except Exception as exc:
             child.status = "failed"
             child.error = self._safe_error(exc)
             (child.client or self.client).resolve_pending(child.session, child.error)
-            await self._publish("agent_failed", child.id, {"error": child.error})
+            await self._publish("agent_failed", child.id, {"error": child.error, 'error_code': getattr(exc, 'code', None)})
 
     async def _wait(self, args: dict) -> dict:
         ids = args.get("agent_ids") or list(self.children)

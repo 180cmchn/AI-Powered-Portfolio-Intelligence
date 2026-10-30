@@ -1,4 +1,5 @@
 """Third-round deterministic checks using the production SQLite lifecycle."""
+from ledger_helpers import save_snapshot_correction
 from datetime import datetime, timedelta
 
 import pytest
@@ -73,7 +74,7 @@ def test_maintain_and_update_bind_verified_current_account_version(store):
     account = store.save_account(AccountInput(name="版本受控账户", holdings=[]))
     publish(store, suggestions=[suggestion()])
     rid = store.recommendations(account["id"])[0]["id"]
-    store.save_account(AccountInput(name="已修改持仓", holdings=[{"symbol": "SH:600519", "quantity": "1"}]), account["id"])
+    save_snapshot_correction(store, AccountInput(name="已修改持仓", holdings=[{"symbol": "SH:600519", "quantity": "1"}]), account["id"])
     assert store.recommendation(account["id"], rid)["review_status"] == "needs_review"
     job = store.claim_jobs()[0]
     assert store.publish(job["id"], {"report": "已复核新持仓", "maintained_suggestion_ids": [rid], "input_version": 999}, None)

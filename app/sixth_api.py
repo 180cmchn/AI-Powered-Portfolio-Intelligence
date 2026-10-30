@@ -19,6 +19,7 @@ class BindingInput(BaseModel):
 
 
 class RoleInput(BindingInput):
+    expected_version: int | None = Field(default=None, ge=0)
     name: str | None = Field(default=None, max_length=120)
     responsibility: str | None = Field(default=None, max_length=4000)
     system_prompt: str | None = Field(default=None, max_length=30000)

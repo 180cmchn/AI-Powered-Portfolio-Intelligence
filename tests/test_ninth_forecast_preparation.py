@@ -1,4 +1,5 @@
 """Real scheduler/SQLite/capacity queues; providers are bounded offline fixtures."""
+from ledger_helpers import save_snapshot_correction
 import asyncio
 from collections import Counter
 from datetime import timedelta
@@ -21,8 +22,8 @@ def preparations(store):
 async def test_eight_targets_one_second_cycles_count_actual_starts_not_waiters(env, concurrency):
     store, account, clock = env
     symbols = [f'SZ:{159270 + n}' for n in range(8)]
-    store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
-        {'symbol': s, 'quantity': '1'} for s in symbols]}, account_id=account['id'])
+    save_snapshot_correction(store, {'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+        {'symbol': s, 'quantity': '1'} for s in symbols]}, account['id'])
     prices = Prices(delay=.65)
     metrics = []
     for n in range(5):
@@ -151,7 +152,7 @@ def test_failed_v9_migration_rolls_back_columns_tables_marker_and_version(env, m
         assert not db.execute("SELECT 1 FROM meta WHERE key='forecast_sample_identity_v9'").fetchone()
         assert not db.execute("SELECT 1 FROM sqlite_master WHERE name='forecast_sample_attempts'").fetchone()
         assert not {'lease_token', 'request_started_at'} & {r[1] for r in db.execute('PRAGMA table_info(forecast_preparations)')}
-    assert Store(store.path).meta('schema_version') == 10
+    assert Store(store.path).meta('schema_version') == 11
 
 
 @pytest.mark.asyncio

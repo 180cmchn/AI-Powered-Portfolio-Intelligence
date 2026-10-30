@@ -8,7 +8,7 @@ import json
 import sqlite3
 import uuid
 
-from .config import defaults
+from .config import defaults, migrate_timeout_policy
 from .domain import TZ, now
 from .materials import MaterialStore, SCHEMA as MATERIAL_SCHEMA
 from .recommendations import RecommendationStore, SCHEMA as RECOMMENDATION_SCHEMA
@@ -19,6 +19,7 @@ from .agent_config import AgentConfigStore, SCHEMA as AGENT_CONFIG_SCHEMA
 from .forecasts import ForecastStore, SCHEMA as FORECAST_SCHEMA
 from .forecast_windows import ForecastWindowStore, SCHEMA as FORECAST_WINDOW_SCHEMA
 from .task_tracking import TaskTrackingStore
+from .ledger import LedgerStore
 
 
 def uid() -> str:
@@ -41,7 +42,7 @@ class ReportPublicationError(ValueError):
     pass
 
 
-class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore, ForecastWindowStore, TaskTrackingStore):
+class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore, ForecastWindowStore, TaskTrackingStore, LedgerStore):
     """SQLite is the durable queue, input snapshot store, and atomic publication fence."""
 
     def __init__(self, path: Path | str, mode="live"):
@@ -52,7 +53,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with sqlite3.connect(self.path) as prior:
                 table = prior.execute("SELECT 1 FROM sqlite_master WHERE name='meta'").fetchone()
                 version = prior.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone() if table else None
-                if version and int(loads(version[0])) > 10:
+                if version and int(loads(version[0])) > 11:
                     raise ValueError("数据库版本比程序更新，请升级程序")
                 if version and int(loads(version[0])) == 1:
                     backup = self.path.with_name(self.path.name + ".before-v2.bak")
@@ -104,6 +105,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         backup.chmod(0o600)
                 if version and int(loads(version[0])) < 10:
                     backup = self.path.with_name(self.path.name + ".before-v10.bak")
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as saved:
+                            prior.backup(saved)
+                        backup.chmod(0o600)
+                if version and int(loads(version[0])) < 11:
+                    backup = self.path.with_name(self.path.name + ".before-v11.bak")
                     if not backup.exists():
                         with sqlite3.connect(backup) as saved:
                             prior.backup(saved)
@@ -182,7 +189,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             self.migrate_forecasts(db)
             self.migrate_forecast_windows(db)
             self.migrate_task_tracking(db)
-            db.execute("UPDATE meta SET value='10' WHERE key='schema_version'")
+            self.migrate_ledger(db)
+            db.execute("UPDATE meta SET value='11' WHERE key='schema_version'")
         self.path.chmod(0o600)
 
     @contextmanager
@@ -212,7 +220,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 self.record_window_configuration(db, source=key + '_saved')
 
     def settings(self):
-        settings = {**defaults(), **self.meta("settings", {})}
+        settings = {**defaults(), **migrate_timeout_policy(self.meta("settings", {}))}
         # Keep legacy values in the DB for traceability, out of the runtime/UI.
         for key in ("search_provider", "search_key_env", "search_max_results", "news_read_sources"):
             settings.pop(key, None)
@@ -238,7 +246,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         """Resolve settings once and record credential-sensitive evidence identity."""
         from .model import native_search_fingerprint
         saved = db.execute("SELECT value FROM meta WHERE key='settings'").fetchone()
-        config = {**defaults(), **loads(saved[0] if saved else None, {})}
+        config = {**defaults(), **migrate_timeout_policy(loads(saved[0] if saved else None, {}))}
         config['_agent_team'] = self.freeze_agent_team(account_id, db=db)
         team = config['_agent_team']
         role = team['roles']['manager']
@@ -251,7 +259,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             prompt_version=role['prompt_version'], tool_version=role['tool_version'], team_id=team['team_id'],
             account_id=account_id, _credential_fingerprint=(provider.get('credential_reference') or {}).get('fingerprint'))
         request_options = {k: config.get(k) for k in ('model_native_search', 'model_allow_no_key', 'reasoning',
-            'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds', 'model_responses_stream')}
+            'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds', 'model_responses_stream',
+            'model_first_event_timeout_seconds', 'model_stream_idle_timeout_seconds',
+            'model_request_hard_timeout_seconds', 'synthesis_request_hard_timeout_seconds',
+            'agent_timeout_seconds', 'analysis_timeout_seconds')}
         config['_model_configuration_fingerprint'] = hashlib.sha256(
             dumps({'team_id': team['team_id'], 'request_options': request_options}).encode()).hexdigest()
         return config
@@ -284,6 +295,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         result = dict(row)
         for key in ("holdings", "preferences"):
             result[key] = loads(result[key])
+        result["ledger"] = self.ledger_account_context(account_id, db)
         return result
 
     def accounts(self):
@@ -299,7 +311,22 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         account_id, stamp = account_id or uid(), now()
         delay = self.settings()["debounce_seconds"]
         if db is not None:
-            old = db.execute("SELECT version FROM accounts WHERE id=?", (account_id,)).fetchone()
+            old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
+            if old and reason == 'account_saved':
+                from decimal import Decimal
+                def accounting_holdings(rows):
+                    return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
+                old_cash = Decimal(old['cash']) if old['cash'] is not None else None
+                new_cash = Decimal(data['cash']) if data.get('cash') is not None else None
+                changed = old_cash != new_cash or accounting_holdings(loads(old['holdings'], [])) != accounting_holdings(data.get('holdings', []))
+                if changed:
+                    if data.get('ledger_action') != 'correction' or not str(data.get('adjustment_reason', '')).strip():
+                        raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
+                    self.correct_snapshot(account_id, {'operation_id': 'legacy-correction:' + uid(),
+                        'expected_version': data.get('expected_version'), 'reason': data['adjustment_reason'],
+                        'cash': data.get('cash'), 'holdings': data.get('holdings', []),
+                        'name': data.get('name', old['name']), 'preferences': data.get('preferences', loads(old['preferences'], {}))}, db)
+                    return self.account(account_id, db)
             version = old[0] + 1 if old else 1
             if data.get("expected_version") is not None and (not old or data["expected_version"] != old[0]):
                 raise Conflict("账户已被其他页面修改，请刷新后重试")
@@ -313,6 +340,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             db.execute("UPDATE research_records SET applicability='stale' WHERE account_id=? AND applicability='current'", (account_id,))
             self._invalidate_recommendations(db, account_id, "账户持仓或偏好版本已变更")
             db.execute("DELETE FROM condition_latches WHERE account_id=?", (account_id,))
+            if not old:
+                self._ledger_open(db, account_id, 'account_creation')
             account = self.account(account_id, db)
             db.execute("INSERT INTO snapshots VALUES(?,?,?,?)", (account_id, version, dumps(account), stamp))
             self.record_window_configuration(db, account_id, at=stamp, source='account_saved')
@@ -360,6 +389,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             self.account(account_id, db)
+            if db.execute("SELECT 1 FROM ledger_entries WHERE account_id=? AND kind<>'opening'", (account_id,)).fetchone():
+                raise ValueError('账户已有不可变资金或交易流水，不能直接删除；请保留账本并通过校正处理')
+            # Even a never-traded account keeps its immutable opening/fee
+            # audit after the old delete-account action. Business journals are
+            # never cascaded or rewritten; accounts with later entries cannot
+            # be deleted by this legacy endpoint.
             ids = [r[0] for r in db.execute("SELECT id FROM jobs WHERE account_id=?", (account_id,))]
             for j in ids:
                 db.execute("DELETE FROM events WHERE job_id=?", (j,))

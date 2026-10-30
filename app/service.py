@@ -359,6 +359,7 @@ class Service:
         from .model import ModelClient, ModelConfigurationError
         cfg = job.get("config_snapshot") or self.store.settings()
         started = time.monotonic()
+        analysis_deadline = started + float(cfg['analysis_timeout_seconds'])
         try:
             # Bind planned identity before resolving secrets, clients or prices.
             self.store.prepare_exploratory_forecast_job(job['id'], calendar_path=cfg.get('calendar_path'))
@@ -430,7 +431,9 @@ class Service:
                     context['synthesis_checkpoint'] = checkpoint
                     self.store.event(job['id'], {'type': 'synthesis_resuming', 'message': '正在复用已保存的研究成果重试汇总',
                         'checkpoint_job_id': checkpoint['checkpoint_job_id'], 'attempt': checkpoint['resume_attempt']})
-                result = await asyncio.wait_for(research(context, cfg, ResearchTools(self.store, job, cfg, context), emit), timeout=max(0.01, cfg["analysis_timeout_seconds"] - (time.monotonic() - started)))
+                context['_analysis_deadline'] = analysis_deadline
+                async with asyncio.timeout_at(analysis_deadline):
+                    result = await research(context, cfg, ResearchTools(self.store, job, cfg, context), emit)
                 result["metrics"] = values
             result.update(input_version=job["input_version"], data_as_of=data_as_of,
                           model_config=model_config_summary(cfg),
@@ -446,18 +449,40 @@ class Service:
         except ModelConfigurationError as e:
             self.store.set_job_state(job["id"], "waiting_config", str(e))
             self.store.event(job["id"], {"type": "configuration_missing", "message": str(e)})
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
             # State was durably updated by cancellation or supersession; restart can recover running work.
-            self.store.event(job["id"], {"type": "interrupted", "message": "任务已中断；已保存持仓不受影响"})
+            from .model import cancellation_source
+            try:
+                current = self.store.job(job['id'])
+            except KeyError:
+                current = {'state': 'deleted'}
+            cancelled_by = {'cancelled': 'user_cancelled', 'superseded': 'input_version_updated',
+                'deleted': 'account_deleted'}.get(current['state'], cancellation_source(exc, 'service_interrupted'))
+            self.store.event(job["id"], {"type": "interrupted", "message": "任务已中断；已保存持仓不受影响",
+                'error_code': 'cancelled', 'cancelled_by': cancelled_by})
             raise
         except Exception as e:
             from .model import ModelError
             from .store import ReportPublicationError
             message = str(e) if isinstance(e, (ModelError, ReportPublicationError)) else ("分析超过配置的总时限" if isinstance(e, TimeoutError) else f"分析失败：{type(e).__name__}")
-            if '已完成研究可从汇总检查点恢复' in message and not self.store.checkpoint_status(job['id']).get('available'):
-                message = message.replace('已完成研究可从汇总检查点恢复', '本任务尚无汇总检查点；已保存材料和事件可查看，重试将按当前版本研究')
+            try:
+                recovery_context = dict(context) if 'context' in locals() else None
+                if recovery_context:
+                    current_quotes = self.quotes()
+                    recovery_context['metrics'] = metrics(self.store.account(job['account_id']), current_quotes, self.store.cache('securities'))
+                    recovery_context['candidate_quotes'] = {key: current_quotes.get(key, {}) for key in recovery_context.get('candidate_quotes', {})}
+                    if recovery_context.get('target_security'):
+                        target_security = recovery_context['target_security']
+                        recovery_context['target_security'] = {**target_security, 'quote': current_quotes.get(target_security['symbol'])}
+                recovery = self.store.checkpoint_recovery_diagnostic(job, recovery_context)
+            except Exception:
+                recovery = {'state': 'unverified', 'eligible': False, 'note': '恢复资格尚未核实；不能保证仅汇总恢复，已保存记录可查看'}
+            message += '；' + recovery['note']
             self.store.set_job_state(job["id"], "failed", message)
-            self.store.event(job["id"], {"type": "failed", "message": message})
+            code = getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__)
+            self.store.event(job["id"], {"type": "failed", "message": message,
+                'error_code': code, 'cancelled_by': code if code.endswith('_exhausted') else None,
+                'recovery': recovery})
 
     async def news_scan(self):
         cfg = self.store.settings()
@@ -576,6 +601,7 @@ class Service:
         from .model import ModelConfigurationError, ModelError
         snapshot = run.get('input_snapshot') or self.store.global_run(run['id']).get('input_snapshot')
         cfg = snapshot['config'] if snapshot else self.store.settings()
+        analysis_deadline = time.monotonic() + float(cfg['analysis_timeout_seconds'])
         try:
             if cfg.get('_agent_team') and self.store.mode == 'live' and self.runner is None:
                 try:
@@ -606,8 +632,10 @@ class Service:
             if self.store.mode == "demo":
                 result = {"report": "演示模式：全局调度已执行；未调用模型或生成研究结论", "demo": True, "model_calls": 0}
             else:
-                result = await asyncio.wait_for((self.runner or run_research)(context, cfg,
-                         ResearchTools(self.store, {**run, "account_id": None}, cfg, context), emit), cfg["analysis_timeout_seconds"])
+                context['_analysis_deadline'] = analysis_deadline
+                async with asyncio.timeout_at(analysis_deadline):
+                    result = await (self.runner or run_research)(context, cfg,
+                         ResearchTools(self.store, {**run, "account_id": None}, cfg, context), emit)
             result['model_config'] = model_config_summary(cfg)
             result['_information_material_ids'] = [m['id'] for m in context['pending_information']]
             result['synthesis_checkpoint_job_id'] = (context.get('synthesis_checkpoint') or {}).get('checkpoint_job_id')
@@ -616,10 +644,31 @@ class Service:
                 self.route_material_changes(run['id'], result, [m['id'] for m in context['pending_information']])
         except ModelConfigurationError as e:
             self.store.finish_global(run["id"], "waiting_config", error=str(e))
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
+            from .model import cancellation_source
+            try:
+                current = self.store.global_run(run['id'])
+            except KeyError:
+                current = {'state': 'deleted'}
+            cancelled_by = {'cancelled': 'user_cancelled', 'superseded': 'input_version_updated',
+                'deleted': 'account_deleted'}.get(current['state'], cancellation_source(exc, 'service_interrupted'))
+            self.store.event(run['id'], {'type': 'interrupted', 'error_code': 'cancelled', 'cancelled_by': cancelled_by})
             raise  # Running state is recovered into durable pending demands at restart.
         except Exception as e:
-            self.store.finish_global(run["id"], "failed", error=str(e) if isinstance(e, ModelError) else type(e).__name__)
+            message = str(e) if isinstance(e, ModelError) else ('公共研究总预算已耗尽' if isinstance(e, TimeoutError) else type(e).__name__)
+            try:
+                recovery_context = dict(context) if 'context' in locals() else None
+                if recovery_context:
+                    current_quotes = self.quotes()
+                    recovery_context['quotes'] = {key: current_quotes.get(key, {}) for key in recovery_context.get('quotes', {})}
+                recovery = self.store.checkpoint_recovery_diagnostic({**run, 'account_id': None}, recovery_context)
+            except Exception:
+                recovery = {'state': 'unverified', 'eligible': False, 'note': '恢复资格尚未核实；已保存记录可查看'}
+            message += '；' + recovery['note']
+            self.store.finish_global(run["id"], "failed", error=message)
+            self.store.event(run['id'], {'type': 'failed', 'message': message,
+                'error_code': getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__),
+                'recovery': recovery})
 
     async def scheduler_tick(self, stamp=None):
         stamp = stamp or datetime.now(TZ)
@@ -720,7 +769,8 @@ class Service:
             except KeyError:
                 state = "deleted"
             if state not in ("running",) and not task.done():
-                task.cancel()
+                task.cancel({'cancelled': 'user_cancelled', 'superseded': 'input_version_updated',
+                             'deleted': 'account_deleted'}.get(state, 'parent_finished'))
             if task.done():
                 self.active.pop(job_id)
         await self.scheduler_tick()
@@ -810,5 +860,5 @@ class Service:
         if self.loop_task:
             tasks.append(self.loop_task)
         for task in tasks:
-            task.cancel()
+            task.cancel('service_shutdown')
         await asyncio.gather(*tasks, return_exceptions=True)

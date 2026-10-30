@@ -24,27 +24,57 @@ from urllib.parse import urlsplit
 import httpx
 
 from .context import bounded_result, compact
-from .config import reasoning_effort, model_config_summary
+from .config import reasoning_effort, model_config_summary, timeout_policy
 
 
 class ModelError(RuntimeError):
     """Safe, user-visible model error (never embeds credentials or response bodies)."""
+    code = 'model_error'
+
+    def __init__(self, message, *, code=None):
+        if code:
+            self.code = code
+        super().__init__(message)
 
 
 class ModelConfigurationError(ModelError):
-    pass
+    code = 'model_configuration_error'
 
 
 class ReasoningEffortUnsupported(ModelConfigurationError):
     """A deterministic endpoint rejection; never retry with a different effort."""
+    code = 'reasoning_effort_unsupported'
 
 
 class ModelProtocolError(ModelError):
-    pass
+    code = 'model_protocol_error'
 
 
 class ModelBudgetExceeded(ModelError):
-    pass
+    code = 'model_call_budget_exhausted'
+
+
+class ModelTimeoutError(ModelError):
+    """A stable, locally attributed limit; never promises a saved checkpoint."""
+    MESSAGES = {
+        'first_event_timeout': '等待首个有效模型或工具事件超过时限；响应头和心跳不构成生成进展',
+        'stream_idle_timeout': '模型流有效进展停滞超过时限；未采用部分正文或函数参数',
+        'request_hard_timeout': '模型请求超过时限（请求总硬上限）；已有事件不等于完整终止',
+        'child_budget_exhausted': '子任务总预算已耗尽；该限制包含模型重试和工具阶段',
+        'analysis_budget_exhausted': '账户研究总预算已耗尽；该限制包含行情准备、子任务与汇总',
+    }
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__(self.MESSAGES[code])
+
+
+def cancellation_source(exc, fallback='parent_or_user_cancelled'):
+    # Task.cancel messages are internal constants, never arbitrary exception text.
+    label = exc.args[0] if exc.args else None
+    return label if label in {'user_cancelled', 'input_version_updated', 'service_shutdown',
+        'account_deleted', 'parent_finished', 'parent_failed', 'manager_cancelled_child',
+        'analysis_budget_exhausted', 'child_budget_exhausted'} else fallback
 
 
 @dataclass
@@ -78,6 +108,9 @@ class ModelSession:
     phase: str = "research"
     native_search: bool = True
     task_id: str | None = None
+    # Monotonic process-local deadlines; never serialized into model context.
+    deadlines: dict[str, float] = field(default_factory=dict)
+    queue_wait_ms: float = 0.0
 
 
 _NATIVE_CAPABILITIES: dict[str, dict] = {}
@@ -151,7 +184,7 @@ class ModelClient:
             headers["Authorization"] = f"Bearer {self.key}"
         self.http = httpx.AsyncClient(
             base_url=base_url + "/", headers=headers,
-            timeout=float(config.get("model_request_timeout_seconds", 90)),
+            timeout=httpx.Timeout(connect=15, pool=15, write=30, read=None),
             transport=transport, follow_redirects=False,
         )
         self.before_request = before_request
@@ -421,7 +454,7 @@ class ModelClient:
     STREAM_MAX_EVENT_BYTES = 4 * 1024 * 1024
     STREAM_MAX_EVENTS = 20000
 
-    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started):
+    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started, progress):
         """Read a complete Responses terminal object; never assemble deltas.
 
         Compatibility gateways may return ordinary JSON despite stream:true.
@@ -433,6 +466,7 @@ class ModelClient:
             observation.update(status_code=response.status_code,
                 request_accepted=200 <= response.status_code < 300,
                 response_headers_received=True,
+                response_headers_ms=round((time.perf_counter() - started) * 1000, 2),
                 request_id=self._safe_provider_identifier(response.headers.get('x-request-id') or response.headers.get('request-id')))
             content_type = response.headers.get('content-type', '').split(';', 1)[0].strip().lower()
             is_sse = content_type == 'text/event-stream' and response.status_code < 400
@@ -440,6 +474,10 @@ class ModelClient:
             if not is_sse:
                 chunks, size = [], 0
                 async for chunk in response.aiter_bytes():
+                    if chunk:
+                        progress('json_body_chunk', semantic=False)
+                        if observation.get('stream_first_byte_ms') is None:
+                            observation['stream_first_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
                     size += len(chunk)
                     observation['output_bytes'] = size
                     if size > self.STREAM_MAX_BYTES:
@@ -494,6 +532,30 @@ class ModelClient:
                         raise ModelProtocolError('模型流事件序号无效或重复')
                     last_sequence = sequence
                 kind = event['type']
+                counts = observation.setdefault('stream_event_types', {})
+                safe_kind = kind if kind.startswith('response.') and len(kind) <= 100 and re.fullmatch(r'[a-z_\.]+', kind) else 'other'
+                if len(counts) < 50 or safe_kind in counts:
+                    counts[safe_kind] = counts.get(safe_kind, 0) + 1
+                elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+                if kind == 'response.output_text.delta' and event.get('delta'):
+                    observation.setdefault('stream_first_text_delta_ms', elapsed_ms)
+                if kind.startswith(('response.web_search_call.', 'response.file_search_call.', 'response.code_interpreter_call.', 'response.function_call_arguments.')):
+                    observation.setdefault('stream_first_tool_event_ms', elapsed_ms)
+                if kind.startswith('response.reasoning'):
+                    observation.setdefault('stream_first_reasoning_event_ms', elapsed_ms)
+                # A created/queued envelope and comment heartbeats prove only
+                # transport liveness. Text/function/reasoning *event types* and
+                # native tool state transitions prove progress; no delta content
+                # (in particular hidden reasoning) is retained in diagnostics.
+                effective = ((kind.endswith('.delta') and bool(event.get('delta')))
+                    or kind.startswith(('response.web_search_call.', 'response.file_search_call.',
+                                            'response.code_interpreter_call.'))
+                    or kind in {'response.completed', 'response.incomplete', 'response.failed', 'response.cancelled'}
+                    or (kind in {'response.output_item.added', 'response.output_item.done'}
+                        and isinstance(event.get('item'), dict)
+                        and event['item'].get('type') in {'function_call', 'web_search_call', 'file_search_call', 'code_interpreter_call'}))
+                if effective:
+                    progress(kind)
                 body = event.get('response')
                 if isinstance(body, dict) and isinstance(body.get('id'), str):
                     if response_id is not None and body['id'] != response_id:
@@ -519,6 +581,8 @@ class ModelClient:
                 observation['output_bytes'] += len(chunk)
                 if chunk and observation['stream_first_byte_ms'] is None:
                     observation['stream_first_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
+                if chunk:
+                    observation['stream_last_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
                 if observation['output_bytes'] > self.STREAM_MAX_BYTES:
                     observation['error'] = 'response_size_limit'
                     raise ModelProtocolError('模型流超过有限接收大小；未采用部分结果')
@@ -548,6 +612,7 @@ class ModelClient:
                             return response, terminal
                         continue
                     if line.startswith(b':'):
+                        observation['stream_heartbeat_count'] = observation.get('stream_heartbeat_count', 0) + 1
                         continue  # heartbeat/comment, no body or reasoning log
                     field, _, value = line.partition(b':')
                     if value.startswith(b' '):
@@ -577,9 +642,17 @@ class ModelClient:
         if streaming:
             payload = {**payload, 'stream': True}
         for attempt in range(retries + 1):
+            queue_started = time.monotonic()
             if self.before_request:
                 await self.before_request()
             started = time.perf_counter()
+            started_mono = time.monotonic()
+            policy = timeout_policy(self.config, session.phase if session else 'probe')
+            deadlines = {**(session.deadlines if session else {}),
+                         'request_hard_timeout': started_mono + policy['request_hard_seconds']}
+            limit_code, deadline = min(deadlines.items(), key=lambda item: item[1])
+            if deadline <= started_mono:
+                raise ModelTimeoutError(limit_code)
             observation = {"attempt": attempt + 1, "endpoint": endpoint, "model": self.model,
                            "base_url": self.base_url, "protocol": self.protocol,
                            "task_id": session.task_id if session else None,
@@ -594,6 +667,15 @@ class ModelClient:
                            "output_bytes": 0, "request_id": None, "stream_requested": bool(streaming),
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None,
+                           "error_code": None, "cancelled_by": None,
+                           "started_at": datetime.now(timezone.utc).isoformat(),
+                           "timeout_policy": policy,
+                           "queue_wait_ms": round((started_mono - queue_started) * 1000 + (session.queue_wait_ms if session else 0), 2),
+                           "deadline_remaining_ms": {key: round(max(0, value - started_mono) * 1000, 2) for key, value in deadlines.items()},
+                           "effective_limit": limit_code,
+                           "stream_first_effective_event_ms": None, "stream_last_progress_ms": None,
+                           "stream_max_idle_ms": 0, "stream_first_byte_ms": None,
+                           "cost_known": False,
                            "transport_phase": "transport_not_observed", "transport_events": [],
                            "response_headers_received": False, "response_body_received": False,
                            "proxy_tunnel": {"observed": False, "status_code": None,
@@ -649,25 +731,62 @@ class ModelClient:
                 if event.endswith('receive_response_body.complete') and scope != 'proxy_tunnel':
                     observation['response_body_received'] = True
 
+            hard_timer = progress_timer = None
+            last_progress = started_mono
+            progressed = False
+            def progress(kind, semantic=True):
+                nonlocal last_progress, progressed
+                stamp = time.monotonic()
+                elapsed = round((time.perf_counter() - started) * 1000, 2)
+                observation['stream_max_idle_ms'] = max(observation['stream_max_idle_ms'], round((stamp - last_progress) * 1000, 2))
+                last_progress, progressed = stamp, True
+                observation['stream_last_progress_ms'] = elapsed
+                observation['stream_last_progress_kind'] = kind if len(kind) <= 100 and re.fullmatch(r'[a-zA-Z0-9_.]+', kind) else 'protocol_progress'
+                if semantic and observation['stream_first_effective_event_ms'] is None:
+                    observation['stream_first_effective_event_ms'] = elapsed
+                progress_timer.reschedule(stamp + policy['stream_idle_seconds'])
+
+            def finish_observation():
+                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
+                                   finished_at=datetime.now(timezone.utc).isoformat())
+                observation['stream_max_idle_ms'] = max(observation['stream_max_idle_ms'],
+                    round((time.monotonic() - last_progress) * 1000, 2))
+
+            async def retry_later(delay):
+                # A retry cannot renew the parent budget. Leave a full first
+                # event allowance (bounded by this request's hard cap).
+                parents = session.deadlines if session else {}
+                required = delay + min(policy['first_event_seconds'], policy['request_hard_seconds'])
+                if parents and min(parents.values()) - time.monotonic() <= required:
+                    observation['retry_suppressed'] = 'insufficient_parent_budget'
+                    return False
+                observation['retry_delay_seconds'] = delay
+                await asyncio.sleep(delay)
+                return True
+
             try:
-                timeout = float(self.config.get("synthesis_request_timeout_seconds", self.config.get("model_request_timeout_seconds", 90))) if session and session.phase == "synthesis" else float(self.config.get("model_request_timeout_seconds", 90))
-                observation["request_timeout_seconds"] = timeout
-                # The HTTP total request and outer research-round deadlines are
-                # separate. Do not restart a whole round for a request failure.
-                stream_data = None
-                async with asyncio.timeout(timeout):
-                    if streaming:
-                        response, stream_data = await self._receive_stream(endpoint, payload, timeout, trace, observation, started)
-                    else:
-                        response = await self.http.post(endpoint, json=payload, timeout=timeout, extensions={'trace': trace})
+                observation['request_timeout_seconds'] = policy['request_hard_seconds']
+                network_timeout = httpx.Timeout(connect=policy['connect_seconds'], pool=policy['pool_seconds'],
+                    write=policy['write_seconds'], read=None)
+                # The semantic watchdog can move; the cost/parent deadlines
+                # cannot. Network connect/pool/write retain independent limits.
+                async with asyncio.timeout_at(deadline) as hard_timer:
+                    async with asyncio.timeout_at(started_mono + policy['first_event_seconds']) as progress_timer:
+                        response, stream_data = await self._receive_stream(endpoint, payload, network_timeout,
+                            trace, observation, started, progress)
             except TimeoutError as exc:
-                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="RequestDeadlineExceeded")
-                if attempt < retries:
-                    await asyncio.sleep(min(2 ** attempt, 4))
-                    continue
-                raise ModelError("模型单次请求超过时限；已完成研究可从汇总检查点恢复") from exc
+                finish_observation()
+                code = limit_code if hard_timer and hard_timer.expired() else ('stream_idle_timeout' if progressed else 'first_event_timeout')
+                observation.update(error='RequestDeadlineExceeded' if code == 'request_hard_timeout' else code,
+                    error_code=code, cancelled_by=code, retry_suppressed='upstream_execution_may_continue')
+                # A server may still be executing after local timeout; do not
+                # overlap an expensive accepted generation with a blind retry.
+                raise ModelTimeoutError(code) from exc
             except httpx.RequestError as exc:
-                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error=type(exc).__name__)
+                finish_observation()
+                error_code = {httpx.ConnectTimeout: 'connect_timeout', httpx.PoolTimeout: 'pool_timeout',
+                    httpx.WriteTimeout: 'write_timeout', httpx.ReadTimeout: 'network_read_timeout'}.get(type(exc), 'upstream_transport_error')
+                observation.update(error=type(exc).__name__, error_code=error_code)
                 # The past generic error cannot be reconstructed. New failures
                 # retain observed boundaries and a bounded type-only cause chain.
                 causes, cause = [], exc
@@ -679,17 +798,23 @@ class ModelClient:
                 observation['transport_failure_kind'] = ('disconnected_before_response' if 'without sending a response' in message
                     else 'incomplete_response_body' if 'incomplete' in message or 'peer closed connection' in message
                     else 'transport_error')
-                if attempt < retries:
-                    await asyncio.sleep(min(2 ** attempt, 4))
+                safe_retry = isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)) and not observation['response_headers_received']
+                if safe_retry and attempt < retries and await retry_later(min(2 ** attempt, 4)):
                     continue
-                raise ModelError(f"模型网络请求失败（{type(exc).__name__}）；账户保存不受影响") from exc
-            except asyncio.CancelledError:
-                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2), error="cancelled")
+                observation['retry_suppressed'] = observation.get('retry_suppressed') or ('accepted_or_sent_request_outcome_unknown' if not safe_retry else 'attempt_budget')
+                raise ModelError(f"模型网络请求失败（{type(exc).__name__}）；账户保存不受影响", code=error_code) from exc
+            except asyncio.CancelledError as exc:
+                finish_observation()
+                expired = [(key, value) for key, value in (session.deadlines if session else {}).items() if value <= time.monotonic()]
+                code = min(expired, key=lambda item: item[1])[0] if expired else 'cancelled'
+                observation.update(error='cancelled', error_code=code,
+                    cancelled_by=code if expired else cancellation_source(exc), retry_suppressed='cancelled')
                 raise
             except ModelProtocolError:
-                observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
-                    transport_phase='local_stream_validation')
+                finish_observation()
+                observation.update(transport_phase='local_stream_validation', error_code=observation.get('error') or 'protocol_error')
                 raise
+            finish_observation()
             observation.update(response_headers_received=True, response_body_received=True, transport_phase='response_received',
                                duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
                                request_accepted=200 <= response.status_code < 300,
@@ -697,6 +822,7 @@ class ModelClient:
                                request_id=self._safe_provider_identifier(response.headers.get("x-request-id") or response.headers.get("request-id")))
             if response.status_code >= 400:
                 observation["error"] = f"HTTP {response.status_code}"
+                observation['error_code'] = f'upstream_http_{response.status_code}'
                 if response.status_code in {400, 404, 422} or (response.status_code >= 500 and any(
                     code in response.text.lower() for code in ('unsupported_parameter', 'unsupported_value', 'invalid_parameter', 'invalid_value'))):
                     # Read only for classification; never log server bodies or
@@ -725,10 +851,12 @@ class ModelClient:
                     observation["native_tool_rejected"] = "web_search" in message and any(
                         word in message for word in ("unsupported", "not support", "not allowed", "invalid", "unknown"))
             if response.status_code in {429, 500, 502, 503, 504} and attempt < retries:
-                await asyncio.sleep(min(2 ** attempt, 4))
-                continue
+                # An explicit HTTP rejection differs from an interrupted 200
+                # generation. Bounded backoff still uses the parent deadline.
+                if await retry_later(min(2 ** attempt, 4)):
+                    continue
             if response.status_code >= 400:
-                raise ModelError(f"模型服务 HTTP {response.status_code}；请检查端点、权限、配额与协议配置")
+                raise ModelError(f"模型服务 HTTP {response.status_code}；请检查端点、权限、配额与协议配置", code=f'upstream_http_{response.status_code}')
             try:
                 data = stream_data if stream_data is not None else response.json()
             except ValueError as exc:
@@ -833,6 +961,7 @@ async def probe_native_search(config: dict[str, Any], *, transport: httpx.AsyncB
         return {**status, "ok": False, "requests": []}
     cfg = {**config, "model_retries": 0,
            "model_request_timeout_seconds": min(float(config.get("model_request_timeout_seconds", 90)), 60),
+           "model_request_hard_timeout_seconds": min(timeout_policy(config)['request_hard_seconds'], 60),
            "max_output_tokens": min(int(config.get("max_output_tokens", 4000)), 1200)}
     try:
         client = ModelClient(cfg, transport=transport)

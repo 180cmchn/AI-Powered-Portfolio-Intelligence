@@ -1,4 +1,5 @@
 """Production SQLite, queue, Service and ResearchTools; prices/model are explicit fixtures."""
+from ledger_helpers import save_snapshot_correction
 import asyncio
 from collections import Counter
 from datetime import datetime, timedelta
@@ -116,8 +117,8 @@ async def test_partial_ready_keeps_collecting_and_tool_delivers_new_evidence(env
 async def test_41_offline_symbols_cross_tick_restart_and_fair_accounts(env):
     store, account, clock = env
     symbols = [f'SZ:{100000 + n}' for n in range(41)]
-    store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
-        {'symbol': symbol, 'quantity': '1'} for symbol in symbols]}, account_id=account['id'])
+    save_snapshot_correction(store, {'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+        {'symbol': symbol, 'quantity': '1'} for symbol in symbols]}, account['id'])
     prices = Prices()
     await tick(store, clock, prices)
     assert len(prices.calls) == 40
@@ -234,8 +235,8 @@ async def test_account_change_during_fetch_invalidates_original_batch(env):
             return await super().history(symbol, **options)
     task = asyncio.create_task(tick(store, clock, Controlled()))
     await began.wait()
-    store.save_account({'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
-        {'symbol': A, 'quantity': '20000'}]}, account_id=account['id'])
+    save_snapshot_correction(store, {'expected_version': account['version'], 'name': 'A', 'cash': '10000', 'holdings': [
+        {'symbol': A, 'quantity': '20000'}]}, account['id'])
     release.set(); await task
     batch = store.forecast_batches()[0]
     assert batch['state'] == 'failed' and batch['symbols'] == [A, B]

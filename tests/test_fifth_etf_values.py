@@ -1,4 +1,5 @@
 """Controlled ETF snapshots and quotes, not evidence of a live investment report."""
+from ledger_helpers import save_snapshot_correction
 from datetime import datetime
 import pytest
 from app.domain import AccountInput, TZ, now
@@ -7,7 +8,7 @@ from app.service import Service
 from app.store import Store
 
 
-async def test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deduction(tmp_path, monkeypatch):
+async def test_etf_explicit_opening_correction_recomputes_values_without_trade_deduction(tmp_path, monkeypatch):
     store=Store(tmp_path/'controlled-etf.sqlite3')
     store.set_meta('settings',{'quote_provider':'manual','debounce_seconds':0})
     store.put_cache('quotes','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','price':'0.965',
@@ -28,13 +29,13 @@ async def test_etf_snapshot_edit_recomputes_decimal_values_without_cash_deductio
     assert first['positions'][0]['price']=='0.965' and first['positions'][0]['kind']=='etf'
     assert first['unrealized_pnl'] is None
     current=store.account(a['id'])
-    edited=store.save_account({**current,'holdings':[{'symbol':'SZ:159278','quantity':'20000'}],
-                              'expected_version':current['version']},a['id'])
+    edited=save_snapshot_correction(store, {**current,'holdings':[{'symbol':'SZ:159278','quantity':'20000'}],
+                              'expected_version':current['version']}, a['id'])
     assert store.analysis(old['id'])['status']=='stale'
     await service.execute(store.claim_jobs()[0])
     final=store.analyses(a['id'])[0]
     values=store.analysis(final['id'])['result']['metrics']
-    assert edited['cash']=='10000' and values['cash']=='10000'
+    assert edited['cash']=='10000.00' and values['cash']=='10000.00'
     assert values['known_priced_value']=='19300.00' and values['total_assets']=='29300.00'
     assert values['unrealized_pnl'] is None
     assert final['input_version']==edited['version'] and final['status']=='current'

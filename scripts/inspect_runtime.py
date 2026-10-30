@@ -77,7 +77,7 @@ def inspect(url, database=None):
     except OSError:
         result['listeners'] = 'unavailable'
     with httpx.Client(base_url=url.rstrip('/'), timeout=2, trust_env=False) as client:
-        for route in dict.fromkeys(['/api/health', '/api/status', '/openapi.json', *REQUIRED_ROUTES]):
+        for route in dict.fromkeys(['/api/health', '/api/status', '/openapi.json', *(p for p in REQUIRED_ROUTES if '{' not in p)]):
             record = {'method': 'GET', 'path': route}
             try:
                 response = client.get(route)

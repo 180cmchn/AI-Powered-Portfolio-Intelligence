@@ -183,7 +183,7 @@ def test_import_main_never_initializes_database_and_start_provenance(tmp_path):
     from app.main import create_app
     app=create_app(tmp_path/'independent.sqlite3',worker=False)
     v=app.state.runtime_version
-    assert v['schema_version']==10 and len(v['source_sha256_at_start'])==64 and v['started_at']
+    assert v['schema_version']==11 and len(v['source_sha256_at_start'])==64 and v['started_at']
 
 
 def test_forward_cursor_drains_over_128_days_despite_today_already_recorded(tmp_path, monkeypatch):
@@ -270,7 +270,7 @@ def test_schema8_backup_idempotent_preserves_custom_role_and_immutable_ledger(tm
         db.execute("DELETE FROM meta WHERE key='eighth_role_migration'")
     upgraded=Store(s.path)
     backup=s.path.with_name(s.path.name+'.before-v8.bak')
-    assert backup.exists() and upgraded.meta('schema_version')==10
+    assert backup.exists() and upgraded.meta('schema_version')==11
     with sqlite3.connect(backup) as db:
         assert db.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]=='7'
         assert db.execute('SELECT id FROM accounts').fetchone()[0]==a['id']

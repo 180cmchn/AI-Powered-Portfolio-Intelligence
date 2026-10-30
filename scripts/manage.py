@@ -97,7 +97,7 @@ def verify_runtime(port, mode, database, *, pid=None, instance=None, check_disk=
     if missing:
         raise ValueError('接口缺失：' + ', '.join(missing))
     for path in REQUIRED_ROUTES:
-        if path == '/api/health':
+        if path == '/api/health' or '{' in path:
             continue
         body = read_json(port, path)
         if path in ('/api/providers', '/api/agent-roles', '/api/accounts', '/api/research', '/api/forecast-batches') and not isinstance(body, list):

@@ -99,12 +99,14 @@ try {
   assert.ok((await page.locator('#dialog').textContent()).includes('候选范围 v1'));
   await page.locator('#dialog .dialog-header button').click();
   await page.locator('nav a[href="#holdings"]').click();
-  await page.locator('#name').fill('未保存账户草稿');
+  await page.locator('details[data-key^="account-metadata:"]').evaluate(el=>el.open=true);
+  await page.locator('#snapshot-correction').evaluate(el=>el.open=true);
+  await page.locator('#account-name').fill('未保存账户草稿');
   await page.locator('input[name^="quantity-"]').fill('321');
   version = 2;
   await page.clock.fastForward(4000);
   await page.waitForFunction(() => document.querySelector('.account-list')?.textContent.includes('v2'));
-  assert.equal(await page.locator('#name').inputValue(), '未保存账户草稿');
+  assert.equal(await page.locator('#account-name').inputValue(), '未保存账户草稿');
   assert.equal(await page.locator('input[name^="quantity-"]').inputValue(), '321');
   assert.equal(await page.locator('#account-form').getAttribute('data-version'), '1');
   await page.locator('nav a[href="#market"]').click();

@@ -1,4 +1,5 @@
 """Round-two deterministic regression/integration checks. No real model claims."""
+from ledger_helpers import save_snapshot_correction
 import asyncio
 from datetime import datetime, timedelta
 import json
@@ -96,7 +97,7 @@ def test_waiting_config_resume_only_latest_snapshot_and_no_job_churn(store, monk
     for i in range(30):
         store.request_analysis(a['id'],'scheduled',f'schedule:{i}')
     assert len(store.jobs(a['id']))==1
-    changed = store.save_account(AccountInput(name='new',holdings=[]), a['id'])
+    changed = save_snapshot_correction(store, AccountInput(name='new',holdings=[]), a['id'])
     current = store.claim_jobs()[0]
     store.set_job_state(current['id'], 'waiting_config')
     store.recover(config_ready=False)
@@ -185,7 +186,7 @@ def test_recommendation_price_expiry_and_input_change(store):
     assert store.recommendations(a['id'])[0]['state']=='expired'
     follow=store.claim_jobs()[0]
     publish(store,follow,suggestions=[suggestion((stamp+timedelta(days=1)).isoformat())])
-    store.save_account(AccountInput(name='changed',holdings=[]),a['id'])
+    save_snapshot_correction(store, AccountInput(name='changed',holdings=[]), a['id'])
     assert store.recommendations(a['id'])[0]['state']=='needs_review'
     assert store.claim_jobs()[0]['input_version']==2
 
@@ -243,7 +244,7 @@ def test_schema1_upgrade_preserves_ids_and_creates_snapshot(store):
         db.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
         db.execute('DROP TABLE material_catalog')
     upgraded=Store(store.path)
-    assert upgraded.meta('schema_version')==10
+    assert upgraded.meta('schema_version')==11
     assert upgraded.account(a['id'])['version']==1
     assert upgraded.material(m['id'])['content']=='old text'
     assert store.path.with_name(store.path.name+'.before-v2.bak').exists()

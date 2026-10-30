@@ -457,6 +457,54 @@ class RecoveryStore:
             'recovery_assessment': {'stored_state': body['recovery_state'], 'basis': 'unused_link_metadata_only',
                 'note': '只重算未用仅链接元数据的覆盖语义；原检查点、失败状态、材料与全部输入/时效guard未改写。'}}
 
+    def checkpoint_recovery_diagnostic(self, job, context=None):
+        """Read-only present eligibility; unlike resume this consumes no attempt."""
+        from .store import loads
+        with self.connect() as db:
+            row = db.execute('SELECT * FROM synthesis_checkpoints WHERE job_id=?', (job['id'],)).fetchone()
+        if not row:
+            return {'state': 'no_checkpoint', 'eligible': False,
+                    'note': '没有汇总检查点；可查看已保存材料与事件，重试需重新研究'}
+        body = self.reassess_checkpoint_coverage(loads(row['body']))
+        result = {'checkpoint_job_id': job['id'], 'eligible': False,
+                  'partial_research': bool(body.get('partial_research'))}
+        config = self._checkpoint_config(job, context or {})
+        age = (datetime.now(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
+        invalid = []
+        if not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
+            invalid.append('expired')
+        if row['resume_count'] >= 2:
+            invalid.append('resume_budget_exhausted')
+        if row['universe_version'] != self.universe_snapshot()['universe_version']:
+            invalid.append('universe_changed')
+        if job.get('account_id'):
+            try:
+                account = self.account(job['account_id'])
+            except KeyError:
+                account = None
+            if not account or account['version'] != row['input_version']:
+                invalid.append('account_version_changed')
+        if context and row['guard'] != self.research_guard(context):
+            invalid.append('research_inputs_changed')
+        if body.get('material_guard_version') != 3:
+            invalid.append('legacy_guard_missing')
+        verified = body.get('verified_material_versions', {})
+        if self.checkpoint_material_guard(list(verified), job.get('account_id')) != verified:
+            invalid.append('material_or_access_changed')
+        if invalid:
+            return {**result, 'state': 'invalidated', 'reasons': invalid,
+                    'note': '检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究'}
+        if body.get('recovery_state') != 'synthesis_ready':
+            return {**result, 'state': 'needs_research',
+                    'note': '仅有部分成果，证据或报告交付范围不足；需补充研究，不能承诺仅汇总恢复'}
+        if not context:
+            return {**result, 'state': 'requires_revalidation',
+                    'note': '存在汇总候选检查点；尚未核对当前完整输入，重试时重新验证资格'}
+        return {**result, 'state': 'partial_synthesis_ready' if result['partial_research'] else 'synthesis_ready',
+                'eligible': True,
+                'note': ('当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效'
+                         if result['partial_research'] else '当前具备仅汇总恢复资格；重试前再校验输入与时效')}
+
     def checkpoint_status(self, job_id):
         with self.connect() as db:
             row = db.execute('SELECT created_at,resume_count,body FROM synthesis_checkpoints WHERE job_id=?', (job_id,)).fetchone()

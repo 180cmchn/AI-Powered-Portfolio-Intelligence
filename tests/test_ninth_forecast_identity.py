@@ -106,7 +106,7 @@ async def test_schema8_migration_only_uses_proven_single_attempt_scopes(env):
         db.execute("DELETE FROM meta WHERE key='forecast_sample_identity_v9'")
         db.execute("UPDATE meta SET value='8' WHERE key='schema_version'")
     store = Store(store.path)
-    assert store.meta('schema_version') == 10
+    assert store.meta('schema_version') == 11
     assert store.forecasts_page(team_id=old['team_id'])['total'] == 6
     backup = store.path.with_name(store.path.name + '.before-v9.bak')
     with sqlite3.connect(backup) as db:

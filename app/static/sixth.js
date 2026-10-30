@@ -56,6 +56,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     }
     else if (route === 'roles' || route === 'account-models') {
       [data.providers, data.roles] = result;
+      data.rolesTarget=route==='roles'?'global':account;
       for (const provider of providers()) data.catalogs[provider.id] = provider.catalog || {};
     } else [data.predictions, data.batches, data.rule, data.comparison, data.windows] = result;
     delete data.errors[route];
@@ -90,9 +91,10 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
     const effort=accountMode ? override.reasoning_effort || '' : bind.reasoning_effort || 'medium';
     const id=`role-${accountMode?state.accountId:'global'}-${role.role_id}`;
     const effective=`${resolved.provider_display_name || resolved.provider_id || '未选择'} / ${resolved.model_id || '未选择模型'} / ${resolved.reasoning_effort || 'medium'}`;
-    return `<section class="card role-card" data-role-id="${e(role.role_id)}"><div class="card-header"><div><h2>${e(role.name)} <span class="small mono">${e(role.role_id)}</span></h2>${info(role.responsibility)}</div><span class="pill">v${e(role.version)}${role.enabled?'':' · 全局归档'}</span></div><form class="card-body role-model-form" data-role-id="${e(role.role_id)}" data-account-id="${accountMode?e(state.accountId):''}" data-draft-key="${e(id)}"><p class="small"><strong>最终值：</strong>${e(effective)}<br><strong>来源：</strong>模型 ${e(sourceTitle(resolved.binding_source))} · 强度 ${e(sourceTitle(resolved.effort_source))}</p>${accountMode? info(`全局默认：${providerTitle(bind.provider_id)} / ${bind.model_id || '未配置'} / ${bind.reasoning_effort || 'medium'}`):''}${role.config_error?`<p class="error-text">配置错误：${e(role.config_error)}</p>`:''}${role.config_warning?info(role.config_warning):''}<div class="form-grid three"><div class="field"><label>供应商<select name="provider_id" data-role-provider><option value="">${accountMode?'继承全局模型绑定':'请选择供应商'}</option>${providers().map(p=>`<option value="${e(p.id)}" ${selected===p.id?'selected':''}>${e(p.display_name)}</option>`).join('')}</select></label></div><div class="field"><label>搜索已发现模型<input type="search" data-model-filter placeholder="仅筛选目录，不创建模型名" autocomplete="off"></label><label>模型<select name="model_id" data-role-model ${!selected?'disabled':''}>${modelOptions(selected,selectedModel)}</select></label><small data-catalog-status>${e(accountMode&&!selected?'继承全局模型目录':title(data.catalogs[selected]?.status))}</small></div>${selectField('reasoning_effort','reasoning_effort',effort,[...(accountMode?[['','继承全局强度']]:[]),...['low','medium','high','xhigh','max'].map(x=>[x,x])])}</div>${!accountMode?`<details class="section-gap"><summary>编辑全局职责、提示词与工具</summary><div class="form-grid section-gap">${field('角色名称','name',role.name)}${field('职责','responsibility',role.responsibility)}<label class="field span-two">系统提示词<textarea name="system_prompt" rows="9">${e(role.system_prompt)}</textarea></label><label class="field span-two">工具（每行一个已注册名称）<textarea name="tools" rows="4">${e((role.tools || []).join('\n'))}</textarea></label>${role.role_id==='manager'?'':selectField('全局状态','enabled',String(role.enabled),[['true','全部账户可用'],['false','全部账户归档']])}</div></details>`:''}<div class="form-actions">${info(accountMode?'清除覆盖只恢复默认，不会移除角色。':'所有账户使用相同的职责和工具。正在运行的任务保留原快照。')}<div class="actions">${accountMode?button('清除账户覆盖','role-reset',role.role_id,`data-account-id="${e(state.accountId)}"`):''}<button type="submit" class="button primary">${accountMode?'保存本账户覆盖':'保存全局角色'}</button></div></div></form></section>`.replace(/ (id|for)="([^"]+)"/g, (_, attr, value)=>` ${attr}="${e(id)}-${value}"`);
+    return `<section class="card role-card" data-role-id="${e(role.role_id)}"><div class="card-header"><div><h2>${e(role.name)} <span class="small mono">${e(role.role_id)}</span></h2>${info(role.responsibility)}</div><span class="pill">v${e(role.version)}${role.enabled?'':' · 全局归档'}</span></div><form class="card-body role-model-form" data-role-id="${e(role.role_id)}" data-account-id="${accountMode?e(state.accountId):''}" data-draft-key="${e(id)}" data-role-version="${e(role.version)}" data-server-revision="${e(JSON.stringify([role.version,bind,override]))}"><div class="role-version-notice" role="status" hidden></div><p class="small"><strong>最终值：</strong>${e(effective)}<br><strong>来源：</strong>模型 ${e(sourceTitle(resolved.binding_source))} · 强度 ${e(sourceTitle(resolved.effort_source))}</p>${accountMode? info(`全局默认：${providerTitle(bind.provider_id)} / ${bind.model_id || '未配置'} / ${bind.reasoning_effort || 'medium'}`):''}${role.config_error?`<p class="error-text">配置错误：${e(role.config_error)}</p>`:''}${role.config_warning?info(role.config_warning):''}<div class="form-grid three"><div class="field"><label>供应商<select name="provider_id" data-role-provider><option value="">${accountMode?'继承全局模型绑定':'请选择供应商'}</option>${providers().map(p=>`<option value="${e(p.id)}" ${selected===p.id?'selected':''}>${e(p.display_name)}</option>`).join('')}</select></label></div><div class="field"><label>搜索已发现模型<input type="search" data-model-filter placeholder="仅筛选目录，不创建模型名" autocomplete="off"></label><label>模型<select name="model_id" data-role-model ${!selected?'disabled':''}>${modelOptions(selected,selectedModel)}</select></label><small data-catalog-status>${e(accountMode&&!selected?'继承全局模型目录':title(data.catalogs[selected]?.status))}</small></div>${selectField('reasoning_effort','reasoning_effort',effort,[...(accountMode?[['','继承全局强度']]:[]),...['low','medium','high','xhigh','max'].map(x=>[x,x])])}</div>${!accountMode?`<details class="section-gap" data-key="${e(id)}:editor"><summary>编辑全局职责、提示词与工具</summary><div class="form-grid section-gap">${field('角色名称','name',role.name)}${field('职责','responsibility',role.responsibility)}<label class="field span-two">系统提示词<textarea name="system_prompt" rows="9" wrap="off">${e(role.system_prompt)}</textarea></label><label class="field span-two">工具（每行一个已注册名称）<textarea name="tools" rows="4">${e((role.tools || []).join('\n'))}</textarea></label>${role.role_id==='manager'?'':selectField('全局状态','enabled',String(role.enabled),[['true','全部账户可用'],['false','全部账户归档']])}</div></details>`:''}<div class="form-actions">${info(accountMode?'清除覆盖只恢复默认，不会移除角色。':'所有账户使用相同的职责和工具。正在运行的任务保留原快照。')}<div class="actions">${button('重新载入已保存值','role-reload',role.role_id)}${accountMode?button('清除账户覆盖','role-reset',role.role_id,`data-account-id="${e(state.accountId)}"`):''}<button type="submit" class="button primary">${accountMode?'保存本账户覆盖':'保存全局角色'}</button></div></div></form></section>`.replace(/ (id|for)="([^"]+)"/g, (_, attr, value)=>` ${attr}="${e(id)}-${value}"`);
   }
   function rolesPage(accountMode=false) {
+    if (data.rolesTarget !== (accountMode?state.accountId:'global')) return '<section class="card"><div class="card-body">正在读取当前角色配置…</div></section>';
     if (accountMode && !state.accountId) return '<section class="card"><div class="card-body">请先创建虚拟账户。</div></section>';
     return `<div class="notice"><p>${accountMode?'此账户继承全部统一角色，仅覆盖每行的供应商模型和思考强度。':'统一角色目录适用于全部账户；主 Agent 按每轮目标自主选择子角色和任务。'} 本轮实际调用请查看 <a href="#agents">Agent 工作台</a>。</p></div>${data.roles.map(r=>roleCard(r,accountMode)).join('')}`;
   }
@@ -169,6 +171,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
       if(action==='provider-refresh'||action==='provider-more') await api(`/api/providers/${enc(id)}/models/${action==='provider-more'?'continue':'refresh'}`,{method:'POST'});
       if(action==='provider-clear') {if(!confirm('明确清除该供应商凭据？冻结的旧凭据将撤销，相关运行任务可能失败。历史预测保留。'))return;await api(`/api/providers/${enc(id)}/credential`,{method:'DELETE'});}
       if(action==='provider-archive') {if(!confirm('归档此连接后，新研究的引用绑定将显示不可用；历史记录保留。'))return;await api(`/api/providers/${enc(id)}/archive`,{method:'POST'});}
+      if(action==='role-reload') { const form=target.closest('form'); form.dataset.discard='true'; state.drafts.delete(form.dataset.draftKey); await repaint(); return; }
       if(action==='role-reset')await api(`/api/accounts/${enc(account)}/agent-models/${enc(id)}`,{method:'DELETE'});
       if(action==='forecast-detail'){const row=await api(`/api/forecasts/${enc(id)}`);dialog('不可变预测 · 报告与评估修订',(row.calendar_revalidation_pending?info('日历已修订，旧评分暂不有效，等待独立重核；原目标日与预测保持不变。'):'')+objectView(row)+button('请求重新检查行情更正','forecast-recheck',id));return;}
       if(action==='forecast-batch-detail'){const row=await api(`/api/forecast-batches/${enc(id)}`);dialog('批次 · 配置归属与执行尝试',info('研究运行中仍可有目标等待基准；已发布的方向和弃权保持不变，补充判断只覆盖截止前尚未发布目标。')+objectView(row));return;}
@@ -233,6 +236,7 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
         toast(saved.catalog?.error ? '连接保存成功，模型目录失败：'+saved.catalog.error+'。请刷新目录，无需重复创建供应商。' : '连接已保存；请从已发现模型目录配置 Agent');
       } else if(form.classList.contains('role-model-form')) {
         const payload={};
+        if(!account)payload.expected_version=Number(form.dataset.roleVersion);
         if(values.provider_id){
           if(values.model_id){payload.provider_id=values.provider_id;payload.model_id=values.model_id;}
           else if(form.querySelector('[data-role-provider]').dataset.changed==='true')throw Error('请选择此供应商实际发现的模型');
@@ -240,8 +244,10 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
         if(values.reasoning_effort)payload.reasoning_effort=values.reasoning_effort;
         if(!account){for(const key of ['name','responsibility','system_prompt'])payload[key]=values[key];payload.tools=values.tools.split('\n').map(x=>x.trim()).filter(Boolean);if(values.enabled!==undefined)payload.enabled=values.enabled==='true';}
         const path=account?`/api/accounts/${enc(account)}/agent-models/${enc(form.dataset.roleId)}`:`/api/agent-roles/${enc(form.dataset.roleId)}`;
-        await api(path,{method:'PUT',body:JSON.stringify(payload)});
-        form.dataset.discard='true';state.drafts.delete(form.dataset.draftKey);
+        const submitted=JSON.stringify([...new FormData(form)]);
+        const saved=await api(path,{method:'PUT',body:JSON.stringify(payload)});
+        if (JSON.stringify([...new FormData(form)])===submitted) { form.dataset.discard='true';state.drafts.delete(form.dataset.draftKey); }
+        else { form.dataset.roleVersion=String(saved.version || Number(form.dataset.roleVersion)+1); form.dataset.dirty='true'; }
       } else if(form.id==='forecast-rule-form') {
         const payload={enabled:values.enabled==='true',horizons:values.horizons.split(/[,，]/).map(Number),labels:values.labels.split(/[,，]/).map(x=>x.trim()),threshold:String(Number(values.threshold)/100),start_time:values.start_time,deadline_time:values.deadline_time};
         await api(`/api/accounts/${enc(account)}/forecast-settings`,{method:'PUT',body:JSON.stringify(payload)});
@@ -254,10 +260,16 @@ export function createSixthUI({state, api, e, render, toast, operation, field, s
       await repaint();toast('已更新');
     },{key:`sixth-save:${form.id || form.dataset.draftKey}:${form.dataset.providerId || ''}`,label:form.id==='forecast-comparison-form'?'比较共同样本':'保存配置'});
   });
+  const syncRoleForm = (form, incoming) => {
+    const notice=form.querySelector('.role-version-notice'); if (!notice) return;
+    const changed=form.dataset.serverRevision !== incoming.dataset.serverRevision;
+    notice.hidden=!changed;
+    if (changed) { notice.className='role-version-notice notice warning'; notice.textContent=`后台配置已更新（当前已保存 v${incoming.dataset.roleVersion}）。阅读位置与本地草稿保留；请点击“重新载入已保存值”查看新版。保存前会核对原版本 v${form.dataset.roleVersion}，不会静默覆盖。`; }
+  };
   const syncProviderForm = form => { const submit=form.querySelector('[type=submit]'); if(submit){ submit.disabled=!data.providerWritable; submit.textContent=form.dataset.uncertain==='true'?'核对保存结果':'保存连接并获取模型'; } };
   const warning = () => {
     const messages=[...Object.values(data.errors),...(state.route==='providers'?Object.values(data.catalogErrors).map(error=>`${providerTitle(error.providerId)} · 连接修订 ${error.revision}：${error.message}`):[])];
     return messages.length ? `<div class="notice warning"><div>${messages.map(message=>`<p>${e(message)}</p>`).join('')}<p>此资源暂时不可用；本地服务连接状态单独检查，输入保留在当前页面。</p></div>${button('重试当前页面','resource-retry')}</div>` : '';
   };
-  return {load, syncProviderForm, has:route=>routes.has(route), snapshot:()=>JSON.stringify(data), page:()=>warning()+(state.route==='providers'?providerPage():state.route==='roles'?rolesPage():state.route==='account-models'?rolesPage(true):forecastsPage())};
+  return {load, syncProviderForm, syncRoleForm, has:route=>routes.has(route), snapshot:()=>JSON.stringify(data), page:()=>warning()+(state.route==='providers'?providerPage():state.route==='roles'?rolesPage():state.route==='account-models'?rolesPage(true):forecastsPage())};
 }

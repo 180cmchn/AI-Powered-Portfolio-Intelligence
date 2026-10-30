@@ -37,6 +37,10 @@ jobs:
         id: browser-tenth
         continue-on-error: true
         run: npm run test:browser:tenth
+      - name: Browser ledger and editor group
+        id: browser-eleventh
+        continue-on-error: true
+        run: npm run test:browser:eleventh
       - name: Require all browser groups
         if: always()
         env:
@@ -45,7 +49,8 @@ jobs:
           FORECAST: ${{ steps.browser-forecast.outcome }}
           NINTH: ${{ steps.browser-ninth.outcome }}
           TENTH: ${{ steps.browser-tenth.outcome }}
-        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success && test "$TENTH" = success
+          ELEVENTH: ${{ steps.browser-eleventh.outcome }}
+        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success && test "$TENTH" = success && test "$ELEVENTH" = success
       - uses: actions/upload-artifact@v4
         if: always()
         with:

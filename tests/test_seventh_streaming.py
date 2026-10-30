@@ -251,7 +251,7 @@ async def test_nonstream_and_chat_payload_contracts_unchanged(protocol, enabled)
 
 
 @pytest.mark.asyncio
-async def test_transport_retry_keeps_budget_and_only_complete_attempt_tools(monkeypatch):
+async def test_accepted_stream_interruption_does_not_overlap_generation_or_keep_partial_tools(monkeypatch):
     requests, budgets, streams = [], [], []
     async def budget(): budgets.append(True)
     original_sleep = asyncio.sleep
@@ -268,11 +268,12 @@ async def test_transport_retry_keeps_budget_and_only_complete_attempt_tools(monk
     client = ModelClient(cfg(model_retries=1), budget, httpx.MockTransport(handler))
     try:
         session = client.session('system', {})
-        assert (await client.complete(session, [])).text == 'visible final'
-        assert len(requests) == len(budgets) == 2
-        assert requests[0] == requests[1]
+        with pytest.raises(ModelError, match='RemoteProtocolError'):
+            await client.complete(session, [])
+        assert len(requests) == len(budgets) == 1
         assert client.requests[0]['error'] == 'RemoteProtocolError'
-        assert client.requests[1]['error'] is None
+        assert client.requests[0]['retry_suppressed'] == 'accepted_or_sent_request_outcome_unknown'
+        assert not session.pending_calls
         assert 'discard me' not in json.dumps(session.history)
         assert all(stream.closed for stream in streams)
     finally:
