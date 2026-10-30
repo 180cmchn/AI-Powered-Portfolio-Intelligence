@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-30T23:48:45.110011+08:00",
+  "access": "SQLite mode=ro and read-only HTTP inspection; no Store on source",
+  "runtime_fields_unchanged": {
+    "instance_id": true,
+    "pid": true,
+    "started_at": true,
+    "commit_at_start": true,
+    "source_sha256_at_start": true,
+    "static_sha256_at_start": true,
+    "schema_version": true,
+    "api_contract": true,
+    "database_path": true
+  },
+  "business_table_digests_unchanged_since_first_copy": {
+    "accounts": true,
+    "snapshots": true,
+    "jobs": true,
+    "analyses": true,
+    "materials": true,
+    "forecasts": true,
+    "forecast_evaluations": true,
+    "model_providers": true,
+    "provider_connections": true,
+    "agent_definitions": true,
+    "account_agent_overrides": true,
+    "research_records": true
+  },
+  "daily_schema": 10,
+  "env_file_unchanged": true,
+  "daily_restart": false,
+  "daily_migration": false,
+  "daily_trade_writes": false,
+  "actual_runtime": {
+    "instance_id": "c18ad733cdce4cbd9d412e98162278a1",
+    "pid": 84554,
+    "started_at": "2026-10-30T21:54:01.260932+08:00",
+    "commit_at_start": "874b9875a9649480cde78bca804af2693ba5d1d8",
+    "source_sha256_at_start": "d11a28e94e75192bd6704e405ae71f9ce5e19230578430d2dbb037c50818be57",
+    "static_sha256_at_start": "c46742122e9b8872e1d992b975f9ad77aa2758fb7069335e4c9386e81c7e40bc",
+    "schema_version": 10,
+    "api_contract": 10,
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3"
+  }
+}

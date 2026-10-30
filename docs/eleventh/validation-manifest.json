@@ -1,0 +1,153 @@
+{
+  "at": "2026-10-31T00:00:53.290956+08:00",
+  "implementation_commit": "1540733f258cf07fc66701062d59803ca97e3c54",
+  "source_sha256": "30ec18cb3a6ce519db917d05a11fdcc17f644267f678af963753dc39fd561580",
+  "static_sha256": "0098dc778732ab9fba2bb882cd902d87050aba4e025b68346e37c804129f876d",
+  "schema": 11,
+  "api_contract": 11,
+  "python": {
+    "command": "PYTHON_DOTENV_DISABLED=1 QUOTE_PROVIDER=manual .venv/bin/python -m pytest -q",
+    "passed": 966,
+    "failed": 0,
+    "warnings": 1,
+    "warning_note": "Existing Starlette TestClient/httpx deprecation",
+    "log": "python-delivery.txt",
+    "duration_seconds": 72.81
+  },
+  "browser_groups": [
+    {
+      "group": "iteration",
+      "exit_code": 0,
+      "duration_ms": 1954,
+      "log": "browser-delivery.txt"
+    },
+    {
+      "group": "production",
+      "exit_code": 0,
+      "duration_ms": 9014,
+      "log": "browser-delivery.txt"
+    },
+    {
+      "group": "seventh",
+      "exit_code": 0,
+      "duration_ms": 4624,
+      "log": "browser-delivery.txt"
+    },
+    {
+      "group": "ninth",
+      "exit_code": 0,
+      "duration_ms": 16657,
+      "log": "browser-delivery.txt"
+    },
+    {
+      "group": "tenth",
+      "exit_code": 0,
+      "duration_ms": 19837,
+      "log": "browser-delivery.txt"
+    },
+    {
+      "group": "eleventh",
+      "exit_code": 0,
+      "duration_ms": 61197,
+      "log": "browser-delivery.txt"
+    }
+  ],
+  "entrypoint": {
+    "passed": 11,
+    "included_in_full_python": true,
+    "log": "lifecycle.txt",
+    "note": "Copied checkout, isolated databases/ports; actual start.command/manage.py subprocesses"
+  },
+  "timeout_runtime_targeted": {
+    "passed": 232,
+    "log": "timeout-regression.txt"
+  },
+  "ledger_api_targeted": {
+    "passed": 41,
+    "log": "ledger-final.txt"
+  },
+  "actual_schema10_copy_upgrade": {
+    "passed": true,
+    "log": "upgrade-frozen.json"
+  },
+  "real_provider": {
+    "status": "two_report_acceptance_not_met",
+    "implementation_commit": "712e486ff86e62a90a9d21b5c3fb5ec5443c0ff2",
+    "source_sha256": "2172ba5c669ee45a9ceee2fc30744141945d87f3ac497d39e13b3910bf44220b",
+    "final_code_is_identical": false,
+    "post_live_changes": [
+      "Initial stale-quote baseline no longer schedules a new paid review",
+      "Verifier separates published artifact from current report, audits extra jobs and exits 2 for unmet acceptance"
+    ],
+    "transport_ledger_models_efforts_changed_after_live": false,
+    "additional_real_model_calls_after_fix": 0,
+    "directory": "data/evaluations/eleventh-live-20261030-2333",
+    "safe_evidence": "live-evidence.json",
+    "actual_business_tasks_with_http_attempts": 3,
+    "planned_business_rounds": 2,
+    "actual_http_attempts": 67,
+    "complete_terminals": 64,
+    "stream_idle_failures": 1,
+    "upstream_transport_failures": 1,
+    "service_shutdown_cancellations": 1,
+    "published_report_artifacts": 1,
+    "current_reports_at_collection": 0,
+    "successful_long_synthesis_seconds": 210.6947,
+    "successful_long_research_seconds": 107.51525,
+    "two_report_acceptance_passed": false,
+    "fees": "All provider invoice costs unknown; final cancelled attempt has no server acceptance evidence"
+  },
+  "test_doubles_are_real_provider_evidence": false,
+  "daily_instance_restarted": false,
+  "post_live_recommendation_regression": {
+    "passed": 87,
+    "log": "recommendation-baseline-regression.txt",
+    "real_model_calls": 0,
+    "production_path": "Service.execute -> Store.publish -> review_recommendations with controlled replay"
+  },
+  "browser_runner": {
+    "command": "PYTHON=.venv/bin/python npm run test:browser",
+    "exit_code": 0,
+    "log": "browser-delivery.txt",
+    "groups": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1954
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 9014
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4624
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16657
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 19837
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 61197
+      }
+    ],
+    "source_commit": "1540733f258cf07fc66701062d59803ca97e3c54"
+  },
+  "final_runtime": "final-runtime.json"
+}

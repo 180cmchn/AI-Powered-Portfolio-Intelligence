@@ -1,0 +1,38 @@
+{
+  "kind": "Final-code production FastAPI browser instance with temporary database and protocol doubles; not a real-provider rerun",
+  "passed": true,
+  "runtime_version": {
+    "started_at": "2026-10-30T23:59:09.762893+08:00",
+    "commit_at_start": "1540733f258cf07fc66701062d59803ca97e3c54",
+    "api_contract": 11,
+    "instance_id": "b1fac28e54c04bd895833b00457d5cdd",
+    "pid": 26158,
+    "port": 8765,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/guanlan-tenth-browser-Dz1poj/tenth.sqlite3",
+    "database_identity": "e6e9cdbf9242adcdaa0a5436b1cd1e7ae11ba03e457dfcfa55a039c8cf02ba09",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543600,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://fixture.invalid/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "",
+      "reasoning_effort": "max",
+      "key_env_name": "TENTH_UNUSED_KEY",
+      "key_present": false,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "0098dc778732ab9fba2bb882cd902d87050aba4e025b68346e37c804129f876d",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "30ec18cb3a6ce519db917d05a11fdcc17f644267f678af963753dc39fd561580",
+    "schema_version": 11,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  }
+}

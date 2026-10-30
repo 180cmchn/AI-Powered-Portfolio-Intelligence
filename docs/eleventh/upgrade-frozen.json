@@ -1,0 +1,182 @@
+{
+  "at": "2026-10-30T23:35:24.134113+08:00",
+  "source_access": "SQLite mode=ro online backup only",
+  "daily_service_stopped": false,
+  "model_requests": 0,
+  "source_snapshot": {
+    "schema": 10,
+    "integrity": "ok",
+    "tables": {
+      "accounts": {
+        "count": 1,
+        "sha256": "72ff6dcdc22343e5396f33a6f2576ba8142a4307e29f2101fc8c23fc7f56c6f4"
+      },
+      "snapshots": {
+        "count": 4,
+        "sha256": "8682426aec2174a73ebfafa10f75f1bd4ef13bafebabdf3673f552b05f20f291"
+      },
+      "jobs": {
+        "count": 10,
+        "sha256": "89c16246fe427eca1d511616beb9c0555777caabada36e9e02a44a3ecd0336fc"
+      },
+      "analyses": {
+        "count": 1,
+        "sha256": "10d7ec72e491f1a2cc775d49f26767c6b1f67a9937131d4141fb6a0540b3c4e5"
+      },
+      "materials": {
+        "count": 368,
+        "sha256": "ab413a3788ca5a1ddfbfb1a9682f91993cb6e4c008fbdeb7bda28900a8004a3e"
+      },
+      "forecasts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "forecast_evaluations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "model_providers": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "provider_connections": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "agent_definitions": {
+        "count": 6,
+        "sha256": "b019fe355c75cc24eafdd73e4bbefaee4f1fc7282957b37f307eab099fc57b51"
+      },
+      "account_agent_overrides": {
+        "count": 2,
+        "sha256": "c50d8046ec506bb89a436691010b54c7f41e8d934a6017d8bd8a06744d46b56e"
+      },
+      "research_records": {
+        "count": 2,
+        "sha256": "36569406709b863c45b1412edfa1706f8f99203b36a4bbc452de06cb71a48a3d"
+      }
+    }
+  },
+  "first": {
+    "schema": 11,
+    "integrity": "ok",
+    "tables": {
+      "accounts": {
+        "count": 1,
+        "sha256": "72ff6dcdc22343e5396f33a6f2576ba8142a4307e29f2101fc8c23fc7f56c6f4"
+      },
+      "snapshots": {
+        "count": 4,
+        "sha256": "8682426aec2174a73ebfafa10f75f1bd4ef13bafebabdf3673f552b05f20f291"
+      },
+      "jobs": {
+        "count": 10,
+        "sha256": "89c16246fe427eca1d511616beb9c0555777caabada36e9e02a44a3ecd0336fc"
+      },
+      "analyses": {
+        "count": 1,
+        "sha256": "10d7ec72e491f1a2cc775d49f26767c6b1f67a9937131d4141fb6a0540b3c4e5"
+      },
+      "materials": {
+        "count": 368,
+        "sha256": "ab413a3788ca5a1ddfbfb1a9682f91993cb6e4c008fbdeb7bda28900a8004a3e"
+      },
+      "forecasts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "forecast_evaluations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "model_providers": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "provider_connections": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "agent_definitions": {
+        "count": 6,
+        "sha256": "b019fe355c75cc24eafdd73e4bbefaee4f1fc7282957b37f307eab099fc57b51"
+      },
+      "account_agent_overrides": {
+        "count": 2,
+        "sha256": "c50d8046ec506bb89a436691010b54c7f41e8d934a6017d8bd8a06744d46b56e"
+      },
+      "research_records": {
+        "count": 2,
+        "sha256": "36569406709b863c45b1412edfa1706f8f99203b36a4bbc452de06cb71a48a3d"
+      }
+    }
+  },
+  "backup_exists": true,
+  "backup_matches_preupgrade_rows": true,
+  "baselines": {
+    "96b91df38e854008b989206c63808c3a": {
+      "entries": 1,
+      "cash_matches": true,
+      "source": "schema10_snapshot_baseline",
+      "all_old_availability_unknown": true
+    }
+  },
+  "second": {
+    "schema": 11,
+    "integrity": "ok",
+    "tables": {
+      "accounts": {
+        "count": 1,
+        "sha256": "72ff6dcdc22343e5396f33a6f2576ba8142a4307e29f2101fc8c23fc7f56c6f4"
+      },
+      "snapshots": {
+        "count": 4,
+        "sha256": "8682426aec2174a73ebfafa10f75f1bd4ef13bafebabdf3673f552b05f20f291"
+      },
+      "jobs": {
+        "count": 10,
+        "sha256": "89c16246fe427eca1d511616beb9c0555777caabada36e9e02a44a3ecd0336fc"
+      },
+      "analyses": {
+        "count": 1,
+        "sha256": "10d7ec72e491f1a2cc775d49f26767c6b1f67a9937131d4141fb6a0540b3c4e5"
+      },
+      "materials": {
+        "count": 368,
+        "sha256": "ab413a3788ca5a1ddfbfb1a9682f91993cb6e4c008fbdeb7bda28900a8004a3e"
+      },
+      "forecasts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "forecast_evaluations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "model_providers": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "provider_connections": {
+        "count": 1,
+        "sha256": "33ac00eeadbebf6980fa59b7d8d3a613742132e4d02a5e7d9409a23ea8c67e3f"
+      },
+      "agent_definitions": {
+        "count": 6,
+        "sha256": "b019fe355c75cc24eafdd73e4bbefaee4f1fc7282957b37f307eab099fc57b51"
+      },
+      "account_agent_overrides": {
+        "count": 2,
+        "sha256": "c50d8046ec506bb89a436691010b54c7f41e8d934a6017d8bd8a06744d46b56e"
+      },
+      "research_records": {
+        "count": 2,
+        "sha256": "36569406709b863c45b1412edfa1706f8f99203b36a4bbc452de06cb71a48a3d"
+      }
+    }
+  },
+  "backup_unchanged_after_repeat": true,
+  "repeat_does_not_duplicate_baseline": true,
+  "preserved_all_business_rows": true,
+  "success": true
+}

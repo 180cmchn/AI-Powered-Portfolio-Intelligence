@@ -1,0 +1,58 @@
+Command: PYTHON=.venv/bin/python node tests/frontend_eleventh.mjs
+Exit code: 0
+Frozen source: 712e486
+
+{
+  "passed": true,
+  "checks": [
+    "same connected DOM and active selection survive composition event + poll; no synthetic compositionend",
+    "server revision leaves dirty prompt intact, stale save conflicts, explicit reload and current save succeed",
+    "account-role drafts use account + role identity and never cross accounts",
+    "clear account override removes stale draft and reloads inheritance; account notice does not claim global-role CAS",
+    "only overview shows full card; completion outranks synthesis; account isolation",
+    "three securities through production trade form; exact cash, ETF fees, T+0 full sale, explicit fee adjustment, external deposit excluded from PnL, lost-response receipt, double-click and account isolation",
+    "non-overview accepted task and view action appear before slow GET; failed follow-up read preserves receipt and never resubmits",
+    "market/direction fee overrides displayed and retained; re-preview clearly shows current fee-plan version without another trade"
+  ],
+  "baseline": [
+    {
+      "kind": "unfocused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "focused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "dirty",
+      "before": 1200,
+      "after": 0
+    }
+  ],
+  "fixed": [
+    {
+      "kind": "unfocused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "focused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "dirty",
+      "scroll": [
+        1200,
+        1200
+      ]
+    }
+  ]
+}
+

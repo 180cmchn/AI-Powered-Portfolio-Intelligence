@@ -1,0 +1,8 @@
+Command: PYTHON=.venv/bin/python npm run test:browser:iteration
+Exit code: 0
+Static implementation matches frozen source 712e486; fixture synchronization changed only the test.
+
+> test:browser:iteration
+> node tests/frontend_iteration.mjs
+
+PASS (deterministic HTTP fixtures + Chromium): polling, protected drafts/focus/version, active/history pagination (106 rows, 12 active), price/review separation, resolved/source-only/unresolved evidence, selected PDF ranges, scope version labels, extraction/report provenance and unresolved origins, failed-source links, incremental events, three-field provider form, discovered-only model filtering and identical six-role account matrices.

@@ -1,0 +1,6 @@
+Command: PYTHON=.venv/bin/python npm run test:browser:production
+Exit code: 0
+Frozen source: 712e486
+
+PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save (3 release orders), cancelled/timeout reads, lost-write-response reconciliation without resend, empty operation/request sets, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.
+

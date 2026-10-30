@@ -1,0 +1,6 @@
+Command: PYTHON=.venv/bin/python npm run test:browser:tenth
+Exit code: 0
+Frozen source: 712e486
+
+Tenth production browser regressions passed
+

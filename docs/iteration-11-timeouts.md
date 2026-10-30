@@ -71,4 +71,18 @@ PYTHON_DOTENV_DISABLED=1 QUOTE_PROVIDER=manual .venv/bin/python -m pytest \
 
 含共享预算测试的扩展定向集通过记录见 `eleventh/timeout-regression.txt`；最终集成重跑结果以第十一轮总验收记录为准。它不是实际供应商成功率或真实故障恢复证明。
 
+## 本轮实际运行结果与发布后修复
+
+独立实例 `eleventh-live-20261030-2333` 的安全审查见 `eleventh/initial-timing-review.json` 与 `eleventh/final-timing-review.json`。包括关闭实例时的额外尝试，共 67 次：64 次完整 `response.completed`、1 次有效流空闲超时、1 次 `RemoteProtocolError`、1 次 `service_shutdown` 取消。最后一次只进入 TCP 建连阶段、持续 1.34ms，无响应头、首字节或接收确认；计入尝试分母，但不能推定供应商已经接收或计费。
+
+初轮 39 次请求，3 个子研究均保存报告，最终汇总在 122.929 秒后没有新的网络字节或有效进展，到 242.932 秒触发 120 秒 idle 限制。该段记录没有高频心跳或被忽略事件，仍不能仅凭本地 trace 定位停滞发生在供应商、网关、代理或网络。没有完整最终对象，因而没有报告。其检查点实际诊断为需补充研究，不能承诺仅重试汇总恢复。
+
+卖出后的第二轮 27 次请求，26 次完整终止、1 次研究子请求远端协议中断。一个普通请求 107.515 秒、最终汇总 210.695 秒均完整成功，分别超过旧 90/120 秒硬限；汇总首有效事件 11.563 秒、最大有效空闲 71.809 秒、第一正文片段 137.938 秒。两项子研究一项完成、一项失败，正式结构化提交落了 6 条探索性预测（4 个方向预测、2 个弃权）；未来目标尚不能评分。客户端主 Agent 发送 max，成功响应回显 high；保留该差异，未修改发送 effort。
+
+第二轮生成一份报告后约 22ms，同版本自动创建第三任务并将报告标 stale。原因已由需求表和事件验证：两条新建议的首次行情检查把已知的休市旧报价各记成 `stale:v5` 新需求；`dispatch_demands` 创建任务，`_enqueue` 使报告过期。原账本需求已明确完成，此次不是补跑未覆盖事项。新建议 ID 会产生新事件键，原按 ID 去重不足以阻止同类重复触发。
+
+运行结束后仅修复这一入口：首次 unknown→stale 保存 `price_state=stale`、`review_status=needs_review`，不新增自动付费复核；已经观测到可用行情后再变 stale，仍以账户版本稳定去重创建一次复核。手动复核、账户变更、材料变更、有效价格跨越继续工作。受控生产 Store + `Service.execute` 测试重放两条价格条件，覆盖发布后即时检查、重复检查、建议替换新 ID、重启、真实行情退化和保留的触发入口；它不改真实验收数据库、不调用实际模型。
+
+因此实际验收仍是第一轮失败、第二轮一份历史报告、第三个意外任务被关服中断，未达到两份当前报告的目标。上述发布后修复只做受控生产路径验证；真实运行的源码散列属于修复前快照，不能将其结果冒充最终源码的真实复验。
+
 协议参考：[HTTPX 分层 timeout](https://www.python-httpx.org/advanced/timeouts/)、[Python timeout / cancellation](https://docs.python.org/3/library/asyncio-task.html#asyncio.timeout)。

@@ -1,0 +1,6 @@
+
+> test:browser:ninth
+> node tests/frontend_ninth_state.mjs && node tests/frontend_ninth.mjs
+
+Ninth provider state recovery and target-bound race regressions passed
+Ninth provider browser regressions passed

@@ -1,0 +1,64 @@
+
+> test:browser
+> node tests/run_browser.mjs
+
+PASS (deterministic HTTP fixtures + Chromium): polling, protected drafts/focus/version, active/history pagination (106 rows, 12 active), price/review separation, resolved/source-only/unresolved evidence, selected PDF ranges, scope version labels, extraction/report provenance and unresolved origins, failed-source links, incremental events, three-field provider form, discovered-only model filtering and identical six-role account matrices.
+PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save (3 release orders), cancelled/timeout reads, lost-write-response reconciliation without resend, empty operation/request sets, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.
+Seventh production browser regressions passed
+Ninth provider state recovery and target-bound race regressions passed
+Ninth provider browser regressions passed
+Tenth production browser regressions passed
+{
+  "passed": true,
+  "checks": [
+    "same connected DOM and active selection survive composition event + poll; no synthetic compositionend",
+    "server revision leaves dirty prompt intact, stale save conflicts, explicit reload and current save succeed",
+    "account-role drafts use account + role identity and never cross accounts",
+    "clear account override removes stale draft and reloads inheritance; account notice does not claim global-role CAS",
+    "only overview shows full card; completion outranks synthesis; account isolation",
+    "three securities through production trade form; exact cash, ETF fees, T+0 full sale, explicit fee adjustment, external deposit excluded from PnL, lost-response receipt, double-click and account isolation",
+    "non-overview accepted task and view action appear before slow GET; failed follow-up read preserves receipt and never resubmits",
+    "market/direction fee overrides displayed and retained; re-preview clearly shows current fee-plan version without another trade"
+  ],
+  "baseline": [
+    {
+      "kind": "unfocused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "focused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "dirty",
+      "before": 1200,
+      "after": 0
+    }
+  ],
+  "fixed": [
+    {
+      "kind": "unfocused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "focused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "dirty",
+      "scroll": [
+        1200,
+        1200
+      ]
+    }
+  ]
+}
+{"browser_groups":[{"group":"iteration","code":0,"signal":null,"duration_ms":1954},{"group":"production","code":0,"signal":null,"duration_ms":9014},{"group":"seventh","code":0,"signal":null,"duration_ms":4624},{"group":"ninth","code":0,"signal":null,"duration_ms":16657},{"group":"tenth","code":0,"signal":null,"duration_ms":19837},{"group":"eleventh","code":0,"signal":null,"duration_ms":61197}]}
