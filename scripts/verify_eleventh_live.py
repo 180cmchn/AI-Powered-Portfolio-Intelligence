@@ -63,7 +63,7 @@ async def run(args):
         'daily_access': 'SQLite mode=ro only; no daily restart/migration/settings/account changes',
         'source_sha256': digest, 'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
         'market_state': market_state(), 'formal_prediction': 'No clock/window change; ordinary exploratory research only',
-        'maximum_business_jobs': 2, 'automatic_business_retry': False,
+        'planned_business_jobs': 2, 'automatic_business_retry': False,
         'preparation_gate': 'Isolated queue only: 600s debounce while recording the three HTTP buys; release only latest job after all inputs are committed, then restore 4s debounce. No market or forecast clock shift.',
         'binding_origin': 'Daily effective account overrides expanded into isolated role defaults; daily roles unchanged',
         'limits': {k: cfg.get(k) for k in ('model_first_event_timeout_seconds', 'model_stream_idle_timeout_seconds',
@@ -157,7 +157,8 @@ async def run(args):
                 report = result.get('report')
                 summary['rounds'].append({'label': label, 'job': job, 'request_count': len(requests), 'requests': requests,
                     'event_counts': dict(Counter(e['type'] for e in events)),
-                    'report_published': job['state'] == 'completed' and job.get('report_status') == 'current' and bool(job.get('report_id')),
+                    'report_published': job['state'] == 'completed' and bool(job.get('report_id')) and bool(report),
+                    'report_current_at_collection': job['state'] == 'completed' and job.get('report_status') == 'current' and bool(job.get('report_id')),
                     'frozen_account': snap, 'forecast_submission': forecasts_for(job_id),
                     'cost_note': 'Provider usage retained when returned; interrupted requests may have unknown cost; no invoice reconciliation',
                     'provider_log_comparison': 'Provider-side account/log access unavailable; compare returned request/response IDs only',
@@ -205,7 +206,12 @@ async def run(args):
         summary['final_source_unchanged'] = source_digest() == digest
         summary['final_environment_unchanged'] = env_file_stamp() == stamp
         summary['audit_completed_at'] = now()
+        summary['two_report_acceptance_passed'] = (len(summary['rounds']) == 2
+            and all(r['report_published'] and r['report_current_at_collection'] for r in summary['rounds'])
+            and summary['business_job_bound_observed'] and summary.get('second_account_unchanged')
+            and summary['final_source_unchanged'] and summary['final_environment_unchanged'])
         save()
+    return 0 if summary['two_report_acceptance_passed'] else 2
 
 
 if __name__ == '__main__':
@@ -213,4 +219,4 @@ if __name__ == '__main__':
     parser.add_argument('--source', type=Path, default=ROOT / 'data/live.sqlite3')
     parser.add_argument('--reference-account', default='96b91df38e854008b989206c63808c3a')
     parser.add_argument('--output', type=Path, required=True)
-    asyncio.run(run(parser.parse_args()))
+    raise SystemExit(asyncio.run(run(parser.parse_args())))

@@ -199,15 +199,70 @@ def test_material_event_deduplication_survives_changed_notification_batches(stor
     assert len(reopened.demands(account["id"])) == len(demands)
 
 
-def test_stale_quote_does_not_claim_price_or_judgment_validity(store):
+@pytest.mark.parametrize("quote_status,time_known", [("ok", True), ("closed", True), ("ok", False), ("error_cached", True)])
+def test_stale_quote_does_not_claim_price_or_judgment_validity(store, quote_status, time_known):
     account = store.save_account(AccountInput(name="过期行情受控账户", holdings=[]))
     publish(store, suggestions=[suggestion()])
     stamp = datetime.now(TZ)
-    store.review_recommendations({"SH:600519": {"status": "ok", "price": "120", "as_of": (stamp - timedelta(days=1)).isoformat()}}, stamp)
+    quote = {"SH:600519": {"status": quote_status, "price": "120",
+                           "as_of": (stamp - timedelta(days=1)).isoformat() if time_known else None}}
+    store.review_recommendations(quote, stamp)
     item = store.recommendations(account["id"])[0]
     assert item["price_state"] == "stale" and item["review_status"] == "needs_review"
     assert store.recommendations_page(account["id"], view="triggered")["total"] == 0
-    assert item["review_followup"]["state"] == "assigned"
+    assert item["review_followup"] is None
+    assert not store.demands(account["id"]) and not store.claim_jobs()
+    assert store.analyses(account["id"])[0]["status"] == "current"
+    events = store.recommendation_events(item["id"])
+    reopened = Store(store.path)
+    for _ in range(3):
+        reopened.review_recommendations(quote, stamp)
+    assert not reopened.demands(account["id"]) and not reopened.claim_jobs()
+    assert reopened.recommendation_events(item["id"]) == events
+
+
+def test_previously_fresh_quote_becoming_stale_creates_one_durable_review(store):
+    account = store.save_account(AccountInput(name="真实行情退化受控账户", holdings=[]))
+    publish(store, suggestions=[suggestion()])
+    rid = store.recommendations(account["id"])[0]["id"]
+    stamp = datetime.now(TZ)
+    quote = {"SH:600519": {"status": "ok", "price": "100", "as_of": stamp.isoformat()}}
+    store.review_recommendations(quote, stamp)
+    assert store.recommendation(account["id"], rid)["price_state"] == "not_met"
+    assert not store.demands(account["id"])
+    stale_at = stamp + timedelta(seconds=store.settings()["quote_stale_seconds"] + 1)
+    store.review_recommendations(quote, stale_at)
+    demand = store.demands(account["id"])[0]
+    assert demand["state"] == "assigned" and demand["event_key"].endswith(":stale:v1")
+    reopened = Store(store.path)
+    for _ in range(3):
+        reopened.review_recommendations(quote, stale_at)
+    assert reopened.demands(account["id"]) == [demand]
+    follow = reopened.claim_jobs()[0]
+    assert reopened.publish(follow["id"], {"report": "受控复核维持", "maintained_suggestion_ids": [rid]}, None)
+    reopened.review_recommendations(quote, stale_at)
+    assert not reopened.claim_jobs() and len(reopened.demands(account["id"])) == 1
+    assert reopened.recommendation(account["id"], rid)["price_state"] == "stale"
+
+
+@pytest.mark.parametrize("new_event", ["manual", "input", "material", "price_crossing"])
+def test_initial_stale_baseline_keeps_real_review_triggers(store, new_event):
+    account = store.save_account(AccountInput(name="首次旧行情后真实事件", holdings=[]))
+    publish(store, suggestions=[suggestion()])
+    rid = store.recommendations(account["id"])[0]["id"]
+    stamp = datetime.now(TZ)
+    store.review_recommendations({"SH:600519": {"status": "closed", "price": "120",
+                                               "as_of": (stamp - timedelta(days=1)).isoformat()}}, stamp)
+    assert not store.demands(account["id"])
+    if new_event == "manual":
+        store.retry_recommendation_review(account["id"], rid)
+    elif new_event == "input":
+        save_snapshot_correction(store, AccountInput(name="明确修改后受控账户", holdings=[]), account["id"])
+    elif new_event == "material":
+        store.review_recommendations(material_ids=["controlled-new-material-after-stale-baseline"])
+    else:
+        store.review_recommendations({"SH:600519": {"status": "ok", "price": "120", "as_of": stamp.isoformat()}}, stamp)
+    assert store.demands(account["id"]) and len(store.claim_jobs()) == 1
 
 
 @pytest.mark.asyncio

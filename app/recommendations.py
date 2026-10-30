@@ -422,8 +422,16 @@ class RecommendationStore:
                         if not conditions:
                             body["price_state"] = "no_conditions"
                         elif not fresh:
+                            was_fresh = body["price_state"] in ("met", "not_met")
                             body.update(price_state="stale", review_status="needs_review", review_reason="报价过期或时间未知；价格条件尚不能确认，判断待复核")
-                            self._review_demand(db, row, body, f"stale:v{account['version']}", body["review_reason"])
+                            # A new suggestion's first observation of already closed,
+                            # stale, or unknown-time quotes is a baseline, not a new
+                            # research event. Persist the unknown condition without
+                            # buying another report immediately after publication.
+                            # A previously usable observation becoming stale remains
+                            # a real transition, deduplicated durably by input version.
+                            if was_fresh:
+                                self._review_demand(db, row, body, f"stale:v{account['version']}", body["review_reason"])
                         else:
                             values = [price_condition(c, quote.get("price")) for c in conditions] if isinstance(conditions, list) else [None]
                             if any(value is None for value in values):
