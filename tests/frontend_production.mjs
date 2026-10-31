@@ -465,21 +465,28 @@ try {
   await page.locator('#model_native_search').waitFor();
   assert.equal((await probe()).status,'request_failed');
   await waitCapability('请求失败');
-  let releaseProbe, observeProbe;
+  let releaseProbe, observeProbe, localProbeWrites=0;
   const localProbeGate=new Promise(resolve=>{releaseProbe=resolve;});
   const localProbeStarted=new Promise(resolve=>{observeProbe=resolve;});
   await page.route('**/api/settings/probe',async route=>{
-    observeProbe();await localProbeGate;
+    localProbeWrites++;observeProbe();await localProbeGate;
     await route.fulfill({contentType:'application/json',body:JSON.stringify({note:'受控本地工具续接结果'})});
   },{times:1});
   await page.locator('[data-action="probe"]').click();
   await waitGate(localProbeStarted,'localProbeStarted');
   await navigate('holdings');
   await page.locator('#account-meta-form').waitFor();
+  await page.locator('#trade-symbol').focus();
   releaseProbe();
+  const resultNotice=page.locator('#toast-region [data-action="view-operation-result"]');
+  await resultNotice.waitFor();
+  assert.equal(await page.locator('#dialog').evaluate(el=>el.open),false,'late paid probe result must not steal the current page');
+  assert.equal(await page.locator('#trade-symbol').evaluate(el=>document.activeElement===el),true);
+  await resultNotice.click();
   await page.locator('#dialog').getByText('本地工具续接实测结果',{exact:true}).waitFor();
-  assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));
+  assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));assert.equal(localProbeWrites,1,'viewing a saved outcome must not re-run the paid check');
   await page.locator('#dialog .dialog-header button').click();
+  await page.locator('.page-heading [data-action=operation-results]').click();await page.locator('#dialog [data-action=view-operation-result]').first().click();assert.ok((await page.locator('#dialog').textContent()).includes('受控本地工具续接结果'));assert.equal(localProbeWrites,1);await page.locator('#dialog .dialog-header button').click();
   await assertIdle();
   const lifecycle=await page.evaluate(()=>window.__guanlanDiagnostics.snapshot());
 

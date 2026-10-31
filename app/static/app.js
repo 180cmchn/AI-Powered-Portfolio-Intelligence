@@ -48,6 +48,7 @@ const state = {
   drafts: new Map(),
   taskSubmissions: new Map(),
   eventSeen: new Map(),
+  operationResults: new Map(),
 };
 // Opt in per tab. Diagnostics contain route templates and anonymous numeric
 // identities, never query strings, form values, response bodies or credentials.
@@ -755,7 +756,7 @@ function pageHeading() {
     agents: button("刷新状态", "refresh", "", "refresh"),
     settings: button("备份本地数据", "backup", "", "download"),
   };
-  return `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p class="subtitle">${descriptions[state.route]}</p></div><div class="actions">${actions[state.route] || ""}</div></div>`;
+  return `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p class="subtitle">${descriptions[state.route]}</p></div><div class="actions">${actions[state.route] || ""}${state.operationResults.size ? `<button type="button" class="button compact" data-action="operation-results">操作结果（${state.operationResults.size}）</button>` : ""}</div></div>`;
 }
 function empty(
   title,
@@ -1336,6 +1337,16 @@ function dialog(title, content, footer = "", intent = null) {
   if (!$("#dialog").open) $("#dialog").showModal();
   document.body.classList.add("dialog-open");
 }
+// Paid checks and completed backups must remain inspectable if the reader
+// navigates away. Keep only ten sanitized API outcomes in this tab's memory.
+function presentOperationResult(intent,title,content,footer="") {
+  const id=crypto.randomUUID();
+  state.operationResults.set(id,{title,content,footer,at:new Date().toISOString()});
+  while(state.operationResults.size>10)state.operationResults.delete(state.operationResults.keys().next().value);
+  render();
+  if(dialogIsCurrent(intent))dialog(title,content,footer,intent);
+  else toast(`${title}已返回；实际结果已保留。`,false,null,{id,action:'view-operation-result',label:'查看结果'});
+}
 $('#dialog').addEventListener('keydown', event => {
   if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
   const modal = $('#dialog');
@@ -1423,6 +1434,15 @@ document.addEventListener("click", (event) => {
   const action = target.dataset.action;
   const accountId = target.dataset.accountId || state.accountId;
   if (action === "new-account") return createAccountDialog();
+  if(action==='view-operation-result') {
+    const result=state.operationResults.get(target.dataset.id);
+    if(result)dialog(result.title,result.content,result.footer);else toast('该结果已移出本页最近10次记录，请核对后台记录；不会自动重发。');
+    return;
+  }
+  if(action==='operation-results') {
+    dialog('本页最近操作结果',`<p class="small muted">仅保留当前页面会话最近10次实际返回结果；查看不会重新运行或产生模型费用。</p>${[...state.operationResults].reverse().map(([id,result])=>`<p><button type="button" class="button compact" data-action="view-operation-result" data-id="${e(id)}">${e(result.title)} · ${date(result.at)}</button></p>`).join('')}`);
+    return;
+  }
   if (action === "close-dialog" || action === "choose-research-scope") return closeDialog();
   if (action === "resolve-choice") {
     const input = document.getElementById(target.dataset.inputId);
@@ -1585,25 +1605,24 @@ document.addEventListener("click", (event) => {
     } else if (action === "backup") {
       const intent = beginDialogIntent();
       const result = await api("/api/backup", { method: "POST", body: "{}" });
-      dialog(
+      presentOperationResult(intent,
         "本地备份已创建",
         `<p>备份保存在后端返回的本机位置。恢复前停止服务，并使用项目提供的恢复命令。</p><pre class="json-block">${e(result.path || result.filename || JSON.stringify(result))}</pre>`,
-        button("完成", "close-dialog", "primary"),intent,
+        button("完成", "close-dialog", "primary"),
       );
     } else if (action === "probe-native") {
       const intent = beginDialogIntent();
       const result = await api("/api/settings/probe-native-search", {method: "POST", body: "{}"});
+      presentOperationResult(intent,"模型原生联网实测",objectView(result));
       await refresh(true);
       render();
-      dialog("模型原生联网实测", objectView(result),"",intent);
     } else if (action === "probe") {
       const intent = beginDialogIntent();
       const result = await api("/api/settings/probe", {
         method: "POST",
         body: "{}",
       });
-      dialog("本地工具续接实测结果", `<pre class="json-block">${e(JSON.stringify(result, null, 2))}</pre>`,"",intent);
-      toast("能力测试已返回，请查看真实结果。");
+      presentOperationResult(intent,"本地工具续接实测结果",`<pre class="json-block">${e(JSON.stringify(result, null, 2))}</pre>`);
     } else if (action === "demo-seed") {
       await api("/api/demo/seed", { method: "POST", body: "{}" });
       await refresh(true);

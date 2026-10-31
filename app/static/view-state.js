@@ -57,6 +57,46 @@ export function patchHTML(root, html, options) {
   const incoming = root.cloneNode(false); incoming.append(template.content);
   reconcile(root,incoming,options);
 }
+function scrollOwner(anchor) {
+  for(let node=anchor?.parentElement;node;node=node.parentElement) {
+    if(/auto|scroll/.test(getComputedStyle(node).overflowY) && (node.scrollHeight>node.clientHeight || node.matches('.dialog-content')))return node;
+  }
+  return document.scrollingElement;
+}
+const isWindowOwner = owner => owner === document.scrollingElement;
+const viewportHeight = owner => isWindowOwner(owner) ? innerHeight : owner.clientHeight;
+// A shrinking page can clamp scrollTop before the anchor compensation runs.
+// Keep only the missing reading space, not old records or old response bodies.
+function keepAnchorSpace(root, owner, anchor, top) {
+  const host=isWindowOwner(owner) ? root : owner;
+  let tail=[...host.children].find(node=>node.hasAttribute('data-reading-tail'));
+  const oldHeight=tail?.getBoundingClientRect().height || 0;
+  const position=anchor.getBoundingClientRect().top;
+  const target=owner.scrollTop + position-top;
+  const contentHeight=owner.scrollHeight-oldHeight;
+  const needed=Math.max(0,Math.ceil(target+viewportHeight(owner)-contentHeight));
+  if(needed && !tail) {
+    tail=document.createElement('div');tail.dataset.readingTail='';tail.setAttribute('aria-hidden','true');
+    tail.style.cssText='pointer-events:none;overflow-anchor:none;flex:none;';host.append(tail);
+  }
+  if(tail) {
+    tail.readingOwner=owner;
+    if(needed)tail.style.height=`${needed}px`;else tail.remove();
+  }
+  const delta=anchor.getBoundingClientRect().top-top;
+  if(Math.abs(delta)>.5) {
+    if(isWindowOwner(owner))window.scrollBy({top:delta,behavior:'instant'});
+    else owner.scrollTop+=delta;
+  }
+}
+document.addEventListener('scroll',()=>{
+  // Reclaim padding as soon as the reader leaves the constrained bottom range.
+  // Removing it here cannot clamp the current scroll position.
+  for(const tail of document.querySelectorAll('[data-reading-tail]')) {
+    const owner=tail.readingOwner;
+    if(!owner || !owner.isConnected || owner.scrollTop+viewportHeight(owner)<=owner.scrollHeight-tail.getBoundingClientRect().height+.5)tail.remove();
+  }
+},true);
 // Capture a visible record/text anchor rather than restoring an absolute window
 // offset. Only compensate measured movement; unchanged updates do no scrolling.
 export function readingTransaction(root, update) {
@@ -88,9 +128,6 @@ export function readingTransaction(root, update) {
   }
   if(anchor?.isConnected && Number.isFinite(top)) {
     const delta=anchor.getBoundingClientRect().top-top;
-    if(Math.abs(delta)>.5) {
-      const modal=anchor.closest('dialog[open]');
-      if(modal)modal.scrollTop+=delta;else window.scrollBy({top:delta,behavior:'instant'});
-    }
+    if(Math.abs(delta)>.5 || root.querySelector('[data-reading-tail]'))keepAnchorSpace(root,scrollOwner(anchor),anchor,top);
   }
 }

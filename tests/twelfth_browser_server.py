@@ -42,9 +42,10 @@ async def insert_above():
     newer=store.submit_task(account['id'],target='SH:518880',origin={'page':'market','action':'analyze-symbol'})
     return newer
 @app.post('/__fixture/height/{job_id}')
-async def height(job_id:str):
+async def height(job_id:str, body:dict):
+    count=max(0,min(300,int(body.get('repeat',100))))
     with store.connect() as db:
-        db.execute('UPDATE jobs SET error=? WHERE id=?',('受控上方任务说明高度变化。'*100,job_id))
+        db.execute('UPDATE jobs SET error=? WHERE id=?',('受控上方任务说明高度变化。'*count,job_id))
     return {'ok':True}
 @app.post('/__fixture/overview-insert')
 async def overview_insert():
