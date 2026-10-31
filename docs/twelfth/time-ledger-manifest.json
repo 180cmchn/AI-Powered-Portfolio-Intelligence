@@ -1,0 +1,28 @@
+{
+  "recorded_at_shanghai": "2026-10-31T23:36:05.231333+08:00",
+  "recorded_at_utc": "2026-10-31T15:36:05.231405+00:00",
+  "baseline_commit": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+  "python": "3.14.4",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "timezone": "Asia/Shanghai (production business timezone; test fixture explicit offsets)",
+  "dependencies": {
+    "pytest": "9.1.1",
+    "fastapi": "0.159.1",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "uvicorn": "0.54.0"
+  },
+  "targeted": {
+    "passed": 190,
+    "failed": 0,
+    "warnings": 1,
+    "log": "python-time-ledger.txt"
+  },
+  "before_original_failures": {
+    "passed": 0,
+    "failed": 2,
+    "log": "python-time-before.txt"
+  },
+  "real_model_calls": 0,
+  "daily_8765_touched": false
+}

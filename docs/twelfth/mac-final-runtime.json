@@ -1,0 +1,34 @@
+{
+  "started_at": "2026-11-01T00:22:40.728164+08:00",
+  "commit_at_start": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+  "api_contract": 11,
+  "instance_id": "e28ca784e12d4b64bb9c3513e3abb06f",
+  "pid": 93219,
+  "port": 8765,
+  "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+  "database_path": "/private/tmp/guanlan-twelfth-mac-478fefb/twelfth.sqlite3",
+  "database_identity": "08cf46664eb8d3fbe2aa6f4321fcdd7546748c33d0d916fb13ecafb1b8f46656",
+  "env_file_at_start": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "environment_settings_at_start": {
+    "model_base_url": "https://fixture.invalid/v1",
+    "model_protocol": "responses",
+    "legacy_model_name": "",
+    "reasoning_effort": "medium",
+    "key_env_name": "TWELFTH_UNUSED_KEY",
+    "key_present": false,
+    "quote_provider": "manual",
+    "quote_fallback_provider": "sina",
+    "model_native_search": true,
+    "research_provider": "eastmoney"
+  },
+  "static_sha256_at_start": "a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c",
+  "working_tree_dirty_at_start": true,
+  "source_sha256_at_start": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+  "schema_version": 11,
+  "provenance": "source files observed at application creation; restart required after source edits",
+  "database_mode": "live"
+}

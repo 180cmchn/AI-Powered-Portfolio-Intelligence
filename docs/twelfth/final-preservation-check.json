@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-01T00:39:22.400253+08:00",
+  "daily_instance": {
+    "pid": 57606,
+    "started_at": "2026-10-31T22:59:15.191463+08:00",
+    "commit_at_start": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+    "source_sha256_at_start": "30ec18cb3a6ce519db917d05a11fdcc17f644267f678af963753dc39fd561580",
+    "static_sha256_at_start": "0098dc778732ab9fba2bb882cd902d87050aba4e025b68346e37c804129f876d",
+    "schema_version": 11,
+    "port": 8765
+  },
+  "observation_only": true,
+  "daily_restart_performed": false,
+  "daily_data_write_performed": false,
+  "current_source_sha256": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+  "current_static_sha256": "a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c",
+  "environment_file_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  }
+}

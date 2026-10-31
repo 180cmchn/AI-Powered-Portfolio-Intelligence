@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "same-page slow task A cannot replace subsequently opened task B",
+    "same-page synchronous new-account modal invalidates old task read",
+    "overview inserts new task without reusing selected old task text",
+    "late material read cannot overwrite a newer synchronous scope-confirmation modal",
+    "closing while next material segment is pending prevents reopening",
+    "sixth.js forecast-batch A/B uses the same latest-intent guard"
+  ]
+}

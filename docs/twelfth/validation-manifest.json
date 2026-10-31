@@ -1,0 +1,624 @@
+{
+  "manifest_version": 1,
+  "recorded_at_utc": "2026-10-31T16:43:36.735396+00:00",
+  "recorded_at_shanghai": "2026-11-01T00:43:36.735396+08:00",
+  "overall_status": "engineering_passed_real_research_failed_without_final_report",
+  "engineering_status": "passed",
+  "real_provider": {
+    "status": "failed_no_final_report",
+    "exit_code": 2,
+    "runtime": {
+      "commit": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+      "source_sha256": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+      "started_at": "2026-11-01T00:26:36.813025+08:00",
+      "preparation_gate_released_at": "2026-11-01T00:26:37.510103+08:00",
+      "audit_completed_at": "2026-11-01T00:33:04.388144+08:00",
+      "timezone": "Asia/Shanghai",
+      "final_source_unchanged": true,
+      "final_environment_unchanged": true,
+      "market_state": {
+        "timezone": "Asia/Shanghai",
+        "date": "2026-11-01",
+        "as_of": "2026-11-01T00:26:36.813288+08:00",
+        "trading_day": false,
+        "phase": "closed",
+        "session": "non_trading_day",
+        "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+        "coverage": {
+          "start": "2026-01-01",
+          "end": "2026-12-31"
+        },
+        "is_continuous_trading": false,
+        "has_closed_today": false,
+        "quote_trigger_eligible": false,
+        "calendar_version": "2026-10-22",
+        "calendar_digest": "1246fd4d8f87495ffeb0ae876feef4a6608fa9bb3d56128d26ac30fb77c50f84",
+        "reason": "周末或交易所休市日"
+      },
+      "limits": {
+        "model_first_event_timeout_seconds": 90,
+        "model_stream_idle_timeout_seconds": 120,
+        "model_request_hard_timeout_seconds": 300,
+        "synthesis_request_hard_timeout_seconds": 360,
+        "agent_timeout_seconds": 600,
+        "analysis_timeout_seconds": 1200,
+        "max_model_calls": 40,
+        "model_retries": null
+      },
+      "isolation_settings": {
+        "scheduled_research_enabled": false,
+        "market_refresh_enabled": false,
+        "forecast_evaluation_enabled": false,
+        "news_queries": [],
+        "max_job_attempts": 1
+      }
+    },
+    "outcome": {
+      "planned_business_jobs": 1,
+      "business_jobs_with_http": 1,
+      "total_http_attempts": 39,
+      "complete_stream_terminals": 37,
+      "upstream_transport_failures": 2,
+      "manual_business_retries": 0,
+      "automatic_tasks": [],
+      "reports_published": 0,
+      "reports_current": 0,
+      "single_report_acceptance_passed": false,
+      "post_publish_observation_rounds": 0,
+      "post_restart_observation_rounds": 0,
+      "restart_observer_process_started": false,
+      "release_to_end_note": "Three preview/confirm buys before one latest job; no second sell round or success retry",
+      "error": {
+        "type": "RuntimeError",
+        "message": "Single real research did not publish a complete report; no success retry will be made"
+      },
+      "final_job_error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；仅有部分成果，证据或报告交付范围不足；需补充研究，不能承诺仅汇总恢复",
+      "post_publication_real_validation": "NOT EXECUTED: no complete report; controlled regression remains separate"
+    },
+    "billing_note": "37 usage reports; sum of raw cost_in_usd_ticks=8944142400. No unit conversion or invoice reconciliation. Two accepted failures have unknown usage/cost.",
+    "ledger_checks": {
+      "exact_cash_arithmetic": true,
+      "quantity_matches_three_inputs": true,
+      "cost_includes_buy_fees": true,
+      "fees_total": true,
+      "three_distinct_operation_receipts": true,
+      "original_entries_equal_saved_receipt_entries": true,
+      "preview_receipt_and_db_cash_equal": true,
+      "version_four_and_no_extra_trades": true,
+      "four_cash_records_and_last_balance_matches": true,
+      "no_analyses_or_forecasts": true,
+      "database_unchanged_during_readonly_audit": true,
+      "jobs_and_attempts_equal_preinspection_final_summary": true,
+      "event_type_counts_equal_preinspection_final_summary": true
+    },
+    "evidence": [
+      "live-research.md",
+      "live-evidence.json",
+      "live-run.txt",
+      "live-ui.md"
+    ],
+    "read_only_inspection": "Same final code/database, worker=False, actual port53537. Native Mac pagination100→200→300 retained original detail; not a post-publication restart, no new model attempts."
+  },
+  "baseline": {
+    "review_commit": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+    "eleventh_implementation_commit": "1540733f258cf07fc66701062d59803ca97e3c54",
+    "started_clean": true
+  },
+  "final_source": {
+    "implementation_commit": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+    "frozen_at": "2026-11-01T00:22:12.374658+08:00",
+    "source_sha256": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+    "static_sha256": "a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c",
+    "schema": 11,
+    "api_contract": 11,
+    "hash_algorithm_reference": "app/runtime_version.py: source_digest/static_digest",
+    "production_or_test_changes_after_commit": [],
+    "documentation_changes_after_commit": true,
+    "prior_checkpoint": "e75542d609b9ad086cf282af0cc7b6417713b11c",
+    "prior_checkpoint_artifact": "candidate-source-e755.json"
+  },
+  "environment": {
+    "recorded_at": "2026-11-01T00:12:08.540452+08:00",
+    "timezone": "Asia/Shanghai",
+    "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "os": "macOS-27.2-arm64-arm-64bit",
+    "node": "v25.9.0",
+    "dependencies": {
+      "pytest": "9.1.1",
+      "fastapi": "0.159.1",
+      "httpx": "0.28.1",
+      "pydantic": "2.14.1",
+      "uvicorn": "0.54.0"
+    },
+    "playwright": "1.62.1",
+    "browser_engine": "Chromium 151.0.7922.34",
+    "native_chrome": "156.0.8078.74",
+    "native_safari": "27.2 (22625.2.8.11.9)",
+    "ci_environment_not_run": "Ubuntu / Python 3.12 / Node 22; no push authorized"
+  },
+  "installed_python_distributions": {
+    "Pygments": "2.21.0",
+    "annotated-doc": "0.0.5",
+    "annotated-types": "0.8.0",
+    "anyio": "4.15.1",
+    "beautifulsoup4": "4.15.0",
+    "certifi": "2026.10.19",
+    "click": "8.5.0",
+    "fastapi": "0.159.1",
+    "h11": "0.16.0",
+    "httpcore": "1.0.9",
+    "httpx": "0.28.1",
+    "idna": "3.20",
+    "iniconfig": "2.3.1",
+    "opentelemetry-api": "1.45.1",
+    "packaging": "26.3",
+    "pip": "26.1",
+    "pluggy": "1.7.0",
+    "pydantic": "2.14.1",
+    "pydantic_core": "2.50.1",
+    "pypdf": "6.21.2",
+    "pytest": "9.1.1",
+    "pytest-asyncio": "1.4.0",
+    "python-dotenv": "1.2.4",
+    "soupsieve": "3.0.4",
+    "starlette": "1.9.0",
+    "typing-inspection": "0.4.4",
+    "typing_extensions": "4.16.0",
+    "uvicorn": "0.54.0"
+  },
+  "dependency_file_sha256": {
+    "requirements.txt": "2a0cb45a1e8c9eade0d5700b9a49c4e5220817aded303112e3b05ce3727ce749",
+    "package-lock.json": "8e5ffcfdccd51976d453027fcd5189ff9f1d8f8d120d661d4edb5456c54caba3",
+    "uv.lock": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd"
+  },
+  "clock_contract": {
+    "business_timezone": "Asia/Shanghai",
+    "production_wall_clock": "app.clock.now_datetime(), with a single UTC source converted to the requested zone; no production time override endpoint.",
+    "pytest_fixture": "tests/conftest.py::frozen_clock; function-scoped monkeypatch of app.clock._utc_now, explicit timezone required, set/advance timeline shared by API workers and concurrent ledger writers.",
+    "fixture_default": "2026-10-30T12:00:00+08:00",
+    "original_two_tests_timeline": {
+      "creation_and_correction": "2026-10-30T09:00:00+08:00",
+      "sale": "2026-10-30T10:00:00+08:00"
+    },
+    "eleventh_and_twelfth_browser_fixture_wall_clock": "2026-10-30T16:00:00+08:00",
+    "boundary_instants": [
+      "2026-10-30T15:59:59+00:00",
+      "2026-10-30T16:00:00+00:00",
+      "2026-10-31T00:00:01+08:00"
+    ],
+    "calendar_fixture": {
+      "source": "controlled-twelfth-calendar",
+      "version": "fixture-1",
+      "coverage": [
+        "2026-09-30",
+        "2026-11-03"
+      ],
+      "trading_dates": [
+        "2026-09-30",
+        "2026-10-08",
+        "2026-10-09",
+        "2026-10-23",
+        "2026-10-26",
+        "2026-10-27",
+        "2026-10-28",
+        "2026-10-29",
+        "2026-10-30",
+        "2026-11-02",
+        "2026-11-03"
+      ],
+      "gap_case": "coverage deliberately ends 2026-10-30; no next-day inference"
+    },
+    "production_correction_semantics": "Explicit opening available_quantity is effective on the correction Shanghai date; recorded_at is retained separately. It does not prove prior-date availability. User-supplied historical effective dates remain rejected.",
+    "granularity": "date, not second-level replay",
+    "monotonic_timeout_clock_unchanged": true,
+    "system_clock_changed": false
+  },
+  "final_python": {
+    "command": "PYTHON_DOTENV_DISABLED=1 QUOTE_PROVIDER=manual /tmp/guanlan-twelfth-py312/bin/python -m pytest -q",
+    "execution_date_shanghai": "2026-11-01",
+    "exit_code": 0,
+    "passed": 976,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 1,
+    "duration_seconds": 108.42,
+    "warning": "StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install httpx2 instead.",
+    "log": "python-final.txt",
+    "included_subsets": {
+      "time_boundary_cases": {
+        "path": "tests/test_twelfth_time_boundaries.py",
+        "passed": 8
+      },
+      "manual_lifecycle": {
+        "path": "tests/test_ninth_lifecycle.py",
+        "passed": 11,
+        "separate_final_run": false,
+        "scope": "Disposable repository and runtime, actual start.command/manage lifecycle, identity, restart, locking and backup checks; random ports."
+      },
+      "live_verifier_no_fee_preflight": {
+        "path": "tests/test_twelfth_live_verifier.py",
+        "passed": 2,
+        "external_model_calls": 0,
+        "scope": "Explicit ASGI/scripted model fixture covers three production trades, cash 86484.90, publish and restart observation; actual isolated subprocess checks worker=False and zero job attempts. No real-provider success claim."
+      },
+      "ledger_timeouts_quote_protection": {
+        "status": "passed_as_part_of_full_suite",
+        "standalone_count_not_added": true
+      }
+    }
+  },
+  "final_browser": {
+    "command": "PYTHON_DOTENV_DISABLED=1 PYTHON=/tmp/guanlan-twelfth-py312/bin/python npm run test:browser",
+    "runner": "node tests/run_browser.mjs",
+    "execution_date_shanghai": "2026-11-01",
+    "exit_code": 0,
+    "groups_passed": 8,
+    "groups_failed": 0,
+    "groups_skipped": 0,
+    "groups": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 2169
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 10224
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 5043
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16959
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 20841
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 61366
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 103339
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16832
+      }
+    ],
+    "log": "browser-final.txt",
+    "group_manifest": "browser-groups-final.json",
+    "external_model_calls": 0,
+    "fixture_scope": "Production FastAPI/static files and temporary SQLite. Fixtures set manual quotes and explicit network/model substitutes; global command does not set QUOTE_PROVIDER.",
+    "ninth_group_note": "Contains frontend_ninth_state.mjs and frontend_ninth.mjs, counted as one required group.",
+    "reading": {
+      "normal_poll_rounds_with_new_events": 10,
+      "poll_interval_seconds": 4,
+      "preserved_selection_characters": 3418,
+      "selection_direction": "backward",
+      "pre_scroll_top": 300,
+      "pre_scroll_left": 240,
+      "original_node_preserved": true,
+      "dialog_updates": "Real load-more entry, overlapping/delayed pagination and latest-intent checks; not misattributed to a global poll while modal is open.",
+      "evidence": [
+        "reading-evidence.json",
+        "dialog-evidence.json",
+        "anchor-lifecycle-final.txt"
+      ]
+    },
+    "selection_control": {
+      "status": "passed",
+      "evidence": "select-evidence.json",
+      "contracts": [
+        "single successful side field",
+        "buy/sell FormData and final request consistency",
+        "input/change invalidates preview",
+        "keyboard commit versus temporary highlight/Esc",
+        "reset/disabled",
+        "version conflict",
+        "inflight save draft",
+        "polling preserves menu and highlight",
+        "dialog top layer",
+        "390px and 800px geometry"
+      ]
+    }
+  },
+  "native_macos": {
+    "status": "passed_with_scope_limits",
+    "evidence": "mac-validation.md",
+    "chrome": "156.0.8078.74",
+    "safari": "27.2 (22625.2.8.11.9)",
+    "full_interaction_scope": "Actual application clicks, keyboard Down/Enter/Space/Esc/Tab, browser 100/125/200% zoom, and long-form scrolling; control/CSS unchanged since these checks.",
+    "final_restarted_process": {
+      "started_at": "2026-11-01T00:22:40.728164+08:00",
+      "commit": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+      "source_sha256": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+      "static_sha256": "a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c",
+      "instance_id": "e28ca784e12d4b64bb9c3513e3abb06f",
+      "pid": 93219,
+      "actual_bound_port": 51646,
+      "runtime_reported_port": 8765,
+      "port_metadata_discrepancy": "The fixture binds a random socket without setting APP_PORT; runtime port falls back to 8765. Actual task browser URL/socket is 51646 and database is temporary. No daily 8765 operation is implied.",
+      "database_path": "/private/tmp/guanlan-twelfth-mac-478fefb/twelfth.sqlite3",
+      "runtime_artifact": "mac-final-runtime.json",
+      "working_tree_dirty_at_start_explanation": "Documentation changes after source freeze; source/static hashes match frozen implementation."
+    },
+    "final_process_scope": "2026-11-01 00:22–00:24 Asia/Shanghai: Chrome and Safari reopen menu, Down+Enter sell, preview invalidation message; Chrome existing event detail stays open while normal polling raises controlled events from 6 to 7.",
+    "final_screenshots": [
+      "mac-chrome-final-478-open.png",
+      "mac-safari-final-478-open.png",
+      "mac-chrome-final-478-event-poll.png"
+    ],
+    "not_claimed": [
+      "Manual native measurement of 3418-character selection or ten rounds (covered by automated production pages).",
+      "OS-level IME or screen-reader manual acceptance.",
+      "Linux Chromium screenshots as evidence of macOS native menu behavior."
+    ]
+  },
+  "preserved_correctness": {
+    "ledger": "Immutable ledger and fee versions, Decimal, idempotent operation IDs, account CAS, reversal fees, unknown cost/availability and T+0/T+1 retained; UI reads do not write ledger or research demands.",
+    "timeouts": "First effective event, idle progress, request hard cap, subtask/account budgets, heartbeat distinction, complete terminal and finite retry remain; monotonic clocks not frozen.",
+    "quote_first_observation": "Controlled production execute/publish/tick, 10 observations plus reopening SQLite/new Service and 10 observations: known old-price unknown-to-stale does not create a pointless task. fresh-to-stale, real price/material/holding changes still create deduplicated demands.",
+    "real_historical_limits": "Eleventh actual stale report history and previous successful/failed provider traces remain unchanged; controlled current success does not rewrite that history."
+  },
+  "historical_runs_not_final": [
+    {
+      "kind": "original_time_failures_reproduced",
+      "passed": 0,
+      "failed": 2,
+      "artifact": "python-time-before.txt",
+      "meaning": "Reproduced original failing fixed-date sales before fixture correction."
+    },
+    {
+      "kind": "targeted_backend",
+      "python": "3.14.4",
+      "passed": 190,
+      "failed": 0,
+      "warnings": 1,
+      "artifact": "python-time-ledger.txt",
+      "overlaps_final_suite": true
+    },
+    {
+      "kind": "first_full_python_312",
+      "passed": 974,
+      "failed": 0,
+      "warnings": 1,
+      "artifact": "python-full-py312.txt",
+      "meaning": "Before adding two no-fee verifier preflight tests."
+    },
+    {
+      "kind": "first_full_browser",
+      "passed_groups": 6,
+      "failed_groups": [
+        "iteration",
+        "production"
+      ],
+      "artifact": "browser-groups-first.json",
+      "meaning": "New iteration-12 coordinator default expansion and cross-account regressions; these were actual local failures, separate from baseline remote skipped browsers."
+    },
+    {
+      "kind": "second_full_browser",
+      "passed_groups": 6,
+      "failed_groups": [
+        "production",
+        "twelfth"
+      ],
+      "artifact": "browser-groups-second.json",
+      "meaning": "Intermediate integration failures retained; final full eight-group run passes."
+    },
+    {
+      "kind": "anchor_lifecycle_intermediate_failure",
+      "artifact": "anchor-lifecycle-first-failure.txt",
+      "final_result_artifact": "anchor-lifecycle-final.txt",
+      "meaning": "Bottom-clamp bounded spacing and cleanup refined before frozen final pass."
+    }
+  ],
+  "remote_separate_from_local": {
+    "checked_at_utc": "2026-10-31T16:39:22.427Z",
+    "run_id": 41089590512,
+    "head_sha": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+    "conclusion": "failure",
+    "status": "completed",
+    "updated_at": "2026-10-30T16:27:20Z",
+    "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41089590512",
+    "local_push_performed": false,
+    "checked_at_shanghai": "2026-11-01T00:39:22.427000+08:00",
+    "python": {
+      "passed": 964,
+      "failed": 2,
+      "warnings": 1,
+      "failed_cases": [
+        "tests/test_eleventh_ledger.py::test_unknown_cost_and_availability_require_explicit_correction",
+        "tests/test_eleventh_ledger.py::test_odd_lot_all_sale_and_tick_rounding_source"
+      ]
+    },
+    "browser": {
+      "required_groups": 6,
+      "status": "skipped_after_python_failure",
+      "passed_groups": 0,
+      "reproduced_product_failures": 0
+    },
+    "current_implementation_remote_run": "not_run_no_push",
+    "workflow_change": "Independent Python job and 8 browser matrix jobs, finite timeouts, fail-fast false; final required aggregator fails if either requirement fails/cancels/skips. No continue-on-error.",
+    "artifacts": [
+      "remote-baseline.json",
+      "remote-failure-excerpt.txt",
+      "remote-latest.json"
+    ]
+  },
+  "operational_boundaries": {
+    "daily_8765_touched": false,
+    "daily_database_mutated": false,
+    "user_environment_or_credentials_modified": false,
+    "schema_migration": false,
+    "pushed": false,
+    "engineering_external_model_calls": 0,
+    "real_provider_status": "failed_separate_record_no_retry",
+    "daily_readonly_health_checks": true,
+    "daily_preservation_artifact": "final-preservation-check.json",
+    "isolated_processes_stopped": true
+  },
+  "artifact_checksums": {
+    "frozen-source.json": {
+      "sha256": "4eb9f6f95a2e66793a967c9354ee97022fab28b762f3a2e1cd943935eea8be2a",
+      "bytes": 445,
+      "file_modified_at_shanghai": "2026-11-01T00:22:12.375583+08:00"
+    },
+    "environment.json": {
+      "sha256": "e08dace0defa981d0a1693cb128227d68c9d1f888ada612c6dd5ec6bac378fcd",
+      "bytes": 618,
+      "file_modified_at_shanghai": "2026-11-01T00:12:08.606742+08:00"
+    },
+    "python-final.txt": {
+      "sha256": "5ee39ee7530aaff773971267a49fa5df8d04251af90f0f1341a8cc244bd48f5b",
+      "bytes": 1692,
+      "file_modified_at_shanghai": "2026-11-01T00:24:03.511214+08:00"
+    },
+    "browser-final.txt": {
+      "sha256": "5dfcf0be32402bbcc4049a9ff8fb3b92cec3463bdac481165edc62f226f00581",
+      "bytes": 13564,
+      "file_modified_at_shanghai": "2026-11-01T00:26:13.169808+08:00"
+    },
+    "browser-groups-final.json": {
+      "sha256": "a9f2baab5885fa7c053a2c64d74233a0def9ead93ac67de2811f4e62cad49478",
+      "bytes": 754,
+      "file_modified_at_shanghai": "2026-11-01T00:26:32.379788+08:00"
+    },
+    "reading-evidence.json": {
+      "sha256": "4052bdd164c1e81a7b293ad2cb2249f68403b2378e5fb7a52536da9c1ef2ad34",
+      "bytes": 5428,
+      "file_modified_at_shanghai": "2026-11-01T00:26:22.341409+08:00"
+    },
+    "select-evidence.json": {
+      "sha256": "14a3d3cb421de6fa46f2088760c6cc63139dfd5f6523c1d05a86a9151bdc044b",
+      "bytes": 3819,
+      "file_modified_at_shanghai": "2026-11-01T00:26:32.380293+08:00"
+    },
+    "dialog-evidence.json": {
+      "sha256": "ef51f774fb0448a7bc34a8cb560ce55f058e3601a8e1f9cfc13c2eec9f3b92b1",
+      "bytes": 538,
+      "file_modified_at_shanghai": "2026-10-31T23:58:52.017045+08:00"
+    },
+    "anchor-lifecycle-final.txt": {
+      "sha256": "31afaf65a9746eba00033b1c82cabbd06c855ccd6c46b7870ab9dea9974b9e25",
+      "bytes": 1185,
+      "file_modified_at_shanghai": "2026-11-01T00:22:05.873002+08:00"
+    },
+    "mac-final-runtime.json": {
+      "sha256": "dd6b24841d4e8ac62835f9f60c9bddc02310b3b450a035db9980d4c83ed626b8",
+      "bytes": 1350,
+      "file_modified_at_shanghai": "2026-11-01T00:24:17.353150+08:00"
+    },
+    "mac-validation.md": {
+      "sha256": "6c7dd7b1369b7e2ed4567bb360ff9b7c156d698a3812538fffdc99539f378d26",
+      "bytes": 4030,
+      "file_modified_at_shanghai": "2026-11-01T00:24:55.450239+08:00"
+    },
+    "remote-latest.json": {
+      "sha256": "8c3ab5e2736152c0ed3913361ee0f758db320546d9bc937b001e3e3088cc5399",
+      "bytes": 358,
+      "file_modified_at_shanghai": "2026-11-01T00:39:41.821895+08:00"
+    },
+    "remote-baseline.json": {
+      "sha256": "16725a5a1c0ac477cd2a05ce699eddc18a21e9607133127c23ba26781c572ceb",
+      "bytes": 3660,
+      "file_modified_at_shanghai": "2026-10-31T23:30:12.499716+08:00"
+    },
+    "python-time-before.txt": {
+      "sha256": "129246dcc4360fc91bd3a0c68a5c60c9472c16a6393ef93b751c80c98e9afbd5",
+      "bytes": 11460,
+      "file_modified_at_shanghai": "2026-11-01T00:45:24.813775+08:00"
+    },
+    "python-time-ledger.txt": {
+      "sha256": "4cf55dd7cadab01f562e80028b1fad41e9f4c239f7b98566ae47e714531ee7d7",
+      "bytes": 772,
+      "file_modified_at_shanghai": "2026-10-31T23:34:27.314085+08:00"
+    },
+    "python-full-py312.txt": {
+      "sha256": "53639eddb9435d0389e9bdb718e17cc3cf273d4a6757487f608ea94d8af42f60",
+      "bytes": 1691,
+      "file_modified_at_shanghai": "2026-10-31T23:50:16.455398+08:00"
+    },
+    "browser-groups-first.json": {
+      "sha256": "4eb14a0ced421d38dcaa7d3cc028dc18696ea22d6118dd5ed41be66f50b7a0c9",
+      "bytes": 754,
+      "file_modified_at_shanghai": "2026-10-31T23:54:19.652889+08:00"
+    },
+    "browser-groups-second.json": {
+      "sha256": "2eaa380a746b00ba28cb395bcc993d4e0fea93552bd50858a901ece5a917695a",
+      "bytes": 753,
+      "file_modified_at_shanghai": "2026-11-01T00:05:59.316318+08:00"
+    },
+    "verifier-dryrun.txt": {
+      "sha256": "4c2603a44c3937e06ba8746e5efb37fcb1fcb296cc36ea02b125f92dc14991e1",
+      "bytes": 99,
+      "file_modified_at_shanghai": "2026-11-01T00:13:09.835141+08:00"
+    },
+    "final-preservation-check.json": {
+      "sha256": "03e56e4a670eb986e833278cfad256125df5e2acfe5f0a57a6633e90b90b2b9d",
+      "bytes": 861,
+      "file_modified_at_shanghai": "2026-11-01T00:39:22.414623+08:00"
+    },
+    "live-evidence.json": {
+      "sha256": "57d6020585eb63fa0fe625175d22b1a7d49b54995d2e5c18834ec2cbf5586d16",
+      "bytes": 414195,
+      "file_modified_at_shanghai": "2026-11-01T00:40:00.205471+08:00"
+    },
+    "live-research.md": {
+      "sha256": "a8af198e87912e784bfc12adf87e80fc09d2b78fdee8bbce4b4ab525ba678595",
+      "bytes": 15912,
+      "file_modified_at_shanghai": "2026-11-01T00:41:28.565154+08:00"
+    },
+    "live-run.txt": {
+      "sha256": "bad7fca75ce6b37aa5823b8904edfa2885db43fce88793851a64896a07289f1b",
+      "bytes": 1003,
+      "file_modified_at_shanghai": "2026-11-01T00:33:04.075695+08:00"
+    },
+    "live-ui.md": {
+      "sha256": "695df4b74b89aa204051eff9be0c86ef969b7c3ead2c8ca13f7c8109a63ec60a",
+      "bytes": 2532,
+      "file_modified_at_shanghai": "2026-11-01T00:40:44.743218+08:00"
+    },
+    "live-verifier.md": {
+      "sha256": "a7ee2bdc7ef04d10c6d709b2cc179f0644e4bd18537930086e12ac489da7e11b",
+      "bytes": 5283,
+      "file_modified_at_shanghai": "2026-11-01T00:43:00.427482+08:00"
+    },
+    "reading-state.md": {
+      "sha256": "154fc0c614ed9c57de81f8306ca3becb0df9008ca7b4f20839aff42439eba7f0",
+      "bytes": 13555,
+      "file_modified_at_shanghai": "2026-11-01T00:26:22.394498+08:00"
+    },
+    "select-control.md": {
+      "sha256": "7d9534521c483105c1acce6584a555c4d05d90c43e9d56139a7d0591c73eb559",
+      "bytes": 8394,
+      "file_modified_at_shanghai": "2026-10-31T23:39:57.946810+08:00"
+    },
+    "time-ledger.md": {
+      "sha256": "31ed3fbfdff86efcc0e3d6193a7902fce5c93b30523e5a9917d83e9c095b48d9",
+      "bytes": 7075,
+      "file_modified_at_shanghai": "2026-10-31T23:36:05.322363+08:00"
+    }
+  },
+  "artifact_timestamp_note": "File modification timestamps identify archived evidence files, not exact command start/end timestamps. Command duration and exit codes come from runner logs and final execution results.",
+  "artifact_format_note": "Original failure content retained; trailing whitespace only in python-time-before.txt normalized for repository storage."
+}

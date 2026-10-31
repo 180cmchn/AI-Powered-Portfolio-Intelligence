@@ -1,0 +1,12 @@
+2026-10-30T16:27:01.5696934Z ........................................................................ [ 89%]
+2026-10-30T16:27:16.1563150Z ________ test_unknown_cost_and_availability_require_explicit_correction ________
+2026-10-30T16:27:16.1564558Z     def test_unknown_cost_and_availability_require_explicit_correction(store):
+2026-10-30T16:27:16.1644891Z >               raise ValueError(f'可卖数量不足：当前可卖{sellable}，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期')
+2026-10-30T16:27:16.1645704Z E               ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+2026-10-30T16:27:16.1647064Z ________________ test_odd_lot_all_sale_and_tick_rounding_source ________________
+2026-10-30T16:27:16.1648285Z     def test_odd_lot_all_sale_and_tick_rounding_source(store):
+2026-10-30T16:27:16.7273205Z >               raise ValueError(f'可卖数量不足：当前可卖{sellable}，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期')
+2026-10-30T16:27:16.7273726Z E               ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+2026-10-30T16:27:16.7279707Z FAILED tests/test_eleventh_ledger.py::test_unknown_cost_and_availability_require_explicit_correction - ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+2026-10-30T16:27:16.7281217Z FAILED tests/test_eleventh_ledger.py::test_odd_lot_all_sale_and_tick_rounding_source - ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+2026-10-30T16:27:16.7282294Z 2 failed, 964 passed, 1 warning in 156.10s (0:02:36)

@@ -1,0 +1,22 @@
+Overview anchor evidence {"selected":{"text":"指定证券研究 · SH:518880","top":439.890625,"scrollY":646,"scrollHeight":2298,"viewport":900},"afterAnchor":{"top":439.890625,"scrollY":732,"scrollHeight":1632,"viewport":900,"selected":true}}
+Second shrink evidence {"top":439.890625,"scrollY":732,"scrollHeight":2298,"tails":[]}
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at verifyDialogIntents (file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/twelfth_dialog_cases.mjs:31:390)
+    at async file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_twelfth_dialog.mjs:18:15 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

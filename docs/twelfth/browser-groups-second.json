@@ -1,0 +1,50 @@
+[
+  {
+    "group": "iteration",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 2066
+  },
+  {
+    "group": "production",
+    "code": 1,
+    "signal": null,
+    "duration_ms": 39777
+  },
+  {
+    "group": "seventh",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 5067
+  },
+  {
+    "group": "ninth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 16748
+  },
+  {
+    "group": "tenth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 20631
+  },
+  {
+    "group": "eleventh",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 61613
+  },
+  {
+    "group": "twelfth",
+    "code": 1,
+    "signal": null,
+    "duration_ms": 78778
+  },
+  {
+    "group": "twelfth_select",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 16779
+  }
+]

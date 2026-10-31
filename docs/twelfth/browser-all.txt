@@ -1,0 +1,489 @@
+
+> test:browser
+> node tests/run_browser.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByText('事件 1', { exact: true }) to be visible[22m
+[2m    62 × locator resolved to hidden <p>事件 1</p>[22m
+
+    at /Users/chn/Documents/ChatGPT/金融股票 2/tests/frontend_iteration.mjs:176:46 {
+  log: [
+    "  - waiting for getByText('事件 1', { exact: true }) to be visible",
+    '    62 × locator resolved to hidden <p>事件 1</p>'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.9.0
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#account-meta-form button[type="submit"]')[22m
+[2m    - locator resolved to <button type="submit" class="button primary">保存账户信息</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at /Users/chn/Documents/ChatGPT/金融股票 2/tests/frontend_production.mjs:220:66 {
+  log: [
+    `  - waiting for locator('#account-meta-form button[type="submit"]')`,
+    '    - locator resolved to <button type="submit" class="button primary">保存账户信息</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    58 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.9.0
+Seventh production browser regressions passed
+Ninth provider state recovery and target-bound race regressions passed
+Ninth provider browser regressions passed
+Tenth production browser regressions passed
+{
+  "passed": true,
+  "checks": [
+    "same connected DOM and active selection survive composition event + poll; no synthetic compositionend",
+    "server revision leaves dirty prompt intact, stale save conflicts, explicit reload and current save succeed",
+    "account-role drafts use account + role identity and never cross accounts",
+    "clear account override removes stale draft and reloads inheritance; account notice does not claim global-role CAS",
+    "only overview shows full card; completion outranks synthesis; account isolation",
+    "three securities through production trade form; exact cash, ETF fees, T+0 full sale, explicit fee adjustment, external deposit excluded from PnL, lost-response receipt, double-click and account isolation",
+    "non-overview accepted task and view action appear before slow GET; failed follow-up read preserves receipt and never resubmits",
+    "market/direction fee overrides displayed and retained; re-preview clearly shows current fee-plan version without another trade"
+  ],
+  "baseline": [
+    {
+      "kind": "unfocused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "focused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "dirty",
+      "before": 1200,
+      "after": 0
+    }
+  ],
+  "fixed": [
+    {
+      "kind": "unfocused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "focused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "dirty",
+      "scroll": [
+        1200,
+        1200
+      ]
+    }
+  ]
+}
+Stable production poll 1/10
+Stable production poll 2/10
+Stable production poll 3/10
+Stable production poll 4/10
+Stable production poll 5/10
+Stable production poll 6/10
+Stable production poll 7/10
+Stable production poll 8/10
+Stable production poll 9/10
+Stable production poll 10/10
+{
+  "baseline": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 480.5625,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": 480.5625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    },
+    "ledger": {
+      "open": false,
+      "same": false
+    },
+    "dialogBefore": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "dialogAfter": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": -9133.90625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    }
+  },
+  "polls": [
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    }
+  ],
+  "checks": [
+    "10 actual 4-second polls, new persisted events and stages; connected JSON text/DOM, vertical+horizontal scroll, backward 3418-character selection, focus, viewport; no ledger or research-demand writes",
+    "new task inserted above and existing upper task height change preserve text anchor relative viewport",
+    "explicit close and neighboring expansion remain independent",
+    "real modal load-more, delayed overlapping response and double click coalesce; no duplicate rows, stable inner DOM/scroll/selection/header/close/background; main and modal state scoped",
+    "ledger entry and cash-history details survive background task state updates",
+    "new report insertion keeps old report body and references nodes, new references default closed",
+    "27 route transitions and account switch have no script errors or old account forms; deliberate material paging keeps modal controls"
+  ],
+  "platform": "darwin",
+  "browser": "151.0.7922.34",
+  "dialog": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "pendingBefore": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    "requests": 1,
+    "uniqueRows": 439
+  },
+  "cacheCounts": {
+    "eventSegments": 0,
+    "eventCount": 0,
+    "drafts": 12,
+    "reports": 3
+  },
+  "passed": true
+}
+{
+  "passed": true,
+  "checks": [
+    "single successful buy/sell field; click, Enter/Space, arrows, Home/End, Escape rollback, Tab/outside-close, focus return, no implicit trade submission",
+    "form reset restores initial buy and invalidates preview; disabled native field disables and excludes custom trigger",
+    "connected trigger, same open popup and uncommitted sell candidate survive real event update and normal production poll",
+    "production preview and committed buy/sell agree with visible label and FormData; selection/new account/new fee-plan version invalidate old preview; exact T+0 ledger cash 100200.00",
+    "popup geometry: aligned edges, width and first text origin; top layer escapes card clipping; desktop, visual viewport 125/200% scale, 800/390px narrow layouts and scroll anchoring",
+    "reusable component in modal: option pointer interaction, top-layer popup, first Escape closes menu and second closes dialog",
+    "account switch closes old popup; new account starts with buy",
+    "backend validation failure retains sell; side edited while buy receipt is delayed remains an unsubmitted sell draft, while persisted trade stays buy; no JS errors or duplicated writes"
+  ],
+  "geometry": [
+    {
+      "label": "desktop-100",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 473.3125,
+        "width": 325.328125,
+        "bottom": 548.5
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1360,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-1.25",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 473.3125,
+        "width": 325.328125,
+        "bottom": 548.5
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1088,
+        "height": 720,
+        "scale": 1.25
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-2",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 326.125,
+        "width": 325.328125,
+        "bottom": 401.3125
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "above",
+      "viewport": {
+        "width": 680,
+        "height": 450,
+        "scale": 2
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-800",
+      "trigger": {
+        "x": 244,
+        "y": 443.3125,
+        "width": 244.5,
+        "bottom": 481.90625
+      },
+      "popup": {
+        "x": 244,
+        "y": 485.90625,
+        "width": 244.5,
+        "bottom": 561.09375
+      },
+      "textX": 256,
+      "optionTextX": 256,
+      "placement": "below",
+      "viewport": {
+        "width": 800,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-390",
+      "trigger": {
+        "x": 35,
+        "y": 629.828125,
+        "width": 320,
+        "bottom": 668.421875
+      },
+      "popup": {
+        "x": 35,
+        "y": 672.421875,
+        "width": 320,
+        "bottom": 747.609375
+      },
+      "textX": 47,
+      "optionTextX": 47,
+      "placement": "below",
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    }
+  ],
+  "platform": "darwin",
+  "executable": "Playwright Chromium",
+  "realModelCalls": 0,
+  "browserVersion": "151.0.7922.34"
+}
+{"browser_groups":[{"group":"iteration","code":1,"signal":null,"duration_ms":31790},{"group":"production","code":1,"signal":null,"duration_ms":34884},{"group":"seventh","code":0,"signal":null,"duration_ms":5089},{"group":"ninth","code":0,"signal":null,"duration_ms":16957},{"group":"tenth","code":0,"signal":null,"duration_ms":20653},{"group":"eleventh","code":0,"signal":null,"duration_ms":61649},{"group":"twelfth","code":0,"signal":null,"duration_ms":73759},{"group":"twelfth_select","code":0,"signal":null,"duration_ms":16773}]}

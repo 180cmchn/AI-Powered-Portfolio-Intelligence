@@ -1,0 +1,8 @@
+{"instance": "prepare-no-worker", "url": "http://127.0.0.1:52389", "worker": false, "account_id": null}
+{"prepared_url": "http://127.0.0.1:52389/#holdings", "account_id": "651a663ef10f44bea0e9a2d5a40720f7"}
+{"instance": "research-worker", "url": "http://127.0.0.1:52400", "worker": true, "account_id": "651a663ef10f44bea0e9a2d5a40720f7"}
+{"job_id": "937591e98d07415aa26950b6a413b70f", "state": ["running", "fetching"], "at": "2026-11-01T00:26:37.958177+08:00"}
+{"job_id": "937591e98d07415aa26950b6a413b70f", "state": ["running", "researching"], "at": "2026-11-01T00:26:39.980873+08:00"}
+{"job_id": "937591e98d07415aa26950b6a413b70f", "state": ["running", "synthesizing"], "at": "2026-11-01T00:30:08.304085+08:00"}
+{"job_id": "937591e98d07415aa26950b6a413b70f", "state": ["failed", "synthesizing"], "at": "2026-11-01T00:33:04.071043+08:00"}
+{"error": {"type": "RuntimeError", "message": "Single real research did not publish a complete report; no success retry will be made"}, "no_business_retry": true}

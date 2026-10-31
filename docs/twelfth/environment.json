@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-11-01T00:12:08.540452+08:00",
+  "timezone": "Asia/Shanghai",
+  "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "os": "macOS-27.2-arm64-arm-64bit",
+  "node": "v25.9.0",
+  "dependencies": {
+    "pytest": "9.1.1",
+    "fastapi": "0.159.1",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "uvicorn": "0.54.0"
+  },
+  "playwright": "1.62.1",
+  "browser_engine": "Chromium 151.0.7922.34",
+  "native_chrome": "156.0.8078.74",
+  "native_safari": "27.2 (22625.2.8.11.9)",
+  "ci_environment_not_run": "Ubuntu / Python 3.12 / Node 22; no push authorized"
+}

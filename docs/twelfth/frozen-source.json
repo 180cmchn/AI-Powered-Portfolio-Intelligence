@@ -1,0 +1,13 @@
+{
+  "implementation_commit": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+  "source_sha256": "f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb",
+  "static_sha256": "a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c",
+  "schema": 11,
+  "api_contract": 11,
+  "frozen_at": "2026-11-01T00:22:12.374658+08:00",
+  "environment_file_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  }
+}

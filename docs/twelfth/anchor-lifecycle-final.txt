@@ -1,0 +1,15 @@
+Overview anchor evidence {"selected":{"text":"指定证券研究 · SH:518880","top":439.890625,"scrollY":646,"scrollHeight":2298,"viewport":900},"afterAnchor":{"top":439.890625,"scrollY":732,"scrollHeight":1632,"viewport":900,"selected":true}}
+Larger shrink evidence {"top":439.890625,"scrollY":732,"height":1632,"viewport":900,"padding":41,"count":1}
+Reading space lifecycle {"count":1,"height":41,"scrollY":732,"scrollHeight":1632,"viewport":900,"rootHeight":"","growthCleared":true,"userScrollCleared":true,"navigationCleared":true}
+{
+  "passed": true,
+  "checks": [
+    "same-page slow task A cannot replace subsequently opened task B",
+    "same-page synchronous new-account modal invalidates old task read",
+    "overview inserts new task without reusing selected old task text",
+    "bottom-clamp reading space equals the deficit, stays bounded across polls, and clears on content growth or user scrolling without changing container height",
+    "late material read cannot overwrite a newer synchronous scope-confirmation modal",
+    "closing while next material segment is pending prevents reopening",
+    "sixth.js forecast-batch A/B uses the same latest-intent guard"
+  ]
+}

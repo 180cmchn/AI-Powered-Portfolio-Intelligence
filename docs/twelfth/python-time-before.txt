@@ -1,0 +1,171 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_unknown_cost_and_availability_require_explicit_correction ________
+
+store = <app.store.Store object at 0x10cf75d30>
+
+    def test_unknown_cost_and_availability_require_explicit_correction(store):
+        a = account(store, holdings=[{'symbol': 'SZ:002354', 'quantity': '1000'}])
+        assert store.account(a['id'])['ledger']['positions']['SZ:002354']['total_cost'] is None
+        with pytest.raises(ValueError, match='可卖数量不足'):
+            store.record_trade(a['id'], trade(store, a, side='sell'))
+        corrected = store.correct_snapshot(a['id'], {'operation_id': 'correct-opening-1', 'expected_version': 1, 'reason': '模拟期初交割单；可卖数量已确认', 'holdings': [{'symbol': 'SZ:002354', 'quantity': '1000', 'cost_price': None, 'available_quantity': '1000'}]})
+>       result = store.record_trade(a['id'], trade(store, a, side='sell', traded_at='2026-10-30T10:00:00+08:00'))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_eleventh_ledger.py:150:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app/ledger.py:522: in record_trade
+    return self._commit_entry(db, account_id, payload, self._trade(db, account_id, payload), fingerprint)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/ledger.py:185: in wrapped
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <app.store.Store object at 0x10cf75d30>
+db = <sqlite3.Connection object at 0x10cfa2b60>
+account_id = '353a49fd18324739aaab0eb54e91ec31'
+payload = {'operation_id': 'operation-buy-1', 'expected_version': 2, 'fee_plan_version': 1, 'symbol': 'SZ:002354', ...}
+
+    @accounting_precision
+    def _trade(self, db, account_id, payload):
+        from .store import Conflict
+        account = self.account(account_id, db)
+        self._version(account, payload)
+        plan = self.fee_plan(account_id, db)
+        if payload.get('fee_plan_version') != plan['version']:
+            raise Conflict('费用方案版本已变化，请重新预览并确认')
+        sid = payload.get('symbol')
+        row = db.execute('SELECT body FROM securities WHERE symbol=?', (sid,)).fetchone()
+        if not row:
+            raise ValueError('证券身份尚未确认，请先通过六位代码目录核对')
+        security = json.loads(row[0])
+        rule = security_rule(security)
+        qty = dec(payload.get('quantity'), scale=0, positive=True)
+        price = dec(payload.get('price'), scale=3 if rule['kind'] == 'etf' else 2, positive=True)
+        if price % Decimal(rule['tick']):
+            raise ValueError('成交价不符合该品种最小价格变动单位')
+        side = payload.get('side')
+        if side not in ('buy', 'sell'):
+            raise ValueError('买卖方向须为buy或sell')
+        mode = payload.get('mode')
+        if mode not in ('simulated', 'historical'):
+            raise ValueError('请选择模拟成交或历史补录；本应用不会向交易所下单')
+        at = timestamp(payload.get('traded_at'))
+        if at > datetime.now(TZ) + timedelta(minutes=1):
+            raise ValueError('不能记录未来成交')
+        day = at.date().isoformat()
+        if day < plan['effective_from']:
+            raise ValueError('成交日期早于所选费用方案生效日，请选择适用方案或期初校正')
+        if mode == 'historical' and trading_date(day).get('trading_day') is not True:
+            raise ValueError('历史成交日期须有已核实的交易日；休市验证请选择模拟记账')
+        # Arbitrary insertion would require replaying cost/availability and every
+        # later version. This release only appends chronologically per account.
+        previous = db.execute("""SELECT e.traded_at FROM ledger_entries e WHERE e.account_id=? AND e.kind='trade'
+            AND NOT EXISTS(SELECT 1 FROM ledger_entries r WHERE r.account_id=e.account_id AND r.kind='reversal' AND json_extract(r.body,'$.reference_entry_id')=e.id)
+            ORDER BY e.sequence DESC LIMIT 1""", (account_id,)).fetchone()
+        if previous and at < timestamp(previous[0]):
+            raise ValueError('不支持在已记账成交之前插单；请使用有依据的期初校正或先撤销末笔')
+        if account['cash'] is None:
+            raise ValueError('现金未知，请先录入有来源的期初现金；不会自动当作0')
+        cash_before = posting_cash(account['cash'])
+        before = self._positions(account_id, db)
+        position = deepcopy(before.get(sid, {'symbol': sid, 'quantity': '0', 'total_cost': '0', 'lots': [], 'cost_basis': 'trade_cost', 'fees_included_in_cost': True}))
+        old_qty = Decimal(position['quantity'])
+        if side == 'buy' and int(qty) % rule['buy_lot']:
+            raise ValueError(f'该品种买入须为{rule["buy_lot"]}股/份的整数倍；数量单位不是手')
+        sellable = available(position, day)
+        if side == 'sell':
+            if qty > old_qty:
+                raise ValueError('卖出数量超过持有量，禁止做空')
+            if qty > sellable:
+>               raise ValueError(f'可卖数量不足：当前可卖{sellable}，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期')
+E               ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+
+app/ledger.py:382: ValueError
+________________ test_odd_lot_all_sale_and_tick_rounding_source ________________
+
+store = <app.store.Store object at 0x10d01d590>
+
+    def test_odd_lot_all_sale_and_tick_rounding_source(store):
+        a = account(store, holdings=[{'symbol': 'SZ:159599', 'quantity': '101', 'cost_price': '2'}])
+        store.correct_snapshot(a['id'], {'operation_id': 'odd-initial-correction', 'expected_version': 1, 'reason': '已核对可卖余额', 'holdings': [{'symbol': 'SZ:159599', 'quantity': '101', 'cost_price': '2', 'available_quantity': '101'}]})
+>       result = store.record_trade(a['id'], trade(store, a, symbol='SZ:159599', side='sell', quantity='101', price='2.501', traded_at='2026-10-30T10:00:00+08:00'))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_eleventh_ledger.py:277:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app/ledger.py:522: in record_trade
+    return self._commit_entry(db, account_id, payload, self._trade(db, account_id, payload), fingerprint)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/ledger.py:185: in wrapped
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <app.store.Store object at 0x10d01d590>
+db = <sqlite3.Connection object at 0x10d06fe20>
+account_id = '4b8ed23485754ac99e96425df0f30e14'
+payload = {'operation_id': 'operation-buy-1', 'expected_version': 2, 'fee_plan_version': 1, 'symbol': 'SZ:159599', ...}
+
+    @accounting_precision
+    def _trade(self, db, account_id, payload):
+        from .store import Conflict
+        account = self.account(account_id, db)
+        self._version(account, payload)
+        plan = self.fee_plan(account_id, db)
+        if payload.get('fee_plan_version') != plan['version']:
+            raise Conflict('费用方案版本已变化，请重新预览并确认')
+        sid = payload.get('symbol')
+        row = db.execute('SELECT body FROM securities WHERE symbol=?', (sid,)).fetchone()
+        if not row:
+            raise ValueError('证券身份尚未确认，请先通过六位代码目录核对')
+        security = json.loads(row[0])
+        rule = security_rule(security)
+        qty = dec(payload.get('quantity'), scale=0, positive=True)
+        price = dec(payload.get('price'), scale=3 if rule['kind'] == 'etf' else 2, positive=True)
+        if price % Decimal(rule['tick']):
+            raise ValueError('成交价不符合该品种最小价格变动单位')
+        side = payload.get('side')
+        if side not in ('buy', 'sell'):
+            raise ValueError('买卖方向须为buy或sell')
+        mode = payload.get('mode')
+        if mode not in ('simulated', 'historical'):
+            raise ValueError('请选择模拟成交或历史补录；本应用不会向交易所下单')
+        at = timestamp(payload.get('traded_at'))
+        if at > datetime.now(TZ) + timedelta(minutes=1):
+            raise ValueError('不能记录未来成交')
+        day = at.date().isoformat()
+        if day < plan['effective_from']:
+            raise ValueError('成交日期早于所选费用方案生效日，请选择适用方案或期初校正')
+        if mode == 'historical' and trading_date(day).get('trading_day') is not True:
+            raise ValueError('历史成交日期须有已核实的交易日；休市验证请选择模拟记账')
+        # Arbitrary insertion would require replaying cost/availability and every
+        # later version. This release only appends chronologically per account.
+        previous = db.execute("""SELECT e.traded_at FROM ledger_entries e WHERE e.account_id=? AND e.kind='trade'
+            AND NOT EXISTS(SELECT 1 FROM ledger_entries r WHERE r.account_id=e.account_id AND r.kind='reversal' AND json_extract(r.body,'$.reference_entry_id')=e.id)
+            ORDER BY e.sequence DESC LIMIT 1""", (account_id,)).fetchone()
+        if previous and at < timestamp(previous[0]):
+            raise ValueError('不支持在已记账成交之前插单；请使用有依据的期初校正或先撤销末笔')
+        if account['cash'] is None:
+            raise ValueError('现金未知，请先录入有来源的期初现金；不会自动当作0')
+        cash_before = posting_cash(account['cash'])
+        before = self._positions(account_id, db)
+        position = deepcopy(before.get(sid, {'symbol': sid, 'quantity': '0', 'total_cost': '0', 'lots': [], 'cost_basis': 'trade_cost', 'fees_included_in_cost': True}))
+        old_qty = Decimal(position['quantity'])
+        if side == 'buy' and int(qty) % rule['buy_lot']:
+            raise ValueError(f'该品种买入须为{rule["buy_lot"]}股/份的整数倍；数量单位不是手')
+        sellable = available(position, day)
+        if side == 'sell':
+            if qty > old_qty:
+                raise ValueError('卖出数量超过持有量，禁止做空')
+            if qty > sellable:
+>               raise ValueError(f'可卖数量不足：当前可卖{sellable}，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期')
+E               ValueError: 可卖数量不足：当前可卖0，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期
+
+app/ledger.py:382: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_eleventh_ledger.py::test_unknown_cost_and_availability_require_explicit_correction
+FAILED tests/test_eleventh_ledger.py::test_odd_lot_all_sale_and_tick_rounding_source
+2 failed in 0.26s

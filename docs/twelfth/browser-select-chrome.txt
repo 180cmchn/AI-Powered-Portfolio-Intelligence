@@ -1,0 +1,144 @@
+{
+  "passed": true,
+  "checks": [
+    "single successful buy/sell field; click, Enter/Space, arrows, Home/End, Escape rollback, Tab/outside-close, focus return, no implicit trade submission",
+    "form reset restores initial buy and invalidates preview; disabled native field disables and excludes custom trigger",
+    "connected trigger, same open popup and uncommitted sell candidate survive real event update and normal production poll",
+    "production preview and committed buy/sell agree with visible label and FormData; selection/new account/new fee-plan version invalidate old preview; exact T+0 ledger cash 100200.00",
+    "popup geometry: aligned edges, width and first text origin; top layer escapes card clipping; desktop, visual viewport 125/200% scale, 800/390px narrow layouts and scroll anchoring",
+    "reusable component in modal: option pointer interaction, top-layer popup, first Escape closes menu and second closes dialog",
+    "account switch closes old popup; new account starts with buy",
+    "backend validation failure retains sell; side edited while buy receipt is delayed remains an unsubmitted sell draft, while persisted trade stays buy; no JS errors or duplicated writes"
+  ],
+  "geometry": [
+    {
+      "label": "desktop-100",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 473.3125,
+        "width": 325.328125,
+        "bottom": 548.5
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1360,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-1.25",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 473.3125,
+        "width": 325.328125,
+        "bottom": 548.5
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1088,
+        "height": 720,
+        "scale": 1.25
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-2",
+      "trigger": {
+        "x": 287,
+        "y": 430.71875,
+        "width": 325.328125,
+        "bottom": 469.3125
+      },
+      "popup": {
+        "x": 287,
+        "y": 326.125,
+        "width": 325.328125,
+        "bottom": 401.3125
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "above",
+      "viewport": {
+        "width": 680,
+        "height": 450,
+        "scale": 2
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-800",
+      "trigger": {
+        "x": 244,
+        "y": 443.3125,
+        "width": 244.5,
+        "bottom": 481.90625
+      },
+      "popup": {
+        "x": 244,
+        "y": 485.90625,
+        "width": 244.5,
+        "bottom": 561.09375
+      },
+      "textX": 256,
+      "optionTextX": 256,
+      "placement": "below",
+      "viewport": {
+        "width": 800,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-390",
+      "trigger": {
+        "x": 35,
+        "y": 629.828125,
+        "width": 320,
+        "bottom": 668.421875
+      },
+      "popup": {
+        "x": 35,
+        "y": 672.421875,
+        "width": 320,
+        "bottom": 747.609375
+      },
+      "textX": 47,
+      "optionTextX": 47,
+      "placement": "below",
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    }
+  ],
+  "platform": "darwin",
+  "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "realModelCalls": 0,
+  "browserVersion": "156.0.8078.74"
+}
