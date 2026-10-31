@@ -4,7 +4,7 @@ Uses the production Store and Service.execute publication/review path in a fresh
 temporary database. Numeric conditions mirror the two suggestions that exposed
 the defect; this is not a rerun of the isolated live acceptance experiment.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
 
@@ -14,15 +14,18 @@ from app.store import Store
 
 
 @pytest.mark.asyncio
-async def test_service_publication_with_closed_quote_baseline_stays_current(tmp_path, monkeypatch):
+async def test_service_publication_with_closed_quote_baseline_stays_current(tmp_path, monkeypatch, frozen_clock):
+    # Explicit Saturday: deterministic closed quotes and scheduler behavior,
+    # without inheriting the host wall clock.
+    frozen_clock.set('2026-10-31T10:00:00+08:00')
     store = Store(tmp_path / "closed-quote-publication-replay.sqlite3")
     store.set_meta("settings", {"debounce_seconds": 0, "quote_provider": "manual",
-                              "scheduled_research_enabled": False,
+                              "scheduled_research_enabled": True, "news_queries": [],
                               "market_refresh_enabled": False, "forecast_evaluation_enabled": False})
     account = store.save_account(AccountInput(name="受控重放：休市行情发布",
         holdings=[{"symbol": "SZ:002354", "quantity": "1000"},
                   {"symbol": "SZ:159599", "quantity": "1000"}]))
-    quote_at = (datetime.now(TZ) - timedelta(days=1)).replace(hour=15, minute=35, second=0, microsecond=0)
+    quote_at = datetime.fromisoformat('2026-10-30T15:35:00+08:00')
     for security, price in [("SZ:002354", "7.520"), ("SZ:159599", "1.948")]:
         store.put_cache("quotes", security, {"symbol": security, "price": price,
             "as_of": quote_at.isoformat(), "status": "closed", "fresh_for_triggers": False,
@@ -62,15 +65,26 @@ async def test_service_publication_with_closed_quote_baseline_stays_current(tmp_
         previous_recommendation_ids = ids
         assert all(item["price_state"] == "stale" and item["review_status"] == "needs_review"
                    and item["review_followup"] is None for item in suggestions)
-        for _ in range(3):
-            store.review_recommendations(service.quotes())
-            store.dispatch_demands()
+        for _ in range(10):
+            frozen_clock.advance(seconds=1)
+            service.last_recommendation_check = 0
+            await service.tick()
+            if service.forecast_task:
+                await service.forecast_task
+            assert store.job(job['id'])['report_status'] == 'current'
         assert not store.demands(account["id"]) and not store.claim_jobs()
     assert len(runs) == 2
     reopened = Store(store.path)
-    reopened.review_recommendations(Service(reopened).quotes())
+    restarted = Service(reopened, runner=controlled_replay)
+    for _ in range(10):
+        frozen_clock.advance(seconds=1)
+        restarted.last_recommendation_check = 0
+        await restarted.tick()
+        if restarted.forecast_task:
+            await restarted.forecast_task
     assert not reopened.demands(account["id"]) and not reopened.claim_jobs()
     assert reopened.analyses(account["id"])[0]["status"] == "current"
+    assert len(runs) == 2  # no automatic runner calls during either poll series
     # Baseline suppression must not remove the user's explicit review action.
     reopened.retry_recommendation_review(account["id"], next(iter(previous_recommendation_ids)))
     assert len(reopened.claim_jobs()) == 1

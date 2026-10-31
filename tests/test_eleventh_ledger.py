@@ -12,7 +12,7 @@ from app.store import Store, Conflict
 
 
 @pytest.fixture
-def store(tmp_path):
+def store(tmp_path, frozen_clock):
     result = Store(tmp_path / 'ledger.sqlite3', mode='demo')
     result.set_meta('settings', {'debounce_seconds': 0})
     for sid, name, kind in [('SZ:002354', '天娱数科', 'stock'), ('SZ:159599', '东财中证芯片产业ETF', 'etf'),
@@ -141,12 +141,14 @@ def test_invalid_trades_leave_no_entry(store, field, value):
     assert store.account(a['id'])['version'] == 1
 
 
-def test_unknown_cost_and_availability_require_explicit_correction(store):
+def test_unknown_cost_and_availability_require_explicit_correction(store, frozen_clock):
+    frozen_clock.set('2026-10-30T09:00:00+08:00')
     a = account(store, holdings=[{'symbol': 'SZ:002354', 'quantity': '1000'}])
     assert store.account(a['id'])['ledger']['positions']['SZ:002354']['total_cost'] is None
     with pytest.raises(ValueError, match='可卖数量不足'):
         store.record_trade(a['id'], trade(store, a, side='sell'))
     corrected = store.correct_snapshot(a['id'], {'operation_id': 'correct-opening-1', 'expected_version': 1, 'reason': '模拟期初交割单；可卖数量已确认', 'holdings': [{'symbol': 'SZ:002354', 'quantity': '1000', 'cost_price': None, 'available_quantity': '1000'}]})
+    frozen_clock.set('2026-10-30T10:00:00+08:00')
     result = store.record_trade(a['id'], trade(store, a, side='sell', traded_at='2026-10-30T10:00:00+08:00'))
     assert result['entry']['realized_pnl'] is None
     assert store.ledger(a['id'])['summary']['realized_pnl'] is None
@@ -271,9 +273,11 @@ def test_unknown_product_board_and_invalid_sell_quantities(store):
         store.record_trade(a['id'], trade(store, a, side='sell', quantity='101', operation_id='odd-sell-test', traded_at='2026-10-27T10:00:00+08:00'))
 
 
-def test_odd_lot_all_sale_and_tick_rounding_source(store):
+def test_odd_lot_all_sale_and_tick_rounding_source(store, frozen_clock):
+    frozen_clock.set('2026-10-30T09:00:00+08:00')
     a = account(store, holdings=[{'symbol': 'SZ:159599', 'quantity': '101', 'cost_price': '2'}])
     store.correct_snapshot(a['id'], {'operation_id': 'odd-initial-correction', 'expected_version': 1, 'reason': '已核对可卖余额', 'holdings': [{'symbol': 'SZ:159599', 'quantity': '101', 'cost_price': '2', 'available_quantity': '101'}]})
+    frozen_clock.set('2026-10-30T10:00:00+08:00')
     result = store.record_trade(a['id'], trade(store, a, symbol='SZ:159599', side='sell', quantity='101', price='2.501', traded_at='2026-10-30T10:00:00+08:00'))
     assert result['entry']['gross_raw'] == '252.601'
     assert result['entry']['gross'] == '252.60'

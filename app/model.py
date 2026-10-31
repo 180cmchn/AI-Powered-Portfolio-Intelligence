@@ -18,6 +18,7 @@ import secrets
 import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable
+from .clock import now_datetime
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
@@ -230,7 +231,7 @@ class ModelClient:
 
     def _native_observation(self, status: str, **details: Any) -> dict:
         result = {"status": status, "fingerprint": native_search_fingerprint(self.config),
-                  "checked_at": datetime.now(timezone.utc).isoformat(), **details}
+                  "checked_at": now_datetime(timezone.utc).isoformat(), **details}
         _NATIVE_CAPABILITIES[result["fingerprint"]] = result
         return copy.deepcopy(result)
 
@@ -668,7 +669,7 @@ class ModelClient:
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None,
                            "error_code": None, "cancelled_by": None,
-                           "started_at": datetime.now(timezone.utc).isoformat(),
+                           "started_at": now_datetime(timezone.utc).isoformat(),
                            "timeout_policy": policy,
                            "queue_wait_ms": round((started_mono - queue_started) * 1000 + (session.queue_wait_ms if session else 0), 2),
                            "deadline_remaining_ms": {key: round(max(0, value - started_mono) * 1000, 2) for key, value in deadlines.items()},
@@ -748,7 +749,7 @@ class ModelClient:
 
             def finish_observation():
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
-                                   finished_at=datetime.now(timezone.utc).isoformat())
+                                   finished_at=now_datetime(timezone.utc).isoformat())
                 observation['stream_max_idle_ms'] = max(observation['stream_max_idle_ms'],
                     round((time.monotonic() - last_progress) * 1000, 2))
 

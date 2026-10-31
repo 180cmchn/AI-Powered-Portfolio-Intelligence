@@ -13,7 +13,7 @@ import time
 import uuid
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from datetime import datetime
+from .clock import now_datetime
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 from zoneinfo import ZoneInfo
@@ -596,7 +596,7 @@ class ResearchRuntime:
         event = {"sequence": len(self.events) + 1, "type": kind, "agent_id": agent_id,
                  "parent_id": None if agent_id == "manager" else "manager",
                  "task_id": self.task_id, "account_id": self.account_id, "input_version": self.input_version,
-                 "timestamp": datetime.now(SHANGHAI).isoformat(), "payload": payload}
+                 "timestamp": now_datetime(SHANGHAI).isoformat(), "payload": payload}
         event = json.loads(json.dumps(event, ensure_ascii=False, default=str, allow_nan=False))
         self.events.append(event)
         async with self.condition:
@@ -1238,7 +1238,7 @@ class ResearchRuntime:
         signature = json.dumps(checkpoint, sort_keys=True, default=str)
         if signature != self.checkpoint_signature:
             self.checkpoint_signature = signature
-            checkpoint["created_at"] = datetime.now(SHANGHAI).isoformat()
+            checkpoint["created_at"] = now_datetime(SHANGHAI).isoformat()
             self.synthesis_checkpoint = checkpoint
             if hasattr(self.tools, "save_checkpoint"):
                 await self.tools.save_checkpoint(copy.deepcopy(checkpoint))

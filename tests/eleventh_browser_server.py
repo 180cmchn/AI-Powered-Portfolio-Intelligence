@@ -1,11 +1,16 @@
 """Production app, isolated SQLite, explicit directory/results; no model worker."""
 import json, os, socket, sys
+from datetime import datetime
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(root))
 directory=Path(sys.argv[1]).resolve()
 os.environ.update(APP_DB_PATH=str(directory/'eleventh.sqlite3'),APP_MODE='live',PYTHON_DOTENV_DISABLED='1',MODEL_NAME='',MODEL_KEY_ENV='ELEVENTH_UNUSED_KEY',MODEL_BASE_URL='https://fixture.invalid/v1')
 from app.main import create_app
+from app import clock
+# A single explicit wall-clock fixture covers account creation and every ledger
+# operation in this subprocess; no OS clock or production endpoint is modified.
+clock._utc_now=lambda: datetime.fromisoformat('2026-10-30T16:00:00+08:00')
 from app.domain import AccountInput, now
 from tests.helpers_sixth import configure_test_team
 import uvicorn

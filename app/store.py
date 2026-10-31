@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from .clock import now_datetime
 from datetime import datetime, timedelta
 from pathlib import Path
 import hashlib
@@ -367,7 +368,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         # A replaced execution cannot erase the business work it was assigned.
         db.execute("UPDATE research_demands SET state='pending',job_id=NULL,input_version=?,detail='moved to latest account input',updated_at=? WHERE account_id=? AND state IN ('assigned','pending')", (account["version"], stamp, account["id"]))
         db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account["id"],))
-        due = (datetime.now(TZ) + timedelta(seconds=delay)).isoformat()
+        due = (now_datetime(TZ) + timedelta(seconds=delay)).isoformat()
         db.execute("INSERT INTO jobs(id,account_id,input_version,reason,state,mode,due_at,created_at,updated_at,event_key) VALUES(?,?,?,?,'queued',?,?,?,?,?)",
                    (job_id, account["id"], account["version"], reason, self.mode, due, stamp, stamp, event_key))
         db.execute("UPDATE jobs SET task_metadata=?,stage='waiting' WHERE id=?", (dumps({**self.new_task_metadata(db, account, reason),'planned_at':due}), job_id))

@@ -306,7 +306,13 @@ try {
   assert.equal(await page.getByText('过时证券结果 · etf',{exact:true}).count(),0);
   await page.unroute('**/api/securities?*');
   await Promise.all(gates.map((gate,index)=>waitGate(gate.finished,`gate ${index+1} finished`)));
-  const raceLifecycle=await page.evaluate(()=>window.__guanlanDiagnostics.snapshot());
+  // A normal four-second poll may begin after the gated requests finish. Take
+  // the diagnostic snapshot atomically at an idle boundary without stopping
+  // polling or mistaking that legitimate new read for a leaked old request.
+  const raceLifecycle=await (await page.waitForFunction(()=>{
+    const snapshot=window.__guanlanDiagnostics.snapshot();
+    return snapshot.requests.length===0 && snapshot.operations.length===0 ? snapshot : false;
+  })).jsonValue();
   assert.ok(raceLifecycle.counts.request_cancelled>0);
   assert.equal(raceLifecycle.counts.read_timeout,1,'only the explicitly injected timeout is allowed');
   assert.ok(raceLifecycle.events.some(x=>x.event==='request_cancelled' && x.reason==='read_timeout'));

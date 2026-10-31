@@ -1,8 +1,12 @@
 name: Local application tests
 on: [push, pull_request]
+env:
+  PYTHON_DOTENV_DISABLED: '1'
+  QUOTE_PROVIDER: manual
 jobs:
-  tests:
+  python:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -11,49 +15,45 @@ jobs:
           cache: pip
       - run: python -m pip install -r requirements.txt
       - run: python -m pytest -q
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [iteration, production, seventh, ninth, tenth, eleventh, twelfth, twelfth-select]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Browser fixture group
-        id: browser-fixtures
-        continue-on-error: true
-        run: npm run test:browser:iteration
-      - name: Browser production group
-        id: browser-production
-        continue-on-error: true
-        run: npm run test:browser:production
-      - name: Browser forecast group
-        id: browser-forecast
-        continue-on-error: true
-        run: npm run test:browser:seventh
-      - name: Browser daily configuration group
-        id: browser-ninth
-        continue-on-error: true
-        run: npm run test:browser:ninth
-      - name: Browser task/report interaction group
-        id: browser-tenth
-        continue-on-error: true
-        run: npm run test:browser:tenth
-      - name: Browser ledger and editor group
-        id: browser-eleventh
-        continue-on-error: true
-        run: npm run test:browser:eleventh
-      - name: Require all browser groups
-        if: always()
+      - name: Browser group
         env:
-          FIXTURES: ${{ steps.browser-fixtures.outcome }}
-          PRODUCTION: ${{ steps.browser-production.outcome }}
-          FORECAST: ${{ steps.browser-forecast.outcome }}
-          NINTH: ${{ steps.browser-ninth.outcome }}
-          TENTH: ${{ steps.browser-tenth.outcome }}
-          ELEVENTH: ${{ steps.browser-eleventh.outcome }}
-        run: test "$FIXTURES" = success && test "$PRODUCTION" = success && test "$FORECAST" = success && test "$NINTH" = success && test "$TENTH" = success && test "$ELEVENTH" = success
+          PYTHON: python
+        run: npm run test:browser:${{ matrix.group }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: browser-evidence
+          name: browser-${{ matrix.group }}-evidence
           path: test-results/
           if-no-files-found: ignore
+  tests:
+    # Any failure, cancellation or skip remains a failed required check.
+    if: always()
+    needs: [python, browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require Python and every browser group
+        env:
+          PYTHON_RESULT: ${{ needs.python.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+        run: test "$PYTHON_RESULT" = success && test "$BROWSER_RESULT" = success

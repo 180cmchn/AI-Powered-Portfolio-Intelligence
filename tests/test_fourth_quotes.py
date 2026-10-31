@@ -15,11 +15,7 @@ def reset_market_cache():
 
 
 def freeze(monkeypatch, value):
-    class Clock(datetime):
-        @classmethod
-        def now(cls, tz=None):
-            return datetime.fromisoformat(value).astimezone(tz)
-    monkeypatch.setattr(providers, "datetime", Clock)
+    monkeypatch.setattr("app.clock._utc_now", lambda: datetime.fromisoformat(value))
 
 
 def mock_client(monkeypatch, handler):

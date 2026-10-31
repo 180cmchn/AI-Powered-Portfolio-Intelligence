@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from .clock import now_datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
@@ -12,7 +12,7 @@ TZ = ZoneInfo("Asia/Shanghai")
 
 
 def now() -> str:
-    return datetime.now(TZ).isoformat()
+    return now_datetime(TZ).isoformat()
 
 
 def decimal_text(value, *, integer=False, nullable=False) -> str | None:

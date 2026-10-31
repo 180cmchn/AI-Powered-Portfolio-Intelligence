@@ -12,7 +12,7 @@ from app.store import Store
 
 
 @pytest.fixture
-def api(tmp_path):
+def api(tmp_path, frozen_clock):
     app = create_app(tmp_path / 'ledger-http.sqlite3', worker=False)
     store = app.state.store
     store.set_meta('settings', {'quote_provider': 'manual', 'debounce_seconds': 0,

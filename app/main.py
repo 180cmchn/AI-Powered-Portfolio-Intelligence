@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from .clock import now_datetime
 from datetime import datetime
 import mimetypes
 import os
@@ -543,7 +544,7 @@ def create_app(path=None, mode=None, worker=True, runner=None):
                 return {'status': 'configuration_error', 'note': str(exc), 'checked_at': now()}
             cached = native_search_status(config, store.meta('native_search_capability'))
             if cached.get('checked_at'):
-                age = (datetime.now(TZ) - datetime.fromisoformat(cached['checked_at'])).total_seconds()
+                age = (now_datetime(TZ) - datetime.fromisoformat(cached['checked_at'])).total_seconds()
                 if 0 <= age < 600:
                     return {**cached, 'cache_hit': True}
             result = await probe_native_search(config)
@@ -552,7 +553,7 @@ def create_app(path=None, mode=None, worker=True, runner=None):
 
     @app.post("/api/backup")
     async def backup():
-        filename = f"{mode}-{datetime.now(TZ).strftime('%Y%m%d-%H%M%S-%f')}.sqlite3"
+        filename = f"{mode}-{now_datetime(TZ).strftime('%Y%m%d-%H%M%S-%f')}.sqlite3"
         destination = ROOT / "data" / "backups" / filename
         store.backup(destination)
         return {"filename": filename, "path": str(destination), "message": "恢复请先停止服务，再使用 scripts/restore.py"}

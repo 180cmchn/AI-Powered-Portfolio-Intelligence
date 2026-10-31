@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 import asyncio
+from .clock import now_datetime
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation, localcontext
 import hashlib
@@ -90,7 +91,7 @@ def _digest(obj):
 
 
 def _local(at=None):
-    at = at or datetime.now(SHANGHAI)
+    at = at or now_datetime(SHANGHAI)
     if isinstance(at, str):
         at = datetime.fromisoformat(at)
     return at.replace(tzinfo=SHANGHAI) if at.tzinfo is None else at.astimezone(SHANGHAI)

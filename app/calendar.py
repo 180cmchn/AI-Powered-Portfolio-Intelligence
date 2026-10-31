@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import hashlib
+from .clock import now_datetime
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -78,7 +79,7 @@ def is_after_close(at: datetime, calendar_path=None) -> bool:
 
 
 def market_state(now: datetime | None = None, calendar_path: str | Path | None = None) -> dict:
-    now = now or datetime.now(SHANGHAI)
+    now = now or now_datetime(SHANGHAI)
     if now.tzinfo is None:
         now = now.replace(tzinfo=SHANGHAI)
     local = now.astimezone(SHANGHAI)

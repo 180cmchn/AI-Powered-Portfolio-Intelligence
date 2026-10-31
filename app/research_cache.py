@@ -1,6 +1,7 @@
 """Bounded reuse of public raw historical snapshots, never model extractions."""
 from __future__ import annotations
 
+from .clock import now_datetime
 from datetime import datetime
 import json
 
@@ -24,7 +25,7 @@ def reusable_history(store, method, arguments, config):
         records = db.execute("""SELECT m.body FROM material_catalog c JOIN materials m ON m.id=c.material_id
             WHERE c.scope='public' AND json_extract(c.metadata,'$.symbol')=?
             AND json_extract(c.metadata,'$.source_title')=? ORDER BY m.created_at DESC LIMIT 50""", (identity, method)).fetchall()
-    stamp = datetime.now(SHANGHAI)
+    stamp = now_datetime(SHANGHAI)
     provider = config.get('research_provider', config.get('quote_provider', 'eastmoney'))
     for record in records:
         material = json.loads(record[0])

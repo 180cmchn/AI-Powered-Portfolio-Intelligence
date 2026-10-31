@@ -1,5 +1,5 @@
 """Read-only process-start provenance; never assigns current HEAD to an old process."""
-from datetime import datetime
+from .clock import now_datetime
 import hashlib
 import os
 from pathlib import Path
@@ -71,7 +71,7 @@ def startup_version(store, static=None):
             return subprocess.check_output(['git', *args], cwd=root, text=True, stderr=subprocess.DEVNULL, timeout=2).strip()
         except (OSError, subprocess.SubprocessError):
             return None
-    return {'started_at': datetime.now(SHANGHAI).isoformat(), 'commit_at_start': git('rev-parse', 'HEAD'),
+    return {'started_at': now_datetime(SHANGHAI).isoformat(), 'commit_at_start': git('rev-parse', 'HEAD'),
             'api_contract': API_CONTRACT, 'instance_id': os.getenv('APP_INSTANCE_ID') or uuid.uuid4().hex,
             'pid': os.getpid(), 'port': int(os.getenv('APP_PORT', '8765')),
             'project_path': str(root), 'database_path': str(store.path.resolve()),

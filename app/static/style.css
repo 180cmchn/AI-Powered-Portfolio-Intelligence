@@ -738,6 +738,61 @@ tr:last-child td {
   color: #9ba69b;
   line-height: 1.65;
 }
+
+/* Fixed-choice controls use the same field metrics. The popup is a top-layer
+   popover (fixed portal fallback), so cards never clip its options. */
+.choice-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #dce5dc;
+  border-radius: 6px;
+  background: #fff;
+  color: #31493b;
+  padding: 9px 11px;
+  text-align: left;
+  font: inherit;
+}
+.choice-trigger[aria-expanded="true"] { border-color: var(--teal); }
+.choice-trigger:disabled { cursor: not-allowed; }
+.choice-chevron { width: 16px; text-align: center; color: #75838a; }
+.choice-popup {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #dce5dc;
+  border-radius: 6px;
+  background: #fff;
+  color: #31493b;
+  font: 12px/1.55 Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  box-shadow: 0 5px 18px #172b3324;
+  z-index: 10000;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.choice-popup::backdrop { background: transparent; }
+.choice-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  min-height: 36.6px;
+  cursor: pointer;
+}
+.choice-option[aria-selected="true"] { color: #1b6659; font-weight: 600; }
+.choice-option:hover { background: #f0f4f1; }
+.choice-option.is-active { outline: 2px solid #71ac9d; outline-offset: -2px; background: #e7f3ee; }
+.choice-option[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.choice-check { width: 16px; flex: 0 0 16px; text-align: center; visibility: hidden; }
+.choice-option[aria-selected="true"] .choice-check { visibility: visible; }
+.ledger-version-notice { margin-bottom: 16px; font-size: 12px; }
+.job-events .event pre { white-space: pre; word-break: normal; overflow-wrap: normal; }
+.event-updates { position: sticky; bottom: 0; padding: 8px 12px; background: #f5f8f0; border: 1px solid #dbe4d4; border-radius: 6px; }
 .span-two {
   grid-column: 1/-1;
 }

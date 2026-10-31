@@ -7,6 +7,7 @@ quotes and model outputs never participate in a commit.
 from __future__ import annotations
 
 from copy import deepcopy
+from .clock import now_datetime
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
 from functools import wraps
@@ -207,7 +208,7 @@ class LedgerStore:
         db.execute('INSERT INTO ledger_accounts VALUES(?,?)', (account_id, stamp))
         plan = default_plan()
         db.execute('INSERT INTO fee_plans VALUES(?,?,?,?)', (account_id, 1, dump(plan), stamp))
-        self._replace_ledger_positions(db, account_id, holdings, source=source)
+        self._replace_ledger_positions(db, account_id, holdings, source=source, effective_on=stamp[:10])
         body = {'id': entry_id, 'kind': 'opening', 'source': source, 'source_at': row['updated_at'],
                 'recorded_at': stamp, 'account_id': account_id, 'account_name': row['name'], 'cash': row['cash'], 'holdings': holdings,
                 'reason': '原快照期初基线；不推测历史交易，不追溯扣款，不推测可卖日期',
@@ -217,7 +218,7 @@ class LedgerStore:
             (uid(), account_id, entry_id, 'opening', row['cash'], row['cash'], stamp, dump({'source': source, 'source_at': row['updated_at'], 'external_flow': True})))
 
     @accounting_precision
-    def _replace_ledger_positions(self, db, account_id, holdings, source):
+    def _replace_ledger_positions(self, db, account_id, holdings, source, effective_on):
         db.execute('DELETE FROM ledger_positions WHERE account_id=?', (account_id,))
         for holding in holdings:
             qty = dec(holding['quantity'], scale=0)
@@ -230,12 +231,14 @@ class LedgerStore:
                     raise ValueError('期初可卖数量不得超过持有数量')
             lots = []
             if sellable:
-                lots.append({'quantity': text(sellable), 'sellable_on': now()[:10], 'source': source})
+                lots.append({'quantity': text(sellable), 'sellable_on': effective_on, 'source': source})
             if qty - (sellable or 0):
                 lots.append({'quantity': text(qty - (sellable or 0)), 'sellable_on': None, 'source': source})
             body = {'symbol': holding['symbol'], 'quantity': text(qty), 'total_cost': total,
                     'cost_basis': 'known_opening_cost' if known else 'empty_position' if not qty else 'unknown_opening_cost', 'lots': lots,
-                    'fees_included_in_cost': False, 'source': source}
+                    'fees_included_in_cost': False, 'source': source,
+                    'availability_effective_on': effective_on,
+                    'availability_timezone': 'Asia/Shanghai'}
             db.execute('INSERT INTO ledger_positions VALUES(?,?,?)', (account_id, holding['symbol'], dump(body)))
 
     def fee_plan(self, account_id, db=None):
@@ -352,7 +355,7 @@ class LedgerStore:
         if mode not in ('simulated', 'historical'):
             raise ValueError('请选择模拟成交或历史补录；本应用不会向交易所下单')
         at = timestamp(payload.get('traded_at'))
-        if at > datetime.now(TZ) + timedelta(minutes=1):
+        if at > now_datetime(TZ) + timedelta(minutes=1):
             raise ValueError('不能记录未来成交')
         day = at.date().isoformat()
         if day < plan['effective_from']:
@@ -379,7 +382,10 @@ class LedgerStore:
             if qty > old_qty:
                 raise ValueError('卖出数量超过持有量，禁止做空')
             if qty > sellable:
-                raise ValueError(f'可卖数量不足：当前可卖{sellable}，含T+1未解锁或期初可卖依据未知；请勿推测历史买入日期')
+                effective_on = position.get('availability_effective_on')
+                correction = (f'；当前期初/校正可卖量从上海日期 {effective_on} 起生效，不证明此前日期的可卖状态'
+                              if effective_on else '')
+                raise ValueError(f'可卖数量不足：成交日期 {day} 当前可卖{sellable}，含T+1未解锁或期初可卖依据未知{correction}；请勿推测历史买入日期')
             # One odd-lot remainder must be sold in one go, not split repeatedly.
             if int(qty) % 100 and qty != sellable:
                 raise ValueError('零股/零份须一次卖出全部当前可卖余量')
@@ -559,6 +565,8 @@ class LedgerStore:
             return old
         account = self.account(account_id, db)
         self._version(account, payload)
+        if any(key in payload for key in ('effective_at', 'effective_on', 'availability_effective_on')):
+            raise ValueError('期初/校正仅支持当前上海日期生效，不支持指定历史生效日期；实际录入时间单独保留')
         if not str(payload.get('reason', '')).strip():
             raise ValueError('期初/校正必须填写依据；这不是交易，不按现价扣款')
         before = self._positions(account_id, db)
@@ -575,10 +583,13 @@ class LedgerStore:
                 dec(h['cost_price'])
         cash_value = payload.get('cash', account['cash'])
         cash = money(dec(cash_value, scale=2)) if cash_value is not None else None
-        self._replace_ledger_positions(db, account_id, holdings, source='explicit_correction')
+        stamp = now()
+        self._replace_ledger_positions(db, account_id, holdings, source='explicit_correction', effective_on=stamp[:10])
         after = self._positions(account_id, db)
         cash_effect = text(Decimal(cash) - Decimal(account['cash'])) if cash is not None and account['cash'] is not None else None
         entry = {'kind': 'correction', 'cash_before': account['cash'], 'cash_after': cash, 'cash_effect': cash_effect,
+                 'availability_effective_on': stamp[:10], 'availability_timezone': 'Asia/Shanghai',
+                 'availability_semantics': 'current_shanghai_date_not_historical_proof',
                  'external_flow': True, 'before_positions': before, 'after_positions': after,
                  'before_holdings': account['holdings'], 'after_holdings': holdings,
                  'reason': payload['reason'], 'actor': 'local_user', 'historical_pnl_rewritten': False,

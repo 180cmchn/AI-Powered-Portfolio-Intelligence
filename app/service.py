@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from .clock import now_datetime
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 import logging
@@ -273,7 +274,7 @@ class Service:
 
     def quotes(self):
         quotes = self.store.cache("quotes")
-        stamp = datetime.now(TZ)
+        stamp = now_datetime(TZ)
         for quote in quotes.values():
             if quote.get('status') in ('ok', 'closed', 'stale') and quote.get('as_of'):
                 quote.update(providers.quote_time_state(quote['as_of'], self.store.settings(), stamp=stamp,
@@ -316,7 +317,7 @@ class Service:
                         previous = old.get(s, {})
                         fetched = previous.get("last_attempt_at") or previous.get("fetched_at") or previous.get("as_of")
                         try:
-                            reusable = fetched and 0 <= (datetime.now(TZ) - datetime.fromisoformat(fetched)).total_seconds() < cfg["quote_cache_seconds"]
+                            reusable = fetched and 0 <= (now_datetime(TZ) - datetime.fromisoformat(fetched)).total_seconds() < cfg["quote_cache_seconds"]
                         except (TypeError, ValueError):
                             reusable = False
                         if reusable and not force:
@@ -339,7 +340,7 @@ class Service:
                                 for acc in self.store.accounts():
                                     if any(h["symbol"] == s for h in acc["holdings"]):
                                         # Event deduplication and one-minute debounce avoid price-tick LLM loops.
-                                        bucket = int(time.time() // 900)
+                                        bucket = int(now_datetime(TZ).timestamp() // 900)
                                         self.store.request_analysis(acc["id"], "price_change", f"price:{acc['id']}:{s}:{bucket}", reason=f"price_change:{s}", delay=2)
                             elif baseline == previous["price"]:
                                 self.store.set_meta(f"price_baseline:{s}", baseline)
@@ -488,7 +489,7 @@ class Service:
         cfg = self.store.settings()
         if self.store.mode != "live" or not cfg["news_queries"] or not cfg["model_native_search"]:
             return {'state': 'disabled'}
-        bucket = int(time.time() // (cfg['news_interval_minutes'] * 60))
+        bucket = int(now_datetime(TZ).timestamp() // (cfg['news_interval_minutes'] * 60))
         demand = self.store.request_analysis(None, 'news_observation', f'news-observation:{bucket}',
             reason='公开信息观察：' + '；'.join(cfg['news_queries']) + '。自行决定查询与补查，使用本模型原生联网工具。')
         self.store.set_meta('last_news_scan', {'at': now(), 'state': 'queued', 'demand_id': demand['id']})
@@ -671,7 +672,7 @@ class Service:
                 'recovery': recovery})
 
     async def scheduler_tick(self, stamp=None):
-        stamp = stamp or datetime.now(TZ)
+        stamp = stamp or now_datetime(TZ)
         cfg = self.store.settings()
         state = market_state(stamp, cfg.get('calendar_path'))
         # Market maintenance and due prediction scoring are independent of LLM research.
@@ -688,7 +689,7 @@ class Service:
             async def forecast_cycle():
                 batches = await self.store.forecast_tick(cfg, at=stamp, create_batches=cfg.get('scheduled_research_enabled', True))
                 for batch in batches['batches']:
-                    self.store.enqueue_forecast_batch(batch['id'], at=max(stamp, datetime.now(TZ)))
+                    self.store.enqueue_forecast_batch(batch['id'], at=max(stamp, now_datetime(TZ)))
             self.forecast_task = self.spawn(forecast_cycle())
         elif not cfg.get('forecast_evaluation_enabled', True) and not cfg.get('scheduled_research_enabled', True) and (not self.last_forecast_tick or stamp.timestamp() - self.last_forecast_tick >= 60):
             # A pause is a visible run fact even when no network work is enabled.
@@ -752,7 +753,7 @@ class Service:
 
     async def tick(self):
         current = time.monotonic()
-        wall = time.time()
+        wall = now_datetime(TZ).timestamp()
         if self.last_tick and (current - self.last_tick > 180 or wall - self.last_wall_tick > 180):
             self.store.set_meta("last_resume", now())
             cfg = self.store.settings()
@@ -842,7 +843,7 @@ class Service:
         self.store.recover(config_ready=self.model_configured())
         last = self.store.meta("last_quote_refresh")
         try:
-            expired = not last or (datetime.now(TZ) - datetime.fromisoformat(last)).total_seconds() > self.store.settings()["quote_stale_seconds"]
+            expired = not last or (now_datetime(TZ) - datetime.fromisoformat(last)).total_seconds() > self.store.settings()["quote_stale_seconds"]
         except (ValueError, TypeError):
             expired = True
         if expired and self.store.settings().get('scheduled_research_enabled', True):

@@ -1,6 +1,7 @@
 """Track model-authored suggestions; code evaluates only explicit numeric conditions."""
 from __future__ import annotations
 
+from .clock import now_datetime
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import hashlib
@@ -375,7 +376,7 @@ class RecommendationStore:
     def review_recommendations(self, quotes=None, stamp=None, material_ids=None, material_account_ids=None):
         """Observe price independently of judgment validity; persist follow-up in the same transaction."""
         from .store import loads
-        stamp = stamp or datetime.now(TZ)
+        stamp = stamp or now_datetime(TZ)
         quotes = quotes or {}
         changed = []
         with self.connect() as db:

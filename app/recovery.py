@@ -1,4 +1,5 @@
 """Durable visible research checkpoints, never opaque model continuation state."""
+from .clock import now_datetime
 from datetime import datetime
 import hashlib
 import json
@@ -412,7 +413,7 @@ class RecoveryStore:
                 ORDER BY created_at DESC LIMIT 10''',
                 (job.get('account_id') or '', job.get('input_version'), context['universe_version'])).fetchall()
             for row in rows:
-                age = (datetime.now(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
+                age = (now_datetime(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
                 if row['guard'] != guard or not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
                     continue
                 if row['resume_count'] >= 2:
@@ -469,7 +470,7 @@ class RecoveryStore:
         result = {'checkpoint_job_id': job['id'], 'eligible': False,
                   'partial_research': bool(body.get('partial_research'))}
         config = self._checkpoint_config(job, context or {})
-        age = (datetime.now(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
+        age = (now_datetime(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
         invalid = []
         if not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
             invalid.append('expired')

@@ -15,6 +15,7 @@ import ipaddress
 import os
 import re
 import socket
+from .clock import now_datetime
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -33,7 +34,7 @@ EASTMONEY_FIELDS = "f43,f57,f58,f59,f60,f86,f170,f127"
 
 
 def now_iso() -> str:
-    return datetime.now(SHANGHAI).isoformat()
+    return now_datetime(SHANGHAI).isoformat()
 
 
 def normalize_symbol(symbol: str) -> str:
@@ -150,7 +151,7 @@ def _last_completed_session(stamp: datetime, calendar_path=None) -> datetime | N
 def quote_time_state(as_of: str | None, config: dict, *, stamp: datetime | None = None,
                      source_precision: str = "timestamp") -> dict:
     """Re-evaluate cached timestamps without presenting a close as a live tick."""
-    stamp = stamp or datetime.now(SHANGHAI)
+    stamp = stamp or now_datetime(SHANGHAI)
     calendar = market_state(stamp, config.get("calendar_path"))
     result = {"status": "unknown_time", "delay_seconds": None,
               "market_phase": calendar["phase"], "market_session": calendar["session"],
@@ -258,7 +259,7 @@ class MarketProvider:
 
     async def _closed_quote(self, symbol: str) -> dict | None:
         """Same public provider, unadjusted daily close; never an intraday feed."""
-        stamp = datetime.now(SHANGHAI)
+        stamp = now_datetime(SHANGHAI)
         calendar = market_state(stamp, self.config.get("calendar_path"))
         if self.provider != "eastmoney" or calendar["session"] not in ("after_close", "non_trading_day", "pre_open", "lunch_break"):
             return None
@@ -832,7 +833,7 @@ def _validated_bars(rows: list[dict], first: str, last: str) -> list[dict]:
     return sorted(valid, key=lambda row: row["time"])
 
 def _date_range(start: str | None, end: str | None) -> tuple[str, str]:
-    today = datetime.now(SHANGHAI).date()
+    today = now_datetime(SHANGHAI).date()
     def parse(value, default):
         if value is None:
             return default

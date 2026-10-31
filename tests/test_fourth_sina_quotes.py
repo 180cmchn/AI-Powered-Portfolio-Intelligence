@@ -16,12 +16,8 @@ def body(symbol="sh600519", *, price="1349.980", date="2026-10-26", clock="10:00
 
 
 @pytest.fixture(autouse=True)
-def controlled_clock(monkeypatch):
-    class Clock(datetime):
-        @classmethod
-        def now(cls, tz=None):
-            return datetime.fromisoformat("2026-10-26T10:00:30+08:00").astimezone(tz)
-    monkeypatch.setattr(providers, "datetime", Clock)
+def controlled_clock(frozen_clock):
+    frozen_clock.set("2026-10-26T10:00:30+08:00")
 
 
 def install(monkeypatch, content):
