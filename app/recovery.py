@@ -378,6 +378,9 @@ class RecoveryStore:
         from .store import dumps
         from .config import model_config_summary
         deliveries = self.checkpoint_deliveries(job['id'])
+        # Original receipts retain their source task/actor. They are provenance
+        # for restored reports, never invented current-manager source reads.
+        deliveries = list({item['id']: item for item in [*body.get('restored_material_deliveries', []), *deliveries]}.values())
         verified = self.checkpoint_material_guard(body.get('material_ids', []), job.get('account_id'))
         report_deliveries = self.checkpoint_report_deliveries(job['id'])
         coverage = self.checkpoint_source_coverage(body, verified, deliveries, report_deliveries)
@@ -400,7 +403,7 @@ class RecoveryStore:
                 (job['id'], job.get('account_id') or '', job.get('input_version'),
                  context['universe_version'], dumps(body), body['covered_event_scope'], now()))
 
-    def reusable_synthesis_checkpoint(self, job, context):
+    def reusable_synthesis_checkpoint(self, job, context, *, continue_research=False):
         from .store import loads
         guard = self.research_guard(context)
         config = self._checkpoint_config(job, context)
@@ -413,6 +416,9 @@ class RecoveryStore:
                 ORDER BY created_at DESC LIMIT 10''',
                 (job.get('account_id') or '', job.get('input_version'), context['universe_version'])).fetchall()
             for row in rows:
+                # Continuing incomplete research is an explicit retry of that
+                # task, never an automatic scheduler decision to spend again.
+                partial_allowed = bool(continue_research and job.get('parent_job_id') == row['job_id'])
                 age = (now_datetime(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
                 if row['guard'] != guard or not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
                     continue
@@ -428,13 +434,15 @@ class RecoveryStore:
                 if current_materials != verified:
                     continue
                 body = self.reassess_checkpoint_coverage(body)
-                if body.get('recovery_state') != 'synthesis_ready':
+                ready = body.get('recovery_state') == 'synthesis_ready'
+                if not ready and not (partial_allowed and self._has_completed_research(body)):
                     continue
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=resume_count+1 WHERE job_id=?', (row['job_id'],))
                 from .config import model_config_summary
                 current = context.get('model_config') or model_config_summary(config)
                 previous = body.get('model_config')
                 return {**body, 'checkpoint_job_id': row['job_id'],
+                        'recovery_mode': 'synthesis_only' if ready else 'continue_research',
                         'configuration_relation': {'strategy': 'reuse_visible_research_current_task_config',
                             'previous': previous, 'current': current,
                             'previous_team_snapshot': body.get('team_snapshot'),
@@ -443,6 +451,13 @@ class RecoveryStore:
                             'note': '复用仍有效的可见研究；汇总使用本次任务配置，旧任务能力观测不作本次证明。'},
                         'checkpoint_created_at': row['created_at'], 'resume_attempt': row['resume_count'] + 1}
         return None
+
+    @staticmethod
+    def _has_completed_research(body):
+        # A partial HTTP response is never stored here. Reports and calculations
+        # were committed only after their completed tool/terminal transitions.
+        return bool(body.get('reports') or body.get('calculations') or any(
+            item.get('body', {}).get('delivered_content') for item in body.get('material_deliveries', [])))
 
     def reassess_checkpoint_coverage(self, body):
         """Read-only correction of unused-link metadata coverage; no new evidence."""
@@ -497,7 +512,9 @@ class RecoveryStore:
                     'note': '检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究'}
         if body.get('recovery_state') != 'synthesis_ready':
             return {**result, 'state': 'needs_research',
-                    'note': '仅有部分成果，证据或报告交付范围不足；需补充研究，不能承诺仅汇总恢复'}
+                    'continue_eligible': bool(context and self._has_completed_research(body)),
+                    'recovery_mode': 'continue_research' if self._has_completed_research(body) else None,
+                    'note': '仅有部分成果；明确重试时优先带入仍有效的已完成成果，按缺口继续研究，可能产生新的模型与联网费用；不能承诺仅汇总恢复'}
         if not context:
             return {**result, 'state': 'requires_revalidation',
                     'note': '存在汇总候选检查点；尚未核对当前完整输入，重试时重新验证资格'}
@@ -513,6 +530,7 @@ class RecoveryStore:
         original = loads(row['body']) if row else {}
         saved = self.reassess_checkpoint_coverage(original) if row else {}
         return {'available': bool(row), **({key: row[key] for key in ('created_at', 'resume_count')} if row else {}),
+                'completed_research_available': self._has_completed_research(saved),
                 'saved_recovery_state': original.get('recovery_state', 'legacy_unknown'),
                 'recovery_state': saved.get('recovery_state', 'legacy_unknown'), 'source_coverage': saved.get('source_coverage', {}),
                 'report_access': [{key: item['body'].get(key) for key in ('report_id', 'source_agent_id',

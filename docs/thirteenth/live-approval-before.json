@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "state": "approval_required_not_started",
+    "real_model_http_requests": 0,
+    "business_jobs_executed": 0,
+    "reports": 0,
+    "structured_predictions": 0,
+    "evaluations": 0,
+    "automatic_tasks": 0,
+    "aggregate_http_cap": 40,
+    "provider": "https://api.xxyapi.com/v1",
+    "protocol": "responses",
+    "source_sha256": "8d2767d75d8803a2f2ae73725b5620d00e3c5f66f8a8372fa0cbe92d4c30247e",
+    "approval_review": "Rejected before process start: external model data transfer and potential charges require explicit chat authorization",
+    "evaluation_directory_created": false,
+    "previous_failure_denominator": {
+      "iteration": 12,
+      "http_requests": 39,
+      "complete_terminals": 37,
+      "failed_requests": 2,
+      "reports": 0
+    }
+  }
+}

@@ -1,0 +1,202 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+______ test_legacy_missing_cost_preserves_repeating_facts_but_null_clears ______
+
+api = (<app.store.Store object at 0x108aeaa50>, <starlette.testclient.TestClient object at 0x108fa2f90>)
+
+    def test_legacy_missing_cost_preserves_repeating_facts_but_null_clears(api):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-missing-buy-100')
+        trade(client, base, 'legacy-missing-buy-200', quantity='200')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': before['name'], 'cash': '97000', 'expected_version': before['version'],
+            'ledger_action': 'correction', 'adjustment_reason': '仅改现金；未填写成本不是清除',
+            'holdings': [{'symbol': '002354', 'quantity': '300'}]}
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-missing-cost'})
+        assert response.status_code == 200, response.text
+>       assert raw_positions(store, base) == rows
+E       assert {'SZ:002354':...cost": null}'} == {'SZ:002354':...: "3010.03"}'}
+E
+E         Differing items:
+E         {'SZ:002354': '{"cost_basis": "unknown_corrected_cost", "cost_source": "explicit_correction", "fees_included_in_cost":...": "trade", "traded_at": "2026-10-29T10:00:00+08:00"}], "quantity": "300", "symbol": "SZ:002354", "total_cost": null}'} != {'SZ:002354': '{"cost_basis": "trade_cost", "fees_included_in_cost": true, "lots": [{"quantity": "100", "sellable_on":...rade", "traded_at": "2026-10-29T10:00:00+08:00"}], "quantity": "300", "symbol": "SZ:002354", "total_cost": "3010.03"}'}
+E         Use -v to get more diff
+
+tests/test_thirteenth_ledger.py:406: AssertionError
+_ test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[cash_only] _
+
+api = (<app.store.Store object at 0x108fbafd0>, <starlette.testclient.TestClient object at 0x1091b6350>)
+intent = 'cash_only'
+
+    @pytest.mark.parametrize('intent', ['cash_only', 'holdings_only', 'metadata_only', 'cash_unknown', 'clear_holdings'])
+    def test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply(api, intent):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-omit-buy-100')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': '兼容省略字段', 'expected_version': before['version']}
+        if intent != 'metadata_only':
+            payload.update(ledger_action='correction', adjustment_reason='受控显式字段意图')
+        if intent == 'cash_only':
+            payload['cash'] = '99000'
+        elif intent == 'holdings_only':
+            payload['holdings'] = [{'symbol': '002354', 'quantity': '100', 'cost_price': '11'}]
+        elif intent == 'cash_unknown':
+            payload['cash'] = None
+        elif intent == 'clear_holdings':
+            payload['holdings'] = []
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-omit-' + intent})
+        assert response.status_code == 200, response.text
+        after = get(client, base)
+        if intent in ('cash_only', 'cash_unknown', 'metadata_only'):
+>           assert raw_positions(store, base) == rows
+E           assert {'SZ:002354':..._cost": "0"}'} == {'SZ:002354':...: "1005.01"}'}
+E
+E             Differing items:
+E             {'SZ:002354': '{"availability_effective_on": "2026-11-02", "availability_timezone": "Asia/Shanghai", "cost_basis": "empty_position", "fees_included_in_cost": true, "lots": [], "quantity": "0", "symbol": "SZ:002354", "total_cost": "0"}'} != {'SZ:002354': '{"cost_basis": "trade_cost", "fees_included_in_cost": true, "lots": [{"quantity": "100", "sellable_on":...rade", "traded_at": "2026-10-29T10:00:00+08:00"}], "quantity": "100", "symbol": "SZ:002354", "total_cost": "1005.01"}'}
+E             Use -v to get more diff
+
+tests/test_thirteenth_ledger.py:441: AssertionError
+_ test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[holdings_only] _
+
+api = (<app.store.Store object at 0x1091b6710>, <starlette.testclient.TestClient object at 0x1091e2990>)
+intent = 'holdings_only'
+
+    @pytest.mark.parametrize('intent', ['cash_only', 'holdings_only', 'metadata_only', 'cash_unknown', 'clear_holdings'])
+    def test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply(api, intent):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-omit-buy-100')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': '兼容省略字段', 'expected_version': before['version']}
+        if intent != 'metadata_only':
+            payload.update(ledger_action='correction', adjustment_reason='受控显式字段意图')
+        if intent == 'cash_only':
+            payload['cash'] = '99000'
+        elif intent == 'holdings_only':
+            payload['holdings'] = [{'symbol': '002354', 'quantity': '100', 'cost_price': '11'}]
+        elif intent == 'cash_unknown':
+            payload['cash'] = None
+        elif intent == 'clear_holdings':
+            payload['holdings'] = []
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-omit-' + intent})
+        assert response.status_code == 200, response.text
+        after = get(client, base)
+        if intent in ('cash_only', 'cash_unknown', 'metadata_only'):
+            assert raw_positions(store, base) == rows
+            assert after['holdings'] == before['holdings']
+        if intent in ('holdings_only', 'clear_holdings', 'metadata_only'):
+>           assert after['cash'] == before['cash']
+E           AssertionError: assert None == '98994.99'
+
+tests/test_thirteenth_ledger.py:444: AssertionError
+_ test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[metadata_only] _
+
+api = (<app.store.Store object at 0x1091162c0>, <starlette.testclient.TestClient object at 0x109116c40>)
+intent = 'metadata_only'
+
+    @pytest.mark.parametrize('intent', ['cash_only', 'holdings_only', 'metadata_only', 'cash_unknown', 'clear_holdings'])
+    def test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply(api, intent):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-omit-buy-100')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': '兼容省略字段', 'expected_version': before['version']}
+        if intent != 'metadata_only':
+            payload.update(ledger_action='correction', adjustment_reason='受控显式字段意图')
+        if intent == 'cash_only':
+            payload['cash'] = '99000'
+        elif intent == 'holdings_only':
+            payload['holdings'] = [{'symbol': '002354', 'quantity': '100', 'cost_price': '11'}]
+        elif intent == 'cash_unknown':
+            payload['cash'] = None
+        elif intent == 'clear_holdings':
+            payload['holdings'] = []
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-omit-' + intent})
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"detail":"现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据"}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_thirteenth_ledger.py:438: AssertionError
+_ test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[cash_unknown] _
+
+api = (<app.store.Store object at 0x109116fd0>, <starlette.testclient.TestClient object at 0x1094a89d0>)
+intent = 'cash_unknown'
+
+    @pytest.mark.parametrize('intent', ['cash_only', 'holdings_only', 'metadata_only', 'cash_unknown', 'clear_holdings'])
+    def test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply(api, intent):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-omit-buy-100')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': '兼容省略字段', 'expected_version': before['version']}
+        if intent != 'metadata_only':
+            payload.update(ledger_action='correction', adjustment_reason='受控显式字段意图')
+        if intent == 'cash_only':
+            payload['cash'] = '99000'
+        elif intent == 'holdings_only':
+            payload['holdings'] = [{'symbol': '002354', 'quantity': '100', 'cost_price': '11'}]
+        elif intent == 'cash_unknown':
+            payload['cash'] = None
+        elif intent == 'clear_holdings':
+            payload['holdings'] = []
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-omit-' + intent})
+        assert response.status_code == 200, response.text
+        after = get(client, base)
+        if intent in ('cash_only', 'cash_unknown', 'metadata_only'):
+>           assert raw_positions(store, base) == rows
+E           assert {'SZ:002354':..._cost": "0"}'} == {'SZ:002354':...: "1005.01"}'}
+E
+E             Differing items:
+E             {'SZ:002354': '{"availability_effective_on": "2026-11-02", "availability_timezone": "Asia/Shanghai", "cost_basis": "empty_position", "fees_included_in_cost": true, "lots": [], "quantity": "0", "symbol": "SZ:002354", "total_cost": "0"}'} != {'SZ:002354': '{"cost_basis": "trade_cost", "fees_included_in_cost": true, "lots": [{"quantity": "100", "sellable_on":...rade", "traded_at": "2026-10-29T10:00:00+08:00"}], "quantity": "100", "symbol": "SZ:002354", "total_cost": "1005.01"}'}
+E             Use -v to get more diff
+
+tests/test_thirteenth_ledger.py:441: AssertionError
+_ test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[clear_holdings] _
+
+api = (<app.store.Store object at 0x109278dd0>, <starlette.testclient.TestClient object at 0x109279eb0>)
+intent = 'clear_holdings'
+
+    @pytest.mark.parametrize('intent', ['cash_only', 'holdings_only', 'metadata_only', 'cash_unknown', 'clear_holdings'])
+    def test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply(api, intent):
+        store, client = api
+        base = create(client)
+        trade(client, base, 'legacy-omit-buy-100')
+        before, rows = get(client, base), raw_positions(store, base)
+        payload = {'name': '兼容省略字段', 'expected_version': before['version']}
+        if intent != 'metadata_only':
+            payload.update(ledger_action='correction', adjustment_reason='受控显式字段意图')
+        if intent == 'cash_only':
+            payload['cash'] = '99000'
+        elif intent == 'holdings_only':
+            payload['holdings'] = [{'symbol': '002354', 'quantity': '100', 'cost_price': '11'}]
+        elif intent == 'cash_unknown':
+            payload['cash'] = None
+        elif intent == 'clear_holdings':
+            payload['holdings'] = []
+        response = client.put(base, json=payload, headers={'X-Operation-ID': 'legacy-omit-' + intent})
+        assert response.status_code == 200, response.text
+        after = get(client, base)
+        if intent in ('cash_only', 'cash_unknown', 'metadata_only'):
+            assert raw_positions(store, base) == rows
+            assert after['holdings'] == before['holdings']
+        if intent in ('holdings_only', 'clear_holdings', 'metadata_only'):
+>           assert after['cash'] == before['cash']
+E           AssertionError: assert None == '98994.99'
+
+tests/test_thirteenth_ledger.py:444: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/chn/Documents/ChatGPT/金融股票 2/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_thirteenth_ledger.py::test_legacy_missing_cost_preserves_repeating_facts_but_null_clears
+FAILED tests/test_thirteenth_ledger.py::test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[cash_only]
+FAILED tests/test_thirteenth_ledger.py::test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[holdings_only]
+FAILED tests/test_thirteenth_ledger.py::test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[metadata_only]
+FAILED tests/test_thirteenth_ledger.py::test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[cash_unknown]
+FAILED tests/test_thirteenth_ledger.py::test_legacy_top_level_omission_preserves_facts_and_explicit_values_apply[clear_holdings]
+6 failed, 25 deselected, 1 warning in 1.03s

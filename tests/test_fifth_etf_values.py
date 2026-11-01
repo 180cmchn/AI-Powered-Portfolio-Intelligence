@@ -1,6 +1,7 @@
 """Controlled ETF snapshots and quotes, not evidence of a live investment report."""
 from ledger_helpers import save_snapshot_correction
 from datetime import datetime
+from decimal import Decimal
 import pytest
 from app.domain import AccountInput, TZ, now
 from app.providers import quote_time_state
@@ -35,7 +36,8 @@ async def test_etf_explicit_opening_correction_recomputes_values_without_trade_d
     await service.execute(store.claim_jobs()[0])
     final=store.analyses(a['id'])[0]
     values=store.analysis(final['id'])['result']['metrics']
-    assert edited['cash']=='10000.00' and values['cash']=='10000.00'
+    assert edited['cash'] == current['cash'] == values['cash']
+    assert Decimal(edited['cash']) == Decimal('10000.00')
     assert values['known_priced_value']=='19300.00' and values['total_assets']=='29300.00'
     assert values['unrealized_pnl'] is None
     assert final['input_version']==edited['version'] and final['status']=='current'

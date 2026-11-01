@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-11-01T23:23:33.821917+08:00",
+  "mode": "SQLite mode=ro, query_only",
+  "hash_encoding": "SHA256(repr(default sqlite tuple rows ordered by rowid).encode(UTF-8)); same method as before snapshots",
+  "tables": {
+    "accounts": {
+      "count": 1,
+      "sha256": "c149a71a35a630338ec0fedc9b079181ca4b3371a5ddfad411ed01bcc929d8e6"
+    },
+    "ledger_entries": {
+      "count": 1,
+      "sha256": "2fee7cdddfe8c06c74913fa610bef77a4fe60e32e88aa023bad106aa4a4b07af"
+    },
+    "ledger_positions": {
+      "count": 3,
+      "sha256": "8fa6efa264ea86fc86ea3361dfb5f70494dfbc93b4c30dcf2f4e3cda630f615a"
+    },
+    "cash_entries": {
+      "count": 1,
+      "sha256": "d88bd1d58d74505ea0450fa9fb24c17d7a63bfc745a1f1528094397e4822e9eb"
+    },
+    "model_providers": {
+      "count": 1,
+      "sha256": "66e4722d17a17155e73842ef6c10c12d1b274d4f46eb8e445e08ce8302436227"
+    },
+    "provider_connections": {
+      "count": 1,
+      "sha256": "66e4722d17a17155e73842ef6c10c12d1b274d4f46eb8e445e08ce8302436227"
+    },
+    "account_agent_overrides": {
+      "count": 2,
+      "sha256": "c5f418c71315fd772c9e05fd79acc1b15b9d175ad6be6942669e782ad99aef63"
+    },
+    "analyses": {
+      "count": 3,
+      "sha256": "cae0a0a60fbff105113925695e012a260f46602299788d1398c3de406a304a38"
+    },
+    "forecasts": {
+      "count": 18,
+      "sha256": "04c124bb85392bfaad53e1ed0a15b72ebbd2c572a4aefb08e7c4d83c5c1adef1"
+    },
+    "jobs": {
+      "count": 68,
+      "sha256": "1aa34235d8c15353f5418d2ebe8e2873d4b5f010a4a916f331564e9c1d944202"
+    },
+    "agent_definitions": {
+      "count": 6,
+      "sha256": "088d4f529a31ec7216a8e663973470e6b3664dbbbada91d489d27eac02400a25"
+    },
+    "provider_catalogs": {
+      "count": 1,
+      "sha256": "77c62832fc6746e4c7f4beb9033a17d020ec7b27edf4bf08e6ce2a4efb41105b"
+    },
+    "meta": {
+      "count": 61,
+      "sha256": "ddeaa2a2e1366b8f9551be695c5cd20596eb23ac641aa94b801ed7d11ab885bc"
+    }
+  },
+  "all_unchanged": true,
+  "changed_tables": [],
+  "daily_restart_or_upgrade": false
+}

@@ -1,0 +1,207 @@
+{
+  "source": "prior isolated twelfth database, mode=ro + query_only; no Store or credentials read",
+  "timezone": "Asia/Shanghai",
+  "source_commit": "478fefb22a123c71b6594e8666be5e9acbb2cf5f",
+  "source_database_sha256": "9173de9d681c904605e4b67686a4f7f8a340703e41b5fbf5a4317a499fc3bdc1",
+  "checkpoints": [
+    {
+      "job_id": "937591e98d07415aa26950b6a413b70f",
+      "created_at": "2026-11-01T00:30:20.656109+08:00",
+      "state": "needs_research",
+      "report_count": 2,
+      "calculation_count": 50,
+      "report_delivery_count": 2,
+      "coverage_reason_counts": {
+        "source_index_not_claimed_as_read": 174,
+        "covered": 8,
+        "visible_report_source_not_received": 4
+      },
+      "unresolved_tasks": [
+        {
+          "agent_id": "research-b91eb46becfe",
+          "status": "running",
+          "round": 1
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "type": "budget_closeout",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:29:36.311092+08:00",
+      "payload": {
+        "remaining_model_calls": 2,
+        "active_children": 3,
+        "wait_seconds": 30.0
+      }
+    },
+    {
+      "type": "synthesis_checkpoint",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:29:58.715893+08:00",
+      "payload": {
+        "phase": "synthesis",
+        "reports": 1,
+        "calculations": 50
+      }
+    },
+    {
+      "type": "agent_completed",
+      "agent_id": "research-22a381803b22",
+      "timestamp": "2026-11-01T00:29:58.716878+08:00",
+      "payload": {}
+    },
+    {
+      "type": "synthesis_context_projected",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:30:06.338905+08:00",
+      "payload": {
+        "reason": "bounded_final_request"
+      }
+    },
+    {
+      "type": "synthesis_checkpoint",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:30:06.435980+08:00",
+      "payload": {
+        "phase": "synthesis",
+        "reports": 1,
+        "calculations": 50
+      }
+    },
+    {
+      "type": "synthesis_checkpoint",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:30:20.660272+08:00",
+      "payload": {
+        "phase": "synthesis",
+        "reports": 2,
+        "calculations": 50
+      }
+    },
+    {
+      "type": "agent_completed",
+      "agent_id": "research-f2a5fe35439a",
+      "timestamp": "2026-11-01T00:30:20.661328+08:00",
+      "payload": {}
+    },
+    {
+      "type": "model_error",
+      "agent_id": "research-b91eb46becfe",
+      "timestamp": "2026-11-01T00:31:19.637925+08:00",
+      "payload": {
+        "error_code": "upstream_transport_error"
+      }
+    },
+    {
+      "type": "model_error",
+      "agent_id": "manager",
+      "timestamp": "2026-11-01T00:33:03.497840+08:00",
+      "payload": {
+        "error_code": "upstream_transport_error"
+      }
+    }
+  ],
+  "failed_requests": [
+    {
+      "agent_id": "research-b91eb46becfe",
+      "stage": "research",
+      "started_at": "2026-10-31T16:29:24.791158+00:00",
+      "finished_at": "2026-10-31T16:31:19.637782+00:00",
+      "protocol": "responses",
+      "http_version": null,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_phase": "receiving_body",
+      "transport_failure_kind": "incomplete_response_body",
+      "environment_proxy_present": true,
+      "response_headers_received": true,
+      "response_body_received": false,
+      "request_accepted": true,
+      "stream_terminal": null,
+      "stream_first_byte_ms": 8381.84,
+      "stream_first_effective_event_ms": 8572.17,
+      "stream_last_byte_ms": 64846.11,
+      "stream_last_progress_ms": 52088.37,
+      "stream_last_progress_kind": "response.output_text.delta",
+      "stream_max_idle_ms": 62759.23,
+      "duration_ms": 114847.59,
+      "output_bytes": 70924,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 120.0,
+        "request_hard_seconds": 300.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "effective_limit": "request_hard_timeout",
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "cost_known": false
+    },
+    {
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "started_at": "2026-10-31T16:30:06.437398+00:00",
+      "finished_at": "2026-10-31T16:33:03.497278+00:00",
+      "protocol": "responses",
+      "http_version": null,
+      "request_id": null,
+      "response_id": null,
+      "status_code": 200,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_phase": "receiving_body",
+      "transport_failure_kind": "incomplete_response_body",
+      "environment_proxy_present": true,
+      "response_headers_received": true,
+      "response_body_received": false,
+      "request_accepted": true,
+      "stream_terminal": null,
+      "stream_first_byte_ms": 9199.28,
+      "stream_first_effective_event_ms": 9553.56,
+      "stream_last_byte_ms": 127056.56,
+      "stream_last_progress_ms": 108617.47,
+      "stream_last_progress_kind": "response.output_text.delta",
+      "stream_max_idle_ms": 68443.74,
+      "duration_ms": 177061.19,
+      "output_bytes": 166909,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 120.0,
+        "request_hard_seconds": 360.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "effective_limit": "request_hard_timeout",
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "cost_known": false
+    }
+  ],
+  "analyses_count": 0,
+  "forecasts_count": 0,
+  "database_unchanged": true,
+  "interpretation": {
+    "boundary": "Historical audit only; not a thirteenth live verification. 39 prior model HTTP attempts / 37 terminal / 2 incomplete responses remain failures; no claim of account report success.",
+    "closeout": "30-second wait ended before second completed child report; the late report is stored, but cannot be claimed included in the earlier final HTTP request.",
+    "root_cause": "Client proves incomplete response body, not which provider/gateway/proxy component closed it. HTTP version unavailable in old observations; new code records it.",
+    "recovery": "needs_research blocked synthesis-only. Completed reports/calculations remain usable within input/access/freshness guards; never restore unfinished streamed tool calls."
+  }
+}

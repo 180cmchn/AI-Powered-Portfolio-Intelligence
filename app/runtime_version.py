@@ -8,7 +8,7 @@ import uuid
 from urllib.parse import urlsplit
 from .calendar import SHANGHAI
 
-API_CONTRACT = 11
+API_CONTRACT = 12
 REQUIRED_ROUTES = {
     '/api/status': 'get', '/api/health': 'get', '/api/providers': 'get',
     '/api/agent-roles': 'get', '/api/accounts': 'get', '/api/research': 'get',
@@ -16,6 +16,7 @@ REQUIRED_ROUTES = {
     '/api/environment-connection': 'get',
     '/api/accounts/{account_id}/ledger': 'get',
     '/api/accounts/{account_id}/trades': 'post',
+    '/api/accounts/{account_id}/corrections/preview': 'post',
 }
 
 

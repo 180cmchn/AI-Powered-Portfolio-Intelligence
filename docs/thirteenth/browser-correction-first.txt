@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"detail":[{"loc":["body","operation_id"],"msg":"Field required","type":"missing"}]}
+
+422 !== 200
+
+    at preview (file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_thirteenth_correction.mjs:31:207)
+    at async file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_thirteenth_correction.mjs:34:13 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 422,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

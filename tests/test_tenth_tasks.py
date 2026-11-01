@@ -5,6 +5,7 @@ import sqlite3
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
@@ -64,7 +65,8 @@ def test_scope_freezes_at_submission_and_retry_uses_current_version(app):
         retried = c.post('/api/jobs/' + first['id'] + '/retry', json={'operation_id':'retry-current-1'}).json()
         assert retried['parent_job_id'] == first['id'] and retried['task_kind'] == 'manual_retry'
         assert retried['input_version'] == 2 and retried['target']['holdings'][0]['quantity'] == '20000'
-        assert changed['cash'] == '10000.00' and retried['target']['candidates'] == ['SH:562500']
+        assert changed['cash'] == a['cash'] and retried['target']['candidates'] == ['SH:562500']
+        assert Decimal(changed['cash']) == Decimal('10000.00')
 
 
 def test_empty_scope_requires_explicit_choice_and_does_not_run(app):
@@ -154,7 +156,8 @@ def test_account_update_receipt_keeps_original_version_and_job_after_newer_save(
         first = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers)
         assert first.status_code == 200
         saved = first.json()
-        assert saved['version'] == 2 and saved['cash'] == '10000.00'
+        assert saved['version'] == 2 and saved['cash'] == a['cash']
+        assert Decimal(saved['cash']) == Decimal('10000.00')
         repeated = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers)
         assert repeated.status_code == 200 and repeated.json()['version'] == 2
         assert repeated.json()['latest_job_id'] == saved['latest_job_id']

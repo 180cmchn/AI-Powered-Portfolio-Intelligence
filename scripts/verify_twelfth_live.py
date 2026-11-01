@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from collections import Counter
+from decimal import Decimal
 import json
 import os
 from pathlib import Path
@@ -62,7 +63,7 @@ class Instance:
             port = listener.getsockname()[1]
             if port == 8765:
                 raise RuntimeError('Random port unexpectedly matched daily port; refuse to launch')
-            args = [sys.executable, str(Path(__file__).resolve()), '--serve-child', str(self.database),
+            args = [sys.executable, str(getattr(self, 'child_script', Path(__file__).resolve())), '--serve-child', str(self.database),
                     '--listen-fd', str(listener.fileno())]
             if self.worker:
                 args.append('--worker')
@@ -235,17 +236,17 @@ async def run(args):
             json={'symbols': ['518880', '002354', '159599'], 'context': 'stock_etf'})
         if not summary['symbol_resolution']['ok']:
             raise RuntimeError('Actual directory could not resolve all securities; no fabricated identity fallback')
-        account = await instance.request('POST', '/api/accounts', headers={'X-Operation-ID': 'twelfth-create-a'}, json={
-            'name': '第十二轮单次真实研究（隔离虚拟账户）', 'cash': '100000', 'holdings': [],
+        account = await instance.request('POST', '/api/accounts', headers={'X-Operation-ID': getattr(args, 'operation_prefix', 'twelfth') + '-create-a'}, json={
+            'name': getattr(args, 'iteration_label', '第十二轮') + '单次真实研究（隔离虚拟账户）', 'cash': '100000', 'holdings': [],
             'preferences': {'risk': 'balanced', 'horizon': '三证券数量价格为明确的虚拟算术输入。研究趋势、现金与集中度、费用影响、已知事实及改变观点的条件。允许证据不足或弃权，不要求强行发布涨跌预测；模型建议不是交易。'}})
         summary['account_id'] = account['id']
         print(json.dumps({'prepared_url': instance.base+'/#holdings', 'account_id': account['id']}, ensure_ascii=False), flush=True)
         for index, values in enumerate(INPUTS):
             current = await instance.request('GET', '/api/accounts/'+account['id'])
             plan = await instance.request('GET', f"/api/accounts/{account['id']}/fee-plan")
-            payload = {**values, 'side': 'buy', 'operation_id': f'twelfth-initial-buy-{index}',
+            payload = {**values, 'side': 'buy', 'operation_id': getattr(args, 'operation_prefix', 'twelfth') + f'-initial-buy-{index}',
                 'expected_version': current['version'], 'fee_plan_version': plan['version'], 'traded_at': now(),
-                'mode': 'simulated', 'note': '第十二轮隔离虚拟算术输入；不是当前行情或实际券商成交'}
+                'mode': 'simulated', 'note': getattr(args, 'iteration_label', '第十二轮') + '隔离虚拟算术输入；不是当前行情或实际券商成交'}
             preview = await instance.request('POST', f"/api/accounts/{account['id']}/trades/preview", json=payload)
             receipt = await instance.request('POST', f"/api/accounts/{account['id']}/trades", json=payload)
             summary['trades'].append({'input': payload, 'preview': preview, 'receipt': receipt})
@@ -257,6 +258,24 @@ async def run(args):
             raise RuntimeError('Three-buy ledger did not reconcile to 86484.90; do not start model')
         if {row['symbol']: row['quantity'] for row in ledger['positions']} != {row['symbol']: row['quantity'] for row in INPUTS}:
             raise RuntimeError('Ledger quantities do not match the explicit virtual inputs')
+        expected_costs = {'SH:518880': Decimal('1005.00'), 'SZ:002354': Decimal('10005.10'), 'SZ:159599': Decimal('2505.00')}
+        if {row['symbol']: Decimal(row['total_cost']) for row in ledger['positions']} != expected_costs:
+            raise RuntimeError('Exact position costs do not match gross plus recorded buy fees')
+        if sum(Decimal(row['total_cost']) for row in ledger['positions']) != Decimal('13515.10') or Decimal(ledger['summary']['total_fees']) != Decimal('15.10') or Decimal(ledger['summary']['realized_pnl']) != 0:
+            raise RuntimeError('Exact total cost, cumulative fees or realized P&L did not reconcile')
+        entries = {row['id']: row for row in ledger['entries']}
+        if len(entries) != 4 or len(ledger['cash_entries']) != 4:
+            raise RuntimeError('Expected exactly one opening plus three trades and cash entries')
+        for trade in summary['trades']:
+            receipt, values = trade['receipt'], trade['input']
+            if entries.get(receipt['entry_id']) != receipt['entry']:
+                raise RuntimeError('Persisted entry differs from the actual API receipt')
+            position = next(row for row in ledger['positions'] if row['symbol'] == values['symbol'])
+            recorded = receipt['entry']['after_positions'][values['symbol']]
+            if position['lots'] != recorded['lots'] or len(position['lots']) != 1 or position['lots'][0]['source'] != 'trade' or position['lots'][0]['quantity'] != values['quantity'] or not position['lots'][0]['sellable_on'] or not position['fees_included_in_cost']:
+                raise RuntimeError('Original trade lot, sellable date or included-fee basis differs')
+        summary['accounting_preflight'] = {'cash': '86484.90', 'total_cost': '13515.10', 'fees': '15.10',
+            'realized_pnl': '0', 'ledger_entries': 4, 'cash_entries': 4, 'receipts_and_lots_exact': True}
         summary['prepared_ledger'] = ledger
         latest_id = summary['trades'][-1]['receipt']['research']['job_id']
         with store.connect() as db:

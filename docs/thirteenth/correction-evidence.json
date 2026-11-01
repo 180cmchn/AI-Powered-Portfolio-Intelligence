@@ -1,0 +1,610 @@
+{
+  "checks": [
+    "real buys produce 3010.03 / 300 repeating unit cost; cash-only UI sends sparse holdings; preview/commit retain every exact position and lot",
+    "one security unit-cost correction leaves unrelated repeating-cost security exactly intact",
+    "input edit, row addition/removal and background version invalidate preview while preserving draft",
+    "explicit unknown checkbox differs from blank/preserve; unrelated known basis remains exact",
+    "same draft survives route navigation; intervening account version disables old preview; delayed receipt preserves a new draft and requires a new exact preview; clean save reloads baseline",
+    "cash-only preserves a zero-quantity holding; explicit row removal carries remove:true and removes only that account research scope"
+  ],
+  "requests": [
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 3,
+        "reason": "只校正现金，保留所有批次与精确成本",
+        "holdings": [],
+        "cash": "96000",
+        "operation_id": "a8eb97a4-d1e6-4f51-8922-655032ee22bc"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 3,
+        "reason": "修订校正原因",
+        "holdings": [],
+        "cash": "96000",
+        "operation_id": "b6f34628-fa7c-4c78-b52b-6a4f97b4bc78"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 3,
+        "reason": "修订校正原因",
+        "holdings": [],
+        "cash": "96000",
+        "preview_token": "3abce34c841291cab78148b24122855d62c4dd6389f7602d66cda160a750aba8",
+        "operation_id": "3ffd99c0-eeab-4430-8a87-bdd9591aa815"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 4,
+        "reason": "仅校正黄金成本",
+        "holdings": [
+          {
+            "symbol": "SH:518880",
+            "cost_price": "11.00"
+          }
+        ],
+        "operation_id": "0f422a8a-05c6-4f72-a481-d68dbae1d725"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 4,
+        "reason": "仅校正黄金成本",
+        "holdings": [
+          {
+            "symbol": "SH:518880",
+            "cost_price": "11.00"
+          }
+        ],
+        "preview_token": "12c1138adb04db996e2ab2387e5924f79b41eebeb6a2f75bbd67609c0539ef83",
+        "operation_id": "3703085c-5b08-4fc2-8922-f177aa06209f"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 5,
+        "reason": "预览后后台版本变化",
+        "holdings": [],
+        "cash": "97000",
+        "operation_id": "3985a05d-f785-4a9d-bb43-767d3d1b7d5f"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 6,
+        "reason": "预览后后台版本变化",
+        "holdings": [],
+        "cash": "97000",
+        "operation_id": "772fe997-871e-4ed6-bad9-7c46a36ed6b2"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 6,
+        "reason": "明确将成本设为未知",
+        "holdings": [
+          {
+            "symbol": "SH:518880",
+            "cost_price": null
+          }
+        ],
+        "cash": "97000",
+        "operation_id": "d41a998c-2189-4816-9182-d23b0694fb80"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 6,
+        "reason": "明确将成本设为未知",
+        "holdings": [
+          {
+            "symbol": "SH:518880",
+            "cost_price": null
+          }
+        ],
+        "cash": "97000",
+        "preview_token": "99a4c865a871ea7da954a1dc96c4686a6bb2865bc223767a944aa145d80d3558",
+        "operation_id": "66810315-855e-40f0-b36c-d1116c87e3a9"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 7,
+        "reason": "跨路由草稿",
+        "holdings": [],
+        "cash": "98000",
+        "operation_id": "11084edb-7d9b-40e3-b59a-8e6f716b22a7"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 8,
+        "reason": "跨路由草稿",
+        "holdings": [],
+        "cash": "98000",
+        "operation_id": "3dbe124a-0a96-43d7-b2e3-c7c9b1976043"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 8,
+        "reason": "跨路由草稿",
+        "holdings": [],
+        "cash": "98000",
+        "preview_token": "9e11f5254a7214c00e28c45a37b6845c61e1087a15b5f380f0ab3b95de5547ab",
+        "operation_id": "9d5e0898-f08c-4507-9be1-f06009ca08e5"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 9,
+        "reason": "保存途中继续编辑的草稿",
+        "holdings": [],
+        "cash": "99000",
+        "operation_id": "a2f7f921-8523-4a27-a21b-b73a41958f16"
+      }
+    },
+    {
+      "path": "/api/accounts/9b3c73ed5c7740b1addcc3ff374702bf/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 9,
+        "reason": "保存途中继续编辑的草稿",
+        "holdings": [],
+        "cash": "99000",
+        "preview_token": "489620aac85f64b182ed443fcf7a077063446c486db26ff089009046338f1e87",
+        "operation_id": "d723b82d-e036-4931-9529-40a042b599c4"
+      }
+    },
+    {
+      "path": "/api/accounts/4da39956ae804c2891a1e4d2763548e7/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 1,
+        "reason": "仅现金校正，原零数量范围保持",
+        "holdings": [],
+        "cash": "101",
+        "operation_id": "8c5aa867-8d87-4c91-9068-72fd7fe6d15c"
+      }
+    },
+    {
+      "path": "/api/accounts/4da39956ae804c2891a1e4d2763548e7/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 1,
+        "reason": "仅现金校正，原零数量范围保持",
+        "holdings": [],
+        "cash": "101",
+        "preview_token": "3901ba7cbb3b8e7f80176150f1a3aa99483773d50dfc3e981850ce1f2cfd0a53",
+        "operation_id": "ebd845f5-8584-49bf-aa52-8c1f6a5f2b39"
+      }
+    },
+    {
+      "path": "/api/accounts/4da39956ae804c2891a1e4d2763548e7/corrections/preview",
+      "body": {
+        "mode": "patch",
+        "expected_version": 2,
+        "reason": "明确移除已为零的证券范围",
+        "holdings": [
+          {
+            "symbol": "SZ:159599",
+            "quantity": "0",
+            "remove": true
+          }
+        ],
+        "operation_id": "c8f06e13-2d46-48c8-af54-ba7be9ba1609"
+      }
+    },
+    {
+      "path": "/api/accounts/4da39956ae804c2891a1e4d2763548e7/corrections",
+      "body": {
+        "mode": "patch",
+        "expected_version": 2,
+        "reason": "明确移除已为零的证券范围",
+        "holdings": [
+          {
+            "symbol": "SZ:159599",
+            "quantity": "0",
+            "remove": true
+          }
+        ],
+        "preview_token": "646851223ae668f9156dac504e133e6897a58d42985edb2a5009c03f68c6f44a",
+        "operation_id": "9db01cc1-950d-435e-ad56-c3f3b5f03c80"
+      }
+    }
+  ],
+  "realModelCalls": 0,
+  "before": [
+    {
+      "cost_basis": "trade_cost",
+      "fees_included_in_cost": true,
+      "lots": [
+        {
+          "quantity": "100",
+          "sellable_on": "2026-10-30",
+          "source": "trade",
+          "traded_at": "2026-10-30T10:00:00+08:00"
+        }
+      ],
+      "quantity": "100",
+      "symbol": "SH:518880",
+      "total_cost": "1005.00",
+      "available_quantity": "100",
+      "availability_unknown_quantity": "0"
+    },
+    {
+      "cost_basis": "trade_cost",
+      "fees_included_in_cost": true,
+      "lots": [
+        {
+          "quantity": "300",
+          "sellable_on": "2026-11-02",
+          "source": "trade",
+          "traded_at": "2026-10-30T10:00:00+08:00"
+        }
+      ],
+      "quantity": "300",
+      "symbol": "SZ:002354",
+      "total_cost": "3010.03",
+      "available_quantity": "0",
+      "availability_unknown_quantity": "0"
+    }
+  ],
+  "geometry": [
+    {
+      "viewport": 1360,
+      "documentWidth": 1360,
+      "rows": [
+        {
+          "width": 1012,
+          "scrollWidth": 1010,
+          "inputs": [
+            {
+              "name": "symbol-saved-SZ%3A002354",
+              "left": 303,
+              "right": 530,
+              "width": 227,
+              "top": 701.28125,
+              "bottom": 740.28125
+            },
+            {
+              "name": "quantity-saved-SZ%3A002354",
+              "left": 540,
+              "right": 767,
+              "width": 227,
+              "top": 701.28125,
+              "bottom": 740.28125
+            },
+            {
+              "name": "cost-saved-SZ%3A002354",
+              "left": 777,
+              "right": 1004,
+              "width": 227,
+              "top": 701.28125,
+              "bottom": 740.28125
+            },
+            {
+              "name": "available-saved-SZ%3A002354",
+              "left": 1014,
+              "right": 1241,
+              "width": 227,
+              "top": 701.28125,
+              "bottom": 740.28125
+            }
+          ]
+        },
+        {
+          "width": 1012,
+          "scrollWidth": 1010,
+          "inputs": [
+            {
+              "name": "symbol-saved-SH%3A518880",
+              "left": 303,
+              "right": 530,
+              "width": 227,
+              "top": 875.78125,
+              "bottom": 914.78125
+            },
+            {
+              "name": "quantity-saved-SH%3A518880",
+              "left": 540,
+              "right": 767,
+              "width": 227,
+              "top": 875.78125,
+              "bottom": 914.78125
+            },
+            {
+              "name": "cost-saved-SH%3A518880",
+              "left": 777,
+              "right": 1004,
+              "width": 227,
+              "top": 875.78125,
+              "bottom": 914.78125
+            },
+            {
+              "name": "available-saved-SH%3A518880",
+              "left": 1014,
+              "right": 1241,
+              "width": 227,
+              "top": 875.78125,
+              "bottom": 914.78125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": 800,
+      "documentWidth": 800,
+      "rows": [
+        {
+          "width": 507,
+          "scrollWidth": 505,
+          "inputs": [
+            {
+              "name": "symbol-saved-SZ%3A002354",
+              "left": 260,
+              "right": 360.75,
+              "width": 100.75,
+              "top": 548.53125,
+              "bottom": 587.53125
+            },
+            {
+              "name": "quantity-saved-SZ%3A002354",
+              "left": 370.75,
+              "right": 471.5,
+              "width": 100.75,
+              "top": 548.53125,
+              "bottom": 587.53125
+            },
+            {
+              "name": "cost-saved-SZ%3A002354",
+              "left": 481.5,
+              "right": 582.25,
+              "width": 100.75,
+              "top": 548.53125,
+              "bottom": 587.53125
+            },
+            {
+              "name": "available-saved-SZ%3A002354",
+              "left": 592.25,
+              "right": 693,
+              "width": 100.75,
+              "top": 548.53125,
+              "bottom": 587.53125
+            }
+          ]
+        },
+        {
+          "width": 507,
+          "scrollWidth": 505,
+          "inputs": [
+            {
+              "name": "symbol-saved-SH%3A518880",
+              "left": 260,
+              "right": 360.75,
+              "width": 100.75,
+              "top": 807.09375,
+              "bottom": 846.09375
+            },
+            {
+              "name": "quantity-saved-SH%3A518880",
+              "left": 370.75,
+              "right": 471.5,
+              "width": 100.75,
+              "top": 807.09375,
+              "bottom": 846.09375
+            },
+            {
+              "name": "cost-saved-SH%3A518880",
+              "left": 481.5,
+              "right": 582.25,
+              "width": 100.75,
+              "top": 807.09375,
+              "bottom": 846.09375
+            },
+            {
+              "name": "available-saved-SH%3A518880",
+              "left": 592.25,
+              "right": 693,
+              "width": 100.75,
+              "top": 807.09375,
+              "bottom": 846.09375
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "viewport": 390,
+      "documentWidth": 390,
+      "rows": [
+        {
+          "width": 320,
+          "scrollWidth": 318,
+          "inputs": [
+            {
+              "name": "symbol-saved-SZ%3A002354",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 55.109375,
+              "bottom": 94.109375
+            },
+            {
+              "name": "quantity-saved-SZ%3A002354",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 154.109375,
+              "bottom": 193.109375
+            },
+            {
+              "name": "cost-saved-SZ%3A002354",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 236.609375,
+              "bottom": 275.609375
+            },
+            {
+              "name": "available-saved-SZ%3A002354",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 374.109375,
+              "bottom": 413.109375
+            }
+          ]
+        },
+        {
+          "width": 320,
+          "scrollWidth": 318,
+          "inputs": [
+            {
+              "name": "symbol-saved-SH%3A518880",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 540.609375,
+              "bottom": 579.609375
+            },
+            {
+              "name": "quantity-saved-SH%3A518880",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 639.609375,
+              "bottom": 678.609375
+            },
+            {
+              "name": "cost-saved-SH%3A518880",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 722.109375,
+              "bottom": 761.109375
+            },
+            {
+              "name": "available-saved-SH%3A518880",
+              "left": 47,
+              "right": 302,
+              "width": 255,
+              "top": 859.609375,
+              "bottom": 898.609375
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "formData": [
+    [
+      "cash",
+      "96000"
+    ],
+    [
+      "reason",
+      "修订校正原因"
+    ],
+    [
+      "symbol-saved-SZ%3A002354",
+      "SZ:002354"
+    ],
+    [
+      "quantity-saved-SZ%3A002354",
+      "300"
+    ],
+    [
+      "cost-saved-SZ%3A002354",
+      "10.033433333333333333333333333333333333333333333333"
+    ],
+    [
+      "available-saved-SZ%3A002354",
+      ""
+    ],
+    [
+      "symbol-saved-SH%3A518880",
+      "SH:518880"
+    ],
+    [
+      "quantity-saved-SH%3A518880",
+      "100"
+    ],
+    [
+      "cost-saved-SH%3A518880",
+      "10.05"
+    ],
+    [
+      "available-saved-SH%3A518880",
+      ""
+    ]
+  ],
+  "finalPositions": [
+    {
+      "cost_basis": "unknown_corrected_cost",
+      "cost_source": "explicit_correction",
+      "fees_included_in_cost": false,
+      "lots": [
+        {
+          "quantity": "100",
+          "sellable_on": "2026-10-30",
+          "source": "trade",
+          "traded_at": "2026-10-30T10:00:00+08:00"
+        }
+      ],
+      "quantity": "100",
+      "symbol": "SH:518880",
+      "total_cost": null,
+      "available_quantity": "100",
+      "availability_unknown_quantity": "0"
+    },
+    {
+      "cost_basis": "trade_cost",
+      "fees_included_in_cost": true,
+      "lots": [
+        {
+          "quantity": "300",
+          "sellable_on": "2026-11-02",
+          "source": "trade",
+          "traded_at": "2026-10-30T10:00:00+08:00"
+        }
+      ],
+      "quantity": "300",
+      "symbol": "SZ:002354",
+      "total_cost": "3010.03",
+      "available_quantity": "0",
+      "availability_unknown_quantity": "0"
+    }
+  ],
+  "browser": "151.0.7922.34"
+}

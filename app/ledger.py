@@ -286,11 +286,15 @@ class LedgerStore:
             elif e.get('kind') == 'trade' and e.get('side') == 'sell':
                 unknown += 1
             unknown += int(e.get('unknown_realized_effect', 0))
-        return {'accounting_method': 'moving_weighted_average', 'fees_included_in_cost': True,
+        positions = self._positions(account_id, db)
+        active = [pos for pos in positions.values() if Decimal(pos['quantity'])]
+        return {'accounting_method': 'moving_weighted_average',
+                'fees_included_in_cost': bool(active) and all(pos.get('cost_basis') == 'trade_cost' and pos.get('fees_included_in_cost') for pos in active),
+                'cost_fee_policy': 'recorded_buy_fees_in_remaining_cost; opening_and_corrected_fee_scope_unknown; future_sell_fees_not_estimated',
                 'cash_scope': '模拟可用现金；卖出可用不代表可取', 'total_fees': money(total_fees),
                 'known_realized_pnl': money(realized), 'realized_pnl': money(realized) if not unknown else None,
                 'unknown_cost_sales': unknown, 'recent_entries': rows,
-                'positions': self._positions(account_id, db)}
+                'positions': positions}
 
     def ledger(self, account_id):
         with self.connect() as db:
@@ -555,6 +559,189 @@ class LedgerStore:
                      'before_holdings': account['holdings'], 'after_holdings': account['holdings']}
             return self._commit_entry(db, account_id, payload, entry, fingerprint)
 
+    @accounting_precision
+    def _correction(self, db, account_id, payload):
+        """Build a field-scoped correction without changing any stored facts.
+
+        Missing fields preserve facts. Null explicitly removes a known cost or
+        availability basis. A round-tripped derived unit price is comparison
+        input only, never the source from which an unchanged cost is rebuilt.
+        """
+        from .store import Conflict
+        account = self.account(account_id, db)
+        self._version(account, payload)
+        if any(key in payload for key in ('effective_at', 'effective_on', 'availability_effective_on')):
+            raise ValueError('期初/校正仅支持当前上海日期生效，不支持指定历史生效日期；实际录入时间单独保留')
+        if not str(payload.get('reason', '')).strip():
+            raise ValueError('期初/校正必须填写依据；这不是交易，不按现价扣款')
+        mode = payload.get('mode', 'patch')
+        if mode not in ('patch', 'snapshot'):
+            raise ValueError('校正模式须为patch或明确的snapshot')
+        holdings = payload.get('holdings', [])
+        if not isinstance(holdings, list) or len(holdings) > 300:
+            raise ValueError('持仓校正格式错误')
+        before = self._positions(account_id, db)
+        after = deepcopy(before)
+        previous_holdings = {h['symbol']: h for h in account['holdings']}
+        previous_units = {h['symbol']: h.get('cost_price') for h in account['holdings']}
+        day, seen, changes, removed_symbols = now()[:10], set(), [], set()
+
+        def same_decimal(value, previous):
+            if value is None or previous is None:
+                return value is previous
+            # Bounded comparison permits only a returned internal value. New
+            # user facts are separately subject to their normal input scale.
+            if len(str(value)) > 80:
+                raise ValueError('校正数值过长')
+            return dec(value, scale=60) == Decimal(previous)
+
+        def apply(holding):
+            sid = holding['symbol']
+            old = before.get(sid)
+            pos = deepcopy(old) if old else {
+                'symbol': sid, 'quantity': '0', 'total_cost': None,
+                'cost_basis': 'unknown_opening_cost', 'lots': [],
+                'fees_included_in_cost': False, 'source': 'explicit_correction',
+                'availability_effective_on': day, 'availability_timezone': 'Asia/Shanghai'}
+            old_qty = dec(pos['quantity'], scale=0)
+            qty = dec(holding['quantity'], scale=0) if 'quantity' in holding else old_qty
+            remove = holding.get('remove', False)
+            if not isinstance(remove, bool):
+                raise ValueError('移除持仓标记必须为布尔值')
+            if remove:
+                if ('quantity' in holding and qty) or set(holding) & {'cost_price', 'total_cost', 'available_quantity'}:
+                    raise ValueError('移除持仓不能同时填写非零数量、成本或可卖依据')
+                if sid not in previous_holdings:
+                    raise ValueError('该证券已不在持仓范围，无需重复移除')
+                qty = Decimal(0)
+                removed_symbols.add(sid)
+            if old is None and 'quantity' not in holding and not remove:
+                raise ValueError('新增证券必须明确数量；未填成本与可卖依据保持未知')
+            if 'cost_price' in holding and 'total_cost' in holding:
+                raise ValueError('单位成本与剩余总成本只能明确填写其中一项，避免相互矛盾')
+            fields, notes = [], []
+            if remove:
+                fields.append('holding_removed')
+                notes.append('明确移除该持仓行及其研究范围；不改写历史流水')
+            if qty != old_qty:
+                fields.append('quantity')
+                pos['quantity'] = text(qty)
+                pos.pop('availability_confirmation', None)
+                if not old_qty and qty:
+                    # A previously closed position's zero cost is not evidence
+                    # that newly corrected shares were obtained for free.
+                    pos.update(total_cost=None, cost_basis='unknown_corrected_cost', fees_included_in_cost=False)
+                if qty > old_qty:
+                    pos['lots'].append({'quantity': text(qty - old_qty), 'sellable_on': None,
+                                        'source': 'explicit_correction'})
+                    notes.append('新增数量的可卖依据未知；原有批次保持')
+                else:
+                    # Without an identified lot, deleting an arbitrary FIFO or
+                    # newest lot would invent a historical availability fact.
+                    pos['lots'] = [{'quantity': text(qty), 'sellable_on': None,
+                                    'source': 'explicit_correction'}] if qty else []
+                    notes.append('减少数量未指定原批次；剩余可卖依据需重新明确')
+                    pos['availability_effective_on'] = day
+                    pos['availability_timezone'] = 'Asia/Shanghai'
+            cost_field = next((f for f in ('cost_price', 'total_cost') if f in holding), None)
+            if cost_field:
+                previous = previous_units.get(sid) if cost_field == 'cost_price' else pos.get('total_cost')
+                value = holding[cost_field]
+                if not same_decimal(value, previous):
+                    cost = dec(value) if value is not None else None
+                    pos['total_cost'] = text(cost * qty if cost_field == 'cost_price' and cost is not None else cost)
+                    pos['cost_basis'] = 'known_corrected_cost' if cost is not None else 'unknown_corrected_cost'
+                    pos['cost_source'] = 'explicit_correction'
+                    pos['fees_included_in_cost'] = False
+                    fields.append(cost_field)
+                    notes.append('校正成本的费用是否包含需以本次依据为准；未假定包含原交易费用')
+            if 'available_quantity' in holding:
+                value = holding['available_quantity']
+                sellable = dec(value, scale=0) if value is not None else None
+                if sellable is not None and sellable > qty:
+                    raise ValueError('期初可卖数量不得超过持有数量')
+                known = available(pos, day)
+                has_dates = any(lot.get('sellable_on') for lot in pos['lots'])
+                confirmation = pos.get('availability_confirmation')
+                explicit_zero = sellable == 0 and not has_dates and confirmation != {'quantity': '0', 'effective_on': day}
+                changed = (sellable is None and (has_dates or confirmation is not None)) or (sellable is not None and sellable != known) or explicit_zero
+                if changed:
+                    pos['lots'] = []
+                    if sellable:
+                        pos['lots'].append({'quantity': text(sellable), 'sellable_on': day, 'source': 'explicit_correction'})
+                    if qty - (sellable or 0):
+                        pos['lots'].append({'quantity': text(qty - (sellable or 0)), 'sellable_on': None, 'source': 'explicit_correction'})
+                    pos['availability_effective_on'] = day
+                    pos['availability_timezone'] = 'Asia/Shanghai'
+                    if sellable == 0:
+                        pos['availability_confirmation'] = {'quantity': '0', 'effective_on': day}
+                    else:
+                        pos.pop('availability_confirmation', None)
+                    fields.append('available_quantity')
+                    notes.append('新确认可卖量仅从当前上海日期生效，不证明历史可卖')
+            if not qty and (old is None or old_qty or any(field != 'holding_removed' for field in fields)):
+                pos.update(total_cost='0', lots=[], cost_basis='empty_position')
+            if old is None or pos != old or remove:
+                after[sid] = pos
+                changes.append({'symbol': sid, 'fields': fields, 'before': old,
+                                'after': deepcopy(pos), 'notes': notes})
+
+        for holding in holdings:
+            if not isinstance(holding, dict) or not re.fullmatch(r'(SH|SZ|BJ):\d{6}', holding.get('symbol', '')) or holding['symbol'] in seen:
+                raise ValueError('持仓校正需要唯一规范证券代码')
+            if set(holding) - {'symbol', 'quantity', 'cost_price', 'total_cost', 'available_quantity', 'remove'}:
+                raise ValueError('持仓校正包含不支持的字段')
+            seen.add(holding['symbol'])
+            apply(holding)
+        if mode == 'snapshot':
+            if 'holdings' not in payload:
+                raise ValueError('完整快照模式须明确提供全部持仓；空列表表示清仓')
+            for sid, pos in before.items():
+                if sid not in seen and sid in previous_holdings:
+                    apply({'symbol': sid, 'quantity': '0', 'remove': True})
+        # Do not validate or round an unchanged internal cash fact either.
+        cash = account['cash']
+        if 'cash' in payload and not same_decimal(payload['cash'], cash):
+            cash = money(dec(payload['cash'], scale=2)) if payload['cash'] is not None else None
+        after_holdings = []
+        ordered_symbols = list(previous_holdings) + [sid for sid in after if sid not in previous_holdings]
+        for sid in ordered_symbols:
+            if sid in removed_symbols:
+                continue
+            pos, old = after[sid], before.get(sid)
+            if sid in previous_holdings and old and pos['quantity'] == old['quantity'] and pos.get('total_cost') == old.get('total_cost'):
+                # Preserve even zero rows and original numeric representation:
+                # a cash/availability correction must not change research scope
+                # or turn a derived display value into newly authored input.
+                after_holdings.append(deepcopy(previous_holdings[sid]))
+                continue
+            if Decimal(pos['quantity']):
+                unit = Decimal(pos['total_cost']) / Decimal(pos['quantity']) if pos.get('total_cost') is not None else None
+                after_holdings.append({'symbol': sid, 'quantity': pos['quantity'], 'cost_price': text(unit)})
+        if len(after_holdings) > 300:
+            raise ValueError('账户最多支持300项持仓')
+        if not changes and cash == account['cash'] and payload.get('name', account['name']) == account['name'] and payload.get('preferences', account['preferences']) == account['preferences']:
+            raise ValueError('没有账本事实变化，无需重复校正')
+        cash_effect = text(Decimal(cash) - Decimal(account['cash'])) if cash is not None and account['cash'] is not None else None
+        entry = {'kind': 'correction', 'mode': mode, 'cash_before': account['cash'], 'cash_after': cash, 'cash_effect': cash_effect,
+                 'availability_effective_on': day, 'availability_timezone': 'Asia/Shanghai',
+                 'availability_semantics': 'current_shanghai_date_not_historical_proof',
+                 'external_flow': True, 'before_positions': before, 'after_positions': after,
+                 'before_holdings': account['holdings'], 'after_holdings': after_holdings,
+                 'changes': changes, 'reason': payload['reason'], 'actor': 'local_user', 'historical_pnl_rewritten': False,
+                 'before_name': account['name'], 'after_name': payload.get('name', account['name']),
+                 'before_preferences': account['preferences'], 'after_preferences': payload.get('preferences', account['preferences'])}
+        token = hashlib.sha256(dump({'account_id': account_id, 'expected_version': account['version'], 'entry': entry}).encode()).hexdigest()
+        if payload.get('preview_token') is not None and payload['preview_token'] != token:
+            raise Conflict('校正输入或生效日期已变化，请重新预览并确认')
+        return entry, token
+
+    def preview_correction(self, account_id, payload):
+        with self.connect() as db:
+            entry, token = self._correction(db, account_id, payload)
+            return {**entry, 'expected_version': payload['expected_version'], 'preview_token': token,
+                    'is_preview': True, 'creates_trade': False}
+
     def correct_snapshot(self, account_id, payload, db=None):
         if db is None:
             with self.connect() as conn:
@@ -563,38 +750,7 @@ class LedgerStore:
         fingerprint, old = self._operation(db, account_id, payload, 'correction')
         if old:
             return old
-        account = self.account(account_id, db)
-        self._version(account, payload)
-        if any(key in payload for key in ('effective_at', 'effective_on', 'availability_effective_on')):
-            raise ValueError('期初/校正仅支持当前上海日期生效，不支持指定历史生效日期；实际录入时间单独保留')
-        if not str(payload.get('reason', '')).strip():
-            raise ValueError('期初/校正必须填写依据；这不是交易，不按现价扣款')
-        before = self._positions(account_id, db)
-        holdings = payload.get('holdings', account['holdings'])
-        if not isinstance(holdings, list) or len(holdings) > 300:
-            raise ValueError('持仓校正格式错误')
-        seen = set()
-        for h in holdings:
-            if not isinstance(h, dict) or not re.fullmatch(r'(SH|SZ|BJ):\d{6}', h.get('symbol', '')) or h['symbol'] in seen:
-                raise ValueError('持仓校正需要唯一规范证券代码')
-            seen.add(h['symbol'])
-            dec(h.get('quantity'), scale=0)
-            if h.get('cost_price') is not None:
-                dec(h['cost_price'])
-        cash_value = payload.get('cash', account['cash'])
-        cash = money(dec(cash_value, scale=2)) if cash_value is not None else None
-        stamp = now()
-        self._replace_ledger_positions(db, account_id, holdings, source='explicit_correction', effective_on=stamp[:10])
-        after = self._positions(account_id, db)
-        cash_effect = text(Decimal(cash) - Decimal(account['cash'])) if cash is not None and account['cash'] is not None else None
-        entry = {'kind': 'correction', 'cash_before': account['cash'], 'cash_after': cash, 'cash_effect': cash_effect,
-                 'availability_effective_on': stamp[:10], 'availability_timezone': 'Asia/Shanghai',
-                 'availability_semantics': 'current_shanghai_date_not_historical_proof',
-                 'external_flow': True, 'before_positions': before, 'after_positions': after,
-                 'before_holdings': account['holdings'], 'after_holdings': holdings,
-                 'reason': payload['reason'], 'actor': 'local_user', 'historical_pnl_rewritten': False,
-                 'before_name': account['name'], 'after_name': payload.get('name', account['name']),
-                 'before_preferences': account['preferences'], 'after_preferences': payload.get('preferences', account['preferences'])}
+        entry, _ = self._correction(db, account_id, payload)
         return self._commit_entry(db, account_id, payload, entry, fingerprint)
 
     def reverse_last_entry(self, account_id, entry_id, payload):

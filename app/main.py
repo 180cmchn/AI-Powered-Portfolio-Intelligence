@@ -17,6 +17,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import ROOT, db_path
 from .domain import AccountInput, UniverseInput, TZ, now, symbol
+from .ledger_api import AccountUpdateInput
 from .store import Conflict, Store
 from .service import Service
 from .calendar import market_state
@@ -320,10 +321,21 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         return service.account(account_id)
 
     @app.put("/api/accounts/{account_id}")
-    async def update_account(account_id: str, data: AccountInput, x_operation_id: str | None = Header(default=None, min_length=8, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')):
+    async def update_account(account_id: str, data: AccountUpdateInput, x_operation_id: str | None = Header(default=None, min_length=8, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')):
         store.account(account_id)
+        submitted_fields = set(data.model_fields_set)
+        cost_presence = ['cost_price' in holding.model_fields_set for holding in data.holdings]
         data, resolution = await resolver.account(data)
-        a = store.save_account_operation(data, account_id, x_operation_id)
+        canonical_presence = {}
+        for present, item in zip(cost_presence, resolution['items']):
+            sid = item['symbol']
+            if sid in canonical_presence and canonical_presence[sid] != present:
+                raise ValueError('同一证券重复行的成本缺省与显式填写意图不同，请合并为一行')
+            canonical_presence[sid] = present
+        # Resolution model_copy marks holdings as set even when absent. Preserve
+        # the caller's original field intent for ledger semantics and receipts.
+        payload = {key: value for key, value in data.model_dump(exclude_unset=True).items() if key in submitted_fields}
+        a = store.save_account_operation(payload, account_id, x_operation_id)
         return {**service.account(a["id"]), 'symbol_resolution': resolution, 'save_receipt':a['save_receipt']}
 
     @app.delete("/api/accounts/{account_id}")

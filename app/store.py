@@ -308,13 +308,22 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             with self.connect() as conn:
                 conn.execute("BEGIN IMMEDIATE")
                 return self.save_account(payload, account_id, reason, conn)
-        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.copy()
+        data = payload.model_dump(exclude_unset=bool(account_id and reason == 'account_saved')) if hasattr(payload, "model_dump") else payload.copy()
         account_id, stamp = account_id or uid(), now()
         delay = self.settings()["debounce_seconds"]
         if db is not None:
             old = db.execute("SELECT version,cash,holdings,name,preferences FROM accounts WHERE id=?", (account_id,)).fetchone()
             if old and reason == 'account_saved':
                 from decimal import Decimal
+                old_holdings = loads(old['holdings'], [])
+                old_by_symbol = {h['symbol']: h for h in old_holdings}
+                # Legacy PUT remains a full list only when holdings is supplied.
+                # Fill omitted facts inside the same CAS transaction, after the
+                # operation fingerprint captured the original sparse intent.
+                data = {'cash': old['cash'], 'holdings': old_holdings,
+                        'preferences': loads(old['preferences'], {}), **data}
+                data['holdings'] = [{**h, **({'cost_price': old_by_symbol[h['symbol']].get('cost_price')}
+                    if 'cost_price' not in h and h['symbol'] in old_by_symbol else {})} for h in data['holdings']]
                 def accounting_holdings(rows):
                     return sorted((h['symbol'], Decimal(h['quantity']), Decimal(h['cost_price']) if h.get('cost_price') is not None else None) for h in rows)
                 old_cash = Decimal(old['cash']) if old['cash'] is not None else None
@@ -325,6 +334,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         raise ValueError('现金与持仓已由账本维护；日常请使用买入/卖出或资金调整。期初/校正须明确选择并填写依据')
                     self.correct_snapshot(account_id, {'operation_id': 'legacy-correction:' + uid(),
                         'expected_version': data.get('expected_version'), 'reason': data['adjustment_reason'],
+                        'mode': 'snapshot',
                         'cash': data.get('cash'), 'holdings': data.get('holdings', []),
                         'name': data.get('name', old['name']), 'preferences': data.get('preferences', loads(old['preferences'], {}))}, db)
                     return self.account(account_id, db)

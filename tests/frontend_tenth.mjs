@@ -28,7 +28,7 @@ try {
  assert.ok((await page.locator(`#material-${fixture.rumor_id}`).textContent()).includes('传闻 / 待核实'));
  assert.ok(await page.locator('button').filter({hasText:'查看检索元数据'}).count()>0);
  const testedRuntime=(await api('/api/status')).runtime_version;
- assert.equal(testedRuntime.api_contract,11);
+ assert.equal(testedRuntime.api_contract,12);
  assert.equal(await page.getByText('页面与后端接口版本尚未确认一致',{exact:false}).count(),0,'current source and backend API contract must agree');
  const refs=page.locator(`[data-report-id="${fixture.report_id}"] .evidence-references`);
  assert.equal(await refs.getAttribute('open'),null);await refs.screenshot({path:'test-results/tenth-report-collapsed.png'});
@@ -70,11 +70,12 @@ try {
  checks.push('overview task dialog preserves page and survives delayed GET; all other navigation hides full card');
 
  await navigate('holdings');await page.locator('#snapshot-correction > summary').click();
- await page.locator('.holding-row .field:first-child small').evaluate(el=>el.textContent='会换行的证券识别帮助与校验说明。'.repeat(14));
- const positions=await page.locator('.holding-row input').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{top:r.top,height:r.height};}));
+ await page.locator('.holding-row > .field:first-child small').evaluate(el=>el.textContent='会换行的证券识别帮助与校验说明。'.repeat(14));
+ const positions=await page.locator('.holding-row input:not([type=checkbox])').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{top:r.top,height:r.height};}));
+ assert.equal(positions.length,4,'the four original value controls remain aligned; explicit unknown checkboxes have their own row');
  assert.ok(positions.every(p=>Math.abs(p.top-positions[0].top)<1 && Math.abs(p.height-positions[0].height)<1),JSON.stringify(positions));
  const removeTop=await page.locator('.holding-row [data-action=remove-holding]').evaluate(el=>el.getBoundingClientRect().top);assert.ok(Math.abs(removeTop-positions[0].top)<1);await page.locator('.holding-row').screenshot({path:'test-results/tenth-holdings-alignment.png'});
- await page.setViewportSize({width:390,height:740});assert.ok(await page.locator('.holding-row input').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width>70)));await page.setViewportSize({width:1280,height:800});
+ await page.setViewportSize({width:390,height:740});assert.ok(await page.locator('.holding-row input:not([type=checkbox])').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width>70)));await page.setViewportSize({width:1280,height:800});
  checks.push('holding label/help wrap input and remove-button alignment; narrow layout');
  await navigate('market');await page.locator('#watchlist').fill('518880\n688825\n562500');await page.locator('#candidates').fill('159278,000001；SZ:159278');
  await page.locator('#universe-form [type=submit]').click();await idle();
@@ -105,9 +106,29 @@ try {
  await api('/__fixture/fail/'+job.id,{});await page.reload();await page.locator('.task-status-card [data-action=retry-job]').waitFor();await page.locator('.task-status-card [data-action=retry-job]').click();await idle();
  const retried=(await api(`/api/accounts/${fixture.account_id}/jobs`))[0];assert.equal(retried.parent_job_id,job.id);assert.notEqual(retried.id,job.id);
  checks.push('submit/queued/running/waiting_config/merged/lost-response/reload/account-isolation/failed-retry identity');
- await api('/__fixture/claim/'+fixture.account_id,{});await api('/__fixture/complete/'+retried.id,{});await navigate('holdings');if(!await page.locator('#snapshot-correction').evaluate(el=>el.open))await page.locator('#snapshot-correction > summary').click();await page.locator('#correction-reason').fill('明确受控期初快照校正，不是交易');const beforeSave=await api('/api/accounts/'+fixture.account_id);await page.locator('.holding-row input[name^=quantity]').fill('20000');await page.locator('.holding-row input[name^=symbol]').fill('159278');let accountWrites=0;await page.route(`**/api/accounts/${fixture.account_id}/corrections`,async route=>{if(route.request().method()!=='POST')return route.continue();accountWrites++;await route.fetch();return route.abort('connectionreset');});await page.locator('#account-form [type=submit]').dblclick();await idle();assert.equal(accountWrites,1);
- const saved=await api('/api/accounts/'+fixture.account_id);assert.equal(saved.cash,'10000.00');assert.equal(saved.holdings[0].quantity,'20000');assert.equal(saved.version,beforeSave.version+1);await api('/__fixture/claim/'+fixture.account_id,{});await api('/__fixture/complete/'+saved.latest_job_id,{});await navigate('overview');await page.locator('.task-status-card [data-action=open-report]').click();await page.locator('#dialog[open]').waitFor();await page.locator('#dialog').getByText(`输入版本 v${saved.version}`,{exact:true}).waitFor();assert.ok((await page.locator('#dialog .research-delivery').textContent()).includes('本次新调度专题完成 0 / 0'));assert.ok((await page.locator('#dialog .research-delivery').textContent()).includes('复用成果仍有 1 项原专题缺口'));await page.locator('#dialog .recovered-research-gaps > summary').click();await page.locator('#dialog').getByText('受控原行情专题缺口 · 失败：受控原专题超时',{exact:true}).waitFor();assert.ok((await page.locator('#dialog').textContent()).includes(`输入版本 v${saved.version}`));await page.keyboard.press('Escape');
- checks.push('explicit snapshot correction preserves confirmed cash, has required reason, publishes new version and opens exact report');
+ await api('/__fixture/claim/'+fixture.account_id,{});await api('/__fixture/complete/'+retried.id,{});await navigate('holdings');
+ if(!await page.locator('#snapshot-correction').evaluate(el=>el.open))await page.locator('#snapshot-correction > summary').click();
+ await page.locator('#correction-reason').fill('明确受控期初快照校正，不是交易');
+ const beforeSave=await api('/api/accounts/'+fixture.account_id);
+ await page.locator('.holding-row input[name^=quantity]').fill('20000');
+ // A known security's bare code is an equivalent edit, not a replacement.
+ await page.locator('.holding-row input[name^=symbol]').fill('159278');
+ assert.equal(await page.locator('.holding-row input[name^=symbol]').inputValue(),'159278');
+ const correctionSubmit=page.locator('#account-form [type=submit]');assert.equal(await correctionSubmit.isDisabled(),true);
+ const previewResponse=page.waitForResponse(response=>response.url().endsWith(`/api/accounts/${fixture.account_id}/corrections/preview`)&&response.request().method()==='POST');
+ await page.locator('#account-form [data-ledger-action=correction-preview]').click();
+ const previewHTTP=await previewResponse;assert.equal(previewHTTP.status(),200,await previewHTTP.text());
+ const preview=await previewHTTP.json();await idle();
+ assert.equal(await page.locator('.holding-row input[name^=symbol]').inputValue(),'159278');assert.equal(previewHTTP.request().postDataJSON().holdings[0].symbol,'SZ:159278');assert.equal(previewHTTP.request().postDataJSON().mode,'patch');assert.equal(previewHTTP.request().postDataJSON().expected_version,beforeSave.version);
+ assert.ok(/^10000(?:\.0+)?$/.test(beforeSave.cash),'the fixture cash remains exactly 10000 before correction');assert.equal(preview.cash_before,beforeSave.cash);assert.equal(preview.cash_after,beforeSave.cash);assert.equal(preview.changes.length,1);
+ assert.equal(preview.changes[0].symbol,'SZ:159278');assert.equal(preview.changes[0].after.quantity,'20000');assert.ok(preview.preview_token);
+ assert.equal(await correctionSubmit.isEnabled(),true);assert.equal((await api('/api/accounts/'+fixture.account_id)).version,beforeSave.version,'preview must not mutate account');
+ let accountWrites=0,receiptReads=0;
+ await page.route(`**/api/accounts/${fixture.account_id}/ledger-operations/*`,route=>{receiptReads++;return route.continue();});
+ await page.route(`**/api/accounts/${fixture.account_id}/corrections`,async route=>{if(route.request().method()!=='POST')return route.continue();accountWrites++;assert.equal(route.request().postDataJSON().holdings[0].symbol,'SZ:159278');assert.equal(route.request().postDataJSON().preview_token,preview.preview_token);await route.fetch();return route.abort('connectionreset');});
+ await correctionSubmit.dblclick();await idle();assert.equal(accountWrites,1);assert.ok(receiptReads>=1,'lost save response must recover via operation receipt');
+ const saved=await api('/api/accounts/'+fixture.account_id);assert.equal(saved.cash,beforeSave.cash,'quantity-only correction preserves the exact existing cash fact');assert.equal(saved.holdings[0].quantity,'20000');assert.equal(saved.version,beforeSave.version+1);await api('/__fixture/claim/'+fixture.account_id,{});await api('/__fixture/complete/'+saved.latest_job_id,{});await navigate('overview');await page.locator('.task-status-card [data-action=open-report]').click();await page.locator('#dialog[open]').waitFor();await page.locator('#dialog').getByText(`输入版本 v${saved.version}`,{exact:true}).waitFor();assert.ok((await page.locator('#dialog .research-delivery').textContent()).includes('本次新调度专题完成 0 / 0'));assert.ok((await page.locator('#dialog .research-delivery').textContent()).includes('复用成果仍有 1 项原专题缺口'));await page.locator('#dialog .recovered-research-gaps > summary').click();await page.locator('#dialog').getByText('受控原行情专题缺口 · 失败：受控原专题超时',{exact:true}).waitFor();assert.ok((await page.locator('#dialog').textContent()).includes(`输入版本 v${saved.version}`));await page.keyboard.press('Escape');
+ checks.push('explicit correction requires nonmutating exact preview and token; double submit/lost response yields one write and recovers receipt; confirmed cash, required reason, new version and exact report remain correct');
  await navigate('agents');const completed=page.locator('.job-card').filter({has:page.locator('[data-action=open-report]')}).last();await completed.waitFor();assert.equal(await completed.locator('.job-checkpoint-details[open]').count(),0);assert.ok(await completed.locator('[data-action=open-report]').isVisible());
  const latest=await api('/__fixture/history/'+fixture.account_id,{});await page.reload();await page.locator('[data-pagination=jobs] button').last().click();await idle();
  assert.equal(await page.locator('.task-status-card').count(),0);await navigate('overview');assert.ok((await page.locator('.task-status-card').textContent()).includes(latest.id),'returning from history pagination restores the latest overview task');

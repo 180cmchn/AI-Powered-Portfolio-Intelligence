@@ -465,6 +465,7 @@ class ModelClient:
         async with self.http.stream('POST', endpoint, json=payload, timeout=timeout,
                                     extensions={'trace': trace}) as response:
             observation.update(status_code=response.status_code,
+                http_version=response.http_version,
                 request_accepted=200 <= response.status_code < 300,
                 response_headers_received=True,
                 response_headers_ms=round((time.perf_counter() - started) * 1000, 2),
@@ -665,7 +666,7 @@ class ModelClient:
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
                            "requested_max_output_tokens": payload.get("max_output_tokens", payload.get("max_completion_tokens", payload.get("max_tokens"))),
-                           "output_bytes": 0, "request_id": None, "stream_requested": bool(streaming),
+                           "output_bytes": 0, "request_id": None, "http_version": None, "stream_requested": bool(streaming),
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None,
                            "error_code": None, "cancelled_by": None,

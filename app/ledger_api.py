@@ -1,10 +1,10 @@
 """HTTP boundary for manual virtual fills; no broker or model execution."""
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from fastapi import Header
 
-from .domain import AccountInput, HoldingInput, Preferences
+from .domain import AccountInput, HoldingInput, Preferences, symbol as validate_symbol
 from .symbols import SymbolResolutionError
 
 
@@ -32,14 +32,43 @@ class FundsInput(LedgerMutation):
     reason: str = Field(min_length=1, max_length=1000)
 
 
-class CorrectionHolding(HoldingInput):
+class CorrectionHolding(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    symbol: str = Field(max_length=20)
+    quantity: str | None = Field(default=None, max_length=40)
+    # A returned, derived unit price can exceed the user-input scale. Only the
+    # ledger may accept it as unchanged; changed values still pass dec(scale=6).
+    cost_price: str | None = Field(default=None, max_length=80)
+    total_cost: str | None = Field(default=None, max_length=80)
     available_quantity: str | None = Field(default=None, max_length=40)
+    remove: bool = False
+
+    _symbol = field_validator('symbol')(validate_symbol)
 
 
 class CorrectionInput(LedgerMutation):
-    cash: str | None
-    holdings: list[CorrectionHolding] = Field(max_length=300)
+    cash: str | None = Field(default=None, max_length=40)
+    holdings: list[CorrectionHolding] = Field(default_factory=list, max_length=300)
+    mode: Literal['patch', 'snapshot'] = 'patch'
+    preview_token: str | None = Field(default=None, max_length=64)
     reason: str = Field(min_length=1, max_length=1000)
+
+
+class AccountUpdateHolding(HoldingInput):
+    @field_validator('cost_price', mode='before')
+    @classmethod
+    def cost_check(cls, value):
+        from .ledger import dec, text
+        if value is None or value == '':
+            return None
+        if len(str(value)) > 80:
+            raise ValueError('校正数值过长')
+        return text(dec(value, scale=60))
+
+
+class AccountUpdateInput(AccountInput):
+    """Legacy full snapshot boundary; precision is checked against ledger facts."""
+    holdings: list[AccountUpdateHolding] = Field(default_factory=list, max_length=300)
 
 
 class ReversalInput(LedgerMutation):
@@ -99,22 +128,30 @@ def register_ledger_routes(app, store, service, resolver):
     async def funds(account_id: str, data: FundsInput):
         return store.adjust_funds(account_id, data.model_dump())
 
-    @app.post('/api/accounts/{account_id}/corrections', status_code=201)
-    async def correction(account_id: str, data: CorrectionInput):
-        account = store.account(account_id)
-        resolved, resolution = await resolver.account(AccountInput(name=account['name'], cash=data.cash,
-            holdings=data.holdings, expected_version=data.expected_version))
-        availability = {}
+    async def correction_payload(account_id, data):
+        store.account(account_id)
+        resolution = await resolver.resolve([h.symbol for h in data.holdings])
+        if not resolution['ok']:
+            raise SymbolResolutionError(resolution['items'])
+        holdings, seen = [], set()
         for holding, item in zip(data.holdings, resolution['items']):
             sid = item['symbol']
-            if sid in availability and availability[sid] != holding.available_quantity:
-                raise ValueError('同一证券重复输入的可卖依据不一致，请合并为一行')
-            availability[sid] = holding.available_quantity
-        return store.correct_snapshot(account_id, {**data.model_dump(),
-            'cash': resolved.cash, 'holdings': [{**h.model_dump(),
-                **({'available_quantity': availability[h.symbol]}
-                   if availability[h.symbol] is not None else {})}
-                for h in resolved.holdings]})
+            if sid in seen:
+                raise ValueError('同一证券只能校正一行，请合并后重新预览')
+            seen.add(sid)
+            holdings.append({**holding.model_dump(exclude_unset=True), 'symbol': sid})
+        return {**data.model_dump(exclude_unset=True),
+                **({'holdings': holdings} if 'holdings' in data.model_fields_set else {})}
+
+    @app.post('/api/accounts/{account_id}/corrections/preview')
+    async def preview_correction(account_id: str, data: CorrectionInput):
+        return store.preview_correction(account_id, await correction_payload(account_id, data))
+
+    @app.post('/api/accounts/{account_id}/corrections', status_code=201)
+    async def correction(account_id: str, data: CorrectionInput):
+        if data.mode == 'snapshot' and not data.preview_token:
+            raise ValueError('完整快照校正必须先预览全部差异，并携带preview_token确认')
+        return store.correct_snapshot(account_id, await correction_payload(account_id, data))
 
     @app.post('/api/accounts/{account_id}/ledger/{entry_id}/reverse', status_code=201)
     async def reverse(account_id: str, entry_id: str, data: ReversalInput):

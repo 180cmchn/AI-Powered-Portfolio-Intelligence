@@ -600,7 +600,7 @@ async function refresh(full = false) {
   if (results[1].status === 'rejected') state.partialError = results[1].reason.message;
   state.error = results[0].status === "rejected" ? results[0].reason.message : null;
   state.errorKind = results[0].status === 'rejected' ? results[0].reason.code : null;
-  state.compatibilityError = state.status.runtime_version?.api_contract !== 11
+  state.compatibilityError = state.status.runtime_version?.api_contract !== 12
     ? '页面与后端接口版本尚未确认一致；请核对实例版本。缺少的接口已暂停自动重试，可在安全升级后重新连接。' : null;
   state.loaded = true;
 }
@@ -790,7 +790,7 @@ function stats() {
   const max = weights.length ? Math.max(...weights) : null;
   const count = state.account.holdings?.length || 0;
   const pnl = m.unrealized_pnl;
-  return `<div class="stat-grid"><div class="stat"><div class="stat-label">已录入证券市值 ${icon("wallet")}</div><div class="stat-value"><span class="unit">¥</span>${number(m.securities_value ?? (m.missing_prices?.length ? null : m.known_priced_value))}</div><div class="stat-meta">${m.missing_prices?.length ? `部分行情缺失 · 已知估值 ¥${number(m.known_priced_value)}` : m.cash === null || m.cash === undefined ? "未录入现金，不代表账户完整总资产" : "已录入证券的最新估值"}</div></div><div class="stat"><div class="stat-label">现金余额 ${icon("cash")}</div><div class="stat-value">${m.cash === null || m.cash === undefined ? '<span class="unit">未录入</span>' : `<span class="unit">¥</span>${number(m.cash)}`}</div><div class="stat-meta">${m.total_assets !== null && m.total_assets !== undefined ? `已录入资产合计 ¥${number(m.total_assets)}` : "未推断可用资金或可买金额"}</div></div><div class="stat"><div class="stat-label">持仓证券 / 最大权重 ${icon("market")}</div><div class="stat-value">${count}<span class="unit"> 只</span><span class="unit"> · </span>${percent(max)}</div><div class="stat-meta">${m.missing_prices?.length ? "行情缺失，权重可能无法计算" : "按已录入持仓证券市值计算内部权重"}</div></div><div class="stat"><div class="stat-label">未实现盈亏 ${icon("shield")}</div><div class="stat-value ${Number(pnl) < 0 ? "negative" : ""}">${pnl === null || pnl === undefined ? '<span class="unit">无法完整计算</span>' : `<span class="unit">¥</span>${number(pnl)}`}</div><div class="stat-meta">${pnl === null || pnl === undefined ? "成本或行情不完整，保留缺失" : "基于录入成本与行情计算，不含费用"}</div></div></div>`;
+  return `<div class="stat-grid"><div class="stat"><div class="stat-label">已录入证券市值 ${icon("wallet")}</div><div class="stat-value"><span class="unit">¥</span>${number(m.securities_value ?? (m.missing_prices?.length ? null : m.known_priced_value))}</div><div class="stat-meta">${m.missing_prices?.length ? `部分行情缺失 · 已知估值 ¥${number(m.known_priced_value)}` : m.cash === null || m.cash === undefined ? "未录入现金，不代表账户完整总资产" : "已录入证券的最新估值"}</div></div><div class="stat"><div class="stat-label">现金余额 ${icon("cash")}</div><div class="stat-value">${m.cash === null || m.cash === undefined ? '<span class="unit">未录入</span>' : `<span class="unit">¥</span>${number(m.cash)}`}</div><div class="stat-meta">${m.total_assets !== null && m.total_assets !== undefined ? `已录入资产合计 ¥${number(m.total_assets)}` : "未推断可用资金或可买金额"}</div></div><div class="stat"><div class="stat-label">持仓证券 / 最大权重 ${icon("market")}</div><div class="stat-value">${count}<span class="unit"> 只</span><span class="unit"> · </span>${percent(max)}</div><div class="stat-meta">${m.missing_prices?.length ? "行情缺失，权重可能无法计算" : "按已录入持仓证券市值计算内部权重"}</div></div><div class="stat"><div class="stat-label">未实现盈亏 ${icon("shield")}</div><div class="stat-value ${Number(pnl) < 0 ? "negative" : ""}">${pnl === null || pnl === undefined ? '<span class="unit">无法完整计算</span>' : `<span class="unit">¥</span>${number(pnl)}`}</div><div class="stat-meta">${pnl === null || pnl === undefined ? "成本或行情不完整，保留缺失" : "按剩余成本与行情计算；成本中已计入的买入费用不重复扣，未估未来卖出费用"}</div></div></div>`;
 }
 function positionsTable() {
   const m = state.account?.metrics || {},
@@ -831,7 +831,7 @@ function overview() {
     active = state.jobs.filter((j) =>
       ["running", "queued", "pending"].includes(j.state),
     );
-  return `${stats()}<div class="grid-two"><section class="card"><div class="card-header"><div class="account-heading"><h2>${e(a.name)} · 持仓快照</h2>${badge(`v${a.version}`, "neutral")}</div><a class="small" href="#holdings">管理持仓 ↗</a></div>${positionsTable()}<div class="card-note">数量单位为股或份。修改快照不会被记为成交，也不会自动调整现金。</div></section><section class="card"><div class="card-header"><h2>板块分布</h2><small class="muted">证券市值内部权重</small></div>${exposure()}<div class="card-note">${m.missing_prices?.length ? "行情尚未完整，当前分布需谨慎解释。" : "证券所属行业按基础资料记录；ETF 分类不代表穿透后的全部持仓。"}</div></section></div><div class="grid-two"><section class="card"><div class="card-header"><h2>最近一次研究</h2>${stateBadge(latest?.status === "expired" || (latest?.result?.valid_until && new Date(latest.result.valid_until).getTime() <= Date.now()) ? "expired" : analysisState())}</div>${latest ? `<div class="card-body"><div class="analysis-meta">${badge(`输入 v${latest.input_version}`, "neutral")}<span>${date(latest.created_at)}</span><span>数据截至 ${date(latest.data_as_of)}</span>${latest.input_version !== a.version ? badge("已保存新版本 · 此结论待更新", "warning") : ""}</div><div class="report-inline" data-read-key="report:${e(latest.id)}">${markdown(latest.report || latest.result?.report || latest.result || "报告暂无正文")}</div><div class="divider"></div><a class="small" href="#research">查看研究报告与引用来源 ↗</a></div>` : empty("等待第一份研究", "配置支持原生联网的模型服务后，主 Agent 会结合持仓和候选范围决定如何开展研究。已有账户数据会继续保留。", "analyze", "立即分析")}</section><section class="card"><div class="card-header"><h2>研究动态</h2><a class="small" href="#agents">工作台 ↗</a></div><div class="card-body"><div class="analysis-meta"><span class="dot ${active.length ? "" : "warn"}"></span>${active.length ? `${active.length} 个账户任务进行中` : "暂无正在执行的账户任务"}</div>${
+  return `${stats()}<div class="grid-two"><section class="card"><div class="card-header"><div class="account-heading"><h2>${e(a.name)} · 账本持仓</h2>${badge(`v${a.version}`, "neutral")}</div><a class="small" href="#holdings">管理持仓 ↗</a></div>${positionsTable()}<div class="card-note">数量单位为股或份。正常买卖同步调整现金、持仓与费用；高级校正另存依据与差异，不生成成交。期初成本的费用口径依原记录，不能假定包含全部费用。</div></section><section class="card"><div class="card-header"><h2>板块分布</h2><small class="muted">证券市值内部权重</small></div>${exposure()}<div class="card-note">${m.missing_prices?.length ? "行情尚未完整，当前分布需谨慎解释。" : "证券所属行业按基础资料记录；ETF 分类不代表穿透后的全部持仓。"}</div></section></div><div class="grid-two"><section class="card"><div class="card-header"><h2>最近一次研究</h2>${stateBadge(latest?.status === "expired" || (latest?.result?.valid_until && new Date(latest.result.valid_until).getTime() <= Date.now()) ? "expired" : analysisState())}</div>${latest ? `<div class="card-body"><div class="analysis-meta">${badge(`输入 v${latest.input_version}`, "neutral")}<span>${date(latest.created_at)}</span><span>数据截至 ${date(latest.data_as_of)}</span>${latest.input_version !== a.version ? badge("已保存新版本 · 此结论待更新", "warning") : ""}</div><div class="report-inline" data-read-key="report:${e(latest.id)}">${markdown(latest.report || latest.result?.report || latest.result || "报告暂无正文")}</div><div class="divider"></div><a class="small" href="#research">查看研究报告与引用来源 ↗</a></div>` : empty("等待第一份研究", "配置支持原生联网的模型服务后，主 Agent 会结合持仓和候选范围决定如何开展研究。已有账户数据会继续保留。", "analyze", "立即分析")}</section><section class="card"><div class="card-header"><h2>研究动态</h2><a class="small" href="#agents">工作台 ↗</a></div><div class="card-body"><div class="analysis-meta"><span class="dot ${active.length ? "" : "warn"}"></span>${active.length ? `${active.length} 个账户任务进行中` : "暂无正在执行的账户任务"}</div>${
     state.jobs
       .slice(0, 3)
       .map(
@@ -859,12 +859,13 @@ function selectField(label, name, value, choices, help = "", id = name) {
 }
 function holdingRow(holding = {}) {
   const id = holding.symbol ? `saved-${encodeURIComponent(holding.symbol)}` : `draft-${crypto.randomUUID()}`;
-  return `<div class="holding-row" data-read-key="holding:${e(id)}">${field("证券代码", `symbol-${id}`, holding.symbol, { required: true, placeholder: "例如 518880 / 000001", help: "输入六位代码，自动识别名称与市场；股票用股，ETF / 基金用份" })}${field("持有数量（股 / 份）", `quantity-${id}`, holding.quantity, { type: "number", required: true, min: 0, step: 1, placeholder: "整数数量，不是手数" })}${field("单位成本价（选填）", `cost-${id}`, holding.cost_price, { type: "number", min: 0, step: "any", placeholder: "留空表示未知" })}${field("已确认期初可卖数量", `available-${id}`, holding.available_quantity, { type:"number",min:0,step:1,placeholder:"无依据留空",help:"从本次校正的上海日期起生效；不证明此前补录成交日的可卖量" })}<button type="button" class="button ghost danger" data-action="remove-holding" aria-label="移除此证券">${icon("close")}</button></div>`;
+  const unknown = (name, label) => `<label class="ledger-confirm"><input type="checkbox" name="${name}-${id}"> ${label}</label>`;
+  return `<div class="holding-row" data-read-key="holding:${e(id)}" data-original="${e(JSON.stringify(holding))}">${field("证券代码", `symbol-${id}`, holding.symbol, { required: true, placeholder: "例如 518880 / 000001", help: "更换证券请移除原行并添加新行；移除表示明确清仓。" })}${field("持有数量（股 / 份）", `quantity-${id}`, holding.quantity, { type: "number", required: true, min: 0, step: 1, placeholder: "整数数量，不是手数" })}<div class="correction-field">${field("单位成本价（选填）", `cost-${id}`, holding.cost_price, { placeholder: "不修改或留空：保持原成本", help: "新成本最多6位小数；原系统长精度值可原样保留。数量单独校正时保留剩余总成本。" })}${unknown('cost-unknown','明确将成本设为未知')}</div><div class="correction-field">${field("从今天起已确认可卖数量", `available-${id}`, holding.available_quantity, { type:"number",min:0,step:1,placeholder:"不修改或留空：保留原批次",help:"只有明确输入才更新依据；从校正上海日期起生效，不倒推历史。" })}${unknown('available-unknown','明确清除可卖依据（设为未知）')}</div><button type="button" class="button ghost danger" data-action="remove-holding" aria-label="移除此证券">${icon("close")}</button></div>`;
 }
 function holdings() {
   if (!state.account) return noAccount();
   const a=state.account, p=a.preferences || {};
-  return `${ledger.page()}<details class="card ledger-detail" data-key="account-metadata:${e(a.id)}"><summary>账户名称与投资偏好</summary><form id="account-meta-form" class="card-body" data-account-id="${e(a.id)}" data-draft-key="metadata:${e(a.id)}" data-version="${a.version}"><div class="form-grid">${field("账户名称","name",a.name,{id:"account-name",required:true})}${selectField("风险偏好","risk",p.risk || "balanced",[["conservative","稳健"],["balanced","均衡"],["aggressive","进取"]])}${field("投资期限 / 关注窗口","horizon",p.horizon || "")}${field("单只证券仓位偏好上限（%）","max_position_pct",p.max_position_pct,{type:"number",min:0,max:100,step:"any"})}${field("单一板块仓位偏好上限（%）","max_sector_pct",p.max_sector_pct,{type:"number",min:0,max:100,step:"any"})}</div><div class="form-actions"><span>名称和研究偏好不改写交易账本。</span><button type="submit" class="button primary">保存账户信息</button></div></form></details><details class="card ledger-detail" id="snapshot-correction" data-key="snapshot-correction:${e(a.id)}"><summary>高级：导入期初 / 快照校正（不是买卖）</summary><form id="account-form" data-account-id="${e(a.id)}" data-draft-key="account:${e(a.id)}" data-version="${a.version}"><div class="card-body"><div class="notice warning"><p>此操作保留前后值和校正原因，不按当前价格扣现金，也不猜测历史成交。日常加减仓请使用上面的买入 / 卖出。旧成本或可卖日期未知时保持未知；只有具备依据才填写。明确可卖量仅从本次校正的上海日期起生效，不证明此前补录成交日的可卖状态；实际录入时间另存。</p></div><div class="form-grid">${field("校正现金余额（元，可留空）","cash",a.cash,{type:"number",min:0,step:"any",help:"有依据的期初 / 余额校正；留空为未知。充值与取出请使用资金流水。"})}${field("校正原因 / 来源（必填）","reason","",{id:"correction-reason",required:true})}</div><h3 class="section-gap">校正持仓快照</h3><div id="holding-rows" class="holdings-edit">${(a.holdings || []).map(holdingRow).join("")}</div>${button("添加持仓证券","add-holding","add-row","plus")}<details class="section-gap" data-key="security-lookup"><summary class="small muted">查找证券代码与基础资料</summary><div class="search-field section-gap"><input class="input" id="security-query" aria-label="证券代码或名称" placeholder="输入名称或代码，例如 沪深300 / 510300"><button type="button" class="button" data-action="lookup">${icon("search")}查找</button></div><div id="lookup-results" class="lookup-results" aria-live="polite"></div></details></div><div class="form-actions"><span class="form-status">校正有独立记录，不改写历史交易与预测。</span><button class="button primary" type="submit">保存校正并更新分析 ${icon("arrow")}</button></div></form></details><section class="card"><div class="card-header"><h2>虚拟账户</h2><span class="small muted">账户数据与分析独立保存</span></div><div class="card-body account-list">${state.accounts.map(account=>`<button class="account-mini ${account.id===a.id?'current':''}" data-action="switch-account" data-id="${e(account.id)}"><h3>${e(account.name)}</h3><p>${account.holdings?.length??'—'} 只证券 · 输入 v${account.version}</p></button>`).join('')}</div><div class="form-actions"><span>删除当前账户不会移除其他账户的公共监控。</span>${button("删除此账户","delete-account","danger compact")}</div></section>`;
+  return `${ledger.page()}<details class="card ledger-detail" data-key="account-metadata:${e(a.id)}"><summary>账户名称与投资偏好</summary><form id="account-meta-form" class="card-body" data-account-id="${e(a.id)}" data-draft-key="metadata:${e(a.id)}" data-version="${a.version}"><div class="form-grid">${field("账户名称","name",a.name,{id:"account-name",required:true})}${selectField("风险偏好","risk",p.risk || "balanced",[["conservative","稳健"],["balanced","均衡"],["aggressive","进取"]])}${field("投资期限 / 关注窗口","horizon",p.horizon || "")}${field("单只证券仓位偏好上限（%）","max_position_pct",p.max_position_pct,{type:"number",min:0,max:100,step:"any"})}${field("单一板块仓位偏好上限（%）","max_sector_pct",p.max_sector_pct,{type:"number",min:0,max:100,step:"any"})}</div><div class="form-actions"><span>名称和研究偏好不改写交易账本。</span><button type="submit" class="button primary">保存账户信息</button></div></form></details><details class="card ledger-detail" id="snapshot-correction" data-key="snapshot-correction:${e(a.id)}"><summary>高级：导入期初 / 快照校正（不是买卖）</summary><form id="account-form" data-account-id="${e(a.id)}" data-draft-key="account:${e(a.id)}" data-version="${a.version}" data-original-symbols="${e(JSON.stringify((a.holdings || []).map(h => h.symbol)))}"><div class="card-body"><div class="notice warning"><p>仅修改明确填写的字段；未改证券的精确成本、批次和可卖日期保持原状。先预览差异，再确认保存；保留前后值和校正原因，不按当前价格扣现金，也不猜测历史成交。日常加减仓请使用上面的买入 / 卖出。旧成本或可卖日期未知时保持未知；只有具备依据才填写。明确可卖量仅从本次校正的上海日期起生效，不证明此前补录成交日的可卖状态；实际录入时间另存。</p></div><div class="form-grid">${field("校正现金余额（元，可留空）","cash",a.cash,{type:"number",min:0,step:"any",help:"留空保持原余额；需设为未知时勾选下方选项。充值与取出请使用资金流水。"})}${field("校正原因 / 来源（必填）","reason","",{id:"correction-reason",required:true})}</div><label class="ledger-confirm"><input type="checkbox" name="cash_unknown"> 明确将现金余额设为未知</label><h3 class="section-gap">校正持仓快照</h3><div id="holding-rows" class="holdings-edit">${(a.holdings || []).map(holdingRow).join("")}</div>${button("添加持仓证券","add-holding","add-row","plus")}<details class="section-gap" data-key="security-lookup"><summary class="small muted">查找证券代码与基础资料</summary><div class="search-field section-gap"><input class="input" id="security-query" aria-label="证券代码或名称" placeholder="输入名称或代码，例如 沪深300 / 510300"><button type="button" class="button" data-action="lookup">${icon("search")}查找</button></div><div id="lookup-results" class="lookup-results" aria-live="polite"></div></details></div><div class="correction-preview card-body" aria-live="polite"></div><div class="form-actions"><span class="form-status">校正有独立记录，不改写历史交易与预测。</span><button class="button" type="button" data-ledger-action="correction-preview">预览校正差异</button><button class="button primary" type="submit" disabled>确认校正并更新分析 ${icon("arrow")}</button></div></form></details><section class="card"><div class="card-header"><h2>虚拟账户</h2><span class="small muted">账户数据与分析独立保存</span></div><div class="card-body account-list">${state.accounts.map(account=>`<button class="account-mini ${account.id===a.id?'current':''}" data-action="switch-account" data-id="${e(account.id)}"><h3>${e(account.name)}</h3><p>${account.holdings?.length??'—'} 只证券 · 输入 v${account.version}</p></button>`).join('')}</div><div class="form-actions"><span>删除当前账户不会移除其他账户的公共监控。</span>${button("删除此账户","delete-account","danger compact")}</div></section>`;
 }
 function symbolsText(list) {
   return array(list)
@@ -875,7 +876,7 @@ function symbolsText(list) {
 function market() {
   const u = state.universe,
     quotes = array(u.quotes);
-  return `<div class="grid-equal"><form id="universe-form" data-draft-key="universe" class="card"><div class="card-header"><h2>配置研究范围</h2>${badge("公共范围", "neutral")}</div><div class="card-body form-grid"><div class="field span-two"><label for="watchlist">自选观察</label><textarea id="watchlist" name="watchlist" class="list-editor" placeholder="518880\n688825\n562500">${e(symbolsText(u.watchlist))}</textarea><small>六位代码每行一个，也支持中英文逗号、分号。保存时整批校验；观察列表与实际持仓分开。</small></div><div class="field span-two"><label for="candidates">候选证券范围</label><textarea id="candidates" name="candidates" class="list-editor" placeholder="159278\n000001">${e(symbolsText(u.candidates))}</textarea><small>Agent 可以在此范围内发现尚未持有的证券与板块机会。</small></div></div><div class="form-actions"><span class="form-status">持仓证券会自动纳入监控，无需重复填写。</span><button type="submit" class="button primary">保存范围</button></div></form><section class="card"><div class="card-header"><h2>当前监控集合</h2><small class="muted">${array(u.monitored).length} 只证券</small></div><div class="card-body">${
+  return `<div class="grid-equal"><form id="universe-form" data-draft-key="universe" data-source-version="${e(u.universe_version ?? '')}" class="card"><div class="card-header"><h2>配置研究范围</h2>${badge("公共范围", "neutral")}</div><div class="card-body form-grid"><div class="field span-two"><label for="watchlist">自选观察</label><textarea id="watchlist" name="watchlist" class="list-editor" placeholder="518880\n688825\n562500">${e(symbolsText(u.watchlist))}</textarea><small>六位代码每行一个，也支持中英文逗号、分号。保存时整批校验；观察列表与实际持仓分开。</small></div><div class="field span-two"><label for="candidates">候选证券范围</label><textarea id="candidates" name="candidates" class="list-editor" placeholder="159278\n000001">${e(symbolsText(u.candidates))}</textarea><small>Agent 可以在此范围内发现尚未持有的证券与板块机会。</small></div></div><div class="form-actions"><span class="form-status">持仓证券会自动纳入监控，无需重复填写。</span><button type="submit" class="button primary">保存范围</button></div></form><section class="card"><div class="card-header"><h2>当前监控集合</h2><small class="muted">${array(u.monitored).length} 只证券</small></div><div class="card-body">${
     array(u.monitored).length
       ? `<div class="tag-list">${array(u.monitored)
           .map(
@@ -1036,6 +1037,10 @@ function reportCard(report, index) {
 }
 function research() {
   if (!state.account) return noAccount();
+  const categories = [...new Set(state.materials.map(m => m.classification || m.category || 'unknown'))];
+  // A page/search update may remove the selected category. Keep the rendered
+  // native selection and the result predicate on the same effective filter.
+  if (state.materialFilter !== 'all' && !categories.includes(state.materialFilter)) state.materialFilter = 'all';
   const filtered = state.materials.filter((m) => state.materialFilter === "all" || (m.classification || m.category || "unknown") === state.materialFilter);
   return `<div class="grid-two"><div>${state.analyses.length ? state.analyses.map(reportCard).join("") : `<section class="card">${empty("当前页暂无研究报告", "配置真实模型后开始研究；历史报告可通过分页查看。", "analyze", "开始研究")}</section>`}${pager("analyses", state.analyses)}</div><section class="card"><div class="card-header"><h2>研究材料索引</h2><span class="small muted">当前页 ${state.materials.length} 条</span></div><div class="card-body"><form id="material-search-form" data-draft-key="material-search:${e(state.accountId)}" class="search-field"><input id="material-query" name="query" class="input" value="${e(state.materialQuery)}" placeholder="检索已保存正文、标题或证券" aria-label="检索材料"><button type="submit" class="button compact">检索</button></form><div class="split-heading section-gap"><span class="small muted">分类筛选当前页；保留未知与冲突</span><select id="material-filter" class="input source-filter" aria-label="筛选材料分类"><option value="all">全部材料</option>${[...new Set(state.materials.map((m) => m.classification || m.category || "unknown"))].map((c) => `<option value="${e(c)}" ${state.materialFilter === c ? "selected" : ""}>${e(classificationNames[c] || c)}</option>`).join("")}</select></div>${filtered.length ? filtered.map(sourceCard).join("") : empty("当前页暂无此类材料", "原文按需分段读取；摘要或访问失败会明确标注。")}${pager("materials", state.materials)}</div></section></div>${recommendations()}`;
 }
@@ -1087,7 +1092,7 @@ function eventMessage(event) {
 }
 function eventHTML(event, jobId, surface) {
   const p = event.payload, key = `event:${state.accountId}:${jobId}:${surface}:${event.seq ?? event.id}`;
-  return `<div class="event" data-read-key="${e(key)}" data-event-seq="${e(event.seq)}"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", budget_closeout: "正在整理最终报告", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${p && typeof p === "object" && Object.keys(p).length ? `<details data-key="${e(key)}:payload"><summary>查看事件与来源详情</summary><pre tabindex="0">${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
+  return `<div class="event" data-read-key="${e(key)}" data-event-seq="${e(event.seq)}"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", research_resuming: "正在载入已保存研究", research_resumed: "已复用完成成果并继续研究", budget_closeout: "正在整理最终报告", budget_closeout_finished: "收尾成果范围已确认", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${p && typeof p === "object" && Object.keys(p).length ? `<details data-key="${e(key)}:payload"><summary>查看事件与来源详情</summary><pre tabindex="0">${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
 }
 function jobModelSettings(job) {
   const config = job.model_config || job.config_snapshot || job.result?.model_config;
@@ -1121,8 +1126,8 @@ function checkpointView(checkpoint) {
   };
   const gaps = [...new Set(Object.values(checkpoint.source_coverage || {}).filter(item => item.status !== "covered").map(item => reasons[item.reason] || item.reason).filter(Boolean))];
   const access = reportAccessView(checkpoint.report_access);
-  const label = checkpoint.recovery_state === "needs_research" ? "研究成果或资料仍有未解决范围 · 重试需补充" : checkpoint.recovery_state === "synthesis_ready" ? "已保存研究检查点 · 重试时优先恢复汇总" : "历史检查点缺少读取证明 · 重试需要继续研究";
-  return `<div class="card-body synthesis-checkpoint"><p>${label}</p>${gaps.map(reason => `<p class="small muted">${e(reason)}</p>`).join("")}${access}<p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。</p></div>`;
+  const label = checkpoint.recovery_state === "needs_research" ? (checkpoint.completed_research_available ? "已保存部分成果 · 重试时先复用，再按缺口继续研究" : "研究成果或资料仍有未解决范围 · 重试需补充") : checkpoint.recovery_state === "synthesis_ready" ? "已保存研究检查点 · 重试时优先恢复汇总" : "历史检查点缺少读取证明 · 重试需要继续研究";
+  return `<div class="card-body synthesis-checkpoint"><p>${label}</p>${gaps.map(reason => `<p class="small muted">${e(reason)}</p>`).join("")}${access}<p class="small muted">版本、行情、资料时效与新事件检查通过后复用；不会将子报告当作最终分析。仅汇总只在完整范围校验通过时可用；继续研究可能增加模型与联网费用。</p></div>`;
 }
 function researchDelivery(delivery, identity) {
   if (!delivery || !Number.isInteger(delivery.child_total)) return "";
@@ -1199,7 +1204,7 @@ function settings() {
 }
 function rememberDrafts() {
   $$('form[data-draft-key]').forEach((form) => {
-    if (form.dataset.discard !== "true" && (form.classList.contains("role-model-form") || form.dataset.dirty === "true" || form.contains(document.activeElement))) {
+    if (form.dataset.discard !== "true" && (form.classList.contains("role-model-form") || form.dataset.dirty === "true" || form.dataset.composing === "true" || form.contains(document.activeElement))) {
       form.readingState = [...form.querySelectorAll("textarea,input")].map(node => ({node, top:node.scrollTop, left:node.scrollLeft}));
       form.readingAncestors=[];
       for(let ancestor=form.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.matches('details[data-key]'))form.readingAncestors.push([ancestor.dataset.key,ancestor.open]);
@@ -1279,8 +1284,12 @@ function retainViewNode(existing,incoming) {
   }
   if (existing.matches('.role-model-form')) { sixth.syncRoleForm(existing,incoming); return true; }
   if (existing.id === 'provider-connection-form') { sixth.syncProviderForm(existing); return true; }
-  if (existing.dataset.dirty === 'true' || existing.contains(document.activeElement)) {
+  if (existing.dataset.dirty === 'true' || existing.dataset.composing === 'true' || existing.contains(document.activeElement)) {
     ledger.syncForm?.(existing,incoming);
+    if(existing.dataset.sourceVersion !== incoming.dataset.sourceVersion) {
+      const status=existing.querySelector('.form-status');
+      if(status)status.textContent='后台研究范围已更新；当前输入保留为未保存草稿，保存将以此表单覆盖范围，请先核对。';
+    }
     if(existing.dataset.version && incoming.dataset.version && existing.dataset.version!==incoming.dataset.version) {
       const status=existing.querySelector('.form-status');
       if(status)status.textContent=`后台已更新至 v${incoming.dataset.version}；当前草稿仍基于 v${existing.dataset.version}，保存时会校验版本。`;
@@ -1448,14 +1457,16 @@ document.addEventListener("click", (event) => {
     const input = document.getElementById(target.dataset.inputId);
     if (!input) return;
     input.value = input.tagName === "TEXTAREA" ? parseSymbols(input.value).map(value=>value === target.dataset.original ? target.dataset.symbol : value).join("\n") : target.dataset.symbol;
-    input.closest("form").dataset.dirty = "true"; resolveInput(input); return;
+    input.dispatchEvent(new Event('input',{bubbles:true})); resolveInput(input); return;
   }
   if (action === "add-holding") {
     $("#account-form").dataset.dirty = "true";
+    $("#account-form").dispatchEvent(new Event('input', {bubbles:true}));
     return $("#holding-rows").insertAdjacentHTML("beforeend", holdingRow());
   }
   if (action === "remove-holding") {
     $("#account-form").dataset.dirty = "true";
+    $("#account-form").dispatchEvent(new Event('input', {bubbles:true}));
     return target.closest(".holding-row").remove();
   }
   if (action === "go-holdings") {
@@ -1646,7 +1657,6 @@ document.addEventListener("submit", (event) => {
   }
   if (
     ![
-      "account-form",
       "account-meta-form",
       "new-account-form",
       "universe-form",
@@ -1672,10 +1682,6 @@ document.addEventListener("submit", (event) => {
       location.hash = "holdings";
       render();
       toast("账户已创建，可以录入持仓");
-    } else if (form.id === "account-form") {
-      const holdings = $$(".holding-row", form).map(row=>({symbol:$('input[name^="symbol-"]',row).value.trim().toUpperCase(),quantity:$('input[name^="quantity-"]',row).value,cost_price:$('input[name^="cost-"]',row).value || null,...($('input[name^="available-"]',row)?.value ? {available_quantity:$('input[name^="available-"]',row).value} : {})}));
-      const saved=await ledger.write(accountId,'corrections',{expected_version:Number(form.dataset.version),cash:values.get('cash') || null,holdings,reason:values.get('reason').trim()});
-      finishSave(form,submittedValues,saved.input_version);await refresh(true);render();toast(ledger.receiptText(saved),false,accountId);
     } else if (form.id === "account-meta-form") {
       const saved=await writeAccount(`/api/accounts/${encodeURIComponent(accountId)}`,"PATCH",{name:values.get('name').trim(),preferences:{...preferences,risk:values.get('risk'),horizon:values.get('horizon')||'',max_position_pct:values.get('max_position_pct')||null,max_sector_pct:values.get('max_sector_pct')||null},expected_version:Number(form.dataset.version)},form,accountId);
       finishSave(form,submittedValues,saved.version);await refresh(true);render();toast(`账户信息已保存为 v${saved.version}；资金与交易保持原记录。`,false,accountId);
@@ -1778,6 +1784,14 @@ document.addEventListener("focusout", event => {
   if (input.matches?.('.holding-row input[name^="symbol-"], #universe-form textarea')) resolveInput(input);
 });
 
+document.addEventListener("compositionstart", event => {
+  const form=event.target.closest('form[data-draft-key]');
+  if(form)form.dataset.composing='true';
+});
+document.addEventListener("compositionend", event => {
+  const form=event.target.closest('form[data-draft-key]');
+  if(form){delete form.dataset.composing;form.dataset.dirty='true';}
+});
 document.addEventListener("input", (event) => {
   const form = event.target.closest('form[data-draft-key]');
   if (form) form.dataset.dirty = "true";

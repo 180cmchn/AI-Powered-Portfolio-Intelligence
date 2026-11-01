@@ -1,0 +1,18 @@
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"top":765.71875,"height":39},{"top":765.71875,"height":39},{"top":765.71875,"height":39},{"top":1022.71875,"height":13},{"top":765.71875,"height":39},{"top":1022.71875,"height":13}]
+    at file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_tenth.mjs:75:9
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:472:9) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

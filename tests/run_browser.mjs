@@ -2,7 +2,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 const results=[];
-for (const group of ['iteration','production','seventh','ninth','tenth','eleventh','twelfth','twelfth_select']) {
+for (const group of ['iteration','production','seventh','ninth','tenth','eleventh','twelfth','twelfth_select','thirteenth','thirteenth_correction']) {
   const started=Date.now();
   const exit=await new Promise(resolve=>{
     const child=spawn(process.execPath,[...(group==='ninth'?['--import','./tests/frontend_ninth_state.mjs']:[]),`tests/frontend_${group}.mjs`],{stdio:'inherit',env:process.env});

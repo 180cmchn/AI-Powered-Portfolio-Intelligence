@@ -1,0 +1,134 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+.............................................................F.......... [ 21%]
+........................................................................ [ 28%]
+........................................................................ [ 35%]
+........................................................................ [ 42%]
+........................................................................ [ 50%]
+........................................................................ [ 57%]
+........................................................................ [ 64%]
+........................................................................ [ 71%]
+........................................................................ [ 78%]
+........................................................................ [ 85%]
+.............................F.F.....F.................................. [ 93%]
+......................................................................   [100%]
+=================================== FAILURES ===================================
+_ test_etf_explicit_opening_correction_recomputes_values_without_trade_deduction _
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-93/test_etf_explicit_opening_corr0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e23e060>
+
+    async def test_etf_explicit_opening_correction_recomputes_values_without_trade_deduction(tmp_path, monkeypatch):
+        store=Store(tmp_path/'controlled-etf.sqlite3')
+        store.set_meta('settings',{'quote_provider':'manual','debounce_seconds':0})
+        store.put_cache('quotes','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','price':'0.965',
+            'status':'ok','as_of':now(),'source':'controlled-test','fresh_for_triggers':False})
+        store.put_cache('securities','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','kind':'etf'})
+        async def runner(context, config, tools, emit):
+            return {'report':'受控测试报告；不是模型自然投资建议。'}
+        service=Service(store,runner=runner)
+        async def no_network(*args,**kwargs):return {'updated':0}
+        monkeypatch.setattr(service,'refresh_quotes',no_network)
+        a=store.save_account(AccountInput(name='A controlled',cash='10000',holdings=[{'symbol':'SZ:159278','quantity':'10000'}]))
+        b=store.save_account(AccountInput(name='B controlled',cash='20000'))
+        for job in store.claim_jobs(): await service.execute(job)
+        old=store.analyses(a['id'])[0]
+        before=store.account(b['id'])
+        first=store.analysis(old['id'])['result']['metrics']
+        assert first['known_priced_value']=='9650.00' and first['total_assets']=='19650.00'
+        assert first['positions'][0]['price']=='0.965' and first['positions'][0]['kind']=='etf'
+        assert first['unrealized_pnl'] is None
+        current=store.account(a['id'])
+        edited=save_snapshot_correction(store, {**current,'holdings':[{'symbol':'SZ:159278','quantity':'20000'}],
+                                  'expected_version':current['version']}, a['id'])
+        assert store.analysis(old['id'])['status']=='stale'
+        await service.execute(store.claim_jobs()[0])
+        final=store.analyses(a['id'])[0]
+        values=store.analysis(final['id'])['result']['metrics']
+>       assert edited['cash']=='10000.00' and values['cash']=='10000.00'
+E       AssertionError: assert ('10000' == '10000.00'
+E
+E         - 10000.00
+E         ?      ---
+E         + 10000)
+
+tests/test_fifth_etf_values.py:38: AssertionError
+_____ test_fastapi_account_switch_versions_quantities_and_single_security ______
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-93/test_fastapi_account_switch_ve0')
+
+    def test_fastapi_account_switch_versions_quantities_and_single_security(tmp_path):
+        app = api_fixture(tmp_path)
+        with TestClient(app) as client:
+            a = client.post("/api/accounts", json={"name": "虚拟 A", "cash": "10000", "holdings": [{"symbol": "159278", "quantity": "10000"}]}).json()
+            b = client.post("/api/accounts", json={"name": "虚拟 B", "cash": "30000"}).json()
+            assert a["holdings"][0] == {"symbol": "SZ:159278", "quantity": "10000", "cost_price": None}
+            before_b = client.get(f"/api/accounts/{b['id']}").json()
+            updated = client.put(f"/api/accounts/{a['id']}", json=snapshot_payload({"name": "虚拟 A", "cash": "10000", "expected_version": 1,
+                "holdings": [{"symbol": "SZ:159278", "quantity": "20000"}]})).json()
+>           assert updated["version"] == 2 and updated["cash"] == "10000.00"
+E           AssertionError: assert (2 == 2 and '10000' == '10000.00'
+E
+E             - 10000.00
+E             ?      ---
+E             + 10000)
+
+tests/test_tenth_symbols.py:255: AssertionError
+_______ test_scope_freezes_at_submission_and_retry_uses_current_version ________
+
+app = <fastapi.applications.FastAPI object at 0x11009f110>
+
+    def test_scope_freezes_at_submission_and_retry_uses_current_version(app):
+        with TestClient(app) as c:
+            a = account(c)
+            first = c.post(f"/api/accounts/{a['id']}/analyze", json={'symbol': 'SH:518880', 'operation_id':'security-1'}).json()
+            assert first['task_kind'] == 'security_research'
+            app.state.store.set_meta('universe', {'watchlist':['SH:688825'], 'candidates':['SH:562500']})
+            job = c.get('/api/jobs/' + first['id']).json()
+            assert job['universe']['candidates'] == []
+            changed = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload({'name':'A','cash':'10000', 'expected_version':1,
+                         'holdings':[{'symbol':'SZ:159278','quantity':'20000'}]})).json()
+            retried = c.post('/api/jobs/' + first['id'] + '/retry', json={'operation_id':'retry-current-1'}).json()
+            assert retried['parent_job_id'] == first['id'] and retried['task_kind'] == 'manual_retry'
+            assert retried['input_version'] == 2 and retried['target']['holdings'][0]['quantity'] == '20000'
+>           assert changed['cash'] == '10000.00' and retried['target']['candidates'] == ['SH:562500']
+E           AssertionError: assert ('10000' == '10000.00'
+E
+E             - 10000.00
+E             ?      ---
+E             + 10000)
+
+tests/test_tenth_tasks.py:67: AssertionError
+_ test_account_update_receipt_keeps_original_version_and_job_after_newer_save __
+
+app = <fastapi.applications.FastAPI object at 0x10fdb20f0>
+
+    def test_account_update_receipt_keeps_original_version_and_job_after_newer_save(app):
+        with TestClient(app) as c:
+            a, b = account(c), account(c, 'B')
+            payload = {'name': 'A', 'cash': '10000', 'expected_version': 1,
+                       'holdings': [{'symbol': 'SZ:159278', 'quantity': '20000'}]}
+            headers = {'X-Operation-ID': 'account-update-intent-1'}
+            first = c.put(f"/api/accounts/{a['id']}", json=snapshot_payload(payload), headers=headers)
+            assert first.status_code == 200
+            saved = first.json()
+>           assert saved['version'] == 2 and saved['cash'] == '10000.00'
+E           AssertionError: assert (2 == 2 and '10000' == '10000.00'
+E
+E             - 10000.00
+E             ?      ---
+E             + 10000)
+
+tests/test_tenth_tasks.py:157: AssertionError
+=============================== warnings summary ===============================
+../../../../../private/tmp/guanlan-twelfth-py312/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /private/tmp/guanlan-twelfth-py312/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_fifth_etf_values.py::test_etf_explicit_opening_correction_recomputes_values_without_trade_deduction
+FAILED tests/test_tenth_symbols.py::test_fastapi_account_switch_versions_quantities_and_single_security
+FAILED tests/test_tenth_tasks.py::test_scope_freezes_at_submission_and_retry_uses_current_version
+FAILED tests/test_tenth_tasks.py::test_account_update_receipt_keeps_original_version_and_job_after_newer_save
+4 failed, 1002 passed, 1 warning in 100.93s (0:01:40)

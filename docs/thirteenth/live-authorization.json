@@ -1,0 +1,13 @@
+{
+  "user_answer": "授权这一次，最多 40 次",
+  "scope": "One isolated real research using simulated 518880/002354/159599 arithmetic inputs and public research materials; potential provider charges authorized",
+  "maximum_total_model_http_attempts": 40,
+  "provider": "https://api.xxyapi.com/v1",
+  "protocol": "responses",
+  "models_and_efforts": "Existing configured per-role grok-4.7 / grok-4.6 and efforts unchanged",
+  "daily_account_data_sent": false,
+  "daily_configuration_or_database_changes": false,
+  "initial_review_rejection": "Before process creation; no requests. Explicit user authorization subsequently received and reviewed command allowed.",
+  "source_sha256": "8d2767d75d8803a2f2ae73725b5620d00e3c5f66f8a8372fa0cbe92d4c30247e",
+  "actual_started_at": "2026-11-01T23:10:24.869602+08:00"
+}

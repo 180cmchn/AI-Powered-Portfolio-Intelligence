@@ -18,6 +18,14 @@ export function reconcile(existing, incoming, {retain = () => false} = {}) {
     return existing;
   }
   if (retain(existing,incoming)) return existing.parentNode ? existing : incoming;
+  // Moving a textarea's text or a select's options consumes the incoming
+  // control's live state. Capture it before touching attributes or children.
+  // Defaults remain markup-owned; live values may differ from those defaults.
+  const control = incoming instanceof HTMLSelectElement
+    ? {selected: [...incoming.options].map(option => option.selected), index: incoming.selectedIndex}
+    : incoming instanceof HTMLInputElement
+      ? {value: incoming.value, checked: incoming.checked}
+      : incoming instanceof HTMLTextAreaElement ? {value: incoming.value} : null;
   // Details open is user state; rendering an existing entity never sets it.
   for (const attr of [...existing.attributes]) {
     if (attr.name === 'open' && existing.localName === 'details') continue;
@@ -46,10 +54,18 @@ export function reconcile(existing, incoming, {retain = () => false} = {}) {
   }
   for (const old of oldChildren) if (!used.has(old)) old.remove();
   if (existing instanceof HTMLInputElement) {
-    if (existing.value !== incoming.value) existing.value = incoming.value;
-    existing.checked = incoming.checked;
-  } else if (existing instanceof HTMLTextAreaElement && existing.value !== incoming.value) existing.value = incoming.value;
-  else if (existing instanceof HTMLSelectElement && existing.value !== incoming.value) existing.value = incoming.value;
+    if (existing.value !== control.value) existing.value = control.value;
+    if (existing.checked !== control.checked) existing.checked = control.checked;
+  } else if (existing instanceof HTMLTextAreaElement) {
+    if (existing.value !== control.value) existing.value = control.value;
+  } else if (existing instanceof HTMLSelectElement) {
+    // Index-based selection preserves duplicate values and every selected item
+    // in a multi-select. Assigning .value would silently collapse both cases.
+    if (existing.multiple) [...existing.options].forEach((option,index) => {
+      if (option.selected !== control.selected[index]) option.selected = control.selected[index];
+    });
+    else if (existing.selectedIndex !== control.index) existing.selectedIndex = control.index;
+  }
   return existing;
 }
 export function patchHTML(root, html, options) {

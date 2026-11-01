@@ -1,0 +1,20 @@
+{
+  "stage": "early_form_regression",
+  "final_integrated_manifest": "validation-manifest.json",
+  "final_frozen_source": "frozen-source.json",
+  "baseline": "e8cf4f6e937779b11ea4d7aad511fc070bb2d0ae",
+  "command": "node tests/frontend_thirteenth.mjs",
+  "exit_code": 0,
+  "python": "Python 3.14.4",
+  "node": "v25.9.0",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "browser": "Playwright Chromium 151.0.7922.34",
+  "scope": "Production JS imported from static endpoint; real FastAPI/temporary SQLite; 4-second normal polling; worker=False; 0 model calls",
+  "files": {
+    "app/static/view-state.js": "9fb2f666c32d64f2d2414ae0ba6590f2b1f49885d1883ff9e76795d1a98fb261",
+    "app/static/app.js": "5ac090143c72852890c321918b362f7dc2d4c973b27ed53ef228c82f22e75d92",
+    "tests/frontend_thirteenth.mjs": "c71036d789243dd678aa54380aa102d8c838d76e77cbd19f97778e5e8cd60d9a",
+    "tests/thirteenth_browser_server.py": "a82a28e32c3dd3e9352c108b02620677a9813154a41aa5b46db140532b71cbbc"
+  },
+  "note": "Source hashes captured after form test and before final integrated freeze. app.js may include concurrent correction UI work; final whole-project identity belongs to the root validation manifest."
+}

@@ -194,6 +194,7 @@ def metrics(account: dict, quotes: dict, securities: dict) -> dict:
                           "total_cost": format(total_cost, 'f') if total_cost is not None else None,
                           "cost_basis": ledger_position.get('cost_basis') if ledger_position else 'legacy_snapshot',
                           "fees_included_in_cost": bool(ledger_position and ledger_position.get('fees_included_in_cost')),
+                          "cost_fee_scope": ('recorded_buy_fees' if ledger_position and ledger_position.get('cost_basis') == 'trade_cost' else 'opening_or_correction_fee_scope_unknown'),
                           "quote": q or {"status": "missing", "as_of": None, "source": None}})
     for p in positions:
         p["weight_pct"] = money(Decimal(p["market_value"]) / value * 100) if not missing and value and p["market_value"] is not None else None
@@ -209,7 +210,7 @@ def metrics(account: dict, quotes: dict, securities: dict) -> dict:
     if any(p["quote"].get("status") not in ("ok", "live", "demo", "closed") for p in positions):
         notes.append("部分行情缺失、延迟或状态待确认；估值使用已保存报价，详情见行情时间与来源。")
     if account.get('ledger'):
-        notes.append("可用现金为虚拟记账余额，不代表可取资金。买入费用已进入剩余成本，累计费用不再从权益重复扣除；期初未知成本和可卖日期保持未知。")
+        notes.append("可用现金为虚拟记账余额，不代表可取资金。交易记录中的买入费用计入对应剩余成本；期初、迁移或校正成本是否含原费用以其依据为准，不能假定包含。未实现盈亏尚未估算未来卖出费用；已实现盈亏已扣本次卖出费用和结转成本，累计费用仅供核对，不再从权益或盈亏重复扣除。未知成本和可卖依据保持未知。")
     else:
         notes.append("数量为持仓快照；不等于当前可卖数量。未记录成交日期，不推断 T+1 可卖量；ETF 交易规则应按具体品种确认。")
     return {"positions": positions, "securities_value": money(value) if not missing else None,

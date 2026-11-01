@@ -427,10 +427,13 @@ class Service:
                     self.record_model_event(job["id"], event)
                 research = self.runner or run_research
                 self.store.task_stage(job['id'], 'researching')
-                checkpoint = self.store.reusable_synthesis_checkpoint(job, context)
+                checkpoint = self.store.reusable_synthesis_checkpoint(job, context, continue_research=True)
                 if checkpoint:
                     context['synthesis_checkpoint'] = checkpoint
-                    self.store.event(job['id'], {'type': 'synthesis_resuming', 'message': '正在复用已保存的研究成果重试汇总',
+                    continuing = checkpoint.get('recovery_mode') == 'continue_research'
+                    self.store.event(job['id'], {'type': 'research_resuming' if continuing else 'synthesis_resuming',
+                        'message': '正在复用已保存成果，按未完成范围继续研究' if continuing else '正在复用已保存的研究成果重试汇总',
+                        'recovery_mode': checkpoint.get('recovery_mode', 'synthesis_only'),
                         'checkpoint_job_id': checkpoint['checkpoint_job_id'], 'attempt': checkpoint['resume_attempt']})
                 context['_analysis_deadline'] = analysis_deadline
                 async with asyncio.timeout_at(analysis_deadline):

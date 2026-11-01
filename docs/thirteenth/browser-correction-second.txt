@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"entry_id":"60e23dbbda534ef49b652e022cfd8dfa","trade_id":null,"account_id":"6f41706f964e4f4ba51253f537ead837","input_version":4,"operation_id":"adfef77a-a222-44aa-95b5-f03ee8373a82","entry":{"kind":"correction","mode":"patch","cash_before":"95984.97","cash_after":"96000.00","cash_effect":"15.03","availability_effective_on":"2026-10-30","availability_timezone":"Asia/Shanghai","availability_semantics":"current_shanghai_date_not_historical_proof","external_flow":true,"before_positions":{"SH:518880":{"cost_basis":"trade_cost","fees_included_in_cost":true,"lots":[{"quantity":"100","sellable_on":"2026-10-30","source":"trade","traded_at":"2026-10-30T10:00:00+08:00"}],"quantity":"100","symbol":"SH:518880","total_cost":"1005.00"},"SZ:002354":{"cost_basis":"trade_cost","fees_included_in_cost":true,"lots":[{"quantity":"300","sellable_on":"2026-11-02","source":"trade","traded_at":"2026-10-30T10:00:00+08:00"}],"quantity":"300","symbol":"SZ:002354","total_cost":"3010.03"}},"after_positions":{"SH:518880":{"cost_basis":"trade_cost","fees_included_in_cost":true,"lots":[{"quantity":"100","sellable_on":"2026-10-30","source":"trade","traded_at":"2026-10-30T10:00:00+08:00"}],"quantity":"100","symbol":"SH:518880","total_cost":"1005.00"},"SZ:002354":{"cost_basis":"trade_cost","fees_included_in_cost":true,"lots":[{"quantity":"300","sellable_on":"2026-11-02","source":"trade","traded_at":"2026-10-30T10:00:00+08:00"}],"quantity":"300","symbol":"SZ:002354","total_cost":"3010.03"}},"before_holdings":[{"symbol":"SZ:002354","quantity":"300","cost_price":"10.033433333333333333333333333333333333333333333333"},{"symbol":"SH:518880","quantity":"100","cost_price":"10.05"}],"after_holdings":[{"symbol":"SH:518880","quantity":"100","cost_price":"10.05"},{"symbol":"SZ:002354","quantity":"300","cost_price":"10.033433333333333333333333333333333333333333333333"}],"changes":[],"reason":"修订校正原因","actor":"local_user","historical_pnl_rewritten":false,"before_name":"第十一轮模拟 A","after_name":"第十一轮模拟 A","before_preferences":{"risk":"balanced","horizon":"中长期","max_position_pct":null,"max_sector_pct":null},"after_preferences":{"risk":"balanced","horizon":"中长期","max_position_pct":null,"max_sector_pct":null},"id":"60e23dbbda534ef49b652e022cfd8dfa","recorded_at":"2026-10-30T16:00:00+08:00","operation_id":"adfef77a-a222-44aa-95b5-f03ee8373a82","sequence":4,"account_version":4},"cash_before":"95984.97","cash_after":"96000.00","fees":null,"quantity_before":null,"quantity_after":null,"research":{"job_id":"c5699abd301d4dd5bd2b316eed5e9415","state":"queued","message":"记账成功；分析待处理，分析失败不会回滚交易"},"replayed":false}
+
+201 !== 200
+
+    at commit (file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_thirteenth_correction.mjs:32:149)
+    at async file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_thirteenth_correction.mjs:38:2 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 201,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

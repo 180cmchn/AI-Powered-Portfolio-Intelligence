@@ -99,7 +99,7 @@ def _checkpoint_context(value):
             'team_snapshot', 'reports', 'material_ids', 'metrics', 'open_questions',
             'unresolved_tasks', 'unresolved_tasks_note', 'manager_summary', 'created_at',
             'checkpoint_job_id', 'resume_attempt', 'configuration_relation', 'recovery_state', 'unknown_material_ids',
-            'partial_research', 'interruption', 'recovery_assessment')
+            'partial_research', 'interruption', 'recovery_assessment', 'recovery_mode')
     result = {key: (_team_context(value[key]) if key == 'team_snapshot' else _research_context(value[key]))
               for key in keys if key in value}
     result['calculations'] = checkpoint_summaries(value.get('calculations'))
@@ -279,6 +279,7 @@ class ResearchRuntime:
         self.budget_lock = asyncio.Lock()
         self.request_owner = ContextVar("research_request_owner", default=("manager", False))
         self.budget_closing = False
+        self.closeout_reasons: set[str] = set()
         self.closeout_waited = False
         self.deadline: float | None = None
         self.inherited_deadline = context.get('_analysis_deadline')
@@ -299,10 +300,12 @@ class ResearchRuntime:
         self.materials: list[dict] = []
         self.material_delivery_ids: dict[str, list[int]] = {}
         self.report_delivery_seen: set[str] = set()
+        self.request_report_visibility: list[dict] = []
         self.report_tool_messages: dict[str, str] = {}
         self.calculations: list[dict] = []
         self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
-        self.synthesis_only = bool(self.synthesis_checkpoint)
+        self.restored_checkpoint = copy.deepcopy(self.synthesis_checkpoint)
+        self.synthesis_only = bool(self.synthesis_checkpoint and self.synthesis_checkpoint.get('recovery_mode') != 'continue_research')
         self.synthesis_started_calls = 0
         self.checkpoint_signature = ""
         self.closed = False
@@ -319,6 +322,8 @@ class ResearchRuntime:
             self.client.add_user(self.manager_session, {"recovery": "基于已保存的可见研究成果完成最终汇总；不重复联网或创建子任务。当前持仓与版本以本次 context 为准。"})
             if self.synthesis_checkpoint.get('partial_research'):
                 self.client.add_user(self.manager_session, {'recovery_scope': '原研究中途失败，仅复用已完成计算与可见成果，未完成范围仍未知。本次交付须明确标为有限分析；不能声称所有专题完成。'})
+        elif self.restored_checkpoint:
+            self.client.add_user(self.manager_session, {'recovery': '基于已保存成果继续研究。已完成子报告现在真实交付，保留原任务、实例及材料范围；不等于主 Agent 亲读原文。先利用已完成计算和材料索引，按未完成范围决定补查或有限分析。不得重放已中断请求或把旧未完成任务视为完成。'})
 
     def _remember_calculation(self, agent_id, tool, arguments, output, *, restored=None):
         summary = calculation_projection(tool, output, arguments)
@@ -482,6 +487,11 @@ class ResearchRuntime:
                 # credential/budget checks, immediately before the HTTP attempt.
                 # An archived or merely queued child report is not a delivery.
                 delivered = self._record_visible_report_deliveries()
+                await self._publish('research_context_delivery', 'manager', {
+                    'request_number': self.calls, 'phase': session.phase,
+                    'final_request': bool(final_request),
+                    'reports': copy.deepcopy(self.request_report_visibility),
+                    'note': '最终压缩后实际请求中的子报告范围；交付不代表模型采用，更不代表主 Agent 亲读原文。'})
                 if delivered and self.children and not self.context.get('synthesis_checkpoint'):
                     await self._save_checkpoint()
 
@@ -492,12 +502,14 @@ class ResearchRuntime:
         # report plus, when available, citation correction / a failed request).
         if remaining <= active + 2:
             self.budget_closing = True
+            self.closeout_reasons.add('shared_calls_reserved')
         # Do not launch another full ordinary request if its allowed duration
         # could consume the reserved final window. This also tells children to
         # submit their visible work early enough for the manager to use it.
         if self.deadline is not None and self.deadline - time.monotonic() <= (
                 self._synthesis_reserve() + timeout_policy(self.config)['request_hard_seconds']):
             self.budget_closing = True
+            self.closeout_reasons.add('analysis_time_reserved')
         return self.budget_closing
 
     def _synthesis_reserve(self):
@@ -515,19 +527,37 @@ class ResearchRuntime:
         if self.closeout_waited:
             return
         self.closeout_waited = True
-        active = [child.task_handle for child in self.children.values()
-                  if child.task_handle and not child.task_handle.done()]
+        self.budget_closing = True
+        if not self.closeout_reasons:
+            self.closeout_reasons.add('manager_final_turn')
+        pending = [child for child in self.children.values()
+                   if child.task_handle and not child.task_handle.done()]
+        active = [child.task_handle for child in pending]
         wait_seconds = 30.0
+        remaining_time = None
         if self.deadline is not None:
             request_time = timeout_policy(self.config, 'synthesis')['request_hard_seconds']
             remaining_time = max(0.0, self.deadline - time.monotonic())
-            wait_seconds = min(wait_seconds, max(0.0, remaining_time - min(request_time, remaining_time / 2)))
+            child_time = max((max(0.0, min(child.session.deadlines.values()) - time.monotonic())
+                if child.session.deadlines else float(self.config.get('agent_timeout_seconds', 600))
+                for child in pending), default=0.0)
+            # Existing paid research gets its remaining bounded opportunity.
+            # The final request retains time within the same whole-round limit.
+            wait_seconds = min(child_time, max(0.0, remaining_time - min(request_time, remaining_time / 2)))
         await self._publish("budget_closeout", "manager", {"remaining_model_calls": self._remaining_calls(),
+            "reasons": sorted(self.closeout_reasons), "remaining_analysis_seconds": remaining_time,
+            "completed_report_ids": [r.get('report_id') for c in self.children.values() for r in c.reports],
+            "active_child_ids": [child.id for child in pending],
             "active_children": len(active), "wait_seconds": wait_seconds,
             "note": "预算内收尾；等待已有子任务提交可见成果，未完成研究保留缺口。"})
         if active and wait_seconds > 0:
             # Timeout does not silently turn unfinished work into a report.
             await asyncio.wait(active, timeout=wait_seconds)
+        await self._publish('budget_closeout_finished', 'manager', {
+            'remaining_model_calls': self._remaining_calls(),
+            'completed_report_ids': [r.get('report_id') for c in self.children.values() for r in c.reports],
+            'unfinished_child_ids': [c.id for c in self.children.values() if c.status in {'queued', 'running'}],
+            'note': '下次请求在此之后构造；是否实际纳入以报告交付回执为准，晚到成果不自动视为已使用。'})
 
     def _pin_runtime_status(self, session: ModelSession, agent_id: str, remaining_turns: int, final_request: bool) -> None:
         """Refresh the retained seed, so compaction cannot erase collaboration."""
@@ -621,6 +651,13 @@ class ResearchRuntime:
         if self.synthesis_only:
             await self._publish("synthesis_resumed", "manager", {"source_task_id": self.synthesis_checkpoint.get("task_id"), "max_calls": self.config.get("synthesis_max_calls", 4),
                 "configuration_relation": self.synthesis_checkpoint.get("configuration_relation"), "model_config": self.model_config})
+        elif self.restored_checkpoint:
+            await self._publish('research_resumed', 'manager', {
+                'source_task_id': self.restored_checkpoint.get('checkpoint_job_id'),
+                'completed_reports': len(self.restored_checkpoint.get('reports', [])),
+                'completed_calculations': len(self.calculations),
+                'recovery_mode': 'continue_research',
+                'note': '复用有效已完成成果；未完成专题保留，按当前共享预算继续研究。'})
         try:
             async with asyncio.timeout_at(self.deadline):
                 result = await self._loop("manager", self.manager_session, manager=True)
@@ -633,7 +670,9 @@ class ResearchRuntime:
                                "model_calls": self.calls, "model_usage": self.client.usage_summary([r for client in {self.client, *[c.client or self.client for c in self.children.values()]} for r in client.requests]),
                                "model_config": copy.deepcopy(self.model_config),
                                "team_snapshot": copy.deepcopy(self.team),
-                               "synthesis_recovered": bool(self.context.get("synthesis_checkpoint")),
+                               "synthesis_recovered": bool(self.restored_checkpoint and self.restored_checkpoint.get('recovery_mode') != 'continue_research'),
+                               "research_recovered": bool(self.restored_checkpoint),
+                               "recovery_mode": (self.restored_checkpoint or {}).get('recovery_mode'),
                                "native_search": self.client.native_status(),
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
                                "calculation_coverage": copy.deepcopy(self.calculation_coverage),
@@ -1120,15 +1159,16 @@ class ResearchRuntime:
         completion alone are not receipts. Truncated JSON is not parsed as a
         full report. The hook runs after final request-context compaction.
         """
+        self.request_report_visibility = []
         if not hasattr(self.tools, 'store'):
             return []
         reports = {report['report_id']: (report, self.task_id)
             for child in self.children.values() for report in child.reports if report.get('report_id')}
         checkpoint = self.context.get('synthesis_checkpoint') or {}
-        reports.update({report['report_id']: (report, checkpoint.get('checkpoint_job_id') or checkpoint.get('task_id'))
+        reports.update({report['report_id']: (report, report.get('checkpoint_source_job_id') or checkpoint.get('checkpoint_job_id') or checkpoint.get('task_id'))
             for report in checkpoint.get('reports', []) if report.get('report_id')})
         receipts = []
-        channel = 'restored_synthesis' if checkpoint else 'manager_context'
+        channel = ('restored_research' if checkpoint.get('recovery_mode') == 'continue_research' else 'restored_synthesis') if checkpoint else 'manager_context'
         def report(value):
             if not isinstance(value, dict) or value.get('truncated_for_context') or value.get('truncated_for_synthesis'):
                 return
@@ -1136,6 +1176,13 @@ class ResearchRuntime:
             if not reference or not isinstance(value.get('summary'), str):
                 return
             original, source_job_id = reference
+            full = not value.get('summary_truncated') and not original.get('summary_truncated') and all(
+                value.get(key) == original.get(key) for key in
+                ('summary', 'findings', 'material_ids', 'open_questions', 'material_updates') if key in original)
+            visibility = {'report_id': original['report_id'], 'source_task_id': source_job_id,
+                          'access': 'full_report' if full else 'report_summary'}
+            if visibility not in self.request_report_visibility:
+                self.request_report_visibility.append(visibility)
             signature = json.dumps([source_job_id, original['report_id'], value], sort_keys=True, default=str)
             if signature in self.report_delivery_seen:
                 return
@@ -1196,7 +1243,9 @@ class ResearchRuntime:
             declaration.pop('report_delivery_ids', None)
             if self.material_delivery_ids.get('manager'):
                 declaration['material_delivery_ids'] = list(self.material_delivery_ids['manager'])
-        reports = []
+        restored = self.restored_checkpoint or {}
+        reports = [{**copy.deepcopy(report), 'checkpoint_source_job_id': report.get('checkpoint_source_job_id') or
+            restored.get('checkpoint_job_id') or restored.get('task_id')} for report in restored.get('reports', [])]
         for child in self.children.values():
             for report in child.reports:
                 visible = {key: copy.deepcopy(report[key]) for key in ("report_id", "summary", "findings", "material_ids", "open_questions", "research_round", "material_delivery_ids", "material_updates", "calculation_ids") if key in report}
@@ -1207,12 +1256,12 @@ class ResearchRuntime:
         available_calculations = self._available_calculations('manager')
         if not reports and not declaration and not available_calculations:
             return {}
-        unresolved_tasks = [{"agent_id": child.id, "title": child.title, "task": child.task,
+        unresolved_tasks = [*copy.deepcopy(restored.get('unresolved_tasks', [])), *[{"agent_id": child.id, "title": child.title, "task": child.task,
             "status": child.status, "round": child.round, "error": child.error,
             "pending_messages": list(dict.fromkeys([*child.pending_messages, *child.inbox]))}
             for child in self.children.values()
-            if child.status != "completed" or child.pending_messages or child.inbox]
-        material_index = [{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]
+            if child.status != "completed" or child.pending_messages or child.inbox]]
+        material_index = [*copy.deepcopy(restored.get('materials', [])), *[{key: copy.deepcopy(material[key]) for key in ("id", "url", "source_title", "classification", "access", "fetched_at") if key in material} for material in self.materials]]
         calculation_material_ids = {entry.get('material_id') for record in available_calculations
             for entry in (record['summary'], record['summary'].get('benchmark') or {})
             if isinstance(entry.get('material_id'), str)}
@@ -1221,6 +1270,7 @@ class ResearchRuntime:
             "input_version": self.input_version, "scope": self.context.get("scope", "account"),
             "data_as_of": self.context.get("data_as_of"), "reports": reports,
             "materials": material_index, "material_ids": sorted({m["id"] for m in material_index if m.get("id")} |
+                set(restored.get('material_ids', [])) |
                 calculation_material_ids |
                 {mid for report in reports for mid in report.get("material_ids", []) if isinstance(mid, str)} |
                 {mid for mid in (declaration or {}).get("material_ids", []) if isinstance(mid, str)}),
@@ -1230,6 +1280,8 @@ class ResearchRuntime:
             "unresolved_tasks": unresolved_tasks,
             "unresolved_tasks_note": "旧子报告不代表后续补查已完成；最终汇总须保留这些未决任务及其影响。" if unresolved_tasks else None,
             "manager_summary": copy.deepcopy(declaration or {}), "model_calls_used": self.calls}
+        if restored:
+            checkpoint['restored_material_deliveries'] = copy.deepcopy(restored.get('material_deliveries', []))
         if hasattr(self.tools, 'store'):
             checkpoint['report_deliveries'] = self.tools.store.checkpoint_report_deliveries(self.task_id)
         if interruption:
@@ -1251,15 +1303,16 @@ class ResearchRuntime:
         if self.synthesis_only or self.manager_session.pending_calls:
             return
         calculations = self._available_calculations('manager')
-        reports = [report for child in self.children.values() for report in child.reports]
-        if not reports and not any(c.get('summary', {}).get('status') == 'ok' for c in calculations):
+        reports = [*(self.restored_checkpoint or {}).get('reports', []),
+                   *[report for child in self.children.values() for report in child.reports]]
+        if not reports and not any(c.get('summary', {}).get('status') == 'ok' for c in calculations) and not self.restored_checkpoint:
             return
         previous = self.synthesis_checkpoint or {}
         old_ids = {c.get('calculation_id') for c in previous.get('calculations', [])}
         new_ids = {c.get('calculation_id') for c in calculations}
         old_reports = {r.get('report_id') for r in previous.get('reports', [])}
         new_reports = {r.get('report_id') for r in reports}
-        if previous and (not old_ids <= new_ids or not old_reports <= new_reports or
+        if previous.get('task_id') == self.task_id and (not old_ids <= new_ids or not old_reports <= new_reports or
                 (old_ids == new_ids and old_reports == new_reports)):
             return  # Preserve a more complete or already-ready final checkpoint.
         interruption = {'stage': stage, 'completed_calculations': len(calculations), 'completed_child_reports': len(reports),

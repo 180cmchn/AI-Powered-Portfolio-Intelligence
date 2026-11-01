@@ -12,6 +12,8 @@
 
 **第十二轮统一同页阅读状态与增量更新，改进买卖方向选择，固定账本测试时钟并明确校正生效日。交互矩阵、Mac展开截图、完整回归和远端CI边界见[第十二轮交付](docs/iteration-12.md)。** schema仍为11，保留第十一轮账本与分层超时；实际服务只会在安全重启后加载新代码。
 
+**第十三轮修复 textarea/select 实际值同步，校正改为字段差异预览并保留未改动持仓的精确成本与批次；显式重试可继续利用仍有效的已完成研究。结果与实测边界见[第十三轮交付](docs/iteration-13.md)。** schema 仍为 11，API contract 为 12；本轮未升级日常数据库或重启日常服务。
+
 ![演示模式界面：固定样例与本地计算，不代表真实模型研究](docs/demo-overview.jpg)
 
 ## 在 Mac 上启动
@@ -96,7 +98,7 @@ python3 -m venv .venv
 
 ## 备份与恢复
 
-当前为 **schema 11 / API contract 11**。升级前先在页面执行“备份数据库”（或使用只读诊断及SQLite备份脚本），确认可以中断当前研究后再停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
+当前为 **schema 11 / API contract 12**。升级前先在页面执行“备份数据库”（或使用只读诊断及SQLite备份脚本），确认可以中断当前研究后再停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
 
 ```sh
 ./stop.command --mode live
@@ -126,7 +128,7 @@ npx playwright install chromium
 PYTHON=.venv/bin/python npm run test:browser
 ```
 
-CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览器与系统依赖，再独立执行六组 Chromium 行为测试，包含原五组及第十一轮角色滚动、交易账本和布局回归。任一组失败仍执行后续浏览器组，最后汇总失败状态并保存产物。测试覆盖草稿保护、请求清理、活跃/历史分页、证据定位、引用缺口、范围版本和账户隔离。
+CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览器与系统依赖，再独立执行十组 Chromium 行为测试：保留原八组，并新增第十三轮表单实际值与局部校正组。任一组失败仍执行后续浏览器组，最后汇总失败状态并保存产物。测试覆盖草稿保护、请求清理、活跃/历史分页、证据定位、引用缺口、范围版本和账户隔离。
 
 第十一轮独立真实验收入口为 `scripts/verify_eleventh_live.py --output data/evaluations/eleventh-live-唯一目录`：只读借用日常账户的模型绑定，在新库/端口录入明确模拟的三笔买入和一笔卖出，最多两轮真实研究。会产生模型调用费用；完整命令与结果见[交付记录](docs/iteration-11.md)，不要为追求一次成功反复运行。
 

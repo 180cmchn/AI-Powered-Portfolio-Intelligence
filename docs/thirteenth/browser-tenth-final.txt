@@ -1,0 +1,45 @@
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.dblclick: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#account-form [type=submit]')[22m
+[2m    - locator resolved to <button disabled type="submit" class="button primary">…</button>[22m
+[2m  - attempting dblclick action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not enabled[22m
+[2m    - retrying dblclick action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not enabled[22m
+[2m    - retrying dblclick action[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not enabled[22m
+[2m     - retrying dblclick action[22m
+[2m       - waiting 500ms[22m
+
+    at /Users/chn/Documents/ChatGPT/金融股票 2/tests/frontend_tenth.mjs:109:821 {
+  log: [
+    "  - waiting for locator('#account-form [type=submit]')",
+    '    - locator resolved to <button disabled type="submit" class="button primary">…</button>',
+    '  - attempting dblclick action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not enabled',
+    '    - retrying dblclick action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not enabled',
+    '    - retrying dblclick action',
+    '      - waiting 100ms',
+    '    58 × waiting for element to be visible, enabled and stable',
+    '       - element is not enabled',
+    '     - retrying dblclick action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.9.0

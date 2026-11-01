@@ -1,6 +1,7 @@
 """Exact public-directory protocol doubles; separate live evidence is archived."""
 from ledger_helpers import snapshot_payload
 import asyncio
+from decimal import Decimal
 
 import httpx
 import pytest
@@ -252,7 +253,8 @@ def test_fastapi_account_switch_versions_quantities_and_single_security(tmp_path
         before_b = client.get(f"/api/accounts/{b['id']}").json()
         updated = client.put(f"/api/accounts/{a['id']}", json=snapshot_payload({"name": "虚拟 A", "cash": "10000", "expected_version": 1,
             "holdings": [{"symbol": "SZ:159278", "quantity": "20000"}]})).json()
-        assert updated["version"] == 2 and updated["cash"] == "10000.00"
+        assert updated["version"] == 2 and updated["cash"] == a["cash"]
+        assert Decimal(updated["cash"]) == Decimal("10000.00")
         after_b = client.get(f"/api/accounts/{b['id']}").json()
         for field in ("id", "version", "holdings", "cash", "preferences", "latest_job_id", "updated_at"):
             assert after_b[field] == before_b[field]

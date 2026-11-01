@@ -1,0 +1,67 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_every_model_client_and_retry_reserves_under_one_cap ___________
+
+tmp_path = PosixPath('/private/var/folders/vt/4667ywcs17s0bgchghjs8nsw0000gn/T/pytest-of-chn/pytest-88/test_every_model_client_and_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108185550>
+
+    @pytest.mark.asyncio
+    async def test_every_model_client_and_retry_reserves_under_one_cap(tmp_path, monkeypatch):
+        path = tmp_path/'budget.sqlite3'
+        AttemptBudget(path, 2)
+        # Restore init after the isolated harness hook, never affect another test.
+        monkeypatch.setattr(ModelClient, '__init__', ModelClient.__init__)
+        install_budget(path)
+        local_calls=[]
+        async def local_guard(): local_calls.append(1)
+        config={'model_name':'explicit-budget-fixture','model_protocol':'responses','model_base_url':'https://example.test/v1','model_allow_no_key':True}
+>       first=ModelClient(config,before_request=local_guard)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_thirteenth_live_verifier.py:36:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts/verify_thirteenth_live.py:53: in initialize
+    original(self, *args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <app.model.ModelClient object at 0x1081847a0>
+config = {'model_name': 'explicit-budget-fixture', 'model_protocol': 'responses', 'model_base_url': 'https://example.test/v1', 'model_allow_no_key': True}
+before_request = <function test_every_model_client_and_retry_reserves_under_one_cap.<locals>.local_guard at 0x108180ae0>
+transport = None
+
+    def __init__(
+        self,
+        config: dict[str, Any],
+        before_request: Callable[[], Awaitable[None]] | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
+        self.config = config = copy.deepcopy(config)
+        try:
+            self.reasoning_effort = reasoning_effort(config)
+        except ValueError as exc:
+            raise ModelConfigurationError(str(exc)) from exc
+        if 'reasoning' in config and not isinstance(config['reasoning'], dict):
+            raise ModelConfigurationError('Responses reasoning 配置必须为对象')
+        self.protocol = config.get("model_protocol", "responses")
+        if self.protocol not in {"responses", "chat_completions"}:
+            raise ModelConfigurationError("model_protocol 必须为 responses 或 chat_completions")
+        self.model = str(config.get("model_name") or "").strip()
+        if not self.model:
+            raise ModelConfigurationError("请先配置 model_name；应用不会默认假定任何模型权限")
+        self.key_env = str(config.get("model_key_env") or "MODEL_API_KEY")
+        self.key = config.get("_model_api_key", os.environ.get(self.key_env, ""))
+        base_url = str(config.get("model_base_url") or "https://api.openai.com/v1").rstrip("/")
+        parsed = urlsplit(base_url)
+        if parsed.scheme not in {"https", "http"} or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
+            raise ModelConfigurationError("模型 base URL 必须为不含凭据、查询串或片段的 HTTP(S) 地址")
+        local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+        if parsed.scheme != "https" and not local:
+            raise ModelConfigurationError("远程模型端点需要 HTTPS；本机模型可以使用 HTTP")
+        if not self.key and not (local and config.get("model_allow_no_key", False)):
+>           raise ModelConfigurationError(f"缺少环境变量 {self.key_env}；请在后端环境配置密钥")
+E           app.model.ModelConfigurationError: 缺少环境变量 MODEL_API_KEY；请在后端环境配置密钥
+
+app/model.py:181: ModelConfigurationError
+=========================== short test summary info ============================
+FAILED tests/test_thirteenth_live_verifier.py::test_every_model_client_and_retry_reserves_under_one_cap
+1 failed, 1 passed in 0.16s

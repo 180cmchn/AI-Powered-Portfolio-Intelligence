@@ -1,0 +1,137 @@
+{
+  "source_label": "thirteenth-working-tree",
+  "timezone": "Asia/Shanghai",
+  "test_clock": "2026-11-02T12:00:00+08:00",
+  "worker": false,
+  "model_requests": 0,
+  "scope": "Production FastAPI TestClient, resolver, ledger and isolated SQLite; synthetic arithmetic only",
+  "source_sha256": {
+    "app.ledger": "554768fe8179649a75dd0041e07150d9f7cf9bf12e886a4f94e3085d0098135c",
+    "app.ledger_api": "06986115de13d3b872a33e13e9209e006aac133d00085201e70c48587a09b18f"
+  },
+  "cases": [
+    {
+      "quantities": [
+        "1000"
+      ],
+      "status": 201,
+      "error": null,
+      "returned_holdings": [
+        {
+          "symbol": "SZ:002354",
+          "quantity": "1000",
+          "cost_price": "10.0051"
+        }
+      ],
+      "before_cash": "89994.90",
+      "after_cash": "99000.00",
+      "before_position": {
+        "cost_basis": "trade_cost",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          }
+        ],
+        "quantity": "1000",
+        "symbol": "SZ:002354",
+        "total_cost": "10005.10",
+        "available_quantity": "1000",
+        "availability_unknown_quantity": "0"
+      },
+      "after_position": {
+        "cost_basis": "trade_cost",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          }
+        ],
+        "quantity": "1000",
+        "symbol": "SZ:002354",
+        "total_cost": "10005.10",
+        "available_quantity": "1000",
+        "availability_unknown_quantity": "0"
+      },
+      "ledger_facts_identical": true,
+      "before_fees": "5.10",
+      "after_fees": "5.10",
+      "before_realized": "0.00",
+      "after_realized": "0.00"
+    },
+    {
+      "quantities": [
+        "100",
+        "200"
+      ],
+      "status": 201,
+      "error": null,
+      "returned_holdings": [
+        {
+          "symbol": "SZ:002354",
+          "quantity": "300",
+          "cost_price": "10.033433333333333333333333333333333333333333333333"
+        }
+      ],
+      "before_cash": "96989.97",
+      "after_cash": "99000.00",
+      "before_position": {
+        "cost_basis": "trade_cost",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "100",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          },
+          {
+            "quantity": "200",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          }
+        ],
+        "quantity": "300",
+        "symbol": "SZ:002354",
+        "total_cost": "3010.03",
+        "available_quantity": "300",
+        "availability_unknown_quantity": "0"
+      },
+      "after_position": {
+        "cost_basis": "trade_cost",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "100",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          },
+          {
+            "quantity": "200",
+            "sellable_on": "2026-10-30",
+            "source": "trade",
+            "traded_at": "2026-10-29T10:00:00+08:00"
+          }
+        ],
+        "quantity": "300",
+        "symbol": "SZ:002354",
+        "total_cost": "3010.03",
+        "available_quantity": "300",
+        "availability_unknown_quantity": "0"
+      },
+      "ledger_facts_identical": true,
+      "before_fees": "10.03",
+      "after_fees": "10.03",
+      "before_realized": "0.00",
+      "after_realized": "0.00"
+    }
+  ]
+}

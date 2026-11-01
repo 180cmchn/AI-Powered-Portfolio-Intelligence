@@ -15,7 +15,7 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
   function invalidatePreview(form, message='输入已改变，请重新预览。') {
     previews.delete(form);
     form.querySelector('[type=submit]').disabled=true;
-    form.querySelector('.trade-preview').textContent=message;
+    form.querySelector('.trade-preview, .correction-preview').textContent=message;
   }
   function syncForm(existing,incoming) {
     const versionChanged = existing.dataset.version !== incoming.dataset.version;
@@ -27,6 +27,7 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
       }
       syncChoiceControls(existing);
     }
+    if (existing.id==='account-form' && versionChanged) invalidatePreview(existing,'账户已有新版本；草稿保留，请核对并重新预览校正差异。');
     let notice=existing.querySelector('[data-ledger-version-notice]');
     if(versionChanged || feesChanged) {
       if(!notice){notice=document.createElement('p');notice.className='notice warning ledger-version-notice';notice.dataset.ledgerVersionNotice='';existing.prepend(notice);}
@@ -49,7 +50,7 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
     if(!data)return `<section class="card"><div class="card-body"><h2>买入 / 卖出记账</h2><p>${e(problem||'正在读取资金与交易账本…')}</p>${button('刷新账本','refresh')}</div></section>`;
     const identities=new Map((a.metrics?.positions||[]).map(position=>[position.symbol,position]));
     const rows=(data.positions||[]).map(position=>({...identities.get(position.symbol),...position}));
-    return `<section class="card" id="ledger-overview"><div class="card-header"><h2>资金与持仓</h2><span>账户输入 v${e(data.input_version)}</span></div><div class="card-body"><p>模拟可用现金 <strong>${money(data.cash)}</strong> · 已实现盈亏 ${money(data.summary?.realized_pnl)} · 累计实际扣费 ${money(data.summary?.fees_total??data.summary?.total_fees)}</p><p class="small muted">普通现金账户的手动虚拟成交，不连接券商或交易所。卖出资金可用不代表当日可取；未模拟完整清算。买入费用计入成本，累计手续费不再从权益重复扣减。</p>${problem?`<p class="error-detail">${e(problem)}</p>`:''}</div><div class="table-wrap"><table><thead><tr><th>证券</th><th>持有量</th><th>可卖量</th><th>剩余总成本</th><th>成本依据</th></tr></thead><tbody>${rows.map(p=>`<tr data-read-key="position:${e(a.id)}:${e(p.symbol)}"><td>${e(p.name||p.symbol)}<br><small>${e(p.symbol)}</small></td><td>${number(p.quantity)} ${p.kind==='stock'?'股':p.kind==='etf'||p.kind==='fund'?'份':'股 / 份（待确认）'}</td><td>${p.available_quantity==null?'待确认期初可卖量':number(p.available_quantity)+(Number(p.availability_unknown_quantity)>0?'（另有 '+number(p.availability_unknown_quantity)+' 期初待确认）':'')}</td><td>${money(p.total_cost??p.remaining_cost)}</td><td>${e(p.cost_status||((p.total_cost??p.remaining_cost)==null?'成本依据不足':'移动加权平均 · 含买入费用'))}</td></tr>`).join('')||'<tr><td colspan="5">尚无持仓，可先记录一笔买入。</td></tr>'}</tbody></table></div></section>${unknown?`<p class="notice warning" role="status">记账结果待核对 · 操作 ${e(unknown.operationId)}。不会自动重发。${button('核对记账结果','reconcile')}</p>`:''}<section class="card"><div class="card-header"><h2>记录买入 / 卖出</h2><span>一笔记录按一笔收费</span></div><form id="trade-form" class="card-body" data-account-id="${e(a.id)}" data-draft-key="trade:${e(a.id)}" data-version="${e(data.input_version)}" data-fee-version="${e(plan.version)}"><div class="form-grid three">${choiceField({e,label:'买卖方向',name:'side',value:'buy',options:[['buy','买入'],['sell','卖出']],id:'trade-side',scope:a.id})}${field('证券代码','symbol','',{id:'trade-symbol',required:true,placeholder:'518880 / 002354 / 159599',help:'接受六位代码；以实际目录识别股票与 ETF。'})}${field('整数股 / 份','quantity','',{id:'trade-quantity',required:true,type:'number',min:1,step:1,help:'不是手数；后台校验整手、零股和可卖日。'})}${field('成交单价（元）','price','',{id:'trade-price',required:true,inputmode:'decimal',placeholder:'输入已确认价格'})}${field('成交时间（上海）','traded_at',inputTime(),{id:'trade-time',required:true,type:'datetime-local',step:1})}${selectField('业务标识','mode','simulated',[['simulated','模拟记账'],['historical','补录已成交业务']],'补录保留实际录入时间；不支持任意历史插单重算。','trade-mode')}${field('备注（选填）','note','',{id:'trade-note',full:true})}</div><p class="trade-security-reference small muted" aria-live="polite">可参考已获取行情，提交始终使用这里确认的成交价格。行情不可用时仍可手动填写。</p><label class="ledger-confirm"><input type="checkbox" name="price_confirmed" required> 我已确认成交价格、数量和时间；这是一笔虚拟成交记录。</label><p class="small muted" data-trade-fee-summary>费用方案 v${e(plan.version)} · ${e(plan.name)} · ${plan.confirmed?'已由用户确认':'估算模板，待核对券商协议'}。预览与保存都由后端精确计算，账户或费率版本变化需重新预览。</p><details data-key="trade-fee-override:${e(a.id)}" class="section-gap"><summary>有依据的单笔实际费用覆盖</summary><p class="small muted">留空使用方案估算；覆盖需填写完整费用与交割单依据，不改变历史方案。</p><div class="form-grid three">${field('实际佣金','override_commission','',{id:'trade-override-commission'})}${field('实际过户费','override_transfer','',{id:'trade-override-transfer'})}${field('实际印花税','override_stamp','',{id:'trade-override-stamp'})}${field('覆盖依据 / 原因','override_reason','',{id:'trade-override-reason',full:true})}</div></details><div class="trade-preview section-gap" aria-live="polite"></div><div class="form-actions"><span class="form-status">记账成功后异步更新分析；模型失败不会撤销交易。</span><div class="actions">${button('预览现金与费用','preview')}<button type="submit" class="button primary" disabled>确认记账</button></div></div></form></section>${fundForm(data)}${feeForm(plan,a.id)}${history(data)}`;
+    return `<section class="card" id="ledger-overview"><div class="card-header"><h2>资金与持仓</h2><span>账户输入 v${e(data.input_version)}</span></div><div class="card-body"><p>模拟可用现金 <strong>${money(data.cash)}</strong> · 已实现盈亏 ${money(data.summary?.realized_pnl)} · 累计实际扣费 ${money(data.summary?.fees_total??data.summary?.total_fees)}</p><p class="small muted">普通现金账户的手动虚拟成交，不连接券商或交易所。卖出资金可用不代表当日可取；未模拟完整清算。交易买入费用计入剩余成本，卖出费用已在已实现盈亏中扣除；累计手续费为统计项，不再从权益或盈亏重复扣减。期初 / 迁移成本是否包含历史费用取决于原始依据；未实现盈亏尚未估算未来卖出费用。</p>${problem?`<p class="error-detail">${e(problem)}</p>`:''}</div><div class="table-wrap"><table><thead><tr><th>证券</th><th>持有量</th><th>可卖量</th><th>剩余总成本</th><th>成本依据</th></tr></thead><tbody>${rows.map(p=>`<tr data-read-key="position:${e(a.id)}:${e(p.symbol)}"><td>${e(p.name||p.symbol)}<br><small>${e(p.symbol)}</small></td><td>${number(p.quantity)} ${p.kind==='stock'?'股':p.kind==='etf'||p.kind==='fund'?'份':'股 / 份（待确认）'}</td><td>${p.available_quantity==null?'待确认期初可卖量':number(p.available_quantity)+(Number(p.availability_unknown_quantity)>0?'（另有 '+number(p.availability_unknown_quantity)+' 期初待确认）':'')}</td><td>${money(p.total_cost??p.remaining_cost)}</td><td>${e((p.total_cost==null?'成本依据不足':p.cost_basis==='trade_cost'&&p.fees_included_in_cost?'交易成本 · 已计入买入费用':'期初 / 校正成本 · 历史费用是否包含待核对'))}</td></tr>`).join('')||'<tr><td colspan="5">尚无持仓，可先记录一笔买入。</td></tr>'}</tbody></table></div></section>${unknown?`<p class="notice warning" role="status">记账结果待核对 · 操作 ${e(unknown.operationId)}。不会自动重发。${button('核对记账结果','reconcile')}</p>`:''}<section class="card"><div class="card-header"><h2>记录买入 / 卖出</h2><span>一笔记录按一笔收费</span></div><form id="trade-form" class="card-body" data-account-id="${e(a.id)}" data-draft-key="trade:${e(a.id)}" data-version="${e(data.input_version)}" data-fee-version="${e(plan.version)}"><div class="form-grid three">${choiceField({e,label:'买卖方向',name:'side',value:'buy',options:[['buy','买入'],['sell','卖出']],id:'trade-side',scope:a.id})}${field('证券代码','symbol','',{id:'trade-symbol',required:true,placeholder:'518880 / 002354 / 159599',help:'接受六位代码；以实际目录识别股票与 ETF。'})}${field('整数股 / 份','quantity','',{id:'trade-quantity',required:true,type:'number',min:1,step:1,help:'不是手数；后台校验整手、零股和可卖日。'})}${field('成交单价（元）','price','',{id:'trade-price',required:true,inputmode:'decimal',placeholder:'输入已确认价格'})}${field('成交时间（上海）','traded_at',inputTime(),{id:'trade-time',required:true,type:'datetime-local',step:1})}${selectField('业务标识','mode','simulated',[['simulated','模拟记账'],['historical','补录已成交业务']],'补录保留实际录入时间；不支持任意历史插单重算。','trade-mode')}${field('备注（选填）','note','',{id:'trade-note',full:true})}</div><p class="trade-security-reference small muted" aria-live="polite">可参考已获取行情，提交始终使用这里确认的成交价格。行情不可用时仍可手动填写。</p><label class="ledger-confirm"><input type="checkbox" name="price_confirmed" required> 我已确认成交价格、数量和时间；这是一笔虚拟成交记录。</label><p class="small muted" data-trade-fee-summary>费用方案 v${e(plan.version)} · ${e(plan.name)} · ${plan.confirmed?'已由用户确认':'估算模板，待核对券商协议'}。预览与保存都由后端精确计算，账户或费率版本变化需重新预览。</p><details data-key="trade-fee-override:${e(a.id)}" class="section-gap"><summary>有依据的单笔实际费用覆盖</summary><p class="small muted">留空使用方案估算；覆盖需填写完整费用与交割单依据，不改变历史方案。</p><div class="form-grid three">${field('实际佣金','override_commission','',{id:'trade-override-commission'})}${field('实际过户费','override_transfer','',{id:'trade-override-transfer'})}${field('实际印花税','override_stamp','',{id:'trade-override-stamp'})}${field('覆盖依据 / 原因','override_reason','',{id:'trade-override-reason',full:true})}</div></details><div class="trade-preview section-gap" aria-live="polite"></div><div class="form-actions"><span class="form-status">记账成功后异步更新分析；模型失败不会撤销交易。</span><div class="actions">${button('预览现金与费用','preview')}<button type="submit" class="button primary" disabled>确认记账</button></div></div></form></section>${fundForm(data)}${feeForm(plan,a.id)}${history(data)}`;
   }
   function fundForm(data) {
     return `<details class="card ledger-detail" data-key="funds:${e(state.accountId)}"><summary>资金转入 / 转出 / 确认期初现金</summary><form id="fund-form" class="card-body" data-account-id="${e(state.accountId)}" data-draft-key="funds:${e(state.accountId)}" data-version="${data.input_version}"><div class="form-grid three">${selectField('资金类型','kind',data.cash==null?'opening':'deposit',[['deposit','转入'],['withdraw','转出'],['opening','补充未知期初现金']],'资金转入不计投资收益。','fund-kind')}${field('金额（元）','amount','',{id:'fund-amount',required:true})}${field('来源 / 原因','reason','',{id:'fund-reason',required:true})}</div><div class="form-actions"><span>资金调整保存独立流水并更新研究输入。</span><button type="submit" class="button primary">保存资金记录</button></div></form></details>`;
@@ -88,6 +89,29 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
     if([f.override_commission,f.override_transfer,f.override_stamp,f.override_reason].some(Boolean))result.fees_override={commission:f.override_commission,transfer:f.override_transfer,stamp:f.override_stamp,reason:f.override_reason};
     return result;
   }
+  function correctionPayload(form) {
+    const values=new FormData(form), result={mode:'patch',expected_version:Number(form.dataset.version),reason:values.get('reason').trim(),holdings:[]};
+    if(values.has('cash_unknown'))result.cash=null;
+    else if(form.elements.cash.value.trim() && form.elements.cash.value!==form.elements.cash.defaultValue)result.cash=form.elements.cash.value;
+    const retained=new Set();
+    for(const row of form.querySelectorAll('.holding-row')) {
+      const original=JSON.parse(row.dataset.original||'{}'), input=prefix=>row.querySelector(`input[name^="${prefix}-"]`);
+      const rawSymbol=input('symbol').value.trim().toUpperCase();
+      // A bare code equal to this saved security is the same known identity,
+      // not a request to replace the security or infer a different market.
+      const symbol=original.symbol && rawSymbol===original.symbol.split(':')[1]?original.symbol:rawSymbol, change={symbol};
+      if(original.symbol && symbol!==original.symbol)throw Error('更换证券请先移除原行，再添加新证券，以便明确预览清仓差异。');
+      retained.add(symbol);
+      for(const [prefix,key] of [['quantity','quantity'],['cost','cost_price'],['available','available_quantity']]) {
+        const value=input(prefix).value.trim();
+        if(prefix!=='quantity' && input(prefix+'-unknown')?.checked)change[key]=null;
+        else if(value && (!original.symbol || value!==String(original[key]??'')))change[key]=value;
+      }
+      if(Object.keys(change).length>1)result.holdings.push(change);
+    }
+    for(const symbol of JSON.parse(form.dataset.originalSymbols||'[]'))if(!retained.has(symbol))result.holdings.push({symbol,quantity:'0',remove:true});
+    return result;
+  }
   async function reconcile(id) {
     const submissions=pending(), saved=submissions[id]; if(!saved)return null;
     const receipt=await api(endpoint(id,`ledger-operations/${enc(saved.operationId)}`),{signal:null}).catch(()=>null);
@@ -113,12 +137,23 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
     if(price&&!form.elements.price.value){form.elements.price.value=String(price);form.elements.price_confirmed.checked=false;form.dataset.dirty='true';}
   }
   document.addEventListener('focusout',event=>{if(event.target.id==='trade-symbol')operation(()=>identify(event.target.form),{key:'trade-identify',label:'识别交易证券'});});
-  document.addEventListener('input',event=>{const form=event.target.closest('#trade-form');if(form)invalidatePreview(form);});
-  document.addEventListener('change',event=>{const form=event.target.closest('#trade-form');if(form)invalidatePreview(form);});
+  document.addEventListener('input',event=>{const form=event.target.closest('#trade-form, #account-form');if(form)invalidatePreview(form);});
+  document.addEventListener('change',event=>{const form=event.target.closest('#trade-form, #account-form');if(form)invalidatePreview(form);});
+  document.addEventListener('reset',event=>{if(event.target.id==='account-form')invalidatePreview(event.target);});
   document.addEventListener('click',event=>{
     const target=event.target.closest('[data-ledger-action]');if(!target)return;
     const id=state.accountId,action=target.dataset.ledgerAction,form=target.closest('form');
     operation(async()=>{
+      if(action==='correction-preview') {
+        if(!form.reportValidity())return;
+        form.dataset.version=String(latest().input_version);
+        const payload=correctionPayload(form), signature=JSON.stringify([...new FormData(form)]);
+        const result=await api(endpoint(id,'corrections/preview'),{method:'POST',body:JSON.stringify({...payload,operation_id:crypto.randomUUID()})});
+        if(!form.isConnected||state.accountId!==id||signature!==JSON.stringify([...new FormData(form)]))return;
+        previews.set(form,{payload:{...payload,preview_token:result.preview_token},signature,result});
+        form.querySelector('.correction-preview').innerHTML=`<div class="notice"><div><strong>校正差异（不是成交）</strong><p>现金 ${e(result.cash_before??'未知')} → ${e(result.cash_after??'未知')} 元；${result.changes?.length||0} 只证券发生变化。未列出的证券保留全部原始依据。</p><p>原因：${e(result.reason)} · 操作者：${e(result.actor||'本地用户')}</p>${objectView(result.changes||[])}<p>请核对精确总成本、批次及可卖日期。确认只提交本次明确改动；输入或版本变化须重新预览。</p></div></div>`;
+        form.querySelector('[data-ledger-version-notice]')?.remove();form.querySelector('[type=submit]').disabled=false;return;
+      }
       if(action==='preview') {
         if(!form.reportValidity())return;
         form.dataset.version=String(latest().input_version);form.dataset.feeVersion=String(latest().fee_plan.version);
@@ -136,11 +171,12 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
     },{key:`ledger:${action}:${id}`,label:target.textContent});
   });
   document.addEventListener('submit',event=>{
-    const form=event.target;if(!['trade-form','fund-form','fee-plan-form','fee-adjustment-form'].includes(form.id))return;event.preventDefault();
+    const form=event.target;if(!['trade-form','account-form','fund-form','fee-plan-form','fee-adjustment-form'].includes(form.id))return;event.preventDefault();
     const id=form.dataset.accountId, values=Object.fromEntries(new FormData(form)), signature=JSON.stringify([...new FormData(form)]);
     operation(async()=>{
       let receipt;
-      if(form.id==='trade-form') {const preview=previews.get(form);if(!preview||preview.signature!==signature)throw Error('请先按当前输入重新预览费用与资金。');if(preview.payload.expected_version!==latest().input_version || preview.payload.fee_plan_version!==latest().fee_plan.version){invalidatePreview(form,'账户或费用方案已有新版本，请重新预览。');throw Error('账户或费用方案已有新版本，请重新预览。');}receipt=await write(id,'trades',preview.payload);previews.delete(form);}
+      if(form.id==='account-form') {const preview=previews.get(form);if(!preview||preview.signature!==signature||preview.payload.expected_version!==latest().input_version){invalidatePreview(form);throw Error('请按当前输入与账户版本重新预览校正差异。');}receipt=await write(id,'corrections',preview.payload);previews.delete(form);}
+      else if(form.id==='trade-form') {const preview=previews.get(form);if(!preview||preview.signature!==signature)throw Error('请先按当前输入重新预览费用与资金。');if(preview.payload.expected_version!==latest().input_version || preview.payload.fee_plan_version!==latest().fee_plan.version){invalidatePreview(form,'账户或费用方案已有新版本，请重新预览。');throw Error('账户或费用方案已有新版本，请重新预览。');}receipt=await write(id,'trades',preview.payload);previews.delete(form);}
       else if(form.id==='fund-form')receipt=await write(id,'funds',{expected_version:Number(form.dataset.version),kind:values.kind,amount:values.amount,reason:values.reason});
       else if(form.id==='fee-adjustment-form')receipt=await write(id,`ledger/${enc(form.dataset.entryId)}/fees`,{expected_version:Number(form.dataset.version),fees:{commission:values.commission,transfer:values.transfer,stamp:values.stamp},reason:values.reason});
       else {receipt=await api(endpoint(id,'fee-plan'),{method:'PUT',body:JSON.stringify({expected_fee_plan_version:Number(form.dataset.feeVersion),name:values.name,effective_from:values.effective_from,confirmed:values.confirmed==='on',stock:{...latest().fee_plan.stock,commission_rate:values.stock_rate,minimum_commission:values.stock_minimum,transfer_included:values.transfer_included==='true'},etf:{...latest().fee_plan.etf,commission_rate:values.etf_rate,minimum_commission:values.etf_minimum},market_overrides:latest().fee_plan.market_overrides||{}})});}

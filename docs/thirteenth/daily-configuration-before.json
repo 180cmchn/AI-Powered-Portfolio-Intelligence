@@ -1,0 +1,14 @@
+{
+  "agent_definitions": {
+    "count": 6,
+    "sha256": "088d4f529a31ec7216a8e663973470e6b3664dbbbada91d489d27eac02400a25"
+  },
+  "provider_catalogs": {
+    "count": 1,
+    "sha256": "77c62832fc6746e4c7f4beb9033a17d020ec7b27edf4bf08e6ce2a4efb41105b"
+  },
+  "meta": {
+    "count": 61,
+    "sha256": "ddeaa2a2e1366b8f9551be695c5cd20596eb23ac641aa94b801ed7d11ab885bc"
+  }
+}

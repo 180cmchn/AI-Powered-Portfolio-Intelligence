@@ -1,0 +1,599 @@
+{
+  "recorded_at": "2026-11-01T23:57:54.909707+08:00",
+  "timezone": "Asia/Shanghai",
+  "baseline_commit": "e8cf4f6e937779b11ea4d7aad511fc070bb2d0ae",
+  "working_tree": "Validation captured before commit/push; user subsequently authorized publishing this revision to main",
+  "source_sha256": "8d2767d75d8803a2f2ae73725b5620d00e3c5f66f8a8372fa0cbe92d4c30247e",
+  "static_sha256": "5a4ae2625a3b699179743c4790fe418cae735794e2a009e1730c95b65e5c86b8",
+  "source_matches_frozen": true,
+  "static_matches_frozen": true,
+  "environment_file_unchanged": true,
+  "schema": 11,
+  "api_contract": 12,
+  "migration": "none; no daily database upgrade or historical repair",
+  "archived_log_formatting": "Trailing spaces removed before commit from ledger-legacy-omission-before.txt, python-full-first.txt and verifier-unit.txt; all diagnostic text and failure counts retained",
+  "python": {
+    "command": "PYTHON_DOTENV_DISABLED=1 QUOTE_PROVIDER=manual /tmp/guanlan-twelfth-py312/bin/python -m pytest -q",
+    "exit_code": 0,
+    "passed": 1024,
+    "warnings": 1,
+    "duration_seconds": 104.84,
+    "failed": 0,
+    "skipped": 0,
+    "warning": "existing StarletteDeprecationWarning: httpx with starlette.testclient",
+    "version": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "log": "python-final.txt"
+  },
+  "browser": {
+    "command": "PYTHON_DOTENV_DISABLED=1 PYTHON=/tmp/guanlan-twelfth-py312/bin/python npm run test:browser",
+    "exit_code": 0,
+    "groups": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1682
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 9020
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4689
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16492
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 19689
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 61030
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 103215
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16814
+      },
+      {
+        "group": "thirteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 41240
+      },
+      {
+        "group": "thirteenth_correction",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 6518
+      }
+    ],
+    "original_eight_preserved": true,
+    "added_groups": [
+      "thirteenth",
+      "thirteenth_correction"
+    ],
+    "engine": "Playwright Chromium 151.0.7922.34",
+    "node": "v25.9.0",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "log": "browser-final.txt"
+  },
+  "native_chrome": {
+    "engine": "macOS installed Chrome 156.0.8078.74",
+    "mode": "automated headless on macOS, not manual UI/IME acceptance",
+    "controls": 18,
+    "full_page_scenarios": 8,
+    "log": "native-chrome-forms-final.txt",
+    "note": "DOM/textarea/select code unchanged afterward; later ledger-only fixes covered by final Chromium matrix"
+  },
+  "not_covered": [
+    "No new remote Linux CI result at validation capture; check the published commit workflow separately",
+    "No new native Safari or physical Chinese IME/screen-reader manual acceptance",
+    "No formal trading-window backfill or mature forecast accuracy claim"
+  ],
+  "remote_baseline": {
+    "run_id": 41279669345,
+    "head_sha": "e8cf4f6e937779b11ea4d7aad511fc070bb2d0ae",
+    "conclusion": "success",
+    "python_summary": "976 passed, 1 warning in 128.51s (0:02:08)",
+    "jobs": [
+      {
+        "name": "browser (eleventh)",
+        "id": 124768831168,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (iteration)",
+        "id": 124768831300,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (ninth)",
+        "id": 124768831301,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (twelfth)",
+        "id": 124768831305,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (tenth)",
+        "id": 124768831350,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (production)",
+        "id": 124768831366,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (twelfth-select)",
+        "id": 124768831367,
+        "conclusion": "success"
+      },
+      {
+        "name": "python",
+        "id": 124768831398,
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (seventh)",
+        "id": 124768831827,
+        "conclusion": "success"
+      },
+      {
+        "name": "tests",
+        "id": 124769382919,
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Remote run checked at validation capture; baseline only, not this implementation"
+  },
+  "intermediate_results_preserved": [
+    {
+      "file": "python-full-first.txt",
+      "result": "4 failed, 1002 passed; old cash display-format assumptions; now strict original-cash preservation plus Decimal equality"
+    },
+    {
+      "file": "browser-candidate.txt",
+      "result": "tenth failed at API contract mismatch; UI and backend now both12"
+    },
+    {
+      "file": "browser-layout-candidate.txt",
+      "result": "tenth old selector matched nested new fields; target narrowed to original four value inputs, no assertions removed"
+    },
+    {
+      "file": "browser-tenth-layout-first.txt",
+      "result": "new unknown checkboxes mistaken for aligned value inputs; four original controls explicitly counted"
+    },
+    {
+      "file": "browser-tenth-final.txt",
+      "result": "old test attempted disabled confirm without new preview; original double-submit/receipt assertions retained after preview"
+    },
+    {
+      "file": "ledger-legacy-omission-before.txt",
+      "result": "six production HTTP omissions reproduced erroneous clearing/default collision"
+    },
+    {
+      "file": "ledger-legacy-omission-after.txt",
+      "result": "same six scenarios pass with omission/null intent preserved"
+    },
+    {
+      "file": "browser-before-legacy-intent.txt",
+      "result": "ten groups passed before later compatibility audit; final full rerun separate"
+    }
+  ],
+  "daily_preservation": {
+    "checked_at": "2026-11-01T23:23:33.821917+08:00",
+    "mode": "SQLite mode=ro, query_only",
+    "hash_encoding": "SHA256(repr(default sqlite tuple rows ordered by rowid).encode(UTF-8)); same method as before snapshots",
+    "tables": {
+      "accounts": {
+        "count": 1,
+        "sha256": "c149a71a35a630338ec0fedc9b079181ca4b3371a5ddfad411ed01bcc929d8e6"
+      },
+      "ledger_entries": {
+        "count": 1,
+        "sha256": "2fee7cdddfe8c06c74913fa610bef77a4fe60e32e88aa023bad106aa4a4b07af"
+      },
+      "ledger_positions": {
+        "count": 3,
+        "sha256": "8fa6efa264ea86fc86ea3361dfb5f70494dfbc93b4c30dcf2f4e3cda630f615a"
+      },
+      "cash_entries": {
+        "count": 1,
+        "sha256": "d88bd1d58d74505ea0450fa9fb24c17d7a63bfc745a1f1528094397e4822e9eb"
+      },
+      "model_providers": {
+        "count": 1,
+        "sha256": "66e4722d17a17155e73842ef6c10c12d1b274d4f46eb8e445e08ce8302436227"
+      },
+      "provider_connections": {
+        "count": 1,
+        "sha256": "66e4722d17a17155e73842ef6c10c12d1b274d4f46eb8e445e08ce8302436227"
+      },
+      "account_agent_overrides": {
+        "count": 2,
+        "sha256": "c5f418c71315fd772c9e05fd79acc1b15b9d175ad6be6942669e782ad99aef63"
+      },
+      "analyses": {
+        "count": 3,
+        "sha256": "cae0a0a60fbff105113925695e012a260f46602299788d1398c3de406a304a38"
+      },
+      "forecasts": {
+        "count": 18,
+        "sha256": "04c124bb85392bfaad53e1ed0a15b72ebbd2c572a4aefb08e7c4d83c5c1adef1"
+      },
+      "jobs": {
+        "count": 68,
+        "sha256": "1aa34235d8c15353f5418d2ebe8e2873d4b5f010a4a916f331564e9c1d944202"
+      },
+      "agent_definitions": {
+        "count": 6,
+        "sha256": "088d4f529a31ec7216a8e663973470e6b3664dbbbada91d489d27eac02400a25"
+      },
+      "provider_catalogs": {
+        "count": 1,
+        "sha256": "77c62832fc6746e4c7f4beb9033a17d020ec7b27edf4bf08e6ce2a4efb41105b"
+      },
+      "meta": {
+        "count": 61,
+        "sha256": "ddeaa2a2e1366b8f9551be695c5cd20596eb23ac641aa94b801ed7d11ab885bc"
+      }
+    },
+    "all_unchanged": true,
+    "changed_tables": [],
+    "daily_restart_or_upgrade": false
+  },
+  "real_validation": {
+    "tasks_total": 4,
+    "tasks_with_attempts": 1,
+    "task_attempts": 1,
+    "tasks_with_model_http": 1,
+    "model_http_requests": 40,
+    "complete_stream_terminals": 40,
+    "failed_model_requests": 0,
+    "requests_with_usage": 40,
+    "requests_cost_unknown": 40,
+    "reports": 1,
+    "completed_child_reports": 2,
+    "forecast_batches": 1,
+    "forecast_samples": 9,
+    "structured_forecasts": 0,
+    "formal_forecasts": 0,
+    "exploratory_forecasts": 0,
+    "forecast_evaluation_rows": 0,
+    "forecast_evaluation_tasks": 0,
+    "forecast_evaluation_status_counts": {},
+    "task_state_counts": {
+      "superseded": 3,
+      "completed": 1
+    },
+    "observation_cycles": 20,
+    "observation_phase_counts": {
+      "after_publish": 10,
+      "after_restart": 10
+    },
+    "source_sha256": "8d2767d75d8803a2f2ae73725b5620d00e3c5f66f8a8372fa0cbe92d4c30247e",
+    "expected_source_sha256": "8d2767d75d8803a2f2ae73725b5620d00e3c5f66f8a8372fa0cbe92d4c30247e",
+    "source_matches_expected": true,
+    "single_report_acceptance_passed": true,
+    "report_current_after_observation": true,
+    "automatic_tasks_count": 0,
+    "binding_mismatch_count": 0,
+    "aggregate_http_budget": {
+      "maximum": 40,
+      "reserved_attempts": 40,
+      "observed_model_requests": 40,
+      "reserved_minus_observed": 0,
+      "note": "A reservation precedes HTTP and may survive a crash without a logged request; nonzero difference remains unexplained, never assigned zero cost."
+    },
+    "final_source_unchanged": true,
+    "final_environment_unchanged": true,
+    "accounting": {
+      "cash": "86484.90",
+      "input_version": 4,
+      "known_total_cost": "13515.10",
+      "unknown_cost_positions": 0,
+      "fees": "15.10",
+      "known_realized_pnl": "0",
+      "unknown_cost_sales": 0,
+      "cash_flow_sum": "86484.90",
+      "cash_matches_simulated_expected": true,
+      "positions_match_simulated_inputs": true
+    },
+    "note": "Only actual account reports count as reports. Child reports and complete HTTP terminals are separate. Predictions and scoring are independently counted.",
+    "mechanical_single_report_acceptance_passed": true,
+    "account_report_content_accepted": false,
+    "overall_live_acceptance_passed": false,
+    "final_report_characters": 21,
+    "finish_analysis_tool_calls": 0,
+    "upstream_effort_report_mismatches": 8,
+    "requested_binding_mismatches": 0,
+    "output_reported_above_requested_cap_count": 3
+  },
+  "artifacts": {
+    "docs/thirteenth/browser-before-legacy-intent.txt": {
+      "bytes": 14623,
+      "sha256": "a45e89623882ffdf8a3b0bd3b325243b84e275f449558ff42e716189c02a86f0"
+    },
+    "docs/thirteenth/browser-candidate.txt": {
+      "bytes": 15003,
+      "sha256": "52262de6db9f5f980d9d9f8a14d77ac07d7724fe84affb78a2bac01e5f1da88d"
+    },
+    "docs/thirteenth/browser-correction-first.txt": {
+      "bytes": 631,
+      "sha256": "d9c90071df67cafec35d067430fa3dd30a1a62e11fd57477bfe2ffc7c68e810f"
+    },
+    "docs/thirteenth/browser-correction-remove.txt": {
+      "bytes": 773,
+      "sha256": "017b46a462188feaaed3485239b1342e4ab22796859cafde55c486e5ed113e82"
+    },
+    "docs/thirteenth/browser-correction-second.txt": {
+      "bytes": 3229,
+      "sha256": "727e2c0736a1d29d8bf251f547a0be324f9e822613e3c4be1b9816d91f4c5272"
+    },
+    "docs/thirteenth/browser-correction-third.txt": {
+      "bytes": 450,
+      "sha256": "755f201792c1566e593ec829dbe2ff5be1fae4d239f103d4b374ec5408f4c101"
+    },
+    "docs/thirteenth/browser-final.txt": {
+      "bytes": 14756,
+      "sha256": "61154375bf522f2cb3164b789b0bcee38fb8d820b3e575c4fecc8bf3d9694d2f"
+    },
+    "docs/thirteenth/browser-groups-before-legacy-intent.json": {
+      "bytes": 955,
+      "sha256": "bb442ce3e46ef9f69c085f729baa2d002bce8567fad987b8be36d7cff91b14a4"
+    },
+    "docs/thirteenth/browser-groups-candidate.json": {
+      "bytes": 954,
+      "sha256": "f82a64d371f13c28b56800174498263826a79c4ca142b051b8c47c37f2b11d66"
+    },
+    "docs/thirteenth/browser-groups-final.json": {
+      "bytes": 955,
+      "sha256": "529674f847a42f88e9f28533dea3b99e34ed9fddf815ced86c0b955786adfbde"
+    },
+    "docs/thirteenth/browser-groups-layout-candidate.json": {
+      "bytes": 954,
+      "sha256": "fdc425902433d64e949eabed0eb732f8e443d69e2fc0861ac8fe50e0bc6aa80d"
+    },
+    "docs/thirteenth/browser-layout-candidate.txt": {
+      "bytes": 15614,
+      "sha256": "c884fb8f9cf719f310d636cf60e61127fde7c0f292c4b5060dd2cf0d0c1a3da9"
+    },
+    "docs/thirteenth/browser-tenth-canonical-intermediate.txt": {
+      "bytes": 44,
+      "sha256": "021dd6e5a299668a6092be9b47947e8ea6a16f562a258b144babe54ff09b3202"
+    },
+    "docs/thirteenth/browser-tenth-final.txt": {
+      "bytes": 1751,
+      "sha256": "3ed6fa7efb6d6a2274fadb47cd5ef489bfb9644b0d26d06598688813ad8079c5"
+    },
+    "docs/thirteenth/browser-tenth-final2-cash-format-failure.txt": {
+      "bytes": 472,
+      "sha256": "f1f8f7421db1876cbab6fd16edfe5fdba920fecab0a562e728fc0275433f54be"
+    },
+    "docs/thirteenth/browser-tenth-final2.txt": {
+      "bytes": 44,
+      "sha256": "021dd6e5a299668a6092be9b47947e8ea6a16f562a258b144babe54ff09b3202"
+    },
+    "docs/thirteenth/browser-tenth-layout-first.txt": {
+      "bytes": 668,
+      "sha256": "7ed672ba55832a7294029a1aec2642c0b6a28b4d3229176bcc4d06830a8841d7"
+    },
+    "docs/thirteenth/candidate-source.json": {
+      "bytes": 19732,
+      "sha256": "06a0c2f8c4ef1be3020cb1cdbd593fa20dad3e1ce8739273ab88d257409e9276"
+    },
+    "docs/thirteenth/correction-browser.txt": {
+      "bytes": 640,
+      "sha256": "5a2cad20daa226b05af2350b2feab9d3f1b440f7b4941d5ccd9e126f13d1c4c0"
+    },
+    "docs/thirteenth/correction-evidence.json": {
+      "bytes": 17112,
+      "sha256": "74e714ff70ec587d60e9e22f7c9d8846e3ca61405497753f27adf72c08bca3f7"
+    },
+    "docs/thirteenth/correction-layout-1360.png": {
+      "bytes": 197292,
+      "sha256": "847f4a92cbf61978be1aa148329534cbc48e299e66f76544debd598cf31bade4"
+    },
+    "docs/thirteenth/correction-layout-390.png": {
+      "bytes": 81391,
+      "sha256": "f768ace2bd118da85b85e89f7a220966991fb8b984c3c4d398ee55837e9b15f0"
+    },
+    "docs/thirteenth/correction-layout-800.png": {
+      "bytes": 178596,
+      "sha256": "291c9e056f8b31f41a8ff446b9b92e0b2ba8b5de9deccf93c0b71e890b1399d9"
+    },
+    "docs/thirteenth/daily-configuration-before.json": {
+      "bytes": 372,
+      "sha256": "44403e06620b54ea9b1892b4266c4c61e65b1dd9a03c3cc9024dd3fdaf98daab"
+    },
+    "docs/thirteenth/daily-preservation-before.json": {
+      "bytes": 1234,
+      "sha256": "5bbbac53a1256c6816ce5cb2c13db52a532c4285e79a84a122ff2eecbbbdd5b9"
+    },
+    "docs/thirteenth/daily-preservation-final.json": {
+      "bytes": 2029,
+      "sha256": "acdbaf4b3a24dcf49eab170189ef0f0eec7add9fc1fc02ff318ed347afb6442e"
+    },
+    "docs/thirteenth/form-browser.txt": {
+      "bytes": 277,
+      "sha256": "d15cd151b83417c6b1475d6ac72e9682ba58dc4ef5c1e3eb7031e3b121270db0"
+    },
+    "docs/thirteenth/form-evidence.json": {
+      "bytes": 99214,
+      "sha256": "e4ce7ac001df9feabda50c0004483553dbc59114aa97227de8656817cf775857"
+    },
+    "docs/thirteenth/form-integration-review.md": {
+      "bytes": 3342,
+      "sha256": "2ed23ead50dd9bcac105887c4cd9f14858309241684acfc644d38b22801d01c0"
+    },
+    "docs/thirteenth/form-manifest.json": {
+      "bytes": 1199,
+      "sha256": "4f5235f12156ab7128a1dcc11615e2e9b7b2ef32c89def43e25058c6711269de"
+    },
+    "docs/thirteenth/form-sync.md": {
+      "bytes": 4315,
+      "sha256": "18e4ab33f5336ab632169516d121e23f811509afb5cd6385009179c2f9f6ff12"
+    },
+    "docs/thirteenth/frozen-source.json": {
+      "bytes": 19732,
+      "sha256": "af0c54af008826c84bdfcce72577b64334da728b847f0443222231dcbf877252"
+    },
+    "docs/thirteenth/ledger-after.json": {
+      "bytes": 3852,
+      "sha256": "23ff3694192cabacbe96e8be98b1d6945408b80b0c478619dceeb7cc17c29ef1"
+    },
+    "docs/thirteenth/ledger-before.json": {
+      "bytes": 4256,
+      "sha256": "d355761f096bf2c0aa7bd60eb41dd9f08f7409ef77d51f631adaad1c7150889f"
+    },
+    "docs/thirteenth/ledger-corrections.md": {
+      "bytes": 10291,
+      "sha256": "a26446cc2653a3751f4a7e04720a596a3656169d2279ad0aded59b934e62906e"
+    },
+    "docs/thirteenth/ledger-legacy-omission-after.txt": {
+      "bytes": 625,
+      "sha256": "ec656208d33eaf2b4a66fb7462be314c0372df50432577555279ae1957f28753"
+    },
+    "docs/thirteenth/ledger-legacy-omission-before.txt": {
+      "bytes": 12987,
+      "sha256": "a55f6ba53ec47633bad83edae9387977ccdfc2b6f9e979481a11c9abd3e02e0c"
+    },
+    "docs/thirteenth/ledger-tests.txt": {
+      "bytes": 693,
+      "sha256": "7eb76539cad93ca26cc335c215922342cca2de154120043cfe6fdf9f52a9c4a4"
+    },
+    "docs/thirteenth/live-approval-before.json": {
+      "bytes": 789,
+      "sha256": "ed46448260cb80a3defe1b8a2cfafb0a96c831be3674463c99965f2dc6094341"
+    },
+    "docs/thirteenth/live-authorization.json": {
+      "bytes": 816,
+      "sha256": "415ccab14276cc88b2f7fbc669895486883d02266ab28a0c5506d3dd2a4e336e"
+    },
+    "docs/thirteenth/live-content-review.md": {
+      "bytes": 8172,
+      "sha256": "2e2814e769fc97f86a3feb4991c80f7ae07d4d3027df8fd8f2111bc7020baeaf"
+    },
+    "docs/thirteenth/live-evidence.json": {
+      "bytes": 336682,
+      "sha256": "bbaba32785077274cb5008fb516651c77599ae004c7c9255854205163b38b75b"
+    },
+    "docs/thirteenth/live-research.md": {
+      "bytes": 7652,
+      "sha256": "38ad0d898a8257e0b423585b1bedb03d2f3f961b9c77ae092750404bb69e2fa3"
+    },
+    "docs/thirteenth/live-verifier.md": {
+      "bytes": 3831,
+      "sha256": "83813b44a49430d2298d86e3bc358550508659ecb5fcaf6d0a9caad79634f96e"
+    },
+    "docs/thirteenth/native-chrome-form-evidence-final.json": {
+      "bytes": 99214,
+      "sha256": "ea620740f2244170f2da6729a4a8694ce0cfe45bc86c97a579496c7c10ab4b3e"
+    },
+    "docs/thirteenth/native-chrome-form-evidence.json": {
+      "bytes": 99214,
+      "sha256": "ea620740f2244170f2da6729a4a8694ce0cfe45bc86c97a579496c7c10ab4b3e"
+    },
+    "docs/thirteenth/native-chrome-forms-final.txt": {
+      "bytes": 277,
+      "sha256": "d8cea87217b496e3d9e5c8faed46301870e0b893486716426c34e323d721c900"
+    },
+    "docs/thirteenth/native-chrome-forms.txt": {
+      "bytes": 277,
+      "sha256": "d8cea87217b496e3d9e5c8faed46301870e0b893486716426c34e323d721c900"
+    },
+    "docs/thirteenth/python-before-bare-code-fix.txt": {
+      "bytes": 1773,
+      "sha256": "00edd22be410c5ad84f184f341953b851ebde24cd8762b2b3fa53a405654bc51"
+    },
+    "docs/thirteenth/python-before-legacy-intent.txt": {
+      "bytes": 1773,
+      "sha256": "1d4725344f407cce3bf72f8a52c879edc1801b58734c4e9c579cd65380a0126c"
+    },
+    "docs/thirteenth/python-before-verifier-checks.txt": {
+      "bytes": 1773,
+      "sha256": "ddbee3413297213d6be1380e26a122d583ff1690e9f8bf0e21da421753e25c1e"
+    },
+    "docs/thirteenth/python-candidate.txt": {
+      "bytes": 1693,
+      "sha256": "071825580933c41ea2a12cc1fd2438ce65de64476bdba12ab0bd8eb9889d827e"
+    },
+    "docs/thirteenth/python-final.txt": {
+      "bytes": 1773,
+      "sha256": "732c786ee8044a5fdeea283b0b0b40a09537d9064bd3fd75996f930e616501bd"
+    },
+    "docs/thirteenth/python-full-first.txt": {
+      "bytes": 8632,
+      "sha256": "9cc2afa3657cee4000ee8e5db63770625bff0925955271db5141b6f50b710996"
+    },
+    "docs/thirteenth/recovery-notes.md": {
+      "bytes": 6163,
+      "sha256": "e938ba2be5e89b2beedf2a7111129053316e3b4759e269748add179098ff2f6a"
+    },
+    "docs/thirteenth/recovery-prior-diagnostic.json": {
+      "bytes": 6935,
+      "sha256": "b261cc643cc23a087ddb8e5a3f4ad35f35c212de659155443a1202d1f3cd1aea"
+    },
+    "docs/thirteenth/recovery-tests.txt": {
+      "bytes": 180,
+      "sha256": "dea5678acdbe2da1d213b78c68e8fd0954dc1ec451f87790f59eef7ff238d5c3"
+    },
+    "docs/thirteenth/remote-baseline.json": {
+      "bytes": 20536,
+      "sha256": "3a97f56ad8696199d4c86ce02ff39d8c2c3a6b5851a860a7b23ae12c09d10e20"
+    },
+    "docs/thirteenth/runtime-before.json": {
+      "bytes": 1507,
+      "sha256": "8bf13334d338cb4b412c3120f0c3443d5e689502a93020691ffbecf03791505f"
+    },
+    "docs/thirteenth/source-before-final-harness-review.json": {
+      "bytes": 19732,
+      "sha256": "3c7263000cac9c73408bdd4c6ae2a016066b97318a075c1d455b014f00d2099e"
+    },
+    "docs/thirteenth/source-before-legacy-intent-review.json": {
+      "bytes": 19732,
+      "sha256": "5b8d9bcc506a521c165e75facb836a31cc8e42613f7b990265962dd4cb20485f"
+    },
+    "docs/thirteenth/source-before-legacy-omission-fix.json": {
+      "bytes": 19732,
+      "sha256": "5b8d9bcc506a521c165e75facb836a31cc8e42613f7b990265962dd4cb20485f"
+    },
+    "docs/thirteenth/verifier-integration-final.txt": {
+      "bytes": 99,
+      "sha256": "d604c7fee12b270e9507274e0eeca99b325e75b87aaad80749a9f4949bca2ede"
+    },
+    "docs/thirteenth/verifier-unit-final.txt": {
+      "bytes": 98,
+      "sha256": "fc7dc070796ac441e564a33df9d949775fcaee7f1d4263ac4ea531a64699874b"
+    },
+    "docs/thirteenth/verifier-unit.txt": {
+      "bytes": 4213,
+      "sha256": "5e7b7aeedeeebaf5c4557255a0c8366a74d986f32a95d351c01b63a3e6b68564"
+    }
+  }
+}

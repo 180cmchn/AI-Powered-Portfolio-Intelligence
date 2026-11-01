@@ -1,0 +1,4150 @@
+{
+  "platform": "darwin",
+  "baseline": {
+    "controls": [
+      {
+        "name": "textarea-empty-to-text",
+        "before": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "expected": {
+          "value": "SH:518880",
+          "defaultValue": "SH:518880",
+          "textContent": "SH:518880",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "SH:518880"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "",
+          "defaultValue": "SH:518880",
+          "textContent": "SH:518880",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "",
+          "defaultValue": "SH:518880",
+          "textContent": "SH:518880",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "textarea-text-to-empty",
+        "before": {
+          "value": "old",
+          "defaultValue": "old",
+          "textContent": "old",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "old"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "actual": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "textarea-same",
+        "before": {
+          "value": "same",
+          "defaultValue": "same",
+          "textContent": "same",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "same"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "same",
+          "defaultValue": "same",
+          "textContent": "same",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "same"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "same",
+          "defaultValue": "same",
+          "textContent": "same",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "same"
+            ]
+          ]
+        },
+        "sameText": true,
+        "patchActual": {
+          "value": "same",
+          "defaultValue": "same",
+          "textContent": "same",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "same"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "textarea-live-vs-default",
+        "before": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "expected": {
+          "value": "live server value",
+          "defaultValue": "server default",
+          "textContent": "server default",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "live server value"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "live server value",
+          "defaultValue": "server default",
+          "textContent": "server default",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "live server value"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "",
+          "defaultValue": "server default",
+          "textContent": "server default",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              ""
+            ]
+          ]
+        },
+        "checkPatch": false
+      },
+      {
+        "name": "select-add-selected",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-initialize",
+        "before": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [],
+          "formData": []
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": []
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": []
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-existing-options",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-remove-selected",
+        "before": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-remove-all",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [],
+          "formData": []
+        },
+        "actual": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [],
+          "formData": []
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [],
+          "formData": []
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-reorder",
+        "before": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-duplicate-values",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "FirstSecond",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "First",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "Second",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "FirstSecond",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "First",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "Second",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "FirstSecond",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "First",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "Second",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-no-selection",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": -1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": []
+        },
+        "actual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "checkPatch": false
+      },
+      {
+        "name": "select-disabled",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": true,
+          "selectedIndex": 1,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": true
+            }
+          ],
+          "formData": []
+        },
+        "actual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": true,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": true
+            }
+          ],
+          "formData": []
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": true,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": false,
+              "defaultSelected": true,
+              "disabled": true
+            }
+          ],
+          "formData": []
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "select-enabled",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": true,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": []
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "B",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "B",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "B",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "multi-add-selected",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "A",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BAB2",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 2,
+              "value": "b",
+              "text": "B2",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ],
+            [
+              "x",
+              "a"
+            ],
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BAB2",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 2,
+              "value": "b",
+              "text": "B2",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ],
+            [
+              "x",
+              "a"
+            ],
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BAB2",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 2,
+              "value": "b",
+              "text": "B2",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ],
+            [
+              "x",
+              "a"
+            ],
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "multi-to-single",
+        "before": {
+          "value": "a",
+          "defaultValue": null,
+          "textContent": "AB",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "a",
+              "text": "A",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "a"
+            ],
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "b",
+          "defaultValue": null,
+          "textContent": "BA",
+          "checked": null,
+          "defaultChecked": null,
+          "disabled": false,
+          "selectedIndex": 0,
+          "selectedOptions": [
+            {
+              "index": 0,
+              "value": "b",
+              "text": "B",
+              "selected": true,
+              "defaultSelected": true,
+              "disabled": false
+            },
+            {
+              "index": 1,
+              "value": "a",
+              "text": "A",
+              "selected": false,
+              "defaultSelected": false,
+              "disabled": false
+            }
+          ],
+          "formData": [
+            [
+              "x",
+              "b"
+            ]
+          ]
+        },
+        "checkPatch": true
+      },
+      {
+        "name": "checkbox-live-vs-default",
+        "before": {
+          "value": "old",
+          "defaultValue": "old",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": false,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": []
+        },
+        "expected": {
+          "value": "new",
+          "defaultValue": "new",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": true,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": []
+        },
+        "actual": {
+          "value": "new",
+          "defaultValue": "new",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": true,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": []
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "new",
+          "defaultValue": "new",
+          "textContent": "",
+          "checked": true,
+          "defaultChecked": true,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "new"
+            ]
+          ]
+        },
+        "checkPatch": false
+      },
+      {
+        "name": "input-live-vs-default",
+        "before": {
+          "value": "old",
+          "defaultValue": "old",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": false,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "old"
+            ]
+          ]
+        },
+        "expected": {
+          "value": "live server value",
+          "defaultValue": "server default",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": false,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "live server value"
+            ]
+          ]
+        },
+        "actual": {
+          "value": "live server value",
+          "defaultValue": "server default",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": false,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "live server value"
+            ]
+          ]
+        },
+        "sameText": null,
+        "patchActual": {
+          "value": "server default",
+          "defaultValue": "server default",
+          "textContent": "",
+          "checked": false,
+          "defaultChecked": false,
+          "disabled": false,
+          "selectedIndex": null,
+          "selectedOptions": null,
+          "formData": [
+            [
+              "x",
+              "server default"
+            ]
+          ]
+        },
+        "checkPatch": false
+      }
+    ],
+    "page": {
+      "value": "",
+      "defaultValue": "SH:518880",
+      "textContent": "SH:518880",
+      "formData": [
+        [
+          "watchlist",
+          ""
+        ],
+        [
+          "candidates",
+          ""
+        ]
+      ]
+    }
+  },
+  "controls": [
+    {
+      "name": "textarea-empty-to-text",
+      "before": {
+        "value": "",
+        "defaultValue": "",
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            ""
+          ]
+        ]
+      },
+      "expected": {
+        "value": "SH:518880",
+        "defaultValue": "SH:518880",
+        "textContent": "SH:518880",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "SH:518880"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "SH:518880",
+        "defaultValue": "SH:518880",
+        "textContent": "SH:518880",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "SH:518880"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "SH:518880",
+        "defaultValue": "SH:518880",
+        "textContent": "SH:518880",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "SH:518880"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "textarea-text-to-empty",
+      "before": {
+        "value": "old",
+        "defaultValue": "old",
+        "textContent": "old",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "old"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "",
+        "defaultValue": "",
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            ""
+          ]
+        ]
+      },
+      "actual": {
+        "value": "",
+        "defaultValue": "",
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            ""
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "",
+        "defaultValue": "",
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            ""
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "textarea-same",
+      "before": {
+        "value": "same",
+        "defaultValue": "same",
+        "textContent": "same",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "same"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "same",
+        "defaultValue": "same",
+        "textContent": "same",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "same"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "same",
+        "defaultValue": "same",
+        "textContent": "same",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "same"
+          ]
+        ]
+      },
+      "sameText": true,
+      "patchActual": {
+        "value": "same",
+        "defaultValue": "same",
+        "textContent": "same",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "same"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "textarea-live-vs-default",
+      "before": {
+        "value": "",
+        "defaultValue": "",
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            ""
+          ]
+        ]
+      },
+      "expected": {
+        "value": "live server value",
+        "defaultValue": "server default",
+        "textContent": "server default",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "live server value"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "live server value",
+        "defaultValue": "server default",
+        "textContent": "server default",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "live server value"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "server default",
+        "defaultValue": "server default",
+        "textContent": "server default",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "server default"
+          ]
+        ]
+      },
+      "checkPatch": false
+    },
+    {
+      "name": "select-add-selected",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-initialize",
+      "before": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [],
+        "formData": []
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-existing-options",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-remove-selected",
+      "before": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-remove-all",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [],
+        "formData": []
+      },
+      "actual": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [],
+        "formData": []
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [],
+        "formData": []
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-reorder",
+      "before": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-duplicate-values",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "FirstSecond",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "First",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "Second",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "FirstSecond",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "First",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "Second",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "FirstSecond",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "First",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "Second",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-no-selection",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": []
+      },
+      "actual": {
+        "value": "",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": -1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": []
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "checkPatch": false
+    },
+    {
+      "name": "select-disabled",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": true,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": true
+          }
+        ],
+        "formData": []
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": true,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": true
+          }
+        ],
+        "formData": []
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": true,
+        "selectedIndex": 1,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": true
+          }
+        ],
+        "formData": []
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "select-enabled",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": true,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": []
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "B",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "B",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "B",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "multi-add-selected",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "A",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BAB2",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 2,
+            "value": "b",
+            "text": "B2",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ],
+          [
+            "x",
+            "a"
+          ],
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BAB2",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 2,
+            "value": "b",
+            "text": "B2",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ],
+          [
+            "x",
+            "a"
+          ],
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BAB2",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 2,
+            "value": "b",
+            "text": "B2",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ],
+          [
+            "x",
+            "a"
+          ],
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "multi-to-single",
+      "before": {
+        "value": "a",
+        "defaultValue": null,
+        "textContent": "AB",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "a",
+            "text": "A",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "a"
+          ],
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "b",
+        "defaultValue": null,
+        "textContent": "BA",
+        "checked": null,
+        "defaultChecked": null,
+        "disabled": false,
+        "selectedIndex": 0,
+        "selectedOptions": [
+          {
+            "index": 0,
+            "value": "b",
+            "text": "B",
+            "selected": true,
+            "defaultSelected": true,
+            "disabled": false
+          },
+          {
+            "index": 1,
+            "value": "a",
+            "text": "A",
+            "selected": false,
+            "defaultSelected": false,
+            "disabled": false
+          }
+        ],
+        "formData": [
+          [
+            "x",
+            "b"
+          ]
+        ]
+      },
+      "checkPatch": true
+    },
+    {
+      "name": "checkbox-live-vs-default",
+      "before": {
+        "value": "old",
+        "defaultValue": "old",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": false,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": []
+      },
+      "expected": {
+        "value": "new",
+        "defaultValue": "new",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": true,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": []
+      },
+      "actual": {
+        "value": "new",
+        "defaultValue": "new",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": true,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": []
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "new",
+        "defaultValue": "new",
+        "textContent": "",
+        "checked": true,
+        "defaultChecked": true,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "new"
+          ]
+        ]
+      },
+      "checkPatch": false
+    },
+    {
+      "name": "input-live-vs-default",
+      "before": {
+        "value": "old",
+        "defaultValue": "old",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": false,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "old"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "live server value",
+        "defaultValue": "server default",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": false,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "live server value"
+          ]
+        ]
+      },
+      "actual": {
+        "value": "live server value",
+        "defaultValue": "server default",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": false,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "live server value"
+          ]
+        ]
+      },
+      "sameText": null,
+      "patchActual": {
+        "value": "server default",
+        "defaultValue": "server default",
+        "textContent": "",
+        "checked": false,
+        "defaultChecked": false,
+        "disabled": false,
+        "selectedIndex": null,
+        "selectedOptions": null,
+        "formData": [
+          [
+            "x",
+            "server default"
+          ]
+        ]
+      },
+      "checkPatch": false
+    }
+  ],
+  "pages": [
+    {
+      "name": "empty-to-server",
+      "actual": {
+        "version": "4",
+        "watchlist": {
+          "value": "SH:518880",
+          "defaultValue": "SH:518880",
+          "textContent": "SH:518880",
+          "top": 0
+        },
+        "candidates": {
+          "value": "SZ:159599",
+          "defaultValue": "SZ:159599",
+          "textContent": "SZ:159599"
+        },
+        "formData": [
+          [
+            "watchlist",
+            "SH:518880"
+          ],
+          [
+            "candidates",
+            "SZ:159599"
+          ]
+        ],
+        "dirty": null,
+        "composing": null,
+        "status": "持仓证券会自动纳入监控，无需重复填写。"
+      },
+      "server": {
+        "watchlist": [
+          "SH:518880"
+        ],
+        "candidates": [
+          "SZ:159599"
+        ],
+        "monitored": [
+          "SH:518880",
+          "SZ:159599"
+        ],
+        "universe_version": 4,
+        "quotes": [
+          {
+            "symbol": "SH:518880",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          },
+          {
+            "symbol": "SZ:159599",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          }
+        ]
+      }
+    },
+    {
+      "name": "actual-submit",
+      "request": {
+        "watchlist": [
+          "SH:518880"
+        ],
+        "candidates": [
+          "SZ:159599"
+        ]
+      },
+      "server": {
+        "watchlist": [
+          "SH:518880"
+        ],
+        "candidates": [
+          "SZ:159599"
+        ],
+        "monitored": [
+          "SH:518880",
+          "SZ:159599"
+        ],
+        "universe_version": 4,
+        "quotes": [
+          {
+            "symbol": "SH:518880",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          },
+          {
+            "symbol": "SZ:159599",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          }
+        ],
+        "symbol_resolution": {
+          "items": [
+            {
+              "input": "SH:518880",
+              "index": 1,
+              "context": "stock_etf",
+              "symbol": "SH:518880",
+              "name": "华安黄金ETF",
+              "kind": "etf",
+              "status": "resolved",
+              "identity_status": "confirmed",
+              "fetched_at": "2026-11-02T10:00:00+08:00",
+              "source": "explicit-browser-directory-fixture",
+              "market": "SH",
+              "code": "518880",
+              "cache_hit": true,
+              "identity_verified_at": "2026-11-02T10:00:00+08:00",
+              "message": "使用已确认的证券缓存；识别不代表实时行情已取得。",
+              "field": "自选"
+            },
+            {
+              "input": "SZ:159599",
+              "index": 1,
+              "context": "stock_etf",
+              "symbol": "SZ:159599",
+              "name": "东财中证芯片产业ETF",
+              "kind": "etf",
+              "status": "resolved",
+              "identity_status": "confirmed",
+              "fetched_at": "2026-11-02T10:00:00+08:00",
+              "source": "explicit-browser-directory-fixture",
+              "market": "SZ",
+              "code": "159599",
+              "cache_hit": true,
+              "identity_verified_at": "2026-11-02T10:00:00+08:00",
+              "message": "使用已确认的证券缓存；识别不代表实时行情已取得。",
+              "field": "候选"
+            }
+          ],
+          "ok": true,
+          "symbols": [
+            "SH:518880",
+            "SZ:159599"
+          ]
+        }
+      }
+    },
+    {
+      "name": "server-to-empty",
+      "actual": {
+        "version": "5",
+        "watchlist": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "top": 0
+        },
+        "candidates": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": ""
+        },
+        "formData": [
+          [
+            "watchlist",
+            ""
+          ],
+          [
+            "candidates",
+            ""
+          ]
+        ],
+        "dirty": null,
+        "composing": null,
+        "status": "持仓证券会自动纳入监控，无需重复填写。"
+      }
+    },
+    {
+      "name": "focused-pristine-conflict",
+      "actual": {
+        "version": "5",
+        "watchlist": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": "",
+          "top": 0
+        },
+        "candidates": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": ""
+        },
+        "formData": [
+          [
+            "watchlist",
+            ""
+          ],
+          [
+            "candidates",
+            ""
+          ]
+        ],
+        "dirty": null,
+        "composing": null,
+        "status": "后台研究范围已更新；当前输入保留为未保存草稿，保存将以此表单覆盖范围，请先核对。"
+      }
+    },
+    {
+      "name": "dirty-draft-conflict",
+      "actual": {
+        "version": "7",
+        "watchlist": {
+          "value": "518880\n002354",
+          "defaultValue": "SH:518880",
+          "textContent": "SH:518880",
+          "top": 0
+        },
+        "candidates": {
+          "value": "",
+          "defaultValue": "",
+          "textContent": ""
+        },
+        "formData": [
+          [
+            "watchlist",
+            "518880\n002354"
+          ],
+          [
+            "candidates",
+            ""
+          ]
+        ],
+        "dirty": "true",
+        "composing": null,
+        "status": "后台研究范围已更新；当前输入保留为未保存草稿，保存将以此表单覆盖范围，请先核对。"
+      },
+      "server": {
+        "watchlist": [
+          "SZ:159599"
+        ],
+        "candidates": [
+          "SZ:002354"
+        ],
+        "monitored": [
+          "SZ:002354",
+          "SZ:159599"
+        ],
+        "universe_version": 8,
+        "quotes": [
+          {
+            "symbol": "SH:518880",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          },
+          {
+            "symbol": "SZ:159599",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          },
+          {
+            "symbol": "SZ:002354",
+            "name": null,
+            "price": null,
+            "change_pct": null,
+            "as_of": null,
+            "fetched_at": "2026-11-02T10:00:00+08:00",
+            "source": "manual",
+            "status": "unavailable",
+            "delay_seconds": null,
+            "security_status": "unknown",
+            "fresh_for_triggers": false,
+            "quote_kind": "unknown",
+            "error": "行情数据源未启用；manual 模式只使用显式录入的行情快照"
+          }
+        ]
+      }
+    },
+    {
+      "name": "synthetic-composition-blurred",
+      "actual": {
+        "version": "8",
+        "watchlist": {
+          "value": "中文输入中",
+          "defaultValue": "SZ:159599",
+          "textContent": "SZ:159599",
+          "top": 0
+        },
+        "candidates": {
+          "value": "SZ:002354",
+          "defaultValue": "SZ:002354",
+          "textContent": "SZ:002354"
+        },
+        "formData": [
+          [
+            "watchlist",
+            "中文输入中"
+          ],
+          [
+            "candidates",
+            "SZ:002354"
+          ]
+        ],
+        "dirty": null,
+        "composing": "true",
+        "status": "后台研究范围已更新；当前输入保留为未保存草稿，保存将以此表单覆盖范围，请先核对。"
+      }
+    },
+    {
+      "name": "dynamic-material-catalogue",
+      "actual": {
+        "value": "news",
+        "selectedOptions": [
+          "news"
+        ],
+        "options": [
+          "all",
+          "unclassified",
+          "news",
+          "official_disclosure"
+        ]
+      }
+    },
+    {
+      "name": "filtered-category-removed",
+      "actual": {
+        "value": "all",
+        "selectedOptions": [
+          "all"
+        ]
+      }
+    }
+  ],
+  "realModelCalls": 0,
+  "browser": "156.0.8078.74",
+  "passed": true
+}

@@ -185,7 +185,7 @@ class TaskTrackingStore:
     def save_account_operation(self, payload, account_id=None, operation_id=None):
         """Account write and receipt share the snapshot/queue transaction."""
         from .store import Conflict, dumps
-        data = payload.model_dump() if hasattr(payload, 'model_dump') else payload
+        data = payload.model_dump(exclude_unset=bool(account_id)) if hasattr(payload, 'model_dump') else payload
         fingerprint = hashlib.sha256(dumps({'account_id': account_id, 'data': data}).encode()).hexdigest()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -196,7 +196,7 @@ class TaskTrackingStore:
                 return {**self.account(old['account_id'], db), 'save_receipt': {
                     'operation_id':operation_id,'account_id':old['account_id'],
                     'job_id':old['job_id'],'input_version':old['input_version'],'replayed':True}}
-            account = self.save_account(payload, account_id, db=db)
+            account = self.save_account(data, account_id, db=db)
             job = db.execute('SELECT * FROM jobs WHERE id=?', (account['latest_job_id'],)).fetchone()
             metadata = json.loads(job['task_metadata'])
             if not metadata['target']['symbols'] and metadata['research_scope'] != 'cash_only':

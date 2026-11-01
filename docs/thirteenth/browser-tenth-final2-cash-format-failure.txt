@@ -1,0 +1,22 @@
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '10000'
+- '10000.00'
+        ^
+
+    at file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_tenth.mjs:123:9 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '10000',
+  expected: '10000.00',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.9.0

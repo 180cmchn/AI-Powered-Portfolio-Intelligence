@@ -1,0 +1,461 @@
+
+> test:browser
+> node tests/run_browser.mjs
+
+PASS (deterministic HTTP fixtures + Chromium): polling, protected drafts/focus/version, active/history pagination (106 rows, 12 active), price/review separation, resolved/source-only/unresolved evidence, selected PDF ranges, scope version labels, extraction/report provenance and unresolved origins, failed-source links, incremental events, three-field provider form, discovered-only model filtering and identical six-role account matrices.
+PASS (production FastAPI + temporary SQLite + Chromium; native probe protocol double): 106 recommendations, evidence scope and description-only excerpts, paused-navigation retry/analyze/save (3 release orders), cancelled/timeout reads, lost-write-response reconciliation without resend, empty operation/request sets, duplicate write coalescing, click-time account/version/input, newer and failed draft preservation, account isolation, provider three-field creation/automatic catalogs, shared six-role matrices, searched models, five reasoning_effort values/save/reopen, account overrides/reset, frozen in-flight snapshots, native setting migration, capability states and probe caching.
+Seventh production browser regressions passed
+Ninth provider state recovery and target-bound race regressions passed
+Ninth provider browser regressions passed
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.evaluate: Error: strict mode violation: locator('.holding-row .field:first-child small') resolved to 3 elements:
+    1) <small>更换证券请移除原行并添加新行；移除表示明确清仓。</small> aka getByText('更换证券请移除原行并添加新行；移除表示明确清仓。')
+    2) <small>新成本最多6位小数；原系统长精度值可原样保留。数量单独校正时保留剩余总成本。</small> aka getByText('新成本最多6')
+    3) <small>只有明确输入才更新依据；从校正上海日期起生效，不倒推历史。</small> aka getByText('只有明确输入才更新依据；从校正上海日期起生效，不倒推历史。')
+
+Call log:
+[2m  - waiting for locator('.holding-row .field:first-child small')[22m
+
+    at /Users/chn/Documents/ChatGPT/金融股票 2/tests/frontend_tenth.mjs:73:62 {
+  log: [
+    "  - waiting for locator('.holding-row .field:first-child small')"
+  ]
+}
+
+Node.js v25.9.0
+{
+  "passed": true,
+  "checks": [
+    "same connected DOM and active selection survive composition event + poll; no synthetic compositionend",
+    "server revision leaves dirty prompt intact, stale save conflicts, explicit reload and current save succeed",
+    "account-role drafts use account + role identity and never cross accounts",
+    "clear account override removes stale draft and reloads inheritance; account notice does not claim global-role CAS",
+    "only overview shows full card; completion outranks synthesis; account isolation",
+    "three securities through production trade form; exact cash, ETF fees, T+0 full sale, explicit fee adjustment, external deposit excluded from PnL, lost-response receipt, double-click and account isolation",
+    "non-overview accepted task and view action appear before slow GET; failed follow-up read preserves receipt and never resubmits",
+    "market/direction fee overrides displayed and retained; re-preview clearly shows current fee-plan version without another trade"
+  ],
+  "baseline": [
+    {
+      "kind": "unfocused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "focused",
+      "before": 1200,
+      "after": 0
+    },
+    {
+      "kind": "dirty",
+      "before": 1200,
+      "after": 0
+    }
+  ],
+  "fixed": [
+    {
+      "kind": "unfocused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "focused",
+      "scroll": [
+        1200,
+        1200
+      ]
+    },
+    {
+      "kind": "dirty",
+      "scroll": [
+        1200,
+        1200
+      ]
+    }
+  ]
+}
+Stable production poll 1/10
+Stable production poll 2/10
+Stable production poll 3/10
+Stable production poll 4/10
+Stable production poll 5/10
+Stable production poll 6/10
+Stable production poll 7/10
+Stable production poll 8/10
+Stable production poll 9/10
+Stable production poll 10/10
+Overview anchor evidence {"selected":{"text":"指定证券研究 · SH:518880","top":439.375,"scrollY":674,"scrollHeight":2343,"viewport":900},"afterAnchor":{"top":439.375,"scrollY":760,"scrollHeight":1660,"viewport":900,"selected":true}}
+Larger shrink evidence {"top":439.375,"scrollY":760,"height":1660,"viewport":900,"padding":24,"count":1}
+Reading space lifecycle {"count":1,"height":24,"scrollY":760,"scrollHeight":1660,"viewport":900,"rootHeight":"","growthCleared":true,"userScrollCleared":true,"navigationCleared":true}
+{
+  "baseline": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 469.0625,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": 469.0625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    },
+    "ledger": {
+      "open": false,
+      "same": false
+    },
+    "dialogBefore": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "dialogAfter": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": -9133.90625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    }
+  },
+  "polls": [
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    }
+  ],
+  "checks": [
+    "10 actual 4-second polls, new persisted events and stages; connected JSON text/DOM, vertical+horizontal scroll, backward 3418-character selection, focus, viewport; no ledger or research-demand writes",
+    "new task inserted above and existing upper task height change preserve text anchor relative viewport",
+    "explicit close and neighboring expansion remain independent",
+    "explicit outer task close remains closed through fresh task state, nested state survives reopening",
+    "real modal load-more, delayed overlapping response and double click coalesce; no duplicate rows, stable inner DOM/scroll/selection/header/close/background; main and modal state scoped",
+    "ledger entry and cash-history details survive background task state updates",
+    "new report insertion keeps old report body and references nodes, new references default closed",
+    "27 route transitions and account switch have no script errors or old account forms; deliberate material paging keeps modal controls",
+    "same-page slow task A cannot replace subsequently opened task B",
+    "same-page synchronous new-account modal invalidates old task read",
+    "overview inserts new task without reusing selected old task text",
+    "bottom-clamp reading space equals the deficit, stays bounded across polls, and clears on content growth or user scrolling without changing container height",
+    "late material read cannot overwrite a newer synchronous scope-confirmation modal",
+    "closing while next material segment is pending prevents reopening",
+    "sixth.js forecast-batch A/B uses the same latest-intent guard"
+  ],
+  "platform": "darwin",
+  "browser": "151.0.7922.34",
+  "dialog": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "pendingBefore": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    "requests": 1,
+    "uniqueRows": 439
+  },
+  "cacheCounts": {
+    "eventSegments": 0,
+    "eventCount": 0,
+    "drafts": 12,
+    "reports": 3
+  },
+  "passed": true
+}
+{
+  "passed": true,
+  "checks": [
+    "single successful buy/sell field; click, Enter/Space, arrows, Home/End, Escape rollback, Tab/outside-close, focus return, no implicit trade submission",
+    "form reset restores initial buy and invalidates preview; disabled native field disables and excludes custom trigger",
+    "connected trigger, same open popup and uncommitted sell candidate survive real event update and normal production poll",
+    "production preview and committed buy/sell agree with visible label and FormData; selection/new account/new fee-plan version invalidate old preview; exact T+0 ledger cash 100200.00",
+    "popup geometry: aligned edges, width and first text origin; top layer escapes card clipping; desktop, visual viewport 125/200% scale, 800/390px narrow layouts and scroll anchoring",
+    "reusable component in modal: option pointer interaction, top-layer popup, first Escape closes menu and second closes dialog",
+    "account switch closes old popup; new account starts with buy",
+    "backend validation failure retains sell; side edited while buy receipt is delayed remains an unsubmitted sell draft, while persisted trade stays buy; no JS errors or duplicated writes"
+  ],
+  "geometry": [
+    {
+      "label": "desktop-100",
+      "trigger": {
+        "x": 287,
+        "y": 430.3125,
+        "width": 325.328125,
+        "bottom": 468.90625
+      },
+      "popup": {
+        "x": 287,
+        "y": 472.90625,
+        "width": 325.328125,
+        "bottom": 548.09375
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1360,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-1.25",
+      "trigger": {
+        "x": 287,
+        "y": 430.3125,
+        "width": 325.328125,
+        "bottom": 468.90625
+      },
+      "popup": {
+        "x": 287,
+        "y": 472.90625,
+        "width": 325.328125,
+        "bottom": 548.09375
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "below",
+      "viewport": {
+        "width": 1088,
+        "height": 720,
+        "scale": 1.25
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "page-scale-2",
+      "trigger": {
+        "x": 287,
+        "y": 430.3125,
+        "width": 325.328125,
+        "bottom": 468.90625
+      },
+      "popup": {
+        "x": 287,
+        "y": 325.71875,
+        "width": 325.328125,
+        "bottom": 400.90625
+      },
+      "textX": 299,
+      "optionTextX": 299,
+      "placement": "above",
+      "viewport": {
+        "width": 680,
+        "height": 450,
+        "scale": 2
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-800",
+      "trigger": {
+        "x": 244,
+        "y": 461.5,
+        "width": 244.5,
+        "bottom": 500.09375
+      },
+      "popup": {
+        "x": 244,
+        "y": 504.09375,
+        "width": 244.5,
+        "bottom": 579.28125
+      },
+      "textX": 256,
+      "optionTextX": 256,
+      "placement": "below",
+      "viewport": {
+        "width": 800,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    },
+    {
+      "label": "width-390",
+      "trigger": {
+        "x": 35,
+        "y": 430.609375,
+        "width": 320,
+        "bottom": 469.203125
+      },
+      "popup": {
+        "x": 35,
+        "y": 473.203125,
+        "width": 320,
+        "bottom": 548.390625
+      },
+      "textX": 47,
+      "optionTextX": 47,
+      "placement": "below",
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "scale": 1
+      },
+      "topLayer": true,
+      "hit": true
+    }
+  ],
+  "platform": "darwin",
+  "executable": "Playwright Chromium",
+  "realModelCalls": 0,
+  "browserVersion": "151.0.7922.34"
+}
+{"passed":true,"controls":18,"pages":["empty-to-server","actual-submit","server-to-empty","focused-pristine-conflict","dirty-draft-conflict","synthetic-composition-blurred","dynamic-material-catalogue","filtered-category-removed"],"browser":"151.0.7922.34","realModelCalls":0}
+{"ok":true,"checks":["real buys produce 3010.03 / 300 repeating unit cost; cash-only UI sends sparse holdings; preview/commit retain every exact position and lot","one security unit-cost correction leaves unrelated repeating-cost security exactly intact","input edit, row addition/removal and background version invalidate preview while preserving draft","explicit unknown checkbox differs from blank/preserve; unrelated known basis remains exact","same draft survives route navigation; intervening account version disables old preview; delayed receipt preserves a new draft and requires a new exact preview; clean save reloads baseline"]}
+{"browser_groups":[{"group":"iteration","code":0,"signal":null,"duration_ms":1656},{"group":"production","code":0,"signal":null,"duration_ms":8818},{"group":"seventh","code":0,"signal":null,"duration_ms":4633},{"group":"ninth","code":0,"signal":null,"duration_ms":16729},{"group":"tenth","code":1,"signal":null,"duration_ms":7204},{"group":"eleventh","code":0,"signal":null,"duration_ms":61025},{"group":"twelfth","code":0,"signal":null,"duration_ms":103004},{"group":"twelfth_select","code":0,"signal":null,"duration_ms":16827},{"group":"thirteenth","code":0,"signal":null,"duration_ms":41246},{"group":"thirteenth_correction","code":0,"signal":null,"duration_ms":5969}]}
