@@ -1,0 +1,47 @@
+{
+  "history": {
+    "checkout": "56272f938208b654bd09982835abc504fdd39827",
+    "shallow": "true",
+    "before": [
+      {
+        "baseline": "874b9875a9649480cde78bca804af2693ba5d1d8",
+        "exit": 128,
+        "stderr": "fatal: path 'app/static/style.css' exists on disk, but not in '874b9875a9649480cde78bca804af2693ba5d1d8'"
+      },
+      {
+        "baseline": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+        "exit": 128,
+        "stderr": "fatal: path 'app/static/style.css' exists on disk, but not in '09557bd8a3cd404250fa9fa58093f6babb404ead'"
+      }
+    ],
+    "after_unshallow": {
+      "shallow": "false",
+      "baselines": [
+        {
+          "baseline": "874b9875a9649480cde78bca804af2693ba5d1d8",
+          "exit": 0,
+          "characters": 30505
+        },
+        {
+          "baseline": "09557bd8a3cd404250fa9fa58093f6babb404ead",
+          "exit": 0,
+          "characters": 31894
+        }
+      ]
+    }
+  },
+  "preflight": [
+    {
+      "group": "eleventh",
+      "exit": 1,
+      "clear_baseline_error": true,
+      "server_started": false
+    },
+    {
+      "group": "twelfth",
+      "exit": 1,
+      "clear_baseline_error": true,
+      "server_started": false
+    }
+  ]
+}

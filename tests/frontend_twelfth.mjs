@@ -1,12 +1,14 @@
 // Actual production pages + FastAPI + temporary SQLite. Events and report text
 // are explicitly marked engineering fixtures, never real model evidence.
-import {spawn,execFileSync} from 'node:child_process';
+import {spawn} from 'node:child_process';
 import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {verifyDialogIntents} from './twelfth_dialog_cases.mjs';
+import {loadBrowserBaseline} from './browser-baseline.mjs';
+const baselineResources=loadBrowserBaseline('09557bd8a3cd404250fa9fa58093f6babb404ead',['app.js','sixth.js','ledger.js','style.css']);
 const directory=await mkdtemp(join(tmpdir(),'guanlan-twelfth-reading-'));
 const child=spawn(process.env.PYTHON||'.venv/bin/python',['tests/twelfth_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
 let browser,page,log='';child.stderr.on('data',data=>log+=data.toString());
@@ -20,7 +22,7 @@ try {
  browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
  evidence.browser=browser.version();
  await mkdir('test-results/twelfth',{recursive:true});
- const setup=async baseline=>{const p=await browser.newPage({viewport:{width:1360,height:900}});await p.addInitScript(id=>{localStorage.setItem('guanlan.account',id);sessionStorage.setItem('guanlan.diagnostics','1');},fixture.account_id);if(baseline)for(const file of ['app.js','sixth.js','ledger.js','style.css'])await p.route(`**/static/${file}`,route=>route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body:execFileSync('git',['show',`09557bd:app/static/${file}`],{encoding:'utf8'})}));await p.goto(base+'/#agents');await p.locator(`[data-task-id="${fixture.job_id}"] .event`).first().waitFor();return p;};
+ const setup=async baseline=>{const p=await browser.newPage({viewport:{width:1360,height:900}});await p.addInitScript(id=>{localStorage.setItem('guanlan.account',id);sessionStorage.setItem('guanlan.diagnostics','1');},fixture.account_id);if(baseline)for(const [file,body] of Object.entries(baselineResources))await p.route(`**/static/${file}`,route=>route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body}));await p.goto(base+'/#agents');await p.locator(`[data-task-id="${fixture.job_id}"] .event`).first().waitFor();return p;};
  const long=(p,surface='#app')=>p.locator(`${surface} [data-task-id="${fixture.job_id}"] .event`).filter({hasText:'受控长事件 A'}).first();
  const read=async(p,surface='#app')=>{const row=long(p,surface),detail=row.locator('details'),pre=row.locator('pre');if(!await detail.evaluate(n=>n.open))await detail.locator('summary').click();await pre.scrollIntoViewIfNeeded();await pre.evaluate(el=>{el.tabIndex=0;el.focus({preventScroll:true});el.scrollTop=300;el.scrollLeft=240;const t=el.firstChild;getSelection().setBaseAndExtent(t,3500,t,82);window.__reading={node:el,text:t,details:el.closest('details')};});return pre.evaluate(el=>({open:el.closest('details').open,top:el.scrollTop,left:el.scrollLeft,selection:getSelection().toString().length,anchor:el.getBoundingClientRect().top,focus:document.activeElement===el,same:window.__reading.node===el}));};
  const snap=async(p,surface='#app')=>long(p,surface).locator('pre').evaluate(el=>({open:el.closest('details').open,top:el.scrollTop,left:el.scrollLeft,selection:getSelection().toString().length,anchor:el.getBoundingClientRect().top,focus:document.activeElement===el,same:window.__reading.node===el,connected:window.__reading.node.isConnected,backward:getSelection().anchorOffset>getSelection().focusOffset}));

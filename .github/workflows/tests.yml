@@ -24,6 +24,9 @@ jobs:
         group: [iteration, production, seventh, ninth, tenth, eleventh, twelfth, twelfth-select]
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Browser regressions compare current pages with fixed historical sources.
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

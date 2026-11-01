@@ -1,0 +1,28 @@
+{
+  "tested_base": "56272f938208b654bd09982835abc504fdd39827",
+  "patch_scope": "browser full-history checkout and baseline preloading only; assertions unchanged",
+  "date": "2026-11-01",
+  "timezone": "Asia/Shanghai",
+  "python": "3.12.13",
+  "node": "25.9.0",
+  "playwright": "1.62.1",
+  "groups": [
+    {
+      "group": "eleventh",
+      "exit": 0,
+      "seconds": 62.18,
+      "log": "ci-eleventh-local.txt"
+    },
+    {
+      "group": "twelfth",
+      "exit": 0,
+      "seconds": 103.31,
+      "log": "ci-twelfth-local.txt"
+    }
+  ],
+  "test_file_sha256": {
+    "tests/frontend_eleventh.mjs": "2c07eedc7d1c570f673755c5d7b796ac316036eb2002c82be4e11193b6e55375",
+    "tests/frontend_twelfth.mjs": "41e51214597978e9238a06d396abde7d62c36e9d5167c0728ee9d88a3df01d91",
+    "tests/browser-baseline.mjs": "8df49264d2886acb1a0442dc45d2b9f5c6c1efa50b53bc74367c09b45a7f35a7"
+  }
+}

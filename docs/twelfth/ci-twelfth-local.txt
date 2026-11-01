@@ -1,0 +1,236 @@
+
+> test:browser:twelfth
+> node tests/frontend_twelfth.mjs
+
+Stable production poll 1/10
+Stable production poll 2/10
+Stable production poll 3/10
+Stable production poll 4/10
+Stable production poll 5/10
+Stable production poll 6/10
+Stable production poll 7/10
+Stable production poll 8/10
+Stable production poll 9/10
+Stable production poll 10/10
+Overview anchor evidence {"selected":{"text":"指定证券研究 · SH:518880","top":439.890625,"scrollY":646,"scrollHeight":2298,"viewport":900},"afterAnchor":{"top":439.890625,"scrollY":732,"scrollHeight":1632,"viewport":900,"selected":true}}
+Larger shrink evidence {"top":439.890625,"scrollY":732,"height":1632,"viewport":900,"padding":41,"count":1}
+Reading space lifecycle {"count":1,"height":41,"scrollY":732,"scrollHeight":1632,"viewport":900,"rootHeight":"","growthCleared":true,"userScrollCleared":true,"navigationCleared":true}
+{
+  "baseline": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 480.5625,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": 480.5625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    },
+    "ledger": {
+      "open": false,
+      "same": false
+    },
+    "dialogBefore": {
+      "open": true,
+      "top": 300,
+      "left": 0,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "dialogAfter": {
+      "open": false,
+      "top": 0,
+      "left": 0,
+      "selection": 0,
+      "anchor": -9133.90625,
+      "focus": false,
+      "same": false,
+      "connected": false,
+      "backward": false
+    }
+  },
+  "polls": [
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 469.5625,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    }
+  ],
+  "checks": [
+    "10 actual 4-second polls, new persisted events and stages; connected JSON text/DOM, vertical+horizontal scroll, backward 3418-character selection, focus, viewport; no ledger or research-demand writes",
+    "new task inserted above and existing upper task height change preserve text anchor relative viewport",
+    "explicit close and neighboring expansion remain independent",
+    "explicit outer task close remains closed through fresh task state, nested state survives reopening",
+    "real modal load-more, delayed overlapping response and double click coalesce; no duplicate rows, stable inner DOM/scroll/selection/header/close/background; main and modal state scoped",
+    "ledger entry and cash-history details survive background task state updates",
+    "new report insertion keeps old report body and references nodes, new references default closed",
+    "27 route transitions and account switch have no script errors or old account forms; deliberate material paging keeps modal controls",
+    "same-page slow task A cannot replace subsequently opened task B",
+    "same-page synchronous new-account modal invalidates old task read",
+    "overview inserts new task without reusing selected old task text",
+    "bottom-clamp reading space equals the deficit, stays bounded across polls, and clears on content growth or user scrolling without changing container height",
+    "late material read cannot overwrite a newer synchronous scope-confirmation modal",
+    "closing while next material segment is pending prevents reopening",
+    "sixth.js forecast-batch A/B uses the same latest-intent guard"
+  ],
+  "platform": "darwin",
+  "browser": "151.0.7922.34",
+  "dialog": {
+    "before": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 435.09375,
+      "focus": true,
+      "same": true
+    },
+    "pendingBefore": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true
+    },
+    "after": {
+      "open": true,
+      "top": 300,
+      "left": 240,
+      "selection": 3418,
+      "anchor": 278.09375,
+      "focus": true,
+      "same": true,
+      "connected": true,
+      "backward": true
+    },
+    "requests": 1,
+    "uniqueRows": 439
+  },
+  "cacheCounts": {
+    "eventSegments": 0,
+    "eventCount": 0,
+    "drafts": 12,
+    "reports": 3
+  },
+  "passed": true
+}

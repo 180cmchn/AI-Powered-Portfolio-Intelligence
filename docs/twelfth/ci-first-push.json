@@ -1,0 +1,82 @@
+{
+  "run_id": 41278962791,
+  "head_sha": "56272f938208b654bd09982835abc504fdd39827",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 124766765497,
+      "name": "python",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765497"
+    },
+    {
+      "id": 124766765613,
+      "name": "browser (eleventh)",
+      "conclusion": "failure",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765613"
+    },
+    {
+      "id": 124766765629,
+      "name": "browser (ninth)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765629"
+    },
+    {
+      "id": 124766765643,
+      "name": "browser (production)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765643"
+    },
+    {
+      "id": 124766765660,
+      "name": "browser (seventh)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765660"
+    },
+    {
+      "id": 124766765677,
+      "name": "browser (tenth)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765677"
+    },
+    {
+      "id": 124766765698,
+      "name": "browser (twelfth-select)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765698"
+    },
+    {
+      "id": 124766765710,
+      "name": "browser (twelfth)",
+      "conclusion": "failure",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765710"
+    },
+    {
+      "id": 124766765744,
+      "name": "browser (iteration)",
+      "conclusion": "success",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124766765744"
+    },
+    {
+      "id": 124767260830,
+      "name": "tests",
+      "conclusion": "failure",
+      "url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41278962791/job/124767260830"
+    }
+  ],
+  "error_excerpts": {
+    "eleventh": [
+      "2026-11-01T05:59:34.2421135Z fatal: invalid object name '874b987'.",
+      "2026-11-01T05:59:34.2548826Z Error: Command failed: git show 874b987:app/static/style.css",
+      "2026-11-01T05:59:34.2549594Z fatal: invalid object name '874b987'."
+    ],
+    "twelfth": [
+      "2026-11-01T05:59:35.2776049Z fatal: invalid object name '09557bd'.",
+      "2026-11-01T05:59:35.2908066Z Error: Command failed: git show 09557bd:app/static/style.css",
+      "2026-11-01T05:59:35.2908674Z fatal: invalid object name '09557bd'."
+    ],
+    "python": [
+      "2026-11-01T06:01:24.5183721Z 976 passed, 1 warning in 139.53s (0:02:19)"
+    ]
+  }
+}

@@ -1,5 +1,7 @@
 # 观澜第十二轮交付
 
+> 本文主体保留首次归档时的本地验收与远端状态。随后已获授权推送 main；首次推送 `56272f9` 的 Python 和六组浏览器通过，另外两组因浅检出缺少历史基线而失败。后续定位、修复及独立检出回归见 [CI 跟进记录](twelfth/ci-followup.md)；远端状态应按对应提交的 Actions 运行判断。
+
 **工程验收已通过；单次真实研究因上游传输失败，未发布报告。** 最终实现 `478fefb22a123c71b6594e8666be5e9acbb2cf5f` 完整 Python 为 **976 passed、0 failed、0 skipped、1 warning**，八组浏览器全部退出 **0**；最终源码已重新启动隔离进程，并完成 Mac Chrome / Safari 复验。阅读状态、买卖方向控件、统一时钟及校正日期语义的工程回归完成。真实研究记录39次请求：37次完整终止、2次RemoteProtocolError，无额外自动任务，不为成功再次运行。真实发布后有效性仍未通过；远端仍是未推送前基线的失败。精确身份、环境、命令与数量见 [validation-manifest.json](twelfth/validation-manifest.json)。
 
 本轮固定审查基线为 `09557bd8a3cd404250fa9fa58093f6babb404ead`，第十一轮最终实现为 `1540733f258cf07fc66701062d59803ca97e3c54`。开始时工作区干净、实际 HEAD 与审查基线一致，没有回退。开发中的检查点 `e75542d609b9ad086cf282af0cc7b6417713b11c` 及其中间运行保留为历史证据，见 [candidate-source-e755.json](twelfth/candidate-source-e755.json)。最终冻结于上海时间 **2026-11-01 00:22:12**，身份见 [frozen-source.json](twelfth/frozen-source.json)：source SHA-256 `f9d22f8bfc6e72aa96c8235924919e8159ecf31baeb93317ebbda0c902cb01fb`，static SHA-256 `a081f49e3cd9a42af07f6343395f6dd2f1992c7344ac7ac08c108346c0d1895c`。归档工程结果时没有最终提交之外的生产代码或测试修改；后续文档更新不冒充运行源码。

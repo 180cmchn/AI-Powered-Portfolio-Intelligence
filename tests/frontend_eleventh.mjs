@@ -1,11 +1,13 @@
 // Actual production app and static modules on temporary SQLite. Only directory,
 // saved report and background event fixtures are controlled, no real model claim.
-import {spawn,execFileSync} from 'node:child_process';
+import {spawn} from 'node:child_process';
 import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {loadBrowserBaseline} from './browser-baseline.mjs';
+const baselineResources=loadBrowserBaseline('874b9875a9649480cde78bca804af2693ba5d1d8',['app.js','sixth.js','style.css']);
 const directory=await mkdtemp(join(tmpdir(),'guanlan-eleventh-ui-'));
 const child=spawn(process.env.PYTHON||'.venv/bin/python',['tests/eleventh_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
 let browser,page,log='';child.stderr.on('data',data=>log+=data.toString());
@@ -17,7 +19,7 @@ try {
  const api=async(path,body,method='POST')=>{const r=await fetch(base+path,body===undefined?{}:{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await r.text();assert.ok(r.ok,`${method} ${path}: ${r.status} ${text}`);return JSON.parse(text);};
  browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
  await mkdir('test-results/eleventh',{recursive:true});
- const setup=async baseline=>{const p=await browser.newPage({viewport:{width:1360,height:900}});await p.addInitScript(id=>localStorage.setItem('guanlan.account',id),fixture.account_id);if(baseline)for(const file of ['app.js','sixth.js','style.css'])await p.route(`**/static/${file}`,route=>route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body:execFileSync('git',['show',`874b987:app/static/${file}`],{encoding:'utf8'})}));await p.goto(base+'/#roles');await p.locator('.role-model-form').first().waitFor();return p;};
+ const setup=async baseline=>{const p=await browser.newPage({viewport:{width:1360,height:900}});await p.addInitScript(id=>localStorage.setItem('guanlan.account',id),fixture.account_id);if(baseline)for(const [file,body] of Object.entries(baselineResources))await p.route(`**/static/${file}`,route=>route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body}));await p.goto(base+'/#roles');await p.locator('.role-model-form').first().waitFor();return p;};
  const scenario=async(p,kind,baseline=false)=>{
    const form=p.locator('.role-model-form').first(), text=form.locator('textarea[name=system_prompt]');
    if(!await form.locator('details').first().evaluate(el=>el.open))await form.locator('details > summary').first().click();
