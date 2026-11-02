@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Actual Store/worker/Runtime/ModelClient, with labeled HTTP and vault substitutes."""
 import asyncio
 import copy
@@ -88,8 +89,8 @@ async def test_two_accounts_worker_independent_clients_roles_followup_and_frozen
             assert 'submit_report' in names and 'finish_analysis' not in names
             # A deliberately invalid provider function call must be rejected before dispatch.
             if child_calls[agent_id] == 1:
-                return response(request, payload, [call('finish_analysis', {'report': 'forbidden child final',
-                    'forecasts': [{'security_id': 'SZ:159278', 'horizon': 1, 'direction': 'up', 'reason': 'forbidden'}]})])
+                return response(request, payload, [call('finish_analysis', delivery_arguments(**{'report': 'forbidden child final',
+                    'forecasts': [{'security_id': 'SZ:159278', 'horizon': 1, 'direction': 'up', 'reason': 'forbidden'}]}))])
             return response(request, payload, [call('submit_report', {'summary': f'{account_id} {seed["task"]} report {child_calls[agent_id]}'})])
         assert {role['role_id'] for role in seed['agent_roles']} == {role[0] for role in INITIAL_ROLES}
         step = manager_steps.get(account_id, 0)
@@ -112,7 +113,7 @@ async def test_two_accounts_worker_independent_clients_roles_followup_and_frozen
                 edited = True
             return response(request, payload, [call('follow_up', {'agent_id': children[0]['agent_id'], 'task': 'Follow up under original role binding'}),
                 call('spawn_research', {'role_id': 'market_researcher', 'task': 'third topic spawned after settings edit'})])
-        return response(request, payload, [call('finish_analysis', {'report': f'Independent final account {account_id}'})])
+        return response(request, payload, [call('finish_analysis', delivery_arguments(**{'report': f'Independent final account {account_id}'}))])
 
     monkeypatch.setattr(agents, 'ModelClient', lambda cfg, before_request=None: ModelClient(cfg, before_request, httpx.MockTransport(handler)))
     service = Service(store)

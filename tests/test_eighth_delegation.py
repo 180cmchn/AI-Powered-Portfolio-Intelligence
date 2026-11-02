@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Runtime/Service protocol fixtures, never real model or fault-recovery evidence."""
 import asyncio
 from copy import deepcopy
@@ -88,7 +89,7 @@ async def test_service_delegation_fault_resumes_without_reread_or_new_child(conf
             assert any(item['body']['access'] == 'full_report' for item in new_deliveries)
             assert all(item['source_job_id'] == job['id'] for item in new_deliveries)
             assert store.checkpoint_deliveries(seed['job_id']) == []
-            return output(('finish_analysis', {'report': '依据披露研究员已交付的专题结果进行有条件汇总。', 'material_ids': mids}))
+            return output(('finish_analysis', delivery_arguments(**{'report': '依据披露研究员已交付的专题结果进行有条件汇总。', 'material_ids': mids})))
         if seed.get('parent_task_id'):
             requests['child'] += 1
             if requests['child'] == 1:
@@ -275,7 +276,7 @@ async def test_late_completed_report_is_explicitly_delivered_to_new_synthesis_se
         assert receipts[0]['body']['report_id'] == original_report['report_id']
         assert receipts[0]['body']['source_agent_id'] == original_report['agent_id']
         assert receipts[0]['body']['model_config'] == original_report['model_config']
-        return output(('finish_analysis', {'report': '新汇总会话已收到此前晚到的子报告；保留来源范围。', 'material_ids': mids}))
+        return output(('finish_analysis', delivery_arguments(**{'report': '新汇总会话已收到此前晚到的子报告；保留来源范围。', 'material_ids': mids})))
     monkeypatch.setattr(agents, 'ModelClient', lambda cfg, before_request=None:
         ModelClient(cfg, before_request, httpx.MockTransport(handler)))
     async def emit(event):

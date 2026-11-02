@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Seventh iteration: source-stream recovery and bounded transport diagnostics."""
 from copy import deepcopy
 import json
@@ -257,8 +258,8 @@ async def test_production_runtime_comparison_failure_resumes_only_synthesis(case
             assert set(checkpoint['material_ids']) == {old['id'], new['id']}
             assert checkpoint['recovery_state'] == 'synthesis_ready'
             assert all(item.get('name') not in {'read', 'spawn_research'} for item in payload['tools'])
-            return output(('finish_analysis', {'report': 'Recovered visible comparison',
-                'material_ids': [old['id'], new['id']]}))
+            return output(('finish_analysis', delivery_arguments(**{'report': 'Recovered visible comparison',
+                'material_ids': [old['id'], new['id']]})))
         stage['requests'] += 1
         if stage['requests'] == 1:
             research_contexts.append(initial)

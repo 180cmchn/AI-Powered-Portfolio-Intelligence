@@ -93,13 +93,23 @@ class TaskTrackingStore:
                 metadata['target_security'] = item['reason'].split('manual_security:', 1)[1].split(';', 1)[0]
                 metadata['target']['symbols'] = list(dict.fromkeys([*metadata['target']['symbols'], metadata['target_security']]))
         item.update(metadata)
-        report = db.execute("SELECT id,status,substr(report,1,500) AS report, json_extract(result,'$.research_delivery') AS research_delivery,json_extract(result,'$.reference_summary') AS reference_summary FROM analyses WHERE job_id=?", (item['id'],)).fetchone()
+        report = db.execute("SELECT id,status,substr(report,1,500) AS report, json_extract(result,'$.delivery') AS delivery,json_extract(result,'$.research_delivery') AS research_delivery,json_extract(result,'$.reference_summary') AS reference_summary FROM analyses WHERE job_id=?", (item['id'],)).fetchone()
         item.update(report_id=report['id'] if report and report['report'].strip() else None,
                     report_status=report['status'] if report and report['report'].strip() else 'not_published',
                     report_summary=report['report'][:500] if report else None,
                     scheduled_at=metadata.get('planned_at'), current_due_at=item['due_at'], trading_day=None)
         item['research_delivery'] = loads(report['research_delivery']) if report else None
         item['reference_summary'] = loads(report['reference_summary']) if report else None
+        persisted = db.execute('SELECT result FROM jobs WHERE id=?', (item['id'],)).fetchone()
+        result = loads(persisted[0], {}) or {} if persisted else {}
+        item['delivery'] = loads(report['delivery']) if report and report['delivery'] else result.get('delivery')
+        if report and not item['delivery']:
+            item['delivery'] = {'status': 'legacy', 'contract_verified': None,
+                                'content_assessment': 'not_evaluated'}
+        item['error_code'] = (item['delivery'] or {}).get('error_code')
+        item['forecast_coverage'] = result.get('forecast_coverage')
+        item['submission_outcome'] = result.get('submission_outcome')
+        item['submission_corrections'] = result.get('submission_corrections')
         demands = [dict(r) for r in db.execute('SELECT id,kind,reason,event_key,created_at,state FROM research_demands WHERE job_id=? ORDER BY id', (item['id'],))]
         item['demands'] = demands
         for demand in demands:

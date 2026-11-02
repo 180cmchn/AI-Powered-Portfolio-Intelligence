@@ -1,0 +1,68 @@
+[
+  {
+    "group": "iteration",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 1914
+  },
+  {
+    "group": "production",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 9114
+  },
+  {
+    "group": "seventh",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 4692
+  },
+  {
+    "group": "ninth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 16525
+  },
+  {
+    "group": "tenth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 19764
+  },
+  {
+    "group": "eleventh",
+    "code": 1,
+    "signal": null,
+    "duration_ms": 53247
+  },
+  {
+    "group": "twelfth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 107264
+  },
+  {
+    "group": "twelfth_select",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 16926
+  },
+  {
+    "group": "thirteenth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 41258
+  },
+  {
+    "group": "thirteenth_correction",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 6537
+  },
+  {
+    "group": "fourteenth",
+    "code": 0,
+    "signal": null,
+    "duration_ms": 1111
+  }
+]

@@ -141,7 +141,7 @@ def defaults() -> dict:
         "synthesis_max_calls": 4, "synthesis_checkpoint_max_age_seconds": 1800,
         "quote_provider": os.getenv("QUOTE_PROVIDER", "eastmoney"),
         "quote_fallback_provider": os.getenv("QUOTE_FALLBACK_PROVIDER", "sina"),
-        "max_concurrent_agents": 3, "max_model_calls": 40,
+        "max_concurrent_agents": 3, "max_model_calls": 40, "final_submission_reserved_calls": 2,
         "agent_timeout_seconds": 600, "analysis_timeout_seconds": 1200,
         "max_agent_turns": 12, "max_output_tokens": 4000,
         "quote_interval_seconds": 60, "scan_interval_minutes": 5,

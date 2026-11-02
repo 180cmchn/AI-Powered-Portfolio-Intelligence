@@ -1,4 +1,5 @@
 """Production Store/Service regressions with explicit clocks, HTTP/key fixtures."""
+from delivery_helpers import publish_fixture
 import json
 import sqlite3
 from datetime import datetime, timedelta
@@ -104,7 +105,7 @@ def test_retry_keeps_attempt_ownership_and_one_sample_denominator(setup, new_mod
     with store.connect() as db:
         db.execute('UPDATE jobs SET due_at=? WHERE id=?', (AT.isoformat(), retry['id']))
     current = store.claim_jobs(account_id=account['id'])[0]
-    assert store.publish(current['id'], report(), AT.isoformat())
+    assert publish_fixture(store,current['id'], report(), AT.isoformat())
     assert counts(store)[0]['total'] == 3
     assert store.forecast_statistics(kind='test')['attempt_statistics']['total'] == 2
     assert counts(store, new_model)[0]['total'] == 3
@@ -146,7 +147,7 @@ def test_legacy_unknown_does_not_adopt_current_model(tmp_path):
 
 def test_stable_rules_exploration_keeps_all_and_never_selects_winner(setup):
     store, account, _, initial = setup
-    assert store.publish(initial['id'], report(), AT.isoformat())
+    assert publish_fixture(store,initial['id'], report(), AT.isoformat())
     other = store.save_account({'name': 'B', 'holdings': [{'symbol': 'SZ:159278', 'quantity': '1'}]})
     b1 = store.create_forecast_batch(account['id'], kind='exploratory', at=AT)
     b2 = store.create_forecast_batch(account['id'], kind='exploratory', at=AT + timedelta(minutes=5))
@@ -191,7 +192,7 @@ def test_historical_rule_projection_preserves_ledger_and_unknown_rules(setup):
 
 def test_database_page_is_bounded_and_stable_and_aggregates_revisions(setup, monkeypatch):
     store, account, batch, job = setup
-    store.publish(job['id'], report(), AT.isoformat())
+    publish_fixture(store,job['id'], report(), AT.isoformat())
     traces=[]
     original=store._forecast_rows
     def bounded(db, filters, limit=None, offset=0):
@@ -211,7 +212,7 @@ def test_database_page_is_bounded_and_stable_and_aggregates_revisions(setup, mon
 
 def test_v6_database_migration_keeps_immutable_predictions_and_backup(setup):
     store, account, batch, job = setup
-    assert store.publish(job['id'], report(), AT.isoformat())
+    assert publish_fixture(store,job['id'], report(), AT.isoformat())
     with store.connect() as db:
         before = [tuple(r) for r in db.execute('SELECT * FROM forecasts ORDER BY id')]
         # Recreate only the old batch-table shape in this isolated fixture.
@@ -253,7 +254,7 @@ def test_rule_labels_and_decimal_format_do_not_split_scoring_identity(setup):
 def test_formal_direction_requires_each_symbols_exact_baseline(setup):
     store, account, _, original_job = setup
     # An existing successful test report prevents formal retry reconciliation.
-    assert store.publish(original_job['id'], report(), AT.isoformat())
+    assert publish_fixture(store,original_job['id'], report(), AT.isoformat())
     baseline={'SZ:159278':{'status':'ready','symbol':'SZ:159278','base_date':'2026-10-28',
         'target_date':'2026-10-28','base_price':'1.10','source':'controlled-history','price_policy':'same_source_pair_v1'}}
     batch=store.create_forecast_batch(account['id'],kind='formal',at=AT,
@@ -265,7 +266,7 @@ def test_formal_direction_requires_each_symbols_exact_baseline(setup):
     current=store.claim_jobs(account_id=account['id'])[0]
     result=report()
     result['forecasts'] += [{'symbol':'SH:510300','horizon':h,'direction':'up','reason':'fixture missing price'} for h in [1,5,20]]
-    assert store.publish(current['id'],result,AT.isoformat())
+    assert publish_fixture(store,current['id'],result,AT.isoformat())
     page=store.forecasts_page(kind='formal')
     assert page['total']==6
     assert len([r for r in page['items'] if r['forecast_id']])==3
@@ -285,7 +286,7 @@ def test_formal_does_not_accept_mismatched_baseline(setup,changes):
         'base_price':'1','source':'synthetic','price_policy':'same_source_pair_v1',**changes}
     batch=store.create_forecast_batch(account['id'],kind='formal',at=AT,baseline_evidence={'SZ:159278':baseline})
     # New job is independent because it is not yet associated with a batch.
-    assert store.publish(job['id'],report(),AT.isoformat())
+    assert publish_fixture(store,job['id'],report(),AT.isoformat())
     new=store.enqueue(account['id'],'bad baseline fixture')
     store.bind_forecast_job(batch['id'],new['id'])
     with store.connect() as db:

@@ -1,4 +1,5 @@
 """Ordinary-text citations use exact IDs and read-only, account-scoped locators."""
+from delivery_helpers import finish_global_fixture, publish_fixture
 import copy
 import json
 
@@ -71,7 +72,7 @@ def test_ordinary_text_publication_keeps_text_and_resolves_its_citations(app):
     raw = raw_material(store)
     job = store.claim_jobs()[0]
     report = f"维持观察。只读了选页；材料{raw['id']}，{raw['url']}。"
-    assert store.publish(job['id'], {'report': report}, None)
+    assert publish_fixture(store,job['id'], {'report': report}, None)
     with store.connect() as db:
         row = db.execute('SELECT report,result FROM analyses WHERE job_id=?', (job['id'],)).fetchone()
         result = json.loads(row['result'])
@@ -89,7 +90,7 @@ def test_legacy_complete_http_reads_project_only_missing_explicit_ids(app, monke
     raw = raw_material(store)
     job = store.claim_jobs()[0]
     report = f"旧普通文本报告；材料{raw['id']}。"
-    assert store.publish(job['id'], {'report': report}, None)
+    assert publish_fixture(store,job['id'], {'report': report}, None)
     with store.connect() as db:
         aid = db.execute('SELECT id FROM analyses WHERE job_id=?', (job['id'],)).fetchone()[0]
         legacy = json.dumps({'report': report, 'references': [],
@@ -124,7 +125,7 @@ def test_global_complete_read_is_public_and_summary_skips_projection(app, monkey
     store.request_analysis(None, 'fixture', 'text-reference-global')
     run = store.claim_global()
     report = f"公开报告材料{raw['id']}，材料{private['id']}。"
-    store.finish_global(run['id'], 'completed', {'report': report})
+    finish_global_fixture(store,run['id'], 'completed', {'report': report})
     legacy = json.dumps({'report': report, 'references': []}, ensure_ascii=False)
     with store.connect() as db:
         db.execute('UPDATE global_runs SET result=? WHERE id=?', (legacy, run['id']))

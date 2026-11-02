@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Actual HTTP payload regressions with production Runtime/Store/ResearchTools.
 
 All prices and protocol responses are controlled fixtures, never live results.
@@ -103,7 +104,7 @@ async def test_default_budget_preserves_every_value_in_final_http_after_archive(
         assert function_names == {'finish_analysis'}
         assert len(json.dumps(payload.get('input', payload.get('messages')), ensure_ascii=False)) < cfg['max_context_chars'] * .78
         assert 'NEVER_LOG_PRIVATE_REASONING' not in json.dumps(payload)
-        return output(protocol, [('finish_analysis', {'report': '确定性结果已可见；本测试不评价模型采用或投资方向。'})])
+        return output(protocol, [('finish_analysis', delivery_arguments(**{'report': '确定性结果已可见；本测试不评价模型采用或投资方向。'}))])
 
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))
@@ -150,7 +151,7 @@ async def test_large_calculate_inputs_recover_without_recompute_and_keep_earlier
         assert summaries[-2]['status'] == 'failed' and summaries[-1]['result'] == '3'
         assert all(item['source_task_id'] == context['job_id'] for item in summaries)
         assert all(item['agent_id'] == 'manager' for item in summaries)
-        return output('responses', [('finish_analysis', {'report': '从已保存计算恢复。'})])
+        return output('responses', [('finish_analysis', delivery_arguments(**{'report': '从已保存计算恢复。'}))])
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))
     resumed = agents.ResearchRuntime({**context, 'job_id': 'resumed-job', 'synthesis_checkpoint': saved}, cfg, tools, emit)
@@ -181,7 +182,7 @@ async def test_small_budget_reports_exact_omissions_without_false_recall_permiss
     payloads = []
     async def handler(request):
         payloads.append(json.loads(request.content))
-        return output('responses', [('finish_analysis', {'report': '未在最终上下文纳入的计算保持明确缺口。'})])
+        return output('responses', [('finish_analysis', delivery_arguments(**{'report': '未在最终上下文纳入的计算保持明确缺口。'}))])
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))
     runtime = agents.ResearchRuntime(context, cfg, tools, emit)
@@ -229,7 +230,7 @@ async def test_prepare_keeps_distinct_windows_and_permits_actual_input_recall(tm
         original = json.loads(recalled['text'])
         assert original['arguments']['window'] == 10
         assert len(original['output']['input_closes']) == 11
-        return output('responses', [('finish_analysis', {'report': '已取回第二个窗口的完整输入。'})])
+        return output('responses', [('finish_analysis', delivery_arguments(**{'report': '已取回第二个窗口的完整输入。'}))])
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))
     async def emit(event):
@@ -263,7 +264,7 @@ async def test_parallel_children_publish_calculations_before_shared_budget_close
                 assert all(item['research_round'] == 1 for item in summaries)
                 assert all(item['full_inputs']['session_agent_id'] == 'manager' for item in summaries)
                 assert all(child['status'] == 'completed' for child in visible['runtime_status']['children'])
-                return output('responses', [('finish_analysis', {'report': '两位子研究者实际交付的计算可见。'})])
+                return output('responses', [('finish_analysis', delivery_arguments(**{'report': '两位子研究者实际交付的计算可见。'}))])
             return output('responses', [('wait_agents', {'timeout_seconds': .01})])
         if names == {'submit_report'}:
             assert visible['calculation_summaries']
@@ -284,9 +285,11 @@ async def test_parallel_children_publish_calculations_before_shared_budget_close
 
 
 @pytest.mark.asyncio
-async def test_late_child_computation_reaches_the_single_final_update(tmp_path, monkeypatch):
+async def test_late_child_computation_is_saved_without_extra_final_request(tmp_path, monkeypatch):
     cfg = config(monkeypatch, max_model_calls=10, max_agent_turns=12)
     store, tools, context = setup(tmp_path, cfg)
+    context['universe_version'] = store.universe_snapshot()['universe_version']
+    tools.context = context  # Exercise the real durable checkpoint writer.
     parent_started, child_waiting, child_done = asyncio.Event(), asyncio.Event(), asyncio.Event()
     manager_requests, child_requests = [], []
     async def handler(request):
@@ -305,13 +308,8 @@ async def test_late_child_computation_reaches_the_single_final_update(tmp_path, 
             assert not visible.get('calculation_summaries')
             parent_started.set()
             await child_done.wait()
-            return output('responses', [('finish_analysis', {'report': '第一次请求时尚未交付子成果。'})])
-        assert len(manager_requests) == 2
-        assert {tool['name'] for tool in payload['tools']} == {'finish_analysis'}
-        summaries = visible['calculation_summaries']
-        assert len(summaries) == 1 and summaries[0]['result'] == '93'
-        assert summaries[0]['agent_id'] != 'manager'
-        return output('responses', [('finish_analysis', {'report': '这一次更新已收到迟到子成果。'})])
+            return output('responses', [('finish_analysis', delivery_arguments(**{'report': '第一次请求时尚未交付子成果。'}))])
+        raise AssertionError('有效显式提交后不能为迟到计算追加模型调用')
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))
     async def emit(event):
@@ -323,7 +321,12 @@ async def test_late_child_computation_reaches_the_single_final_update(tmp_path, 
     await asyncio.wait_for(child_waiting.wait(), 2)
     runtime.calls = 7
     result = await runtime.run()
-    assert len(manager_requests) == 2 and result['late_child_update_performed']
-    assert result['model_calls'] == 9 <= 10
+    assert len(manager_requests) == 1 and not result.get('late_child_update_performed')
+    assert result['model_calls'] == 8 < 10
+    assert result['unincorporated_child_reports'] and '正文尚未吸收' in result['report']
     final = [item for item in result['calculation_coverage'] if item['agent_id'] == 'manager'][-1]
-    assert len(final['calculations']) == 1 and final['calculations'][0]['visibility'] == 'summary'
+    assert final['calculations'] == []  # The actual final request predates delivery.
+    with store.connect() as db:
+        checkpoint = json.loads(db.execute('SELECT body FROM synthesis_checkpoints WHERE job_id=?', (context['job_id'],)).fetchone()[0])
+    assert checkpoint['calculations'][0]['summary']['result'] == '93'
+    assert checkpoint['reports'][0]['calculation_ids']

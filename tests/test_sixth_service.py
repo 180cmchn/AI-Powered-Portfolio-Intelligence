@@ -1,4 +1,5 @@
 """Production scheduler tests with explicit historical fixture prices and clocks."""
+from delivery_helpers import publish_fixture
 import asyncio
 from datetime import datetime
 import time
@@ -118,7 +119,7 @@ async def test_new_year_calendar_gap_does_not_block_other_due_samples(configured
 
 def complete_initial_job(store, account):
     job = store.claim_jobs()[0]
-    assert store.publish(job["id"], {"report": "prior fixture report"}, None)
+    assert publish_fixture(store,job["id"], {"report": "prior fixture report"}, None)
     assert store.account(account["id"])["analysis_state"] == "current"
 
 

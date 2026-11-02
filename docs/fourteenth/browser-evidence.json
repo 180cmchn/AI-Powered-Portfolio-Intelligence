@@ -1,0 +1,18 @@
+{
+  "kind": "controlled_production_full_chain",
+  "passed": true,
+  "port": 57655,
+  "account_id": "327ed14c5d2743a8bc629eeff5631b01",
+  "report_id": "2d30699d773241409198db966c812ffe",
+  "failed_job_id": "c67f4836e5834a01a3c9e12547228106",
+  "model_fixture_http_requests": 3,
+  "paid_model_requests": 0,
+  "browser": "151.0.7922.34",
+  "scenarios": [
+    "failed_submission_api_page",
+    "finite_report_body_scope",
+    "old_current_report_preserved",
+    "explicit_retry_visible"
+  ],
+  "console_errors": []
+}

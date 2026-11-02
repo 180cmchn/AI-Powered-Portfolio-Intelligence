@@ -1,0 +1,22 @@
+{
+  "kind": "source_index_only_input_organization_comparison",
+  "parent_package_sha256": "a4159c95ffe035948e111aabac129794309459fc59ca0c603ecf9caefccae238",
+  "package_sha256": "506f793a6bc2c25ec2e1cbd56dce798820bda36a55d7c9ebcbc34e1ccfcd457e",
+  "input_sha256": "1b9a447de9f2b8f5ff7ded3c1744c1b8f0de5201c011521d298da5bf390d2ed6",
+  "unchanged_fields": {
+    "account": true,
+    "metrics": true,
+    "reports": true,
+    "calculations": true,
+    "open_questions": true,
+    "unresolved_tasks": true,
+    "data_as_of": true
+  },
+  "original_source_indexes": 295,
+  "retained_referenced_source_indexes": 40,
+  "retained_records_unchanged": true,
+  "input_characters": 64356,
+  "planned_extra_http_attempts_maximum": 2,
+  "reason": "Both original-input branches ended in unknown-outcome upstream transport errors; no automatic resend. New comparison changes only unreferenced source-index presentation, with original model/protocol/effort and claims intact.",
+  "original_attempts_retained": true
+}

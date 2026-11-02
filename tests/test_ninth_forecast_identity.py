@@ -1,4 +1,5 @@
 """Sample attribution regressions through production Store/Service with controlled models."""
+from delivery_helpers import publish_fixture
 import json
 import sqlite3
 from datetime import timedelta
@@ -23,7 +24,7 @@ async def test_partial_publication_retry_preflight_failure_uses_frozen_sample_id
     first = claim(store, clock, account)
     initial = {'report': 'controlled first security only', 'forecasts': [
         {'symbol': A, 'horizon': h, 'direction': 'up', 'reason': 'controlled'} for h in (1, 5, 20)]}
-    assert store.publish(first['id'], initial, clock[0].isoformat())
+    assert publish_fixture(store,first['id'], initial, clock[0].isoformat())
     before = {r['id']: dict(r) for r in store.forecasts_page()['items'] if r['symbol'] == A}
     old = store.forecast_attempts(job_id=first['id'])[0]
     if endpoint != 'https://fixture.invalid/v1':
@@ -146,7 +147,7 @@ async def test_partial_history_migration_keeps_published_attempt_and_retry_scope
     store, account, clock = env
     await tick(store, clock, Prices())
     first = claim(store, clock, account)
-    assert store.publish(first['id'], {'report': 'first publication', 'forecasts': [
+    assert publish_fixture(store,first['id'], {'report': 'first publication', 'forecasts': [
         {'symbol': A, 'horizon': h, 'direction': 'abstain', 'reason': 'uncertainty'} for h in (1, 5, 20)]}, clock[0].isoformat())
     old_id = store.forecast_attempts(job_id=first['id'])[0]['id']
     configure_test_team(store, {'model_name': 'retry-B'})

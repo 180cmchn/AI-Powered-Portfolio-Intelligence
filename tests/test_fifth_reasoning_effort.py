@@ -1,3 +1,5 @@
+from delivery_helpers import runner_result
+from tests.delivery_helpers import delivery_arguments
 """Captured HTTP protocol and isolated SQLite evidence, never upstream support claims."""
 import asyncio
 import json
@@ -188,7 +190,7 @@ async def test_service_account_and_global_use_claimed_config_after_setting_chang
     seen = []
     async def runner(context, cfg, tools, emit):
         seen.append((context['job_id'], cfg['reasoning_effort'], context['model_config']['reasoning_effort']))
-        return {'report': 'controlled fixture'}
+        return runner_result({'report': 'controlled fixture'}, context)
     service = Service(store, runner)
     await service.execute(job)
     await service.execute_global(run)
@@ -248,7 +250,7 @@ async def test_manager_child_followup_synthesis_and_recovery_keep_same_effort(mo
         if 'task' in initial:
             return response('submit_report', {'summary': 'visible child fact'})
         if initial.get('synthesis_checkpoint'):
-            return response('finish_analysis', {'report': 'complete synthesis'})
+            return response('finish_analysis', delivery_arguments(**{'report': 'complete synthesis'}))
         if state['child'] is None:
             return response('spawn_research', {'task': 'ETF source scope'})
         if state['round'] < 1:

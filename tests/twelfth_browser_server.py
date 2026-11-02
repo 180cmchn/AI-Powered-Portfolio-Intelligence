@@ -1,6 +1,7 @@
 """Production FastAPI/SQLite and real events; explicit non-model test controls.
 No worker, external network or user database/credentials.
 """
+from delivery_helpers import publish_fixture
 import json, os, socket, sys
 from pathlib import Path
 root = Path(__file__).resolve().parents[1]
@@ -21,7 +22,7 @@ account=store.save_account(AccountInput(name='第十二轮受控 A',cash='100000
 other=store.save_account(AccountInput(name='第十二轮隔离 B',cash='200000',holdings=[]))
 material=store.save_material({'scope':'public','title':'明确标识的工程长材料','url':'https://example.test/twelfth/material','access':'full','text':'\n'.join(f'材料段 {n} '+ '工程材料，非投资事实。'*40 for n in range(160)),'classification':'unclassified'})
 for claimed in store.claim_jobs(10):
-    store.publish(claimed['id'],{'report':'## 工程报告，非真实模型结果\n\n'+'\n\n'.join(f'受控报告段 {n}：阅读期间更新应稳定。' for n in range(40)),'material_ids':[material['id']]},None)
+    publish_fixture(store,claimed['id'],{'report':'## 工程报告，非真实模型结果\n\n'+'\n\n'.join(f'受控报告段 {n}：阅读期间更新应稳定。' for n in range(40)),'material_ids':[material['id']]},None)
 report_id=store.analyses(account['id'])[0]['id']
 job=store.enqueue(account['id'],'manual')
 store.claim_jobs(10,account_id=account['id'])
@@ -67,7 +68,7 @@ async def new_report():
     # reading task: normal store publish on a separate security-scoped task.
     newer=store.submit_task(account['id'],target='SZ:002354',origin={'page':'market','action':'analyze-symbol'})
     store.claim_jobs(10,account_id=account['id'])
-    store.publish(newer['id'],{'report':'新工程报告，不是模型结论。','material_ids':[material['id']]},None)
+    publish_fixture(store,newer['id'],{'report':'新工程报告，不是模型结论。','material_ids':[material['id']]},None)
     return store.job(newer['id'])
 @app.get('/__fixture/audit')
 async def audit():

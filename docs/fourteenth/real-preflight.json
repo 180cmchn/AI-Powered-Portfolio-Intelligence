@@ -1,0 +1,84 @@
+{
+  "access": "SQLite mode=ro; only role/model configuration, no daily research contents",
+  "source_database": "data/live.sqlite3",
+  "reference_account": "96b91df38e854008b989206c63808c3a",
+  "previous_iteration_bindings_match": true,
+  "providers": [
+    {
+      "id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "revision": 1,
+      "credential_revision": 1,
+      "archived": false
+    }
+  ],
+  "configured_limits": {
+    "max_model_calls": 40,
+    "model_retries": null,
+    "max_agent_turns": 12,
+    "max_output_tokens": 4000,
+    "analysis_timeout_seconds": 1200,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360
+  },
+  "manager": {
+    "model": "grok-4.7",
+    "effort": "max"
+  },
+  "filing_researcher": {
+    "model": "grok-4.6",
+    "effort": "high"
+  },
+  "other_researchers": {
+    "model": "grok-4.7",
+    "effort": "medium"
+  },
+  "source_database_sha256_before": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+  "source_database_sha256_after": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+  "credential_contents_printed": false,
+  "model_directory_requests": 0,
+  "model_calls": 0,
+  "authorized_total_http_attempts": 44,
+  "authorized_final_http_attempts": 4,
+  "authorized_full_http_attempts": 40,
+  "full_gate": "named final contract plus actual body-bound manual content review must pass",
+  "prompt_migration_preview": [
+    {
+      "role_id": "manager",
+      "custom": false,
+      "stored_prompt_sha256": "3c6da47391c5b691bd1b6bddcc4c30d9d3db41918dc9134bdf63fa644cc501ff",
+      "exact_previous_builtin": true
+    },
+    {
+      "role_id": "filing_researcher",
+      "custom": false,
+      "stored_prompt_sha256": "e608bb7d16dacbf7b5807ed55ffdcfe1c9952a6ceaff6a45a77fbe2102483ff5",
+      "exact_previous_builtin": true
+    },
+    {
+      "role_id": "market_researcher",
+      "custom": false,
+      "stored_prompt_sha256": "09a401bd93012d68d21deb3f5f9dd95d0706a6c02278f16f1e82dd348c343eb2",
+      "exact_previous_builtin": true
+    },
+    {
+      "role_id": "industry_researcher",
+      "custom": false,
+      "stored_prompt_sha256": "d498d846a5b2cfd0fbd19c7fcd34c359400fc0928a66ade0e7e8935f9d858f9c",
+      "exact_previous_builtin": true
+    },
+    {
+      "role_id": "etf_researcher",
+      "custom": false,
+      "stored_prompt_sha256": "5e8ad6a5758b40dbf331076f5b5d1f0afc16324d973ebc264bcc734699efabba",
+      "exact_previous_builtin": true
+    },
+    {
+      "role_id": "portfolio_researcher",
+      "custom": false,
+      "stored_prompt_sha256": "2a6dfeb5eee5de9601d7e9adccdcf808cba3049d233a3aee79ca74d8a426a738",
+      "exact_previous_builtin": true
+    }
+  ]
+}

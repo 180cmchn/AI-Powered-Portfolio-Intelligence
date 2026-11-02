@@ -1,4 +1,5 @@
 """Third-round deterministic checks using the production SQLite lifecycle."""
+from delivery_helpers import publish_fixture
 from ledger_helpers import save_snapshot_correction
 from datetime import datetime, timedelta
 
@@ -19,7 +20,7 @@ def publish(store, account_id=None, reason="manual", **result):
     if account_id:
         store.enqueue(account_id, reason)
     job = store.claim_jobs()[0]
-    assert store.publish(job["id"], {"report": "明确标识的受控测试报告", **result}, None)
+    assert publish_fixture(store,job["id"], {"report": "明确标识的受控测试报告", **result}, None)
     return job
 
 
@@ -42,7 +43,7 @@ def test_plain_report_keeps_observing_and_deduplicates_followup(store):
     assert item["id"] == rid
     assert store.demands(account["id"])
     followup = store.claim_jobs()[0]
-    assert store.publish(followup["id"], {"report": "复核报告再次省略结构化处理"}, None)
+    assert publish_fixture(store,followup["id"], {"report": "复核报告再次省略结构化处理"}, None)
     for _ in range(5):
         store.review_recommendations(quotes, stamp)
     assert not store.claim_jobs(), "同一未完成复核不能无限自动重算"
@@ -77,7 +78,7 @@ def test_maintain_and_update_bind_verified_current_account_version(store):
     save_snapshot_correction(store, AccountInput(name="已修改持仓", holdings=[{"symbol": "SH:600519", "quantity": "1"}]), account["id"])
     assert store.recommendation(account["id"], rid)["review_status"] == "needs_review"
     job = store.claim_jobs()[0]
-    assert store.publish(job["id"], {"report": "已复核新持仓", "maintained_suggestion_ids": [rid], "input_version": 999}, None)
+    assert publish_fixture(store,job["id"], {"report": "已复核新持仓", "maintained_suggestion_ids": [rid], "input_version": 999}, None)
     item = store.recommendation(account["id"], rid)
     assert item["input_version"] == 2 and item["review_status"] == "valid"
     assert item["job_id"] == job["id"]
@@ -146,7 +147,7 @@ def test_restart_and_repeated_omissions_do_not_create_new_review_work(store):
     publish(store, account["id"])
     store.dispatch_demands()
     follow = store.claim_jobs()[0]
-    assert store.publish(follow["id"], {"report": "复核未给出明确处理"}, None)
+    assert publish_fixture(store,follow["id"], {"report": "复核未给出明确处理"}, None)
     before_demands = store.demands(account["id"])
     before_events = store.recommendation_events(rid)
     reopened = Store(store.path)
@@ -166,7 +167,7 @@ def test_material_event_replay_cannot_undo_explicit_review(store):
     rid = store.recommendations(account["id"])[0]["id"]
     store.review_recommendations(material_ids=["controlled-public-document"])
     job = store.claim_jobs()[0]
-    assert store.publish(job["id"], {"report": "复核材料后维持", "maintained_suggestion_ids": [rid]}, None)
+    assert publish_fixture(store,job["id"], {"report": "复核材料后维持", "maintained_suggestion_ids": [rid]}, None)
     count = len(store.recommendation_events(rid))
     for _ in range(4):
         store.review_recommendations(material_ids=["controlled-public-document"])
@@ -180,7 +181,7 @@ def test_material_event_deduplication_survives_changed_notification_batches(stor
     rid = store.recommendations(account["id"])[0]["id"]
     store.review_recommendations(material_ids=["controlled-material-A", "controlled-material-B"])
     job = store.claim_jobs()[0]
-    assert store.publish(job["id"], {"report": "已复核 A 和 B", "maintained_suggestion_ids": [rid]}, None)
+    assert publish_fixture(store,job["id"], {"report": "已复核 A 和 B", "maintained_suggestion_ids": [rid]}, None)
     demands_before = store.demands(account["id"])
     events_before = store.recommendation_events(rid)
     store.review_recommendations(material_ids=["controlled-material-A"])
@@ -239,7 +240,7 @@ def test_previously_fresh_quote_becoming_stale_creates_one_durable_review(store)
         reopened.review_recommendations(quote, stale_at)
     assert reopened.demands(account["id"]) == [demand]
     follow = reopened.claim_jobs()[0]
-    assert reopened.publish(follow["id"], {"report": "受控复核维持", "maintained_suggestion_ids": [rid]}, None)
+    assert publish_fixture(reopened,follow["id"], {"report": "受控复核维持", "maintained_suggestion_ids": [rid]}, None)
     reopened.review_recommendations(quote, stale_at)
     assert not reopened.claim_jobs() and len(reopened.demands(account["id"])) == 1
     assert reopened.recommendation(account["id"], rid)["price_state"] == "stale"
@@ -341,7 +342,7 @@ def test_inflight_price_event_is_not_consumed_by_an_older_research_context(store
         result["maintained_suggestion_ids"] = [original["id"]]
     else:
         result["suggestions"] = [suggestion(**({"id": original["id"]} if resolution == "update" else {}))]
-    assert store.publish(running["id"], result, None)
+    assert publish_fixture(store,running["id"], result, None)
     after = next(d for d in store.demands(account["id"]) if d["id"] == event["id"])
     assert after["state"] == "pending", "后到事件未被旧任务研究，不可静默完成"
     active = store.recommendations_page(account["id"])["items"][0]
@@ -351,7 +352,7 @@ def test_inflight_price_event_is_not_consumed_by_an_older_research_context(store
     linked = store.recommendation_context(account["id"], follow["id"])["event_linked_items"]
     assert active["id"] in {item["id"] for item in linked}
     covered = [row['id'] for row in store.task_demands(follow['id'], account['id'])['items']]
-    assert store.publish(follow["id"], {"report": "已处理本轮新价格事件", "maintained_suggestion_ids": [active["id"]],
+    assert publish_fixture(store,follow["id"], {"report": "已处理本轮新价格事件", "maintained_suggestion_ids": [active["id"]],
                                       'covered_demand_ids': covered}, None)
     assert store.recommendation(account["id"], active["id"])["review_status"] == "valid"
     assert all(d["state"] == "completed" for d in store.demands(account["id"]))

@@ -12,7 +12,8 @@
     "test:browser:twelfth": "node tests/frontend_twelfth.mjs",
     "test:browser:twelfth-select": "node tests/frontend_twelfth_select.mjs",
     "test:browser:thirteenth": "node tests/frontend_thirteenth.mjs",
-    "test:browser:thirteenth-correction": "node tests/frontend_thirteenth_correction.mjs"
+    "test:browser:thirteenth-correction": "node tests/frontend_thirteenth_correction.mjs",
+    "test:browser:fourteenth": "node tests/frontend_fourteenth.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

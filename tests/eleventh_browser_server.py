@@ -1,4 +1,5 @@
 """Production app, isolated SQLite, explicit directory/results; no model worker."""
+from delivery_helpers import publish_fixture
 import json, os, socket, sys
 from datetime import datetime
 from pathlib import Path
@@ -26,7 +27,7 @@ store.update_agent_definition(role['role_id'],{'system_prompt':long_prompt})
 account=store.save_account(AccountInput(name='第十一轮模拟 A',cash='100000',holdings=[]))
 other=store.save_account(AccountInput(name='第十一轮隔离 B',cash='200000',holdings=[]))
 for job in store.claim_jobs(10):
-    store.publish(job['id'],{'report':'受控浏览器报告，不是模型生成结果。'},None)
+    publish_fixture(store,job['id'],{'report':'受控浏览器报告，不是模型生成结果。'},None)
 @app.post('/__fixture/touch')
 async def touch():
     job=store.jobs(account['id'])[0]

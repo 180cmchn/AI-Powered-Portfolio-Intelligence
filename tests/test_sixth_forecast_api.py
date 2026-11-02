@@ -14,6 +14,10 @@ AT = datetime(2026, 10, 28, 16, tzinfo=SHANGHAI)
 @pytest.fixture
 def api(tmp_path):
     app = create_app(tmp_path / "forecast-api-fixtures.sqlite3", worker=False)
+    # Forecast API fixtures must not depend on a live security directory.
+    for symbol in ('SZ:159278', 'SH:510300'):
+        app.state.store.put_cache('securities', symbol, {'symbol': symbol, 'name': '受控目录证券',
+            'kind': 'etf', 'status': 'ok', 'identity_status': 'confirmed', 'source': 'controlled directory fixture'})
     with TestClient(app) as client:
         yield client, app.state.store
 

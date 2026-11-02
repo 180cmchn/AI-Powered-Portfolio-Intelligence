@@ -1,0 +1,281 @@
+{
+  "python": {
+    "command": ".venv/bin/python -m pytest -q",
+    "passed": 1146,
+    "warnings": 1,
+    "failed": 0,
+    "exit_code": 0,
+    "duration_seconds": 110.66,
+    "log": "python-final.txt",
+    "source_sha256": "28ebc715529b098177ce52c3aeb1d04d3434e0f76a64a36f27ec9682aada1357"
+  },
+  "browser": {
+    "initial_group_results": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1914
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 9114
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4692
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16525
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 19764
+      },
+      {
+        "group": "eleventh",
+        "code": 1,
+        "signal": null,
+        "duration_ms": 53247
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 107264
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16926
+      },
+      {
+        "group": "thirteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 41258
+      },
+      {
+        "group": "thirteenth_correction",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 6537
+      },
+      {
+        "group": "fourteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1111
+      }
+    ],
+    "eleventh_rerun": {
+      "exit_code": 0,
+      "log": "browser-eleventh-final.txt",
+      "reason": "Intentional UI contract label changed from completed to limited report published; only test assertion corrected, production source unchanged"
+    },
+    "all_eleven_groups_final_passed": true,
+    "original_failure_retained": true,
+    "final_command": "PYTHON=.venv/bin/python npm run test:browser",
+    "final_group_results": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1966
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 9263
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4663
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16727
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 19789
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 61186
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 103147
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16883
+      },
+      {
+        "group": "thirteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 41262
+      },
+      {
+        "group": "thirteenth_correction",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 6508
+      },
+      {
+        "group": "fourteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1108
+      }
+    ],
+    "exit_code": 0,
+    "final_log": "browser-final.txt",
+    "source_sha256": "28ebc715529b098177ce52c3aeb1d04d3434e0f76a64a36f27ec9682aada1357"
+  },
+  "source_sha256": "28ebc715529b098177ce52c3aeb1d04d3434e0f76a64a36f27ec9682aada1357",
+  "head": "ee770061f40b092e4cb50a8b191530576d29ab36",
+  "api_contract": 13,
+  "schema_version": 11,
+  "environment_unchanged": true,
+  "manager_prompt_chars_before": 7292,
+  "manager_prompt_chars_after": 4071,
+  "remote_ci": {
+    "run": 41323887407,
+    "commit": "ee770061f40b092e4cb50a8b191530576d29ab36",
+    "result": "success",
+    "python_passed": 1024,
+    "browser_groups": 10,
+    "applies_to_new_worktree_code": false
+  },
+  "paid_runs_in_progress": false,
+  "all_intermediate_runs": [
+    {
+      "log": "/tmp/guanlan-fourteenth-suite.txt",
+      "passed": 1019,
+      "failed": 42,
+      "errors": 7,
+      "note": "During integration; socket tests denied by sandbox, other fixtures still being migrated"
+    },
+    {
+      "log": "/tmp/guanlan-fourteenth-suite-2.txt",
+      "passed": 1106,
+      "failed": 2,
+      "note": "Old retry count expectation plus source-changed guard during parallel edits; neither hidden nor treated as final success"
+    },
+    {
+      "log": "/tmp/fourteenth-no-extra-final.txt",
+      "passed": 148,
+      "failed": 1,
+      "note": "Checkpoint fixture lacked the production ResearchTools context; fixture corrected, no storage admission weakened; targeted rerun 149 passed"
+    },
+    {
+      "log": "browser-wrong-interpreter.txt",
+      "exit_code": 130,
+      "note": "Root omitted PYTHON for browser subprocesses; temporary servers failed to start. Stopped isolated test batch, no production patch; rerun with project virtualenv explicitly."
+    }
+  ],
+  "real_validation": {
+    "file": "live-evidence.json",
+    "attempts": 4,
+    "accepted_final_submissions": 0,
+    "complete_research_tasks_started": 0,
+    "overall_passed": false,
+    "unmet_gate": "fixed evidence submission and content",
+    "remaining_full_stage_attempts": 40,
+    "final_source_paid_validation": false
+  },
+  "preservation": {
+    "checked_at": "2026-11-02T15:36:42.949250+08:00",
+    "daily_database_sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+    "daily_database_unchanged": true,
+    "environment_stamp": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_unchanged": true,
+    "source_sha256": "28ebc715529b098177ce52c3aeb1d04d3434e0f76a64a36f27ec9682aada1357",
+    "source_matches_final_snapshot": true,
+    "real_run_source_sha256": "e8023741df26543df93a4595cd678ea92b575f6c690655aa9244daaf7e3da3b9",
+    "source_unchanged_during_real_runs": true,
+    "source_changed_after_real_runs": true,
+    "post_real_changes": [
+      "formal forecast execution deadline across owner and assigned scope/sample associations",
+      "stop on first accepted explicit submission and retain unincorporated late child results without another request"
+    ],
+    "real_endpoint_validation_on_final_source": false,
+    "head_unchanged": true,
+    "budget": {
+      "maximum": 44,
+      "reserved_attempts": 4,
+      "stages": {
+        "final": {
+          "maximum": 4,
+          "reserved_attempts": 4
+        },
+        "full": {
+          "maximum": 40,
+          "reserved_attempts": 0
+        }
+      }
+    },
+    "unconsumed_full_stage_not_transferred": true
+  },
+  "post_full_suite_test_only_change": {
+    "file": "tests/test_fourteenth_runtime.py",
+    "reason": "Baseline prompt now read from committed fixture so shallow Python CI checkout does not need historical Git objects",
+    "targeted_result": "2 passed in 0.19s",
+    "production_source_changed": false
+  },
+  "before_final_boundary_patches": {
+    "source_sha256": "e8023741df26543df93a4595cd678ea92b575f6c690655aa9244daaf7e3da3b9",
+    "python": {
+      "command": ".venv/bin/python -m pytest -q",
+      "passed": 1135,
+      "warnings": 1,
+      "failed": 0,
+      "log": "python-before-final-boundaries.txt"
+    },
+    "browser_log": "browser-before-final-boundaries.txt",
+    "browser_group_results": "browser-groups-before-final-boundaries.json"
+  },
+  "final_source_snapshot": "final-source.json",
+  "real_run_source_snapshot": "frozen-source.json",
+  "real_run_source_sha256": "e8023741df26543df93a4595cd678ea92b575f6c690655aa9244daaf7e3da3b9",
+  "real_endpoint_validation_on_final_source": false,
+  "post_real_boundary_patches": [
+    "formal forecast execution deadline across owner and assigned scope/sample associations",
+    "stop on first accepted explicit submission and retain unincorporated late child results without another request"
+  ],
+  "final_engineering_verification": "passed",
+  "source_matches_final_snapshot": true,
+  "static_javascript_syntax": "passed",
+  "git_diff_check": "passed",
+  "daily_port_8765_listener_observed": false
+}

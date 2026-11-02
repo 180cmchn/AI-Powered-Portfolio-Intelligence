@@ -21,6 +21,7 @@ from .forecasts import ForecastStore, SCHEMA as FORECAST_SCHEMA
 from .forecast_windows import ForecastWindowStore, SCHEMA as FORECAST_WINDOW_SCHEMA
 from .task_tracking import TaskTrackingStore
 from .ledger import LedgerStore
+from .delivery import DeliveryContractError, bind_delivery, bind_submission_observation, incomplete_delivery, validate_final_result
 
 
 def uid() -> str:
@@ -39,8 +40,7 @@ class Conflict(Exception):
     pass
 
 
-class ReportPublicationError(ValueError):
-    pass
+ReportPublicationError = DeliveryContractError
 
 
 class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore, RecoveryStore, AgentConfigStore, ForecastStore, ForecastWindowStore, TaskTrackingStore, LedgerStore):
@@ -187,6 +187,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             self.migrate_eighth_roles(db)
             self.migrate_ninth_roles(db)
             self.migrate_tenth_roles(db)
+            self.migrate_fourteenth_roles(db)
             self.migrate_forecasts(db)
             self.migrate_forecast_windows(db)
             self.migrate_task_tracking(db)
@@ -377,7 +378,20 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         db.execute("UPDATE jobs SET state='superseded',completed_at=?,updated_at=? WHERE account_id=? AND state IN ('queued','running','waiting_config','waiting_scope')", (stamp, stamp, account["id"]))
         # A replaced execution cannot erase the business work it was assigned.
         db.execute("UPDATE research_demands SET state='pending',job_id=NULL,input_version=?,detail='moved to latest account input',updated_at=? WHERE account_id=? AND state IN ('assigned','pending')", (account["version"], stamp, account["id"]))
-        db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account["id"],))
+        # A same-input task does not invalidate a still-applicable report just
+        # by being queued. Explicit new facts/configuration and time-expiry
+        # keep the invalidation path; stale/expired reports are never restored.
+        invalidating = ('price_change', 'public_information', 'configuration_changed',
+                        'report_expired', 'universe_changed', 'resume_refresh', 'service_restart_refresh')
+        invalidate = any(reason == cause or reason.startswith(cause + ':') for cause in invalidating)
+        if db.execute("""SELECT 1 FROM research_demands WHERE account_id=?
+                AND state IN ('pending','assigned') AND kind IN
+                ('price_change','public_information','configuration_changed','report_expired','universe_changed','resume_refresh','recommendation_review') LIMIT 1""", (account['id'],)).fetchone():
+            invalidate = True
+        if invalidate:
+            db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND status='current'", (account["id"],))
+        else:
+            db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND input_version<>? AND status='current'", (account['id'], account['version']))
         due = (now_datetime(TZ) + timedelta(seconds=delay)).isoformat()
         db.execute("INSERT INTO jobs(id,account_id,input_version,reason,state,mode,due_at,created_at,updated_at,event_key) VALUES(?,?,?,?,'queued',?,?,?,?,?)",
                    (job_id, account["id"], account["version"], reason, self.mode, due, stamp, stamp, event_key))
@@ -468,6 +482,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             # immutable value drives all HTTP retries and child sessions. A new
             # claim after restart explicitly starts a new attempt/configuration.
             for r in rows:
+                metadata = loads(r['task_metadata'], {}) or {}
+                metadata['delivery_scope'] = self.delivery_scope(dict(r), db)
+                db.execute('UPDATE jobs SET task_metadata=? WHERE id=?', (dumps(metadata), r['id']))
                 cfg = self.task_config_snapshot(db, r["account_id"])
                 from .config import model_config_summary
                 previous = loads(r['config_snapshot'])
@@ -496,13 +513,18 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 if event.get('type') in ('synthesis_resuming', 'synthesis_context_prepared', 'synthesis_context_projected'):
                     db.execute("UPDATE jobs SET stage='synthesizing' WHERE id=? AND state='running'", (job_id,))
 
-    def set_job_state(self, job_id, state, error=None):
+    def set_job_state(self, job_id, state, error=None, *, error_code=None):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT account_id,state FROM jobs WHERE id=?", (job_id,)).fetchone()
             if not row or row["state"] in ("superseded", "cancelled", "completed"):
                 return
             db.execute("UPDATE jobs SET state=?,error=?,completed_at=?,updated_at=? WHERE id=?", (state, error, now() if state in ('failed','cancelled','superseded') else None, now(), job_id))
+            if state == 'failed' and error_code:
+                previous = db.execute('SELECT result FROM jobs WHERE id=?', (job_id,)).fetchone()
+                result = loads(previous[0], {}) or {}
+                result['delivery'] = incomplete_delivery(error_code)
+                db.execute('UPDATE jobs SET result=? WHERE id=?', (dumps(result), job_id))
             if state in ('waiting_config', 'waiting_scope'):
                 db.execute('UPDATE jobs SET stage=? WHERE id=?', (state, job_id))
             self.update_forecast_attempt_state(db, job_id, state, error)
@@ -514,9 +536,39 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                         ON a.id=sa.attempt_id WHERE a.job_id=?)""", (error or state, job_id, job_id))
                 db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'", (state, error or state, now(), job_id))
 
+    def delivery_scope(self, job, db=None):
+        """The same server-owned target keys feed Agent feedback and publication."""
+        if db is None:
+            with self.connect() as conn:
+                return self.delivery_scope(job, conn)
+        if not job.get('account_id'):
+            snapshot = job.get('input_snapshot') or {}
+            snapshot = loads(snapshot, {}) if isinstance(snapshot, str) else snapshot
+            universe = snapshot.get('universe') or {}
+            symbols = set(universe.get('candidates', [])) | set(universe.get('watchlist', []))
+            return {'allowed': sorted({'public', *symbols}), 'required': sorted(symbols)}
+        raw = db.execute('SELECT * FROM jobs WHERE id=?', (job['id'],)).fetchone()
+        job = dict(raw) if raw else dict(job)
+        metadata = loads(job.get('task_metadata'), {}) or {}
+        if isinstance(metadata.get('delivery_scope'), dict):
+            return metadata['delivery_scope']
+        target = metadata.get('target_security')
+        if not target and 'manual_security:' in job['reason']:
+            target = job['reason'].split('manual_security:', 1)[1].split(';', 1)[0]
+        if target:
+            return {'allowed': [target], 'required': [target]}
+        symbols = set((metadata.get('target') or {}).get('symbols') or [])
+        if not metadata:
+            snapshot = db.execute('SELECT body FROM snapshots WHERE account_id=? AND version=?',
+                                  (job['account_id'], job['input_version'])).fetchone()
+            symbols.update(h['symbol'] for h in (loads(snapshot[0], {}).get('holdings', []) if snapshot else []))
+        symbols.update(row[0] for row in db.execute("SELECT security_id FROM recommendations WHERE account_id=? AND state IN ('watching','triggered','needs_review')", (job['account_id'],)))
+        allowed = {'account', *symbols}
+        if not symbols:
+            allowed.add('cash_only')
+        return {'allowed': sorted(allowed), 'required': sorted(symbols)}
+
     def publish(self, job_id, result, data_as_of):
-        if not isinstance(result.get('report'), str) or not result['report'].strip():
-            raise ReportPublicationError('最终报告为空；子研究或成功请求不能代替最终报告发布')
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             job = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
@@ -525,6 +577,27 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             already = db.execute("SELECT status FROM analyses WHERE job_id=?", (job_id,)).fetchone()
             if already:
                 return already["status"] == "current"
+            metadata = loads(job['task_metadata'], {}) or {}
+            scope = self.delivery_scope(dict(job), db)
+            if self.mode == 'demo' and isinstance(result, dict) and result.get('demo') is True:
+                # This explicit local-calculation product is never model research.
+                result = {**result, 'delivery': {'status': 'demo', 'contract_verified': False,
+                                               'content_assessment': 'not_applicable'}}
+                if not isinstance(result.get('report'), str) or not result['report'].strip():
+                    raise ReportPublicationError('最终报告为空')
+            else:
+                result = validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'])
+                if 'account' not in result['scope'] and any(item.get('security_id', item.get('symbol')) not in result['scope'] for item in result.get('forecasts', [])):
+                    raise ReportPublicationError('结构化预测超出本次明确交付的 scope')
+                config = loads(job['config_snapshot'], {}) or {}
+                result = bind_delivery(result, job_id=job_id, account_id=job['account_id'],
+                    input_version=job['input_version'], universe_version=metadata.get('universe_version'),
+                    team_id=(config.get('_agent_team') or {}).get('team_id'))
+                bind_submission_observation(result, [loads(row[0]) for row in db.execute(
+                    "SELECT body FROM events WHERE job_id=? AND json_extract(body,'$.type') IN ('tool_started','tool_result','terminal_submission_rejected')", (job_id,))])
+                if result.get('forecasts') and not db.execute('SELECT 1 FROM forecast_batches WHERE job_id=?', (job_id,)).fetchone():
+                    raise ReportPublicationError('当前任务没有服务端冻结的预测批次，不能发布模型自建预测')
+            result.update(mode=self.mode, data_as_of=data_as_of)
             acc = db.execute("SELECT * FROM accounts WHERE id=?", (job["account_id"],)).fetchone()
             valid = bool(acc and acc["version"] == job["input_version"] and acc["latest_job_id"] == job_id and job["state"] == "running")
             result = self.resolve_result_references(result, job['account_id'], db)
@@ -536,7 +609,15 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             terminal = "completed" if valid else ("cancelled" if job["state"] == "cancelled" else "superseded")
             db.execute("UPDATE jobs SET state=?,result=?,data_as_of=?,stage='published',completed_at=?,updated_at=? WHERE id=?", (terminal, dumps(result), data_as_of, now(), now(), job_id))
             if valid:
-                self.publish_forecasts(db, dict(job), result, analysis_id)
+                try:
+                    self.publish_forecasts(db, dict(job), result, analysis_id)
+                except ValueError as exc:
+                    raise ReportPublicationError(str(exc)) from exc
+                coverage = dict(db.execute('''SELECT s.state,count(*) FROM forecast_samples s
+                    JOIN forecast_batches b ON b.id=s.batch_id WHERE b.job_id=? GROUP BY s.state''', (job_id,)).fetchall())
+                result['forecast_coverage'] = {'expected': sum(coverage.values()),
+                    'direction_published': coverage.get('predicted', 0), 'abstained': coverage.get('abstain', 0),
+                    **{key: coverage.get(key, 0) for key in ('uncovered', 'waiting_data', 'missed', 'failed')}}
                 db.execute('UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id=? AND input_version=?',
                            (result.get('synthesis_checkpoint_job_id'), job['account_id'], job['input_version']))
                 db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND job_id<>? AND status='current'", (job["account_id"], job_id))

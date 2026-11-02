@@ -22,6 +22,7 @@ from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, Mo
 from .config import timeout_policy, timeout_policy_warnings
 from .context import archive, recall, references, visible_message
 from .calculation_context import checkpoint_summaries, projection as calculation_projection, signature as calculation_signature
+from .delivery import validate_final_result, DeliveryContractError, FinalSubmissionMissing
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -129,7 +130,7 @@ def _research_context(value):
     return {key: (_team_context(item) if key in
         {'team_snapshot', '_agent_team', 'previous_team_snapshot', 'current_team_snapshot'} else
         _previous_analysis_context(item) if key == 'previous_analysis' else _research_context(item))
-        for key, item in value.items() if key not in {'_model_api_key', 'credential_reference', '_analysis_deadline'}}
+        for key, item in value.items() if key not in {'_model_api_key', 'credential_reference', '_analysis_deadline', '_forecast_deadline'}}
 
 
 class _CloseoutRequired(ModelBudgetExceeded):
@@ -213,7 +214,11 @@ MANAGER_TOOLS = [
     _schema("agent_status", "查看指定或全部子任务的状态、阶段发现和报告；需要等待时使用 wait_agents。", {"agent_id": STRING}),
     _schema("cancel_agent", "取消已无需要的子任务；已经保存的公开材料与阶段报告仍保留。", {"agent_id": STRING, "reason": STRING}, ["agent_id"]),
     _schema("finish_analysis", "仅在准备交付时调用一次，且必须是本轮唯一工具调用；不能用于测试或占位。提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
-            {"report": STRING, "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}}, "material_ids": STRINGS,
+            {"report": STRING, "completion": {"type": "string", "enum": ["full", "limited"]},
+             "scope": {"type": "array", "items": {"type": "string"}, "description": "实际回答的目标：account、cash_only、public 或本轮规范证券代码；单证券任务仅填该证券"},
+             "decision_summary": {"type": "string", "description": "本轮已有依据支持的判断及适用条件；可持有、观察或有理由弃权"},
+             "limitations": {"type": "array", "items": {"type": "string"}, "description": "具体未完成内容与影响；limited 必须说明，完整范围可为空"},
+             "findings": {"type": "array", "items": {"type": "object", "additionalProperties": True}}, "material_ids": STRINGS,
              "valid_until": {"type": ["string", "null"]}, "uncertainties": STRINGS,
              "covered_demand_ids": {"type": "array", "items": {"type": "integer", "minimum": 1}},
              "forecasts": {"type": "array", "items": {"type": "object", "properties": {
@@ -228,7 +233,7 @@ MANAGER_TOOLS = [
                  "material_id": STRING, "status": {"type": "string", "enum": ["relevant", "irrelevant", "uncertain"]},
                  "symbols": STRINGS, "sectors": STRINGS, "market_wide": {"type": "boolean"}, "explanation": STRING,
                  "event_key": STRING}, "required": ["material_id", "status", "explanation"]}},
-             "research_records": {"type": "array", "items": RESEARCH_RECORD}}, ["report"]),
+             "research_records": {"type": "array", "items": RESEARCH_RECORD}}, ["report", "completion", "scope", "decision_summary", "limitations"]),
 ]
 CHILD_TOOLS = [
     _schema("report_progress", "把阶段发现交给主 Agent，不结束任务。仅提交可见摘要，不提交隐藏思维链。", {"summary": STRING, "material_ids": STRINGS}, ["summary"]),
@@ -283,6 +288,8 @@ class ResearchRuntime:
         self.closeout_waited = False
         self.deadline: float | None = None
         self.inherited_deadline = context.get('_analysis_deadline')
+        self.forecast_deadline = context.get('_forecast_deadline')
+        self.deadline_code = 'analysis_budget_exhausted'
         self.team = copy.deepcopy(config.get('_agent_team'))
         manager_config = self._role_config('manager') if self.team else config
         self.model_config = model_config_summary(manager_config)
@@ -301,6 +308,7 @@ class ResearchRuntime:
         self.material_delivery_ids: dict[str, list[int]] = {}
         self.report_delivery_seen: set[str] = set()
         self.request_report_visibility: list[dict] = []
+        self.submitted_report_counts: dict[str, int] = {}
         self.report_tool_messages: dict[str, str] = {}
         self.calculations: list[dict] = []
         self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
@@ -474,9 +482,10 @@ class ResearchRuntime:
                 raise ModelBudgetExceeded("已达到本轮模型调用预算；已保存持仓及材料保留，可调整预算后重试")
             remaining = int(self.config.get("max_model_calls", 40)) - self.calls
             # This guard also runs before HTTP retries, under the shared lock.
-            # A child must never consume the manager's final submission slot.
-            if agent_id != "manager" and remaining <= 1:
-                raise ModelBudgetExceeded("共享调用预算已为主 Agent 最终汇总保留；子任务未完成部分保持未知")
+            # Reserve first submission AND one correction inside the same lock
+            # used for every actual HTTP attempt, including transport retries.
+            if agent_id != "manager" and remaining <= self._final_call_reserve():
+                raise ModelBudgetExceeded("共享调用预算已为主 Agent 最终提交及一次协议修正保留；子任务未完成部分保持未知")
             if self._shared_closeout() and not final_request:
                 raise _CloseoutRequired("共享预算进入收尾；本次尚未发送 HTTP")
             self.calls += 1
@@ -500,7 +509,7 @@ class ResearchRuntime:
         active = sum(child.status in {"queued", "running"} for child in self.children.values())
         # Leave one submission per active child and two manager calls (final
         # report plus, when available, citation correction / a failed request).
-        if remaining <= active + 2:
+        if remaining <= active + self._final_call_reserve():
             self.budget_closing = True
             self.closeout_reasons.add('shared_calls_reserved')
         # Do not launch another full ordinary request if its allowed duration
@@ -512,10 +521,14 @@ class ResearchRuntime:
             self.closeout_reasons.add('analysis_time_reserved')
         return self.budget_closing
 
+    def _final_call_reserve(self):
+        return min(int(self.config.get('max_model_calls', 40)),
+                   max(2, min(4, int(self.config.get('final_submission_reserved_calls', 2)))))
+
     def _synthesis_reserve(self):
         # Reserve is part of the existing total, not extra time after expiry.
-        return min(timeout_policy(self.config, 'synthesis')['request_hard_seconds'],
-                   float(self.config.get('analysis_timeout_seconds', 1200)) * .30)
+        return min(timeout_policy(self.config, 'synthesis')['request_hard_seconds'] * 2,
+                   float(self.config.get('analysis_timeout_seconds', 1200)) * .40)
 
     def _remaining_calls(self) -> int:
         remaining = int(self.config.get("max_model_calls", 40)) - self.calls
@@ -543,12 +556,13 @@ class ResearchRuntime:
                 for child in pending), default=0.0)
             # Existing paid research gets its remaining bounded opportunity.
             # The final request retains time within the same whole-round limit.
-            wait_seconds = min(child_time, max(0.0, remaining_time - min(request_time, remaining_time / 2)))
+            wait_seconds = min(child_time, max(0.0, remaining_time - min(request_time * 2, self._synthesis_reserve())))
         await self._publish("budget_closeout", "manager", {"remaining_model_calls": self._remaining_calls(),
             "reasons": sorted(self.closeout_reasons), "remaining_analysis_seconds": remaining_time,
             "completed_report_ids": [r.get('report_id') for c in self.children.values() for r in c.reports],
             "active_child_ids": [child.id for child in pending],
             "active_children": len(active), "wait_seconds": wait_seconds,
+            "reserved_manager_http_attempts": self._final_call_reserve(),
             "note": "预算内收尾；等待已有子任务提交可见成果，未完成研究保留缺口。"})
         if active and wait_seconds > 0:
             # Timeout does not silently turn unfinished work into a report.
@@ -585,6 +599,10 @@ class ResearchRuntime:
             "remaining_agent_turns": remaining_turns, "closing": self.budget_closing,
             "children": visible,
             "instruction": "这是当前运行状态。已有子任务不要重复创建；旧报告不代表后续补查已完成，阶段进展不等于最终报告。"}
+        if getattr(session, 'submission_feedback', None):
+            status['submission_feedback'] = session.submission_feedback
+        if getattr(session, 'submission_candidate', None):
+            status['candidate_draft'] = session.submission_candidate
         if final_request:
             status["instruction"] += " 当前只提交已有证据支持的报告；明确列出未完成任务、资料缺口及其影响，未知数字或分类保持未知，不再扩展研究。"
         limit = max(1000, int(self.config.get("max_context_chars", 240_000)) // 3)
@@ -636,8 +654,11 @@ class ResearchRuntime:
 
     async def run(self) -> dict:
         self.deadline = min(time.monotonic() + float(self.config.get("analysis_timeout_seconds", 1200)),
-                            self.inherited_deadline if self.inherited_deadline is not None else float('inf'))
-        self.manager_session.deadlines = {'analysis_budget_exhausted': self.deadline}
+                            self.inherited_deadline if self.inherited_deadline is not None else float('inf'),
+                            self.forecast_deadline if self.forecast_deadline is not None else float('inf'))
+        self.deadline_code = ('forecast_deadline_exceeded' if self.forecast_deadline is not None
+                             and self.forecast_deadline <= self.deadline else 'analysis_budget_exhausted')
+        self.manager_session.deadlines = {self.deadline_code: self.deadline}
         await self._publish("agent_started", "manager", {"title": "主 Agent", "reason": self.context.get("reason"), "model_config": self.model_config,
             'resource_limits': {'request_timeout_seconds': timeout_policy(self.config)['request_hard_seconds'],
                 'timeout_policy': timeout_policy(self.config), 'synthesis_timeout_policy': timeout_policy(self.config, 'synthesis'),
@@ -662,6 +683,11 @@ class ResearchRuntime:
             async with asyncio.timeout_at(self.deadline):
                 result = await self._loop("manager", self.manager_session, manager=True)
                 await self._cancel_children()
+                if self.children:
+                    # Persist completed late work and the actual cancellation
+                    # state before publishing the accepted main submission.
+                    await self._save_checkpoint()
+                await self._record_unincorporated_child_reports(result, self.submitted_report_counts)
                 result.setdefault("report", result.pop("summary", ""))
                 result.setdefault("findings", [])
                 result.update({"task_id": self.task_id, "account_id": self.account_id,
@@ -677,7 +703,8 @@ class ResearchRuntime:
                                "context_compactions": self.manager_session.compactions + sum(c.session.compactions for c in self.children.values()),
                                "calculation_coverage": copy.deepcopy(self.calculation_coverage),
                                "materials": copy.deepcopy(self.materials)})
-                result['research_delivery'] = {'final_report_submitted': bool(result.get('report', '').strip()),
+                result['research_delivery'] = {'final_report_submitted': result.get('submission', {}).get('action') == 'finish_analysis',
+                    'completion': result.get('completion'), 'content_assessment': 'not_evaluated',
                     'child_total': len(self.children), 'child_completed': sum(c.status == 'completed' for c in self.children.values()),
                     'child_incomplete': [{'agent_id': c.id, 'title': c.title, 'status': c.status, 'error': c.error,
                         'saved_report_count': len(c.reports)} for c in self.children.values() if c.status != 'completed'],
@@ -691,13 +718,15 @@ class ResearchRuntime:
                 await self._publish("agent_completed", "manager", {"report": result["report"], "model_calls": self.calls, "model_usage": result["model_usage"]})
                 return json.loads(json.dumps(result, ensure_ascii=False, default=str, allow_nan=False))
         except TimeoutError as exc:
-            self.cancelled_by = 'analysis_budget_exhausted'
+            self.cancelled_by = self.deadline_code
             self.client.resolve_pending(self.manager_session, '整轮总预算耗尽；此调用未完成续接，未完成部分保持未知')
-            await self._save_interrupted_checkpoint('analysis_deadline')
-            await self._publish("agent_failed", "manager", {"error": "账户分析超过配置时限；阶段材料已保留", 'failure_stage': 'analysis_deadline',
-                'error_code': 'analysis_budget_exhausted', 'cancelled_by': 'analysis_budget_exhausted',
+            stage = 'forecast_deadline' if self.deadline_code == 'forecast_deadline_exceeded' else 'analysis_deadline'
+            await self._save_interrupted_checkpoint(stage)
+            message = ModelTimeoutError.MESSAGES[self.deadline_code]
+            await self._publish("agent_failed", "manager", {"error": message, 'failure_stage': stage,
+                'error_code': self.deadline_code, 'cancelled_by': self.deadline_code,
                 'timeout_seconds': self.config.get('analysis_timeout_seconds', 1200), 'model_calls': self.calls})
-            raise ResearchTimeout("账户分析超过配置时限；可查看阶段材料并重试") from exc
+            raise ResearchTimeout(message, code=self.deadline_code) from exc
         except asyncio.CancelledError as exc:
             # Service's outer total deadline also arrives as cancellation.
             # Preserve completed work without guessing whether the cause was
@@ -705,14 +734,14 @@ class ResearchRuntime:
             self.client.resolve_pending(self.manager_session, '整轮已取消；此调用未完成续接，未完成部分保持未知')
             await self._save_interrupted_checkpoint('cancelled_or_interrupted')
             expired = self.deadline is not None and time.monotonic() >= self.deadline
-            self.cancelled_by = 'analysis_budget_exhausted' if expired else cancellation_source(exc)
-            await self._publish("agent_cancelled", "manager", {"reason": "账户总预算耗尽" if expired else "父任务取消；实际用户/版本/停机原因见任务事件",
-                'error_code': 'analysis_budget_exhausted' if expired else 'cancelled',
+            self.cancelled_by = self.deadline_code if expired else cancellation_source(exc)
+            await self._publish("agent_cancelled", "manager", {"reason": ModelTimeoutError.MESSAGES[self.deadline_code] if expired else "父任务取消；实际用户/版本/停机原因见任务事件",
+                'error_code': self.deadline_code if expired else 'cancelled',
                 'cancelled_by': self.cancelled_by})
             raise
         except Exception as exc:
             self.cancelled_by = 'parent_failed'
-            if isinstance(exc, ModelError):
+            if isinstance(exc, (ModelError, DeliveryContractError, FinalSubmissionMissing)):
                 self.client.resolve_pending(self.manager_session, '模型或共享预算失败；此调用未完成续接，未完成部分保持未知')
                 await self._save_interrupted_checkpoint('model_request_or_budget')
             await self._publish("agent_failed", "manager", {"error": self._safe_error(exc), 'error_code': getattr(exc, 'code', type(exc).__name__)})
@@ -750,7 +779,9 @@ class ResearchRuntime:
             session.native_search = True
         reference_candidate = None
         reference_report_counts = {}
-        final_update_used = False
+        submission_required = False
+        submission_error = None
+        submission_failures = 0
         for turn_index in range(max_turns):
             definitions = RESEARCH_TOOLS + (MANAGER_TOOLS if manager else CHILD_TOOLS)
             if self.team:
@@ -761,7 +792,8 @@ class ResearchRuntime:
                 permitted = {"get_material", "read_material_range", "list_materials", "search_materials", "query_market_rows", "market_indicators", "recall_context", "calculate", "save_material", "list_recommendations", "get_recommendation", "list_business_demands", "list_forecast_targets", "finish_analysis"}
                 definitions = [tool for tool in definitions if tool["name"] in permitted]
             remaining_turns = max_turns - turn_index
-            final_request = final_update_used or self._shared_closeout() or (max_turns >= 6 and remaining_turns == 1)
+            final_request = (submission_required or self._shared_closeout()
+                             or remaining_turns <= (2 if manager else 1))
             if max_turns >= 6 and remaining_turns <= 3:
                 client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
                     "remaining_shared_model_calls": max(0, int(self.config.get("max_model_calls", 40)) - self.calls)},
@@ -799,7 +831,8 @@ class ResearchRuntime:
                     request_report_counts = {child.id: len(child.reports) for child in self.children.values()}
                     token = self.request_owner.set((agent_id, final_request))
                     try:
-                        turn = await client.complete(session, definitions)
+                        turn = await client.complete(session, definitions,
+                            tool_choice=("finish_analysis" if manager else "submit_report") if final_request else None)
                         break
                     except _CloseoutRequired:
                         # Concurrent requests or a retry reached the shared tail
@@ -829,12 +862,22 @@ class ResearchRuntime:
                     "native_search": client.native_status()})
                 if isinstance(exc, ModelConfigurationError):
                     raise
-                if final_update_used:
-                    raise  # A failed final update does not make the earlier report current.
+                if final_request and getattr(exc, 'submission_retry_safe', False):
+                    submission_failures += 1
+                    submission_error = DeliveryContractError(str(exc))
+                    await self._publish('terminal_submission_rejected', agent_id, {
+                        'error_code': submission_error.code, 'cause': getattr(exc, 'code', type(exc).__name__),
+                        'completed_but_incomplete_submission': True})
+                    if submission_failures < 2 and remaining_turns > 1 and self._remaining_calls() > 0:
+                        submission_required = True
+                        session.submission_feedback = exc.submission_feedback
+                        client.add_user(session, {'submission_feedback': exc.submission_feedback})
+                        continue
+                    raise submission_error from exc
                 if reference_candidate is not None:
                     reference_candidate['reference_resolution_note'] = '引用修正请求未完成；保留原报告的已解析部分和明确缺口。'
                     if manager:
-                        await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
+                        self.submitted_report_counts = reference_report_counts
                     return reference_candidate
                 raise
             await self._publish("model_usage", agent_id, {"requests": copy.deepcopy(session.requests[request_start:]), "session": client.usage_summary(session.requests)})
@@ -844,34 +887,66 @@ class ResearchRuntime:
             if not turn.calls:
                 if native_materials:
                     client.add_user(session, {"native_source_materials": native_materials})
-                if turn.continuation_required:
-                    if final_update_used:
-                        raise ModelError("最终补充汇总未提交报告；可见研究检查点保留")
+                if turn.continuation_required and not final_request:
                     continue
-                if not turn.text.strip():
-                    raise ModelError("Agent 未提交可见报告")
-                result = {"report" if manager else "summary": turn.text}
-                if manager and await self._defer_late_final(result, request_report_counts,
-                        can_update=not final_update_used and remaining_turns > 1 and self._remaining_calls() > 0):
-                    final_update_used = True
-                    continue
-                if manager and final_update_used:
-                    result["late_child_update_performed"] = True
-                return result
+                # HTTP completion and visible prose are progress, never a business
+                # commit. Preserve the full visible candidate for explicit recovery.
+                reference_candidate = None
+                if turn.text.strip():
+                    limit = max(500, int(self.config.get('max_context_chars', 240_000)) // 8)
+                    draft = archive(session, turn.text, 'candidate_draft')
+                    session.submission_candidate = {'text': turn.text[:limit],
+                        'truncated': len(turn.text) > limit, 'record_id': draft['record_id'],
+                        'is_final_report': False}
+                    await self._publish("final_submission_candidate", agent_id, {
+                        "text": turn.text, "is_final_report": False,
+                        "error_code": "final_submission_missing"})
+                submission_error = FinalSubmissionMissing("尚未调用终止工具；可见文字已保留为候选，未发布账户报告")
+                submission_failures += 1
+                await self._publish("terminal_submission_rejected", agent_id, {
+                    "error_code": submission_error.code, "requested_tool_choice":
+                    ("finish_analysis" if manager else "submit_report") if final_request else None,
+                    "remaining_model_calls": self._remaining_calls()})
+                if submission_failures >= 2 or remaining_turns <= 1 or self._remaining_calls() <= 0:
+                    raise submission_error
+                submission_required = True
+                session.submission_feedback = '普通文字尚未提交。仅调用一次终止工具，基于已有草稿与事实填写判断、scope、completion 和具体 limitations；不重新搜索。'
+                client.add_user(session, {"submission_feedback": "普通文本未构成正式交付。保留刚才已有判断，仅调用一次 "
+                    + ("finish_analysis，填写 report、completion、scope、decision_summary、limitations。" if manager else "submit_report，填写 summary 与具体缺口。")
+                    + "不得重新搜索；不补造未知事实或预测。"})
+                continue
             terminal_calls = [call for call in turn.calls if call.name in {'finish_analysis', 'submit_report'}]
+            if final_request and not terminal_calls:
+                submission_failures += 1
+                submission_required = True
+                submission_error = FinalSubmissionMissing('最终阶段未调用指定终止工具；研究工具未执行')
+                session.submission_feedback = str(submission_error)
+                error = {'accepted': False, 'failed': True, 'error_code': submission_error.code,
+                         'error': str(submission_error)}
+                client.add_results(session, [(call, error) for call in turn.calls])
+                self._retain_submission_feedback(session, turn.calls)
+                await self._publish('terminal_submission_rejected', agent_id, error)
+                if submission_failures >= 2 or remaining_turns <= 1 or self._remaining_calls() <= 0:
+                    raise submission_error
+                continue
             if terminal_calls and (len(terminal_calls) != 1 or len(turn.calls) != 1):
                 # A terminal submission is a lifecycle transition, never a batch
                 # of competing candidates or a tool probe. Reject the entire
                 # local-call turn atomically; nothing in it is executed.
                 reference_candidate = None
+                submission_required = True
+                submission_failures += 1
+                submission_error = DeliveryContractError('终止提交必须唯一且不能与研究工具混批')
+                session.submission_feedback = str(submission_error)
                 error = {'accepted': False, 'failed': True, 'error_code': 'invalid_terminal_submission',
                     'error': '终止提交必须是本轮唯一工具调用；请只调用一次 finish_analysis/submit_report，且不能与研究工具混用。'}
                 client.add_results(session, [(call, error) for call in turn.calls])
+                self._retain_submission_feedback(session, turn.calls)
                 for call in turn.calls:
                     await self._publish('tool_result', agent_id, {'tool': call.name, 'result': error})
                 await self._publish('terminal_submission_rejected', agent_id, {'call_count': len(turn.calls), 'error_code': error['error_code']})
-                if final_update_used or remaining_turns <= 1 or self._remaining_calls() <= 0:
-                    raise ModelError('最终提交协议无效且已无剩余修正预算；未发布任何候选报告')
+                if submission_failures >= 2 or remaining_turns <= 1 or self._remaining_calls() <= 0:
+                    raise submission_error
                 continue
             if turn.text.strip():
                 await self._publish("agent_message", agent_id, {"summary": turn.text[:4000]})
@@ -886,25 +961,46 @@ class ResearchRuntime:
                         raise ValueError(call.error)
                     if call.name not in allowed:
                         raise ValueError("工具不在该 Agent 的权限范围内")
-                    output = await self._dispatch(agent_id, call.name, call.arguments)
+                    arguments = copy.deepcopy(call.arguments)
+                    if call.name == 'finish_analysis':
+                        # Submission identity is runtime-owned, never model input.
+                        arguments['submission'] = {'action': call.name, 'contract_version': 1, 'call_id': call.id}
+                        arguments = validate_final_result(arguments,
+                            allowed_scope=self.context.get('allowed_delivery_scope'),
+                            required_scope=self.context.get('required_delivery_scope'))
+                    output = await self._dispatch(agent_id, call.name, arguments)
                     if call.name == 'finish_analysis' and output.get('reference_feedback'):
                         reference_candidate = output['reference_feedback']
                         reference_report_counts = request_report_counts
-                        if final_update_used or turn_index == max_turns - 1 or self.calls >= int(self.config.get('max_model_calls', 40)):
+                        if turn_index == max_turns - 1 or self.calls >= int(self.config.get('max_model_calls', 40)):
                             output = {'accepted': True, 'resolved_result': reference_candidate,
                                       'note': '没有剩余修正调用预算；保留引用缺口并交付有效部分。'}
                     if call.name in {"finish_analysis", "submit_report"} and output.get('accepted'):
-                        submitted = copy.deepcopy(output.get('resolved_result', call.arguments))
+                        submitted = copy.deepcopy(output.get('resolved_result', arguments))
+                        submitted['submission'] = {'action': call.name, 'contract_version': 1, 'call_id': call.id}
+                        submitted['submission_outcome'] = 'recovered' if submission_failures else 'first_attempt'
+                        submitted['submission_corrections'] = submission_failures
                         submitted['material_delivery_ids'] = list(self.material_delivery_ids.get(agent_id, []))
                 except (ModelBudgetExceeded, asyncio.CancelledError):
                     raise
                 except Exception as exc:
-                    output = {"error": self._safe_error(exc), "failed": True}
+                    output = {"error": self._safe_error(exc), "failed": True,
+                              "error_code": getattr(exc, 'code', 'invalid_tool_arguments')}
+                    if call.name in {'finish_analysis', 'submit_report'}:
+                        reference_candidate = None
+                        submission_required = True
+                        submission_failures += 1
+                        submission_error = DeliveryContractError(self._safe_error(exc))
+                        session.submission_feedback = str(submission_error)
+                        output['error_code'] = submission_error.code
+                        await self._publish('terminal_submission_rejected', agent_id, output)
                     if call.name in {'market_indicators', 'calculate'}:
                         self._remember_calculation(agent_id, call.name, call.arguments, output)
                 results.append((call, output))
                 await self._publish("tool_result", agent_id, {"tool": call.name, "result": self._preview(output)})
             client.add_results(session, results)
+            if terminal_calls and submitted is None:
+                self._retain_submission_feedback(session, turn.calls)
             if manager:
                 self._remember_report_results(results, session.history[-len(results):] if results else [])
             # Inspect the bounded, visible tool results, never the unabridged
@@ -921,20 +1017,28 @@ class ResearchRuntime:
             if native_materials:
                 client.add_user(session, {"native_source_materials": native_materials})
             if submitted is not None:
-                if manager and await self._defer_late_final(submitted, request_report_counts,
-                        can_update=not final_update_used and remaining_turns > 1 and self._remaining_calls() > 0):
-                    final_update_used = True
-                    continue
-                if manager and final_update_used:
-                    submitted["late_child_update_performed"] = True
+                # Reserved calls are correction capacity, not a requirement to
+                # generate another report after an accepted explicit submission.
+                if manager:
+                    self.submitted_report_counts = request_report_counts
                 return submitted
-            if final_update_used:
-                raise ModelError("最终补充汇总未提交报告；可见研究检查点保留")
+            if submission_error is not None and (submission_failures >= 2 or remaining_turns <= 1 or self._remaining_calls() <= 0):
+                raise submission_error
         if reference_candidate is not None:
             if manager:
-                await self._defer_late_final(reference_candidate, reference_report_counts, can_update=False)
+                self.submitted_report_counts = reference_report_counts
             return reference_candidate
-        raise ModelBudgetExceeded("Agent 达到本轮最大工具循环次数；阶段材料已保留")
+        if submission_error is not None:
+            raise submission_error
+        raise FinalSubmissionMissing("Agent 达到本轮最大工具循环次数但未正式提交；阶段材料已保留")
+
+    @staticmethod
+    def _retain_submission_feedback(session, calls):
+        """Retain one complete rejected protocol round across synthesis projection."""
+        ids = {call.id for call in calls}
+        session.submission_feedback_messages = [copy.deepcopy(message) for message in session.history
+            if message.get('call_id', message.get('tool_call_id')) in ids
+            or any(call.get('id') in ids for call in message.get('tool_calls', []))]
 
     async def _enter_synthesis_context(self, session, *, reason):
         """Project delivered evidence at a resolved boundary; never replay audit data.
@@ -1040,6 +1144,7 @@ class ResearchRuntime:
         self._pin_runtime_status(session, 'manager', remaining_turns, reason != 'prepare_synthesis')
         seed_message = copy.deepcopy(session.history[0])
         fixed = [seed_message]
+        fixed.extend(copy.deepcopy(getattr(session, 'submission_feedback_messages', [])))
         if latest_budget:
             fixed.append({'role': 'user', 'content': json.dumps(latest_budget, ensure_ascii=False, default=str)})
         # Source messages are actual delivered excerpts too. Fit them using the
@@ -1099,29 +1204,24 @@ class ResearchRuntime:
             'truncated_outputs': truncated,
             'archive_count': len(session.archive)})
 
-    async def _defer_late_final(self, result: dict, report_counts: dict, *, can_update: bool) -> bool:
-        """Use at most one existing turn to absorb reports arriving during final HTTP."""
+    async def _record_unincorporated_child_reports(self, result: dict, report_counts: dict) -> None:
+        """Expose saved late evidence without buying another accepted report."""
         late = [{"agent_id": child.id, "title": child.title,
                  "reports": copy.deepcopy(child.reports[report_counts.get(child.id, 0):])}
                 for child in self.children.values()
-                if child.status == "completed" and len(child.reports) > report_counts.get(child.id, 0)]
+                if len(child.reports) > report_counts.get(child.id, 0)]
         if not late:
-            return False
-        if can_update:
-            self.client.add_user(self.manager_session, {"late_completed_child_reports": late,
-                "previous_final_report": result,
-                "instruction": "这些子任务在上一份最终报告请求期间完成。请只做一次最终更新，吸收其可见报告、材料引用和缺口；纠正已过时的未交付状态。只提交 finish_analysis，不再联网、扩展研究或创建子任务；未知仍保持未知。"})
-            await self._publish("late_child_final_update", "manager", {"agent_ids": [item["agent_id"] for item in late],
-                "remaining_model_calls": self._remaining_calls()})
-            return True
+            return
         result["unincorporated_child_reports"] = [{"agent_id": item["agent_id"], "title": item["title"],
             "research_rounds": [report.get("research_round") for report in item["reports"]],
             "material_ids": sorted({mid for report in item["reports"] for mid in report.get("material_ids", []) if isinstance(mid, str)}),
-            "reason": "本次最终请求期间交付；剩余调用/轮数不足或已执行一次最终更新"} for item in late]
+            "reason": "本次最终请求期间交付；首次有效提交后结束，未为迟到成果追加模型请求"} for item in late]
         note = "补充交付状态：" + "、".join(item["title"] for item in late) + "在本次报告请求期间完成，正文尚未吸收这次结果；相关结论仍需复核。"
         result["uncertainties"] = [*(result.get("uncertainties") or []), note]
         result["report"] = str(result.get("report") or "") + "\n\n" + note
-        return False
+        await self._publish('late_child_reports_retained', 'manager', {
+            'reports': copy.deepcopy(result['unincorporated_child_reports']),
+            'additional_model_calls': 0, 'remaining_model_calls': self._remaining_calls()})
 
     async def _record_native(self, agent_id, turn):
         native_materials = []
@@ -1542,7 +1642,7 @@ class ResearchRuntime:
             child_deadline = min(child_deadline, self.deadline - self._synthesis_reserve())
         child.session.deadlines = {'child_budget_exhausted': child_deadline}
         if self.deadline is not None:
-            child.session.deadlines['analysis_budget_exhausted'] = self.deadline
+            child.session.deadlines[self.deadline_code] = self.deadline
         try:
             async with asyncio.timeout_at(child_deadline), self.semaphore:
                 child.session.queue_wait_ms = round((time.monotonic() - queued_at) * 1000, 2)

@@ -165,6 +165,10 @@ class RecommendationStore:
     def _save_suggestions(self, db, job, result):
         from .store import dumps, uid
         target = job["reason"].split("manual_security:", 1)[-1].split(";", 1)[0] if "manual_security:" in job["reason"] else None
+        # Limited submissions can cover only part of an account. Omitted
+        # securities keep their existing lifecycle until actually reviewed.
+        scope = result.get('scope', ['account'])
+        covered_symbols = None if 'account' in scope else set(scope)
         if target:
             # A manual single-security execution can absorb previously queued work
             # during supersession. It cannot discharge another security's review
@@ -198,6 +202,8 @@ class RecommendationStore:
                 continue
             if target and security_id != target:
                 continue
+            if covered_symbols is not None and security_id not in covered_symbols:
+                continue
             prepared.append((item, security_id, old))
         updated_ids = {old["id"] for _, _, old in prepared if old}
         new_symbols = {security for _, security, old in prepared if not old}
@@ -205,6 +211,8 @@ class RecommendationStore:
         replacement_pending = {}
         for row in rows:
             if target and target != row["security_id"]:
+                continue
+            if covered_symbols is not None and row['security_id'] not in covered_symbols:
                 continue
             body = self._recommendation_body(row)
             if row["id"] in revoked or row["security_id"] in new_symbols and row["id"] not in updated_ids:

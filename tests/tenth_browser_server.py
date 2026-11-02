@@ -2,6 +2,7 @@
 
 No external model worker, network research, credentials or daily database.
 """
+from delivery_helpers import publish_fixture
 import json
 import os
 from pathlib import Path
@@ -42,7 +43,7 @@ for job in store.claim_jobs(10):
     store.save_synthesis_checkpoint(job, {'reports':[{'summary':'受控子研究成果','agent_id':'fixture-child','material_ids':[ids[0]]}],
         'material_ids':[ids[0]], 'open_questions':['受控公开正文仍未取得']},
         {'account':store.account(job['account_id']), 'universe_version':store.universe_snapshot()['universe_version']})
-    store.publish(job['id'], {'report':'## 本轮结论\n\n受控浏览器报告，非真实投资建议：继续观察。\n\n' + '\n\n'.join(f'第 {i} 段测试长报告：账户现金 10000 元；数量仅用于界面回归。' for i in range(40)),
+    publish_fixture(store,job['id'], {'report':'## 本轮结论\n\n受控浏览器报告，非真实投资建议：继续观察。\n\n' + '\n\n'.join(f'第 {i} 段测试长报告：账户现金 10000 元；数量仅用于界面回归。' for i in range(40)),
         'material_ids': ids, 'suggestions':[]}, None)
 
 @app.post('/__fixture/merged-retry/{account_id}')
@@ -60,7 +61,7 @@ async def history(account_id:str):
         job=store.enqueue(account_id, 'manual')
         store.claim_jobs(10,account_id=account_id)
         store.event(job['id'], {'type':'progress','message':f'弹窗可读取事件 {index}'})
-        store.publish(job['id'], {'report':f'受控历史分页报告 {index}'},None)
+        publish_fixture(store,job['id'], {'report':f'受控历史分页报告 {index}'},None)
     return store.job(job['id'])
 
 @app.post('/__fixture/merged-demands/{account_id}')
@@ -84,7 +85,7 @@ async def complete(job_id:str):
     job = store.job(job_id)
     if job['state'] == 'queued':
         store.claim_jobs(10, account_id=job['account_id'])
-    store.publish(job_id, {'report':'## 本轮结论\n\n受控更新报告：继续观察。持仓变更已体现在冻结输入；这是测试替身。', 'material_ids':ids, 'research_delivery':{'child_total':0,'child_completed':0,'child_incomplete':[], 'recovered_partial_research':True, 'recovered_unresolved_tasks':[{'agent_id':'fixture-original-child','title':'受控原行情专题缺口','status':'failed','error':'受控原专题超时','pending_messages':[]}]}}, None)
+    publish_fixture(store,job_id, {'report':'## 本轮结论\n\n受控更新报告：继续观察。持仓变更已体现在冻结输入；这是测试替身。', 'material_ids':ids, 'research_delivery':{'child_total':0,'child_completed':0,'child_incomplete':[], 'recovered_partial_research':True, 'recovered_unresolved_tasks':[{'agent_id':'fixture-original-child','title':'受控原行情专题缺口','status':'failed','error':'受控原专题超时','pending_messages':[]}]}}, None)
     return store.job(job_id)
 
 @app.post('/__fixture/fail/{job_id}')

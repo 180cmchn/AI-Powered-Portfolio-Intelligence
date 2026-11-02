@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import difflib
 import hashlib
 import json
 import os
@@ -59,6 +60,8 @@ NINTH_PREVIOUS_PROMPTS = {
     'manager': '7744b22dd0ce824a2917b0de7a312b865cf73c1c1408e2ba77154dadc0f9fda8',
     'portfolio_researcher': '18cc7d58ab0bf324cbde0fda37139a7da001da3cc56adec0f50902ba12102039',
 }
+
+FOURTEENTH_PREVIOUS_PROMPTS = {'industry_researcher': 'd498d846a5b2cfd0fbd19c7fcd34c359400fc0928a66ade0e7e8935f9d858f9c', 'market_researcher': '09a401bd93012d68d21deb3f5f9dd95d0706a6c02278f16f1e82dd348c343eb2', 'portfolio_researcher': '2a6dfeb5eee5de9601d7e9adccdcf808cba3049d233a3aee79ca74d8a426a738', 'filing_researcher': 'e608bb7d16dacbf7b5807ed55ffdcfe1c9952a6ceaff6a45a77fbe2102483ff5', 'etf_researcher': '5e8ad6a5758b40dbf331076f5b5d1f0afc16324d973ebc264bcc734699efabba', 'manager': '3c6da47391c5b691bd1b6bddcc4c30d9d3db41918dc9134bdf63fa644cc501ff'}
 
 DISCOVERY_TTL_SECONDS = 3600
 DISCOVERY_PAGE_LIMIT = 5
@@ -320,6 +323,35 @@ class AgentConfigStore:
                 changed.append('manager')
         db.execute("INSERT INTO meta VALUES('tenth_delivery_prompt_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
             'note': 'Exact initial tenth built-in only; more concise delivery, no change to binding, effort or request deadlines.'}),))
+
+    def migrate_fourteenth_roles(self, db):
+        """Only byte-identical prior built-ins can be updated without a user edit."""
+        if db.execute("SELECT 1 FROM meta WHERE key='fourteenth_role_migration'").fetchone():
+            return
+        changed, preserved = [], []
+        for role_id, expected_hash in FOURTEENTH_PREVIOUS_PROMPTS.items():
+            row = db.execute('SELECT body FROM agent_definitions WHERE role_id=?', (role_id,)).fetchone()
+            if not row:
+                continue
+            role = _loads(row[0])
+            prompt = (PROMPTS / (role_id + '.txt')).read_text()
+            if role_id != 'manager':
+                prompt += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+            if role.get('system_prompt') == prompt:
+                continue
+            if role.get('custom') or hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() != expected_hash:
+                preserved.append(role_id)
+                continue
+            role.update(system_prompt=prompt, version=role['version'] + 1,
+                        prompt_version=role['prompt_version'] + 1, updated_at=now())
+            db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?', (role['version'], _dumps(role), role_id))
+            changed.append(role_id)
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+        db.execute("INSERT INTO meta VALUES('fourteenth_role_migration',?)", (_dumps({
+            'at': now(), 'updated_roles': changed, 'preserved_custom_roles': preserved,
+            'note': 'Exact thirteenth built-ins only. Custom prompt differences require explicit role save; frozen teams and model bindings unchanged.'}),))
 
     def _public_provider(self, provider, db):
         body = {k: v for k, v in provider.items() if k != 'credential_reference'}
@@ -760,8 +792,19 @@ class AgentConfigStore:
                 error = '供应商不存在'
             if resolved.get('reasoning_effort') not in REASONING_EFFORTS:
                 error = 'reasoning_effort 必须为 low、medium、high、xhigh、max；迁移保留了无效历史值，请明确修正'
+            prompt_update = None
+            role_id = definition['role_id']
+            if role_id in FOURTEENTH_PREVIOUS_PROMPTS:
+                builtin = (PROMPTS / (role_id + '.txt')).read_text()
+                if role_id != 'manager':
+                    builtin += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+                if builtin != definition.get('system_prompt'):
+                    prompt_update = {'available': True, 'revision': 'fourteenth', 'builtin_prompt': builtin,
+                        'diff': ''.join(difflib.unified_diff(definition.get('system_prompt', '').splitlines(True),
+                            builtin.splitlines(True), fromfile='saved-custom', tofile='fourteenth-builtin')),
+                        'requires_explicit_save': True}
             result.append({**definition, 'override': override or None, 'resolved': resolved,
-                           'config_error': error, 'config_warning': warning})
+                           'config_error': error, 'config_warning': warning, 'prompt_update': prompt_update})
         return result
 
     def update_agent_definition(self, role_id, payload):

@@ -47,8 +47,23 @@ class ReasoningEffortUnsupported(ModelConfigurationError):
     code = 'reasoning_effort_unsupported'
 
 
+class ToolChoiceUnsupported(ModelConfigurationError):
+    """The endpoint explicitly rejected tool selection; never remove it to retry."""
+    code = 'tool_choice_unsupported'
+
+
 class ModelProtocolError(ModelError):
     code = 'model_protocol_error'
+
+
+def _incomplete_submission(message: str) -> ModelProtocolError:
+    """Only for explicit, ended output—not an accepted request of unknown outcome."""
+    error = ModelProtocolError(message)
+    error.submission_retry_safe = True
+    error.submission_feedback = (
+        message + '。最终输出已明确结束但提交未完成；仅重新提交一个完整终止调用，使用唯一 call ID；'
+        '基于已有证据适当精简，不重放半截调用、不重新搜索。')
+    return error
 
 
 class ModelBudgetExceeded(ModelError):
@@ -63,6 +78,7 @@ class ModelTimeoutError(ModelError):
         'request_hard_timeout': '模型请求超过时限（请求总硬上限）；已有事件不等于完整终止',
         'child_budget_exhausted': '子任务总预算已耗尽；该限制包含模型重试和工具阶段',
         'analysis_budget_exhausted': '账户研究总预算已耗尽；该限制包含行情准备、子任务与汇总',
+        'forecast_deadline_exceeded': '正式预测截止已到；停止本任务后续请求，已完成材料保留，未发布目标记为错过且不能补填',
     }
 
     def __init__(self, code):
@@ -75,7 +91,7 @@ def cancellation_source(exc, fallback='parent_or_user_cancelled'):
     label = exc.args[0] if exc.args else None
     return label if label in {'user_cancelled', 'input_version_updated', 'service_shutdown',
         'account_deleted', 'parent_finished', 'parent_failed', 'manager_cancelled_child',
-        'analysis_budget_exhausted', 'child_budget_exhausted'} else fallback
+        'analysis_budget_exhausted', 'child_budget_exhausted', 'forecast_deadline_exceeded'} else fallback
 
 
 @dataclass
@@ -95,6 +111,7 @@ class ModelTurn:
     annotations: list[dict] = field(default_factory=list)
     continuation_required: bool = False
     native_status: dict = field(default_factory=dict)
+    tool_choice_status: str | None = None
 
 
 @dataclass
@@ -236,6 +253,16 @@ class ModelClient:
         return copy.deepcopy(result)
 
     async def complete(self, session: ModelSession, tools: list[dict], *, tool_choice: str | None = None) -> ModelTurn:
+        # Callers select a portable mode or a local function name. Protocol
+        # objects belong here, never in the agent loop or provider settings.
+        forced_function = None
+        if tool_choice is not None:
+            if not isinstance(tool_choice, str) or not tool_choice:
+                raise ModelConfigurationError('tool_choice 必须为 auto/none/required 或当前工具的函数名')
+            if tool_choice not in {'auto', 'none', 'required'}:
+                if tool_choice not in {tool.get('name') for tool in tools}:
+                    raise ModelConfigurationError('指定的提交函数不在当前可用工具中')
+                forced_function = tool_choice
         compact(session, int(self.config.get("max_context_chars", 240_000)))
         if len(encode(session.history)) > int(self.config.get("max_context_chars", 240_000)):
             raise ModelProtocolError("初始账户或任务输入超过上下文上限；历史材料已有按需归档，请减少单次账户输入或检查 max_context_chars")
@@ -255,8 +282,6 @@ class ModelClient:
                 # observable execution; unsupported requests never fall back.
                 payload["tools"].append({"type": "web_search"})
                 payload["include"].append("web_search_call.action.sources")
-            if tool_choice is not None:
-                payload["tool_choice"] = tool_choice
             endpoint = "responses"
         else:
             payload = {
@@ -270,13 +295,19 @@ class ModelClient:
             if self.config.get("chat_use_max_completion_tokens", False):
                 payload["max_completion_tokens"] = payload.pop("max_tokens")
             endpoint = "chat/completions"
+        if tool_choice is not None:
+            payload['tool_choice'] = tool_choice
+            if forced_function:
+                payload['tool_choice'] = ({'type': 'function', 'name': forced_function}
+                    if self.protocol == 'responses' else
+                    {'type': 'function', 'function': {'name': forced_function}})
         try:
             data = await self._post(endpoint, payload, session)
         except ModelBudgetExceeded:
             # A local limit stops before HTTP and says nothing about endpoint capability.
             raise
-        except ReasoningEffortUnsupported:
-            # This rejection says nothing about web_search support.
+        except (ReasoningEffortUnsupported, ToolChoiceUnsupported):
+            # These rejections say nothing about web_search support.
             raise
         except ModelError:
             if self.config.get("model_native_search", True) and session.native_search and self.protocol == "responses":
@@ -287,8 +318,18 @@ class ModelClient:
                 self._native_observation(state, error=observation.get("error"), status_code=code)
             raise
         if self.protocol == "responses":
+            known_complete = data.get('status') == 'completed'
+            if session.requests:
+                session.requests[-1]['response_status'] = data.get('status')
+                if data.get('status') in {'completed', 'incomplete', 'failed', 'cancelled'}:
+                    session.requests[-1]['protocol_terminal'] = 'responses.' + data['status']
             if data.get("status") in {"failed", "incomplete", "cancelled", "in_progress", "queued"}:
-                error = ModelProtocolError(f"模型响应未完成（{data.get('status')}）；请检查输出预算或服务状态")
+                if forced_function and session.requests:
+                    session.requests[-1].update(tool_choice_status='incomplete', tool_choice_satisfied=False)
+                factory = _incomplete_submission if data.get('status') == 'incomplete' else ModelProtocolError
+                reason = session.requests[-1].get('response_incomplete_reason') if session.requests else None
+                detail = f"，服务原因：{reason}" if reason else ""
+                error = factory(f"模型响应未完成（{data.get('status')}{detail}）；请检查输出预算或服务状态")
                 # Completed search observations remain useful even when final
                 # generation is truncated. Do not expose or publish partial text,
                 # execute partial function calls, or replay incomplete history.
@@ -309,7 +350,13 @@ class ModelClient:
             # endpoints that omit item status retain their existing behavior.
             if any(item.get("type") == "function_call" and "status" in item
                    and item["status"] != "completed" for item in output):
-                raise ModelProtocolError("Responses 函数调用未完成；未执行工具或续接此轮输出")
+                if forced_function and session.requests:
+                    session.requests[-1].update(tool_choice_status='incomplete', tool_choice_satisfied=False)
+                unfinished = [item.get('status') for item in output if item.get('type') == 'function_call'
+                              and 'status' in item and item['status'] != 'completed']
+                factory = _incomplete_submission if all(status in ('incomplete', 'in_progress')
+                    for status in unfinished) and data.get('status') == 'completed' else ModelProtocolError
+                raise factory("Responses 函数调用未完成；未执行工具或续接此轮输出")
             calls = [self._parse_call(item.get("call_id"), item.get("name"), item.get("arguments"))
                      for item in output if item.get("type") == "function_call"]
             parts = []
@@ -353,8 +400,9 @@ class ModelClient:
                 note="服务返回了原生搜索完成事件或非零工具用量；来源范围以实际返回内容为准。") if observed else self.native_status()
             turn = ModelTurn("\n".join(parts), calls, events, list(sources_by_url.values()), annotations,
                              bool((events or intermediate_message) and not calls and not "\n".join(parts).strip()), state)
-            # Do not filter opaque reasoning items out of continuation history.
-            session.history.extend(copy.deepcopy(output))
+            # Commit history only after whole-turn validation. A completed
+            # response can still contain duplicate or otherwise unusable calls.
+            continuation_items = copy.deepcopy(output)
         else:
             try:
                 choice = data["choices"][0]
@@ -363,8 +411,16 @@ class ModelClient:
                 raise ModelProtocolError("Chat Completions 返回缺少 choices[0].message") from exc
             if not isinstance(choice, dict) or not isinstance(message, dict):
                 raise ModelProtocolError("Chat Completions 消息格式异常")
+            known_complete = choice.get('finish_reason') in {'stop', 'tool_calls'}
+            if session.requests:
+                session.requests[-1]['finish_reason'] = choice.get('finish_reason')
+                if choice.get('finish_reason') in {'stop', 'tool_calls', 'length', 'content_filter'}:
+                    session.requests[-1]['protocol_terminal'] = 'chat.' + choice['finish_reason']
             if choice.get("finish_reason") in {"length", "content_filter"}:
-                raise ModelProtocolError("模型响应被截断或服务拒绝输出；未将截断结果当作完整分析")
+                if forced_function and session.requests:
+                    session.requests[-1].update(tool_choice_status='incomplete', tool_choice_satisfied=False)
+                factory = _incomplete_submission if choice.get('finish_reason') == 'length' else ModelProtocolError
+                raise factory("模型响应被截断或服务拒绝输出；未将截断结果当作完整分析")
             # Keep provider-specific continuation fields in memory, never emit them.
             continuation = copy.deepcopy(message)
             continuation["role"] = "assistant"
@@ -377,11 +433,32 @@ class ModelClient:
             turn = ModelTurn(message.get("content") or "", calls)
             if not isinstance(turn.text, str):
                 raise ModelProtocolError("Chat Completions 此适配器只接受文本回复")
-            session.history.append(continuation)
+            continuation_items = [continuation]
         if len({call.id for call in turn.calls}) != len(turn.calls):
-            raise ModelProtocolError("模型在同一轮返回重复工具 call ID，无法安全续接")
+            if forced_function and session.requests:
+                session.requests[-1].update(tool_choice_status='duplicate_call_ids', tool_choice_satisfied=False)
+            factory = _incomplete_submission if known_complete else ModelProtocolError
+            raise factory("模型在同一轮返回重复工具 call ID；整批未执行，也未写入续接历史")
+        if forced_function:
+            # Transport completion is separate from conformance and business
+            # delivery. Preserve visible drafts for the agent's bounded repair;
+            # never treat a valid HTTP response as a successful submission.
+            status = ('missing' if not turn.calls else 'multiple_calls' if len(turn.calls) != 1 else
+                      'wrong_function' if turn.calls[0].name != forced_function else
+                      'invalid_arguments' if turn.calls[0].error else 'observed')
+            turn.tool_choice_status = status
+            if session.requests:
+                session.requests[-1].update(tool_choice_status=status, tool_choice_satisfied=status == 'observed')
         if not turn.calls and not turn.text.strip() and not turn.continuation_required:
-            raise ModelProtocolError("模型返回空结果，未生成完整文本或本地函数调用")
+            factory = _incomplete_submission if known_complete else ModelProtocolError
+            raise factory("模型返回空结果，未生成完整文本或本地函数调用")
+        if session.requests and not session.requests[-1].get('protocol_terminal'):
+            # Some existing compatible endpoints omit status/finish_reason.
+            # Preserve that observation instead of inventing a completed event.
+            session.requests[-1]['protocol_terminal'] = self.protocol + '.compatible_result'
+        # Retain opaque provider reasoning only for valid continuation turns;
+        # none of it is emitted into application events or recovery feedback.
+        session.history.extend(continuation_items)
         session.pending_calls = list(turn.calls)
         return turn
 
@@ -454,8 +531,9 @@ class ModelClient:
     STREAM_MAX_BYTES = 8 * 1024 * 1024
     STREAM_MAX_EVENT_BYTES = 4 * 1024 * 1024
     STREAM_MAX_EVENTS = 20000
+    STREAM_TAIL_DRAIN_SECONDS = 1.0
 
-    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started, progress):
+    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None):
         """Read a complete Responses terminal object; never assemble deltas.
 
         Compatibility gateways may return ordinary JSON despite stream:true.
@@ -486,7 +564,8 @@ class ModelClient:
                         observation['error'] = 'response_size_limit'
                         raise ModelProtocolError('模型响应超过有限接收大小；未采用部分结果')
                     chunks.append(chunk)
-                observation['response_body_received'] = True
+                observation.update(response_body_received=True, http_body_complete=True,
+                                   stream_close_reason='http_eof')
                 # A buffered Response preserves the existing error classifier and
                 # single-layer JSON envelope logic after this context closes.
                 decoded_headers = {k: v for k, v in response.headers.items()
@@ -564,6 +643,9 @@ class ModelClient:
                         observation['error'] = 'stream_response_identity_changed'
                         raise ModelProtocolError('模型流中响应身份发生变化')
                     response_id = body['id']
+                    # A disconnected request may never reach the final object.
+                    # Keep its correlation ID, not any partial response content.
+                    observation['response_id'] = self._safe_provider_identifier(response_id)
                 if kind == 'error':
                     observation['error'] = 'stream_error'
                     raise ModelProtocolError('模型服务返回流错误；未采用部分结果')
@@ -579,7 +661,42 @@ class ModelClient:
                     raise ModelProtocolError('模型流终止事件缺少完整且一致的响应对象')
                 return body
 
-            async for chunk in response.aiter_bytes():
+            byte_stream = response.aiter_bytes()
+
+            async def drain_terminal_tail():
+                # An SSE terminal and the HTTP chunked terminator are different
+                # boundaries. Give the transport a short chance to reach EOF
+                # instead of immediately closing a still-live gateway stream.
+                # This is optional cleanup, never another model request, and
+                # cannot consume the last part of a hard/parent deadline.
+                drain_started = time.monotonic()
+                remaining = max(0, deadline - drain_started - .05) if deadline is not None else self.STREAM_TAIL_DRAIN_SECONDS
+                allowance = min(self.STREAM_TAIL_DRAIN_SECONDS, remaining)
+                deadline_limited = allowance < self.STREAM_TAIL_DRAIN_SECONDS
+                observation['stream_close_reason'] = ('terminal_drain_deadline' if deadline_limited
+                                                       else 'terminal_drain_timeout')
+                try:
+                    if allowance <= 0:
+                        return
+                    async with asyncio.timeout(allowance):
+                        async for tail in byte_stream:
+                            observation['output_bytes'] += len(tail)
+                            if tail:
+                                observation['stream_last_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
+                            if observation['output_bytes'] > self.STREAM_MAX_BYTES:
+                                observation['stream_close_reason'] = 'terminal_tail_size_limit'
+                                return
+                        observation.update(response_body_received=True, http_body_complete=True,
+                                           stream_close_reason='http_eof')
+                except TimeoutError:
+                    pass  # The already received terminal remains authoritative.
+                except httpx.RequestError as exc:
+                    observation.update(stream_close_reason='terminal_tail_transport_error',
+                                       stream_tail_error=type(exc).__name__)
+                finally:
+                    observation['stream_tail_drain_ms'] = round((time.monotonic() - drain_started) * 1000, 2)
+
+            async for chunk in byte_stream:
                 observation['output_bytes'] += len(chunk)
                 if chunk and observation['stream_first_byte_ms'] is None:
                     observation['stream_first_byte_ms'] = round((time.perf_counter() - started) * 1000, 2)
@@ -608,9 +725,9 @@ class ModelClient:
                     if not line:
                         terminal = consume_event()
                         if terminal is not None:
-                            observation['response_body_received'] = True
                             # Completion is authoritative; no deltas are applied
                             # and no incomplete function call has been executed.
+                            await drain_terminal_tail()
                             return response, terminal
                         continue
                     if line.startswith(b':'):
@@ -630,10 +747,11 @@ class ModelClient:
                 if len(buffer) + event_size > self.STREAM_MAX_EVENT_BYTES:
                     observation['error'] = 'stream_event_size_limit'
                     raise ModelProtocolError('单个模型流事件超过有限接收大小')
+            observation.update(response_body_received=True, http_body_complete=True,
+                               stream_close_reason='http_eof')
             if buffer == b'\r':  # final CR-only blank line at clean EOF
                 terminal = consume_event()
                 if terminal is not None:
-                    observation['response_body_received'] = True
                     return response, terminal
             observation['error'] = 'stream_missing_terminal'
             raise ModelProtocolError('模型流在完整终止事件前结束；未采用部分正文或工具调用')
@@ -645,6 +763,10 @@ class ModelClient:
             payload = {**payload, 'stream': True}
         for attempt in range(retries + 1):
             queue_started = time.monotonic()
+            if session and session.deadlines:
+                expired_code, expired_deadline = min(session.deadlines.items(), key=lambda item: item[1])
+                if expired_deadline <= queue_started:
+                    raise ModelTimeoutError(expired_code)
             if self.before_request:
                 await self.before_request()
             started = time.perf_counter()
@@ -666,6 +788,9 @@ class ModelClient:
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
                            "requested_max_output_tokens": payload.get("max_output_tokens", payload.get("max_completion_tokens", payload.get("max_tokens"))),
+                           "requested_tool_choice": copy.deepcopy(payload.get('tool_choice')),
+                           "tool_choice_status": 'requested' if isinstance(payload.get('tool_choice'), dict) else None,
+                           "tool_choice_satisfied": None,
                            "output_bytes": 0, "request_id": None, "http_version": None, "stream_requested": bool(streaming),
                            "native_search_requested": any(t.get("type") == "web_search" for t in payload.get("tools", [])),
                            "status_code": None, "usage": None, "error": None,
@@ -680,6 +805,7 @@ class ModelClient:
                            "cost_known": False,
                            "transport_phase": "transport_not_observed", "transport_events": [],
                            "response_headers_received": False, "response_body_received": False,
+                           "http_body_complete": False, "stream_close_reason": None,
                            "proxy_tunnel": {"observed": False, "status_code": None,
                                "response_headers_received": False, "established": None},
                            "environment_proxy_present": any(os.environ.get(key) for key in
@@ -746,7 +872,10 @@ class ModelClient:
                 observation['stream_last_progress_kind'] = kind if len(kind) <= 100 and re.fullmatch(r'[a-zA-Z0-9_.]+', kind) else 'protocol_progress'
                 if semantic and observation['stream_first_effective_event_ms'] is None:
                     observation['stream_first_effective_event_ms'] = elapsed
-                progress_timer.reschedule(stamp + policy['stream_idle_seconds'])
+                # Generation has ended; optional HTTP-tail draining is bounded
+                # separately and still respects the hard/parent deadline.
+                progress_timer.reschedule(None if kind in {'response.completed', 'response.incomplete',
+                    'response.failed', 'response.cancelled'} else stamp + policy['stream_idle_seconds'])
 
             def finish_observation():
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
@@ -775,12 +904,13 @@ class ModelClient:
                 async with asyncio.timeout_at(deadline) as hard_timer:
                     async with asyncio.timeout_at(started_mono + policy['first_event_seconds']) as progress_timer:
                         response, stream_data = await self._receive_stream(endpoint, payload, network_timeout,
-                            trace, observation, started, progress)
+                            trace, observation, started, progress, deadline=deadline)
             except TimeoutError as exc:
                 finish_observation()
                 code = limit_code if hard_timer and hard_timer.expired() else ('stream_idle_timeout' if progressed else 'first_event_timeout')
                 observation.update(error='RequestDeadlineExceeded' if code == 'request_hard_timeout' else code,
-                    error_code=code, cancelled_by=code, retry_suppressed='upstream_execution_may_continue')
+                    error_code=code, cancelled_by=code, retry_suppressed='upstream_execution_may_continue',
+                    stream_close_reason='local_timeout')
                 # A server may still be executing after local timeout; do not
                 # overlap an expensive accepted generation with a blind retry.
                 raise ModelTimeoutError(code) from exc
@@ -788,7 +918,8 @@ class ModelClient:
                 finish_observation()
                 error_code = {httpx.ConnectTimeout: 'connect_timeout', httpx.PoolTimeout: 'pool_timeout',
                     httpx.WriteTimeout: 'write_timeout', httpx.ReadTimeout: 'network_read_timeout'}.get(type(exc), 'upstream_transport_error')
-                observation.update(error=type(exc).__name__, error_code=error_code)
+                observation.update(error=type(exc).__name__, error_code=error_code,
+                                   stream_close_reason='transport_error_before_terminal')
                 # The past generic error cannot be reconstructed. New failures
                 # retain observed boundaries and a bounded type-only cause chain.
                 causes, cause = [], exc
@@ -810,14 +941,17 @@ class ModelClient:
                 expired = [(key, value) for key, value in (session.deadlines if session else {}).items() if value <= time.monotonic()]
                 code = min(expired, key=lambda item: item[1])[0] if expired else 'cancelled'
                 observation.update(error='cancelled', error_code=code,
-                    cancelled_by=code if expired else cancellation_source(exc), retry_suppressed='cancelled')
+                    cancelled_by=code if expired else cancellation_source(exc), retry_suppressed='cancelled',
+                    stream_close_reason='local_cancellation')
                 raise
             except ModelProtocolError:
                 finish_observation()
                 observation.update(transport_phase='local_stream_validation', error_code=observation.get('error') or 'protocol_error')
+                if not observation.get('stream_close_reason'):
+                    observation['stream_close_reason'] = 'local_protocol_rejection'
                 raise
             finish_observation()
-            observation.update(response_headers_received=True, response_body_received=True, transport_phase='response_received',
+            observation.update(response_headers_received=True, transport_phase='response_received',
                                duration_ms=round((time.perf_counter() - started) * 1000, 2), status_code=response.status_code,
                                request_accepted=200 <= response.status_code < 300,
                                output_bytes=observation['output_bytes'] if stream_data is not None else len(response.content),
@@ -842,6 +976,14 @@ class ModelClient:
                         error_body = {}
                     if isinstance(error_body, dict):
                         effort_rejected = effort_rejected or error_body.get("param") in {"reasoning", "reasoning.effort", "reasoning_effort"}
+                    choice_rejected = payload.get('tool_choice') is not None and (
+                        'tool_choice' in message or 'tool choice' in message or
+                        (isinstance(error_body, dict) and str(error_body.get('param', '')).startswith('tool_choice')))
+                    if choice_rejected:
+                        observation.update(tool_choice_status='rejected', tool_choice_satisfied=False,
+                            error='tool_choice_rejected', error_code='tool_choice_unsupported')
+                        raise ToolChoiceUnsupported(
+                            f'模型端点拒绝明确工具选择（HTTP {response.status_code}）；提交协议未满足，未删参、切换模型或自动重试。')
                     if effort_rejected:
                         observation.update(reasoning_effort_rejected=True, error="reasoning_effort_rejected")
                         raise ReasoningEffortUnsupported(
@@ -907,6 +1049,10 @@ class ModelClient:
                 observation["server_side_tool_usage"] = _numeric_counters(data["server_side_tool_usage"])
             if isinstance(data.get("id"), str):
                 observation["response_id"] = self._safe_provider_identifier(data["id"])
+            incomplete = data.get('incomplete_details')
+            reason = incomplete.get('reason') if isinstance(incomplete, dict) else None
+            if isinstance(reason, str) and re.fullmatch(r'[a-zA-Z0-9_.-]{1,80}', reason):
+                observation['response_incomplete_reason'] = self._safe_provider_identifier(reason)
             return data
         raise ModelError("模型重试失败")
 

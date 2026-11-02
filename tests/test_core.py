@@ -1,4 +1,6 @@
 """Deterministic persistence/integration tests; these are not LLM-quality evaluations."""
+from delivery_helpers import runner_result
+from delivery_helpers import publish_fixture
 from ledger_helpers import snapshot_payload
 from ledger_helpers import save_snapshot_correction
 import asyncio
@@ -55,13 +57,13 @@ def test_new_result_finishes_before_old_cannot_overwrite(store):
     old = store.claim_jobs()[0]
     changed = save_snapshot_correction(store, payload(qty="300"), a["id"])
     new = store.claim_jobs()[0]
-    assert store.publish(new["id"], {"report": "new result"}, None)
-    assert not store.publish(old["id"], {"report": "late old result"}, None)
+    assert publish_fixture(store,new["id"], {"report": "new result"}, None)
+    assert not publish_fixture(store,old["id"], {"report": "late old result"}, None)
     current = [r for r in store.analyses(a["id"]) if r["status"] == "current"]
     assert len(current) == 1 and current[0]["report"] == "new result"
     assert store.account(a["id"])["latest_job_id"] == changed["latest_job_id"]
     assert store.previous_analysis(a["id"])["report"] == "new result"
-    assert store.publish(new["id"], {"report": "duplicate"}, None)
+    assert publish_fixture(store,new["id"], {"report": "duplicate"}, None)
     assert store.job(new["id"])["state"] == "completed"
     assert store.previous_analysis(a["id"])["report"] == "new result"
 
@@ -72,8 +74,8 @@ def test_same_version_latest_job_fence_and_cancellation(store):
     store.enqueue(a["id"], "manual")
     new = store.claim_jobs()[0]
     store.set_job_state(new["id"], "cancelled")
-    assert not store.publish(old["id"], {"report": "old"}, None)
-    assert not store.publish(new["id"], {"report": "cancelled result"}, None)
+    assert not publish_fixture(store,old["id"], {"report": "old"}, None)
+    assert not publish_fixture(store,new["id"], {"report": "cancelled result"}, None)
     assert not any(r["status"] == "current" for r in store.analyses(a["id"]))
 
 
@@ -159,7 +161,7 @@ async def test_worker_actual_local_pipeline_with_test_double(store):
     quote(store)
     async def researcher(context, cfg, research_tools, emit):
         await emit({"type": "test_only", "message": "deterministic integration double"})
-        return {"report": f"账户 {context['account']['name']} 市值 {context['metrics']['securities_value']}"}
+        return runner_result({"report": f"账户 {context['account']['name']} 市值 {context['metrics']['securities_value']}"}, context)
     a, b = store.save_account(payload(qty="100")), store.save_account(payload("乙", "200"))
     svc = Service(store, runner=researcher)
     await asyncio.gather(*(svc.execute(j) for j in store.claim_jobs()))
@@ -186,7 +188,7 @@ async def test_target_security_and_missing_model_preflight(store):
     captured = {}
     async def capture(context, cfg, tools, emit):
         captured.update(context)
-        return {"report": "deterministic specified-security pipeline test"}
+        return runner_result({"report": "deterministic specified-security pipeline test"}, context)
     async def refresh(symbols=None):
         captured["refreshed"] = symbols
         store.put_cache("quotes", "SH:510300", {"price": "4.107", "as_of": now(), "status": "ok"})
@@ -201,7 +203,7 @@ async def test_target_security_and_missing_model_preflight(store):
 async def test_startup_refreshes_expired_completed_analysis(store):
     a = store.save_account(payload())
     job = store.claim_jobs()[0]
-    store.publish(job["id"], {"report": "previous"}, None)
+    publish_fixture(store,job["id"], {"report": "previous"}, None)
     store.set_meta("last_quote_refresh", "2026-01-01T15:00:00+08:00")
     service = Service(store)
     async def noop(*args, **kwargs):

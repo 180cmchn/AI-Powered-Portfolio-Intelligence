@@ -1,4 +1,5 @@
 """Deterministic evaluation evidence checks; no actual model/news/quotes here."""
+from delivery_helpers import finish_global_fixture
 from copy import deepcopy
 import json
 
@@ -187,7 +188,7 @@ def test_unselected_worker_executions_are_inventoried_and_included_in_request_bu
     run = store.claim_global()
     store.event(run["id"], {"type": "model_error", "agent_id": "manager", "payload": {"requests": [{
         "agent_id": "manager", "reasoning_effort_sent": "medium", "request_accepted": False, "attempt": 1, "duration_ms": 3}]}})
-    store.finish_global(run["id"], "failed", error="Controlled additional failure")
+    finish_global_fixture(store,run["id"], "failed", error="Controlled additional failure")
     executions = evaluation.collect_executions(store, [{"job_id": account["latest_job_id"], "label": "A"}])
     assert len(executions) == 2
     assert {row["label"] for row in executions} == {"A", "additional-public"}

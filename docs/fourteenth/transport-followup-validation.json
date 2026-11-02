@@ -1,0 +1,77 @@
+{
+  "checked_at": "2026-11-02T16:02:55.891484+08:00",
+  "source_sha256": "b0e1f28820f2196c9c5eda365e95856dc69fbd95d554bdb3651693843e0b027a",
+  "previous_delivery_source_sha256": "28ebc715529b098177ce52c3aeb1d04d3434e0f76a64a36f27ec9682aada1357",
+  "python": {
+    "passed": 1165,
+    "warnings": 1,
+    "exit_code": 0,
+    "duration_seconds": 110.79,
+    "log": "transport-python.txt"
+  },
+  "browser": {
+    "group": "fourteenth",
+    "exit_code": 0,
+    "log": "transport-browser.txt",
+    "all_eleven_rerun_for_this_patch": false,
+    "note": "UI unchanged; prior eleven-group run belongs to previous delivery snapshot"
+  },
+  "git_diff_check": "passed",
+  "real_probe": {
+    "attempts": 2,
+    "protocol_completed": 2,
+    "http_eof": 2,
+    "accepted_named_tool": 2,
+    "same_payload": true,
+    "retries": 0,
+    "content_assessment": "not_evaluated",
+    "long_evidence_retested": false,
+    "evidence": "transport-live-evidence.json"
+  },
+  "daily_database_unchanged": true,
+  "environment_file_unchanged": true,
+  "daily_service_restarted": false,
+  "old_authorization_ledger": {
+    "maximum": 44,
+    "reserved_attempts": 4,
+    "stages": {
+      "final": {
+        "maximum": 4,
+        "reserved_attempts": 4
+      },
+      "full": {
+        "maximum": 40,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "new_attempt_budget": {
+    "maximum": 2,
+    "reserved_attempts": 2,
+    "stages": {
+      "final": {
+        "maximum": 2,
+        "reserved_attempts": 2
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "original_failure_records_preserved": true,
+  "intermediate_test_attempts": [
+    {
+      "passed": 102,
+      "failed": 1,
+      "log": "/tmp/fourteenth-transport-targeted-final.txt",
+      "reason": "Verifier correctly detected source_digest changing while new probe script was being authored; subsequent frozen full run passed"
+    }
+  ],
+  "supplier_dashboard_corroboration": {
+    "file": "supplier-dashboard-reconciliation.json",
+    "last_two_requests_corroborated": true,
+    "source": "user screenshot, matched timestamps/input/output/cache counters",
+    "new_requests": 0
+  }
+}

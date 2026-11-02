@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "kind": "real_historical_visible_evidence",
+  "historical_task_id": "ab76e4941a7044119ecce3ee31ba468d",
+  "historical_checkpoint_at": "2026-11-01T23:14:23.530972+08:00",
+  "data_as_of": "2026-10-30T15:34:06+08:00",
+  "source_database_sha256_before": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f",
+  "source_database_sha256_after": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f",
+  "package_sha256": "a4159c95ffe035948e111aabac129794309459fc59ca0c603ecf9caefccae238",
+  "private_package": true,
+  "reports": [
+    {
+      "report_id": "cf6d2740d60643df8baa8f9f664a0d42",
+      "role_id": "filing_researcher",
+      "visible_content_sha256": "4f6fe9e254b4f1def2aed85731c6ec1e342f431847568092b32a1bbd82867eae",
+      "characters": 274
+    },
+    {
+      "report_id": "aa492bd0b37d47d78f961680f29a2b52",
+      "role_id": "etf_researcher",
+      "visible_content_sha256": "f65bc302f841c783dfe28f9c5392f3fe043d419c17884ae982a1b74d8021be89",
+      "characters": 91
+    }
+  ],
+  "calculations": [
+    {
+      "calculation_id": "calculation-9b85858782dc4fd894dc6e249c444c9a",
+      "tool": "calculate",
+      "content_sha256": "fa7b37facc7fe74cffa12afdebc0e590be8247dfc53558c2882525f28545b505",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-98247ac3a8614511baf1de484b42538a",
+      "tool": "calculate",
+      "content_sha256": "eb80896280c6ebf193b300aacc6630208c6a1fe4aede2f0c8385ed72a67f1512",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-de98f1d7907340a4851c1fb1634b26bf",
+      "tool": "calculate",
+      "content_sha256": "7131e008305430a54c3fec3d5252f957719be1b2b2be4c96f7b197156c8f4333",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-92415c5482ae455e9c10c318bfcf4b01",
+      "tool": "calculate",
+      "content_sha256": "a7113c81a9fcae64bfd3a9b357a78d25bd5f43089785c961e6a9ed88f0f9b3e8",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-a0658e7bd99946b29c7d57f374d25065",
+      "tool": "calculate",
+      "content_sha256": "f3cfd257f16c5c3625e7e8f3c17d0c73821afb263caadcda712a3dfaa10d40f3",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-02c84c730095415a8aafc3ea68a2e987",
+      "tool": "calculate",
+      "content_sha256": "52f26a50a3c8b130d5cb9587912f9751297697ab4225d417e9fca4d00c90c097",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-acf76b8692384f6693664e36befd53f1",
+      "tool": "calculate",
+      "content_sha256": "c4ed540292405fc87bc501b3e36602dd63733e3b8a347f0c85596fb514bbf8f6",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-01e3e2df9db247319e4b25f3876e3e5d",
+      "tool": "calculate",
+      "content_sha256": "a283a701e8977e6ab6f99636c3f92b84043649234bf990909a100dab91f1142d",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-d05d24688b2f49f992e417add8b8aeee",
+      "tool": "calculate",
+      "content_sha256": "764ef700542fc1470a5e5a87af63ee4cee67cd99a85b72da7ea1be249cdbe01d",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-47f52e81105544af8a456df67b5caeec",
+      "tool": "calculate",
+      "content_sha256": "2299f74deea1cabcd82544f955e1340addc3cfcdb6943705b04c3c9f2f6c463c",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-eb60b4fef5e246cebb80c2c0333b2099",
+      "tool": "calculate",
+      "content_sha256": "67a84bb33551c0d6384b36d794dbed032a05fd502c0f3abee9d451b4d725cc3d",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-75a53348027c4b4cb463e1988329a1c6",
+      "tool": "calculate",
+      "content_sha256": "78ca8b137abbedae01152d6ad3e9fd8c608f309d1b0272e79465252a3b8bdbd7",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-70b55d606d95405c93323f981409a874",
+      "tool": "calculate",
+      "content_sha256": "533d049b48af168e43cc90cc8d1ebe2efa821f2359f0cd4a405ea8d6eef88aa2",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-c48f2cf2713b40ad96b692340d25f220",
+      "tool": "calculate",
+      "content_sha256": "a9b11364e6cb11e12e1a9e8932406870028f7b57a5b95ba2ead6a4708f1a1db0",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-481d4e33fbf64865aa4e993199f45890",
+      "tool": "calculate",
+      "content_sha256": "7ed33860f8801514ffc9d4b0b2fa9bf9519b4d1f982bebd4eb9b0e7adcbb855f",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-870b5790106343af8b85eda42d7534de",
+      "tool": "calculate",
+      "content_sha256": "c6c7b3bccfe111bf553035821399a0650f2dc692c54a1a8db2323823eb077ae6",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-80ee432ccd12493aa4e9a9bfe9554000",
+      "tool": "calculate",
+      "content_sha256": "9a7e0cf701efbebde2b597cea1579cd903efb59fb966eb22a4487ad979b282b4",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-27b3a8c6d14c46a9a73aa66a21667b5f",
+      "tool": "calculate",
+      "content_sha256": "970f786932baabc963e86e6d97b6782be397ce3d412f60634e2237d0af7829bb",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-61a71233d9b54af68f79f41857e32745",
+      "tool": "calculate",
+      "content_sha256": "b8701b4d7aaa790de7250c8b708a6e435bd64da03e17efba3eb6059327c4d239",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-f8d9a82a436541d7ac22a1f2782194cb",
+      "tool": "calculate",
+      "content_sha256": "26cb5c64de5083f8010f5dcd013f872ca18b6c781548aab06d751f042b1dc958",
+      "status": "ok"
+    },
+    {
+      "calculation_id": "calculation-efcd7d069e2d4aa6a81fa83e3d638271",
+      "tool": "calculate",
+      "content_sha256": "95f8b9cb4acc748e1316b3bbc59a2bf19510f15e386754f5789a1911cfe445ae",
+      "status": "ok"
+    }
+  ],
+  "material_index_count": 295,
+  "material_delivery_count": 340,
+  "unresolved_task_count": 1,
+  "accounting": {
+    "cash": "86484.90",
+    "version": 4
+  },
+  "boundary": "Historical simulated ledger, not a daily account or current market opinion. Visible saved reports/calculations only; source-link access does not mean full text was read. This reconstructed fixed bundle is not claimed byte-identical to historical HTTP input.",
+  "paid_model_requests": 0
+}

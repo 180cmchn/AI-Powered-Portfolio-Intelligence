@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Deterministic context/protocol tests; no claims about real model quality."""
 import json
 
@@ -133,15 +134,15 @@ async def test_runtime_paginates_and_global_cannot_submit_account_suggestions(co
         result = await runtime._dispatch("manager", "list_materials", {"limit": 10, "offset": 20})
         assert result["items"][0]["id"] == "m-20" and result["next_offset"] == 30
         with pytest.raises(ValueError, match="全局研究"):
-            await runtime._dispatch("manager", "finish_analysis", {"report": "公共报告", "suggestions": [{"security_id": "SH:600000"}]})
-        accepted = await runtime._dispatch("manager", "finish_analysis", {"report": "公共报告", "research_records": [{"kind": "market", "title": "研究", "reason": "公开数据"}]})
+            await runtime._dispatch("manager", "finish_analysis", delivery_arguments(**{"report": "公共报告", "suggestions": [{"security_id": "SH:600000"}]}))
+        accepted = await runtime._dispatch("manager", "finish_analysis", delivery_arguments(**{"report": "公共报告", "research_records": [{"kind": "market", "title": "研究", "reason": "公开数据"}]}))
         assert accepted["accepted"]
         names = {tool["name"] for tool in RESEARCH_TOOLS}
         assert {"pdf_metadata", "search_pdf", "read_material_range", "recall_context", "history", "fundamentals", "sector_history"} <= names
         finish = next(tool for tool in MANAGER_TOOLS if tool["name"] == "finish_analysis")
         assert {"suggestions", "revoked_suggestion_ids", "research_records"} <= finish["parameters"]["properties"].keys()
         with pytest.raises(ValueError, match="全局研究"):
-            await runtime._dispatch("manager", "finish_analysis", {"report": "公共报告", "revoked_suggestion_ids": ["old-suggestion"]})
+            await runtime._dispatch("manager", "finish_analysis", delivery_arguments(**{"report": "公共报告", "revoked_suggestion_ids": ["old-suggestion"]}))
     finally:
         await runtime.close()
 
@@ -152,7 +153,7 @@ async def test_finish_preserves_explicit_suggestion_revocations(config, monkeypa
 
     async def handler(request):
         return httpx.Response(200, json={"output": [{"type": "function_call", "call_id": "finish", "name": "finish_analysis",
-            "arguments": json.dumps({"report": "新公告推翻原依据，仅撤销指定证券建议。", "revoked_suggestion_ids": ["suggestion-old-1"]})}]})
+            "arguments": json.dumps(delivery_arguments(**{"report": "新公告推翻原依据，仅撤销指定证券建议。", "revoked_suggestion_ids": ["suggestion-old-1"]}))}]})
 
     monkeypatch.setattr(agents, "ModelClient", lambda cfg, before_request=None: ModelClient(cfg, before_request, httpx.MockTransport(handler)))
 

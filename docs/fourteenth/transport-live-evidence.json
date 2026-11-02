@@ -1,0 +1,281 @@
+{
+  "kind": "controlled_cash_only_transport_probe",
+  "started_at": "2026-11-02T15:59:55.001583+08:00",
+  "completed_at": "2026-11-02T16:00:18.903450+08:00",
+  "source_sha256": "b0e1f28820f2196c9c5eda365e95856dc69fbd95d554bdb3651693843e0b027a",
+  "authorization_note": "用户2026-11-02新增授权最多2次诊断请求，现有代理与本次进程直连各一次；不重试，不使用原40次额度，不启动完整研究",
+  "attempt_budget": {
+    "maximum": 2,
+    "reserved_attempts": 2,
+    "stages": {
+      "final": {
+        "maximum": 2,
+        "reserved_attempts": 2
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "observed_http_attempts": 2,
+  "input": {
+    "kind": "controlled_cash_only_transport_probe",
+    "research_scope": "cash_only",
+    "account": {
+      "cash": "100.00",
+      "holdings": []
+    },
+    "boundary": "Explicit simulated facts for transport diagnosis, not a real account or current investment research."
+  },
+  "input_sha256": "02108d1c68a13406213a580e686091a8a74100a23602824a6731e71865e4c648",
+  "prompt_sha256": "acd75956d809399a04eed6b7d23bd732ede289d373895168294581e575c1c89d",
+  "tools_sha256": "0319d32e2e447a29625c49ff7ac2c17cf34abcf96af5bdb2a4aeccc4d0fefe5f",
+  "final_source_unchanged": true,
+  "final_environment_unchanged": true,
+  "proxy_and_certificate_environment_unchanged": true,
+  "reports_published": 0,
+  "predictions_published": 0,
+  "content_assessment": "not_evaluated",
+  "fee_amount": null,
+  "original_long_input_root_cause": "not_isolated",
+  "variants": [
+    {
+      "variant": "environment",
+      "routing": "HTTPX environment proxy routing",
+      "started_at": "2026-11-02T15:59:55.079920+08:00",
+      "elapsed_seconds": 8.523,
+      "actual_request": {
+        "payload_sha256": "444e749843f00a49a7f77dac9d1fdc98060524f725430a9df5e80688987a96df",
+        "input_sha256": "02108d1c68a13406213a580e686091a8a74100a23602824a6731e71865e4c648",
+        "tool_choice": {
+          "type": "function",
+          "name": "finish_analysis"
+        },
+        "model": "grok-4.7",
+        "effort": "max",
+        "output_limit": 4000
+      },
+      "delivery_contract_satisfied": true,
+      "content_assessment": "not_evaluated",
+      "tool_choice_status": "observed",
+      "tool_calls": [
+        {
+          "id": "call-860a1a29-e86b-4ad5-87a4-024402d535fd-0",
+          "name": "finish_analysis",
+          "arguments": {
+            "report": "受控事实仅为模拟现金100.00元、无持仓，用于提交协议与传输诊断，不构成真实账户或投资研究。该现金当前未绑定任何证券或用途，因此不形成买入、卖出、持有或弃权之外的操作结论；在未明确资金用途、标的、期限和风险约束前，只宜维持现金状态。若后续补充真实账户数据、明确可投资范围或持仓变化，应重新评估。",
+            "completion": "full",
+            "scope": [
+              "cash_only"
+            ],
+            "decision_summary": "在仅有模拟现金100元且无持仓、未说明资金用途的条件下，不采取证券操作，维持现金观察；一旦用途、标的或账户事实变化即重新评估。",
+            "limitations": []
+          },
+          "error": null
+        }
+      ],
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_model": "grok-4.7",
+          "reported_reasoning_effort": "high",
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": {
+            "type": "function",
+            "name": "finish_analysis"
+          },
+          "tool_choice_status": "observed",
+          "tool_choice_satisfied": true,
+          "input_chars": 1459,
+          "output_bytes": 23470,
+          "status_code": 200,
+          "request_accepted": true,
+          "response_headers_received": true,
+          "response_body_received": true,
+          "http_body_complete": true,
+          "stream_terminal": "response.completed",
+          "stream_close_reason": "http_eof",
+          "stream_tail_drain_ms": 39.26,
+          "response_status": "completed",
+          "response_id": "05b706cc-3fe8-9355-bcf7-06dec3b7917a",
+          "request_id": null,
+          "http_version": "HTTP/1.1",
+          "environment_proxy_present": true,
+          "proxy_tunnel": {
+            "observed": true,
+            "status_code": 200,
+            "response_headers_received": true,
+            "established": true
+          },
+          "duration_ms": 8507.38,
+          "started_at": "2026-11-02T07:59:55.094609+00:00",
+          "finished_at": "2026-11-02T08:00:03.601904+00:00",
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 120.0,
+            "request_hard_seconds": 360.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+          },
+          "deadline_remaining_ms": {
+            "analysis_budget_exhausted": 1199982.21,
+            "request_hard_timeout": 360000.0
+          },
+          "error": null,
+          "error_code": null,
+          "cancelled_by": null,
+          "usage": {
+            "input_tokens": 1686,
+            "input_tokens_details": {
+              "cached_tokens": 1152
+            },
+            "output_tokens": 301,
+            "output_tokens_details": {
+              "reasoning_tokens": 102
+            },
+            "total_tokens": 1987,
+            "num_sources_used": 0,
+            "num_server_side_tools_used": 0,
+            "cost_in_usd_ticks": 11730000,
+            "context_details": {
+              "input_tokens": 1686,
+              "output_tokens": 307
+            }
+          },
+          "reported_output_exceeds_requested": false
+        }
+      ]
+    },
+    {
+      "variant": "direct",
+      "routing": "Explicit AsyncHTTPTransport: no environment proxy routing; TLS verify/environment certificates retained",
+      "started_at": "2026-11-02T16:00:03.615304+08:00",
+      "elapsed_seconds": 15.285,
+      "actual_request": {
+        "payload_sha256": "444e749843f00a49a7f77dac9d1fdc98060524f725430a9df5e80688987a96df",
+        "input_sha256": "02108d1c68a13406213a580e686091a8a74100a23602824a6731e71865e4c648",
+        "tool_choice": {
+          "type": "function",
+          "name": "finish_analysis"
+        },
+        "model": "grok-4.7",
+        "effort": "max",
+        "output_limit": 4000
+      },
+      "delivery_contract_satisfied": true,
+      "content_assessment": "not_evaluated",
+      "tool_choice_status": "observed",
+      "tool_calls": [
+        {
+          "id": "call-9c4ac88e-a991-4012-9538-209e49b152e5-0",
+          "name": "finish_analysis",
+          "arguments": {
+            "report": "受控事实仅为模拟现金100.00元、持仓为空，不是用户实盘账户，也不构成投资研究或交易指令。在不假定资金用途、不联网、不预测的前提下，当前没有证券敞口可评估，这笔现金只是完全未配置的模拟余额。若现金金额变化、出现持仓，或任务明确扩展到具体证券及用途，应重新评估。",
+            "completion": "full",
+            "scope": [
+              "cash_only"
+            ],
+            "decision_summary": "仅适用于这笔无持仓的100元模拟现金：当前无可分析敞口，维持现金观察即可；不预设用途，也不给出买卖或配置建议。重新评估条件为现金变动、新增持仓，或范围扩展到明确证券/用途。",
+            "limitations": []
+          },
+          "error": null
+        }
+      ],
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_model": "grok-4.7",
+          "reported_reasoning_effort": "high",
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": {
+            "type": "function",
+            "name": "finish_analysis"
+          },
+          "tool_choice_status": "observed",
+          "tool_choice_satisfied": true,
+          "input_chars": 1459,
+          "output_bytes": 26315,
+          "status_code": 200,
+          "request_accepted": true,
+          "response_headers_received": true,
+          "response_body_received": true,
+          "http_body_complete": true,
+          "stream_terminal": "response.completed",
+          "stream_close_reason": "http_eof",
+          "stream_tail_drain_ms": 1.09,
+          "response_status": "completed",
+          "response_id": "58574082-17d8-983f-9960-110ab69c94d9",
+          "request_id": null,
+          "http_version": "HTTP/1.1",
+          "environment_proxy_present": true,
+          "proxy_tunnel": {
+            "observed": false,
+            "status_code": null,
+            "response_headers_received": false,
+            "established": null
+          },
+          "duration_ms": 15277.99,
+          "started_at": "2026-11-02T08:00:03.622979+00:00",
+          "finished_at": "2026-11-02T08:00:18.900820+00:00",
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 120.0,
+            "request_hard_seconds": 360.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+          },
+          "deadline_remaining_ms": {
+            "analysis_budget_exhausted": 1191453.85,
+            "request_hard_timeout": 360000.0
+          },
+          "error": null,
+          "error_code": null,
+          "cancelled_by": null,
+          "usage": {
+            "input_tokens": 1686,
+            "input_tokens_details": {
+              "cached_tokens": 1664
+            },
+            "output_tokens": 695,
+            "output_tokens_details": {
+              "reasoning_tokens": 524
+            },
+            "total_tokens": 2381,
+            "num_sources_used": 0,
+            "num_server_side_tools_used": 0,
+            "cost_in_usd_ticks": 17156400,
+            "context_details": {
+              "input_tokens": 1686,
+              "output_tokens": 699
+            }
+          },
+          "reported_output_exceeds_requested": false
+        }
+      ]
+    }
+  ],
+  "supplier_dashboard_corroboration": {
+    "file": "supplier-dashboard-reconciliation.json",
+    "matched": true,
+    "displayed_two_request_cost": "0.001274",
+    "currency_symbol": "$",
+    "cost_provenance": "supplier dashboard screenshot, not derived from usage ticks"
+  }
+}

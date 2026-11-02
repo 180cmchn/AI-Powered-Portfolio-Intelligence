@@ -1,4 +1,5 @@
 """Disposable browser fixtures. No real credentials, upstream data, or model calls."""
+from delivery_helpers import publish_fixture
 import os, sys, json, socket, asyncio
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -27,7 +28,7 @@ if not store.accounts():
     a=store.save_account(AccountInput(name='第六轮受控账户 A',cash='10000',holdings=[{'symbol':'SZ:159278','quantity':'10000'}]))
     b=store.save_account(AccountInput(name='第六轮受控账户 B',cash='20000',holdings=[]))
 else:a,b=store.accounts()[:2]
-for j in store.claim_jobs(20):store.publish(j['id'],{'report':'仅用于浏览器布局与交互验收的确定性夹具'},None)
+for j in store.claim_jobs(20):publish_fixture(store,j['id'],{'report':'仅用于浏览器布局与交互验收的确定性夹具'},None)
 # Fixed historical test-only sample; never enters formal statistics.
 if not store.forecast_batches(a['id']):
     at=datetime(2026,10,12,16,tzinfo=TZ)

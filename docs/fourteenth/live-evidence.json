@@ -1,0 +1,359 @@
+{
+  "kind": "fourteenth_authorized_final_only_real_attempts",
+  "recorded_at": "2026-11-02T15:05:27.809329+08:00",
+  "source_sha256": "e8023741df26543df93a4595cd678ea92b575f6c690655aa9244daaf7e3da3b9",
+  "protocol": "responses",
+  "requested_model": "grok-4.7",
+  "requested_effort": "max",
+  "budget": {
+    "maximum": 44,
+    "reserved_attempts": 4,
+    "stages": {
+      "final": {
+        "maximum": 4,
+        "reserved_attempts": 4
+      },
+      "full": {
+        "maximum": 40,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "request_attempts": 4,
+  "complete_response_completed": 0,
+  "upstream_transport_errors": 3,
+  "explicit_response_incomplete": 1,
+  "accepted_final_submissions": 0,
+  "account_research_business_tasks_started": 0,
+  "official_reports_published": 0,
+  "content_assessment": {
+    "status": "not_evaluated",
+    "reason": "No complete terminal submission or final body was returned; partial streams were not adopted"
+  },
+  "full_research": {
+    "started": false,
+    "reason": "Fixed-evidence final submission/content gate not satisfied",
+    "unused_authorized_full_attempts": 40,
+    "new_account_version_scenario": "not_run",
+    "cash_only_real_scenario": "not_run"
+  },
+  "forecast_coverage": {
+    "status": "not_run",
+    "new_formal": 0,
+    "new_exploratory": 0,
+    "new_abstentions": 0,
+    "new_batches": 0
+  },
+  "forecast_effect": {
+    "status": "not_evaluated",
+    "naturally_matured_new_samples": 0
+  },
+  "fee_amount": null,
+  "provider_cause": "Unknown; observed errors do not isolate origin model, forwarder, proxy or network. No downgrade, output limit increase, protocol switch, or deleted tool_choice.",
+  "all_attempts": [
+    {
+      "index": 1,
+      "input_variant": "final",
+      "submission_variant": "single_tool_unforced",
+      "input_sha256": "5824a3b872a093c0cb01c8a3eeea85b505970ecb200bbc8ec4abcd10ae103d75",
+      "actual_request_inputs": [
+        {
+          "request_payload_sha256": "cb4182adeab3fd8eae6d262aea3575a060d36ae365c9bbdeb9dacaeaafff0590",
+          "actual_input_sha256": "5824a3b872a093c0cb01c8a3eeea85b505970ecb200bbc8ec4abcd10ae103d75",
+          "identical_fixed_input": true,
+          "full_reports_visible": true,
+          "calculation_summaries_visible": true
+        }
+      ],
+      "error_code": "upstream_transport_error",
+      "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+      "elapsed_seconds": 185.014,
+      "complete_accepted_terminal_submission": false,
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_reasoning_effort": null,
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": null,
+          "request_accepted": true,
+          "status_code": 200,
+          "response_body_received": false,
+          "stream_terminal": null,
+          "tool_choice_status": null,
+          "tool_choice_satisfied": null,
+          "input_chars": 145143,
+          "duration_ms": 185012.4,
+          "started_at": "2026-11-02T06:48:10.001717+00:00",
+          "finished_at": "2026-11-02T06:51:15.012948+00:00",
+          "stream_last_byte_ms": 134941.31,
+          "stream_max_idle_ms": 50071.03,
+          "stream_event_count": 193,
+          "stream_event_types": {
+            "response.created": 1,
+            "response.in_progress": 1,
+            "response.output_item.added": 2,
+            "response.reasoning_summary_part.added": 1,
+            "response.reasoning_summary_text.delta": 156,
+            "response.reasoning_summary_text.done": 1,
+            "response.reasoning_summary_part.done": 1,
+            "response.output_item.done": 1,
+            "response.content_part.added": 1,
+            "response.output_text.delta": 28
+          },
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "transport_failure_kind": "incomplete_response_body",
+          "usage": null,
+          "cost_amount": null,
+          "cost_unit_interpretation": "unknown; raw numeric ticks are not converted to money"
+        }
+      ],
+      "source_unchanged": true,
+      "environment_unchanged": true
+    },
+    {
+      "index": 2,
+      "input_variant": "final",
+      "submission_variant": "named_finish_analysis",
+      "input_sha256": "5824a3b872a093c0cb01c8a3eeea85b505970ecb200bbc8ec4abcd10ae103d75",
+      "actual_request_inputs": [
+        {
+          "request_payload_sha256": "171fd72792705fbd2839e5feef4143fe69b20b6753a29fa3c4741553237dd505",
+          "actual_input_sha256": "5824a3b872a093c0cb01c8a3eeea85b505970ecb200bbc8ec4abcd10ae103d75",
+          "identical_fixed_input": true,
+          "full_reports_visible": true,
+          "calculation_summaries_visible": true
+        }
+      ],
+      "error_code": "upstream_transport_error",
+      "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+      "elapsed_seconds": 182.279,
+      "complete_accepted_terminal_submission": false,
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_reasoning_effort": null,
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": {
+            "type": "function",
+            "name": "finish_analysis"
+          },
+          "request_accepted": true,
+          "status_code": 200,
+          "response_body_received": false,
+          "stream_terminal": null,
+          "tool_choice_status": "requested",
+          "tool_choice_satisfied": null,
+          "input_chars": 145207,
+          "duration_ms": 182273.93,
+          "started_at": "2026-11-02T06:51:15.022871+00:00",
+          "finished_at": "2026-11-02T06:54:17.297339+00:00",
+          "stream_last_byte_ms": 132450.68,
+          "stream_max_idle_ms": 49823.26,
+          "stream_event_count": 106,
+          "stream_event_types": {
+            "response.created": 1,
+            "response.in_progress": 1,
+            "response.output_item.added": 2,
+            "response.reasoning_summary_part.added": 1,
+            "response.reasoning_summary_text.delta": 62,
+            "response.reasoning_summary_text.done": 1,
+            "response.reasoning_summary_part.done": 1,
+            "response.output_item.done": 1,
+            "response.content_part.added": 1,
+            "response.output_text.delta": 35
+          },
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "transport_failure_kind": "incomplete_response_body",
+          "usage": null,
+          "cost_amount": null,
+          "cost_unit_interpretation": "unknown; raw numeric ticks are not converted to money"
+        }
+      ],
+      "source_unchanged": true,
+      "environment_unchanged": true
+    },
+    {
+      "index": 3,
+      "input_variant": "final-compact",
+      "submission_variant": "single_tool_unforced",
+      "input_sha256": "1b9a447de9f2b8f5ff7ded3c1744c1b8f0de5201c011521d298da5bf390d2ed6",
+      "actual_request_inputs": [
+        {
+          "request_payload_sha256": "ed22f1c534e29f11f19df34e3f3a3bd64fb9c1280bd98232327ee1aa6151eed8",
+          "actual_input_sha256": "1b9a447de9f2b8f5ff7ded3c1744c1b8f0de5201c011521d298da5bf390d2ed6",
+          "identical_fixed_input": true,
+          "full_reports_visible": true,
+          "calculation_summaries_visible": true
+        }
+      ],
+      "error_code": "model_protocol_error",
+      "error": "模型响应未完成（incomplete）；请检查输出预算或服务状态",
+      "elapsed_seconds": 127.964,
+      "complete_accepted_terminal_submission": false,
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_model": "grok-4.7",
+          "reported_reasoning_effort": "high",
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": null,
+          "request_accepted": true,
+          "status_code": 200,
+          "response_body_received": true,
+          "response_status": "incomplete",
+          "protocol_terminal": "responses.incomplete",
+          "stream_terminal": "response.incomplete",
+          "tool_choice_status": null,
+          "tool_choice_satisfied": null,
+          "input_chars": 73896,
+          "duration_ms": 127962.23,
+          "started_at": "2026-11-02T06:57:26.462290+00:00",
+          "finished_at": "2026-11-02T06:59:34.423745+00:00",
+          "stream_last_byte_ms": 127960.35,
+          "stream_max_idle_ms": 4008.21,
+          "stream_event_count": 4070,
+          "stream_event_types": {
+            "response.created": 1,
+            "response.in_progress": 1,
+            "response.output_item.added": 2,
+            "response.reasoning_summary_part.added": 1,
+            "response.reasoning_summary_text.delta": 60,
+            "response.reasoning_summary_text.done": 1,
+            "response.reasoning_summary_part.done": 1,
+            "response.output_item.done": 1,
+            "response.content_part.added": 1,
+            "response.output_text.delta": 4000,
+            "response.incomplete": 1
+          },
+          "error": null,
+          "error_code": null,
+          "usage": {
+            "input_tokens": 28159,
+            "input_tokens_details": {
+              "cached_tokens": 1152
+            },
+            "output_tokens": 9823,
+            "output_tokens_details": {
+              "reasoning_tokens": 5823
+            },
+            "total_tokens": 37982,
+            "num_sources_used": 0,
+            "num_server_side_tools_used": 0,
+            "cost_in_usd_ticks": 385995200,
+            "context_details": {
+              "input_tokens": 28159,
+              "output_tokens": 9823
+            }
+          },
+          "cost_amount": null,
+          "cost_unit_interpretation": "unknown; raw numeric ticks are not converted to money"
+        }
+      ],
+      "source_unchanged": true,
+      "environment_unchanged": true
+    },
+    {
+      "index": 4,
+      "input_variant": "final-compact",
+      "submission_variant": "named_finish_analysis",
+      "input_sha256": "1b9a447de9f2b8f5ff7ded3c1744c1b8f0de5201c011521d298da5bf390d2ed6",
+      "actual_request_inputs": [
+        {
+          "request_payload_sha256": "7918984cf61bfb0bc3436dd9e92bf0119fa30085dc336b4e7f11e92e12b89a23",
+          "actual_input_sha256": "1b9a447de9f2b8f5ff7ded3c1744c1b8f0de5201c011521d298da5bf390d2ed6",
+          "identical_fixed_input": true,
+          "full_reports_visible": true,
+          "calculation_summaries_visible": true
+        }
+      ],
+      "error_code": "upstream_transport_error",
+      "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+      "elapsed_seconds": 79.903,
+      "complete_accepted_terminal_submission": false,
+      "requests": [
+        {
+          "attempt": 1,
+          "endpoint": "responses",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "model": "grok-4.7",
+          "reasoning_effort_sent": "max",
+          "reported_reasoning_effort": null,
+          "requested_max_output_tokens": 4000,
+          "requested_tool_choice": {
+            "type": "function",
+            "name": "finish_analysis"
+          },
+          "request_accepted": true,
+          "status_code": 200,
+          "response_body_received": false,
+          "stream_terminal": null,
+          "tool_choice_status": "requested",
+          "tool_choice_satisfied": null,
+          "input_chars": 73960,
+          "duration_ms": 79900.42,
+          "started_at": "2026-11-02T06:59:34.431883+00:00",
+          "finished_at": "2026-11-02T07:00:54.331585+00:00",
+          "stream_last_byte_ms": 79819.99,
+          "stream_max_idle_ms": 6009.71,
+          "stream_event_count": 79,
+          "stream_event_types": {
+            "response.created": 1,
+            "response.in_progress": 1,
+            "response.output_item.added": 1,
+            "response.reasoning_summary_part.added": 1,
+            "response.reasoning_summary_text.delta": 75
+          },
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "transport_failure_kind": "incomplete_response_body",
+          "usage": null,
+          "cost_amount": null,
+          "cost_unit_interpretation": "unknown; raw numeric ticks are not converted to money"
+        }
+      ],
+      "source_unchanged": true,
+      "environment_unchanged": true
+    }
+  ],
+  "daily_database_writes": 0,
+  "daily_restart": false,
+  "source_files_changed_after_real_start": true,
+  "observed_explicit_terminal_events": 1,
+  "observed_explicit_terminal_status": "response.incomplete; observing this event does not establish HTTP body EOF or completed generation",
+  "source_unchanged_during_real_attempts": true,
+  "version_boundary": {
+    "real_run_source_sha256": "e8023741df26543df93a4595cd678ea92b575f6c690655aa9244daaf7e3da3b9",
+    "real_run_source_scope": "All four final-only real attempts used this source; it is not the identity of the final delivered source.",
+    "source_unchanged_during_real_attempts": true,
+    "post_real_run_source_changes": [
+      "Formal forecast execution deadline enforcement",
+      "Stop after the first valid final submission; do not issue a late-update model call"
+    ],
+    "final_source_and_tests": "Recorded separately in the final iteration validation manifest; do not attribute these real attempts to later source.",
+    "paid_retest_after_post_run_patches": false,
+    "full_stage_authorization_unlocked": false,
+    "unused_full_attempts": 40,
+    "budget_boundary": "The final-only stage is exhausted at 4 attempts. The conditional 40-attempt full stage remains unused and cannot be reassigned to further probes."
+  }
+}

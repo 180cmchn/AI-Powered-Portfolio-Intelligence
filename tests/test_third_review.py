@@ -1,4 +1,5 @@
 """Independent review reproductions for cross-module state ownership."""
+from delivery_helpers import publish_fixture
 from datetime import datetime
 
 from app.domain import AccountInput, TZ
@@ -26,7 +27,7 @@ def test_targeted_research_does_not_complete_unrelated_recommendation_demand(tmp
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
     account = store.save_account(AccountInput(name='受控单证券研究', holdings=[]))
     initial = store.claim_jobs()[0]
-    store.publish(initial['id'], {'report': '受控初始建议', 'suggestions': [
+    publish_fixture(store,initial['id'], {'report': '受控初始建议', 'suggestions': [
         {'security_id': 'SH:600519', 'action': 'watch', 'basis': 'A 受控依据',
          'price_conditions': [{'operator': 'gte', 'value': 110}]},
         {'security_id': 'SZ:000001', 'action': 'watch', 'basis': 'B 受控依据'}]}, None)
@@ -35,7 +36,7 @@ def test_targeted_research_does_not_complete_unrelated_recommendation_demand(tmp
     demand = next(d for d in store.demands(account['id']) if d['kind'] == 'recommendation_review')
     store.enqueue(account['id'], 'manual_security:SZ:000001')
     local = store.claim_jobs()[0]
-    store.publish(local['id'], {'report': '只研究 B 的补充报告'}, None)
+    publish_fixture(store,local['id'], {'report': '只研究 B 的补充报告'}, None)
     after = next(d for d in store.demands(account['id']) if d['id'] == demand['id'])
     assert after['state'] != 'completed', 'B 的局部研究没有处理 A，不能完成 A 的复核事项'
     store.dispatch_demands()
@@ -48,7 +49,7 @@ def test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bou
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
     account = store.save_account(AccountInput(name='受控多轮范围', holdings=[]))
     initial = store.claim_jobs()[0]
-    store.publish(initial['id'], {'report': '受控初始建议', 'suggestions': [
+    publish_fixture(store,initial['id'], {'report': '受控初始建议', 'suggestions': [
         {'security_id': sid, 'action': 'watch', 'basis': '受控依据',
          'price_conditions': [{'operator': 'gte', 'value': 110}]}
         for sid in ('SH:600519', 'SZ:000001')]}, None)
@@ -59,7 +60,7 @@ def test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bou
         store.request_analysis(account['id'], kind, f'controlled-wide:{kind}')
     store.enqueue(account['id'], 'manual_security:SZ:000001')
     local = store.claim_jobs()[0]
-    store.publish(local['id'], {'report': '仅复核 B 并明确维持', 'maintained_suggestion_ids': [ids['SZ:000001']]}, None)
+    publish_fixture(store,local['id'], {'report': '仅复核 B 并明确维持', 'maintained_suggestion_ids': [ids['SZ:000001']]}, None)
     demands = store.demands(account['id'])
     assert next(d for d in demands if ids['SZ:000001'] in d['event_key'])['state'] == 'completed'
     assert next(d for d in demands if ids['SH:600519'] in d['event_key'])['state'] == 'pending'
@@ -68,7 +69,7 @@ def test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bou
     follow = store.claim_jobs()[0]
     assert 'manual_security:' not in follow['reason']
     covered = [row['id'] for row in store.task_demands(follow['id'], account['id'])['items']]
-    store.publish(follow['id'], {'report': '全账户复核已完成', 'maintained_suggestion_ids': list(ids.values()),
+    publish_fixture(store,follow['id'], {'report': '全账户复核已完成', 'maintained_suggestion_ids': list(ids.values()),
                                 'covered_demand_ids': covered}, None)
     for _ in range(3):
         store.dispatch_demands()

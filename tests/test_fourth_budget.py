@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """A protocol substitute exercises the real runtime and durable evidence resolver."""
 import asyncio
 import json
@@ -46,7 +47,7 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
             assert "未知保持未知" in warnings[-1]["instruction"]
             budgets.append(budget["remaining_agent_turns"])
 
-        if turn < 6:
+        if turn < 5:
             # This model keeps researching even after the first two budget warnings.
             assert {"type": "web_search"} in payload["tools"]
             output = [{"type": "web_search_call", "id": f"search-{turn}", "status": "completed",
@@ -54,16 +55,16 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
                                   "sources": [{"url": f"https://issuer.example/report-{turn}",
                                                "title": "Source excerpt", "snippet": "A visible source excerpt."}]}}]
         else:
-            assert turn == 6  # No seventh request may be borrowed for citation repair.
+            assert turn in (5, 6)  # First submission and one citation repair stay inside six turns.
             assert [(tool["type"], tool.get("name")) for tool in payload["tools"]] == [("function", "finish_analysis")]
             assert "web_search_call.action.sources" not in payload["include"]
             saved_sources = [item for item in user_messages if "native_source_materials" in item]
-            assert len(saved_sources) == 5
+            assert len(saved_sources) == 4
             valid_id = saved_sources[0]["native_source_materials"][0]["id"]
             output = [{"type": "function_call", "call_id": "final", "name": "finish_analysis",
-                       "arguments": json.dumps({"report": final_report,
+                       "arguments": json.dumps(delivery_arguments(**{"report": final_report,
                                                 "material_ids": [valid_id, "unavailable-original-report"],
-                                                "uncertainties": ["原始财报未取得，摘要未获原文核实。"]})}]
+                                                "uncertainties": ["原始财报未取得，摘要未获原文核实。"]}))}]
         return httpx.Response(200, json={"id": f"response-{turn}", "status": "completed", "output": output})
 
     transport = httpx.MockTransport(handler)
@@ -84,7 +85,7 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
     assert valid["access"] == "search_excerpt" and valid["representation_kind"] == "native_search_source"
     assert store.material(valid["material_id"])["content"] == "A visible source excerpt."
     assert missing == {"material_id": "unavailable-original-report", "status": "unresolved", "reason": "unknown_or_inaccessible"}
-    assert len(result["materials"]) == 5
+    assert len(result["materials"]) == 4
     assert any(event["type"] == "agent_completed" for event in events)
     assert not any(event["type"] in {"agent_failed", "model_error"} for event in events)
 
@@ -199,7 +200,7 @@ async def test_shared_30_calls_close_before_any_agent_reaches_18_turns(monkeypat
                 assert all(child["status"] == "completed" for child in state["children"])
                 assert all(child["latest_report"]["open_questions"] for child in state["children"])
                 assert {"type": "web_search"} not in payload["tools"]
-                return model_response("finish_analysis", {"report": "Summary of available evidence. Issuer valuation remains unknown; missing statements prevent a conclusion."}, "manager-final")
+                return model_response("finish_analysis", delivery_arguments(**{"report": "Summary of available evidence. Issuer valuation remains unknown; missing statements prevent a conclusion."}), "manager-final")
             return model_response("wait_agents", {"timeout_seconds": .01}, f"wait-{len(requests)}")
         child_counts[ident] = child_counts.get(ident, 0) + 1
         if names == {"submit_report"}:
@@ -236,23 +237,23 @@ async def test_retry_cannot_spend_the_manager_final_request(monkeypatch):
         if state["agent_id"] != "manager":
             assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
             return httpx.Response(503, json={"error": "fixture unavailable"})
-        assert state["remaining_shared_model_calls"] == 1
+        assert state["remaining_shared_model_calls"] == 2
         assert state["children"][0]["status"] == "failed"
         assert state["children"][0]["report_count"] == 0
-        return model_response("finish_analysis", {"report": "Research failed before a child report. Available information is insufficient and all requested figures remain unknown."})
+        return model_response("finish_analysis", delivery_arguments(**{"report": "Research failed before a child report. Available information is insufficient and all requested figures remain unknown."}))
 
     use_transport(monkeypatch, handler)
     runtime = agents.ResearchRuntime({"task_id": "retry-reservation"}, config, object(), emit)
     try:
         created = await runtime._spawn({"task": "Supplemental figures"})
-        runtime.calls = 28  # Earlier requests already used the ordinary budget.
+        runtime.calls = 27  # Child can use slot 28, but cannot spend the two final slots.
         child = runtime.children[created["agent_id"]]
         result = await runtime.run()
         assert requests == [child.id, "manager"]  # Retry was refused before HTTP.
-        assert result["model_calls"] == 30
+        assert result["model_calls"] == 29  # Valid first submission does not spend its correction slot.
         assert child.status == "failed" and child.reports == []
         assert "insufficient" in result["report"]
-        assert any("最终汇总保留" in event["payload"].get("error", "") for event in events)
+        assert any("最终提交及一次协议修正保留" in event["payload"].get("error", "") for event in events)
     finally:
         await runtime.close()
 
@@ -276,7 +277,7 @@ async def test_compaction_keeps_live_child_state_and_unfinished_followup(monkeyp
         assert child["latest_report"]["material_ids"] == ["material-original"]
         assert child["pending_messages"] == ["Check the subsequent correction"]
         assert any(item.get("role") == "user" and "archive_count" in item.get("content", "") for item in payload["input"])
-        return model_response("finish_analysis", {"report": "Original source preserved; subsequent correction was not verified."})
+        return model_response("finish_analysis", delivery_arguments(**{"report": "Original source preserved; subsequent correction was not verified."}))
 
     use_transport(monkeypatch, handler)
     runtime = agents.ResearchRuntime({"task_id": "compaction-state"}, config, object(), emit)
@@ -335,7 +336,7 @@ async def test_synthesis_budget_also_forces_submission_before_exhaustion(monkeyp
             return model_response("get_material", {"material_id": "existing"}, f"read-{len(requests)}")
         assert {tool.get("name") for tool in payload["tools"]} == {"finish_analysis"}
         assert state["remaining_shared_model_calls"] == 2
-        return model_response("finish_analysis", {"report": "Visible checkpoint summarized; missing figures remain unknown."})
+        return model_response("finish_analysis", delivery_arguments(**{"report": "Visible checkpoint summarized; missing figures remain unknown."}))
     use_transport(monkeypatch, handler)
     result = await agents.run_research({"task_id": "synthesis-tail", "synthesis_checkpoint": {"reports": []}}, config, Tools(), emit)
     assert result["model_calls"] == 3 < 4

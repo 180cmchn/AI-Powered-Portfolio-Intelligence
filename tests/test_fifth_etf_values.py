@@ -1,4 +1,5 @@
 """Controlled ETF snapshots and quotes, not evidence of a live investment report."""
+from delivery_helpers import runner_result
 from ledger_helpers import save_snapshot_correction
 from datetime import datetime
 from decimal import Decimal
@@ -16,7 +17,7 @@ async def test_etf_explicit_opening_correction_recomputes_values_without_trade_d
         'status':'ok','as_of':now(),'source':'controlled-test','fresh_for_triggers':False})
     store.put_cache('securities','SZ:159278',{'symbol':'SZ:159278','name':'机器人ETF鹏华','kind':'etf'})
     async def runner(context, config, tools, emit):
-        return {'report':'受控测试报告；不是模型自然投资建议。'}
+        return runner_result({'report':'受控测试报告；不是模型自然投资建议。'}, context)
     service=Service(store,runner=runner)
     async def no_network(*args,**kwargs):return {'updated':0}
     monkeypatch.setattr(service,'refresh_quotes',no_network)

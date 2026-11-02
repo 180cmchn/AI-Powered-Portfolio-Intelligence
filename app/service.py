@@ -20,6 +20,34 @@ from .materials import index_of, material_text
 log = logging.getLogger("guanlan")
 
 
+def _earliest_formal_deadline(batches, *, at=None, monotonic_at=None):
+    """Translate only this execution's formal cutoffs to an elapsed-time cap."""
+    deadlines = [datetime.fromisoformat(batch['deadline']) for batch in batches
+                 if batch.get('kind') == 'formal']
+    if not deadlines:
+        return None
+    earliest = min(deadlines)
+    observed_at = at or datetime.fromisoformat(now())
+    observed_mono = time.monotonic() if monotonic_at is None else monotonic_at
+    return earliest, observed_mono + (earliest - observed_at).total_seconds()
+
+
+def _execution_forecast_batches(store, job):
+    """Use actual assigned scopes/attempts as well as the current batch owner."""
+    with store.connect() as db:
+        return [dict(row) for row in db.execute('''SELECT DISTINCT b.id,b.kind,b.deadline
+            FROM forecast_batches b WHERE b.account_id=? AND b.input_version=? AND (
+                b.job_id=? OR b.id IN (SELECT batch_id FROM forecast_research_scopes WHERE job_id=?)
+                OR b.id IN (SELECT batch_id FROM forecast_execution_attempts WHERE job_id=? AND attempt=?)
+                OR b.id IN (SELECT s.batch_id FROM forecast_research_scope_samples r
+                    JOIN forecast_samples s ON s.id=r.sample_id WHERE r.job_id=?)
+                OR b.id IN (SELECT s.batch_id FROM forecast_sample_attempts sa
+                    JOIN forecast_samples s ON s.id=sa.sample_id
+                    JOIN forecast_execution_attempts a ON a.id=sa.attempt_id WHERE a.job_id=? AND a.attempt=?))''',
+            (job['account_id'], job['input_version'], job['id'], job['id'], job['id'],
+             job.get('attempts', 0), job['id'], job['id'], job.get('attempts', 0)))]
+
+
 class ResearchTools:
     def __init__(self, store: Store, job: dict, config: dict, context=None):
         self.store, self.job, self.config = store, job, {**config, '_research_failure_memory': {}}
@@ -117,9 +145,7 @@ class ResearchTools:
         return self.store.recommendations_page(self.job['account_id'], limit, offset, view)
 
     async def list_business_demands(self, limit=25, offset=0):
-        if not self.job.get('account_id'):
-            return {'items': [], 'total': 0, 'has_more': False, 'next_offset': None}
-        return self.store.task_demands(self.job['id'], self.job['account_id'], limit, offset)
+        return self.store.task_demands(self.job['id'], self.job.get('account_id'), limit, offset)
 
     async def get_recommendation(self, recommendation_id):
         if not self.job.get('account_id'):
@@ -357,14 +383,26 @@ class Service:
 
     async def execute(self, job):
         from .agents import run_research
-        from .model import ModelClient, ModelConfigurationError
+        from .model import ModelClient, ModelConfigurationError, ModelTimeoutError, ToolChoiceUnsupported
         cfg = job.get("config_snapshot") or self.store.settings()
         started = time.monotonic()
         analysis_deadline = started + float(cfg['analysis_timeout_seconds'])
+        formal_limit = None
+
+        def require_open_formal_window():
+            if formal_limit and (time.monotonic() >= formal_limit[1] or datetime.fromisoformat(now()) >= formal_limit[0]):
+                raise ModelTimeoutError('forecast_deadline_exceeded')
+
         try:
             # Bind planned identity before resolving secrets, clients or prices.
-            self.store.prepare_exploratory_forecast_job(job['id'], calendar_path=cfg.get('calendar_path'))
+            bound_batches = _execution_forecast_batches(self.store, job)
+            if not any(batch['kind'] == 'formal' for batch in bound_batches):
+                self.store.prepare_exploratory_forecast_job(job['id'], calendar_path=cfg.get('calendar_path'))
             self.store.ensure_forecast_attempt(job['id'])
+            formal_limit = _earliest_formal_deadline(bound_batches)
+            if formal_limit:
+                analysis_deadline = min(analysis_deadline, formal_limit[1])
+                require_open_formal_window()
             account = self.store.snapshot(job["account_id"], job["input_version"])
             universe = job.get('universe') or self.store.meta("universe", {"watchlist": [], "candidates": []})
             target = job["reason"].split("manual_security:", 1)[-1].split(";", 1)[0] if "manual_security:" in job["reason"] else None
@@ -387,9 +425,11 @@ class Service:
                     raise
             self.store.task_stage(job['id'], 'fetching')
             try:
-                await asyncio.wait_for(self.refresh_quotes(target_symbols), timeout=min(cfg["quote_refresh_timeout_seconds"], cfg["analysis_timeout_seconds"]))
+                await asyncio.wait_for(self.refresh_quotes(target_symbols), timeout=min(
+                    cfg["quote_refresh_timeout_seconds"], max(0, analysis_deadline - time.monotonic())))
             except TimeoutError:
                 self.store.event(job["id"], {"type": "quote_timeout", "message": "研究前行情刷新超时，使用已保存且注明时间的缓存继续研究"})
+            require_open_formal_window()
             if self.store.job(job["id"])["state"] != "running":
                 return
             values = metrics(account, self.quotes(), self.store.cache("securities"))
@@ -416,6 +456,9 @@ class Service:
                        "business_demand_coverage": {k: v for k, v in demand_page.items() if k != 'items'},
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
             context['team_id'] = (cfg.get('_agent_team') or {}).get('team_id')
+            delivery_scope = self.store.delivery_scope(job)
+            context['allowed_delivery_scope'] = delivery_scope['allowed']
+            context['required_delivery_scope'] = delivery_scope['required']
             context['forecast_batch'] = self.store.forecast_job_context(job['id'])
             context['_research_input_guard'] = self.store.research_guard(context)
             if self.store.mode == "demo":
@@ -436,6 +479,8 @@ class Service:
                         'recovery_mode': checkpoint.get('recovery_mode', 'synthesis_only'),
                         'checkpoint_job_id': checkpoint['checkpoint_job_id'], 'attempt': checkpoint['resume_attempt']})
                 context['_analysis_deadline'] = analysis_deadline
+                if formal_limit:
+                    context['_forecast_deadline'] = formal_limit[1]
                 async with asyncio.timeout_at(analysis_deadline):
                     result = await research(context, cfg, ResearchTools(self.store, job, cfg, context), emit)
                 result["metrics"] = values
@@ -447,9 +492,13 @@ class Service:
                           shared_research_used=[{'id': r['id'], 'universe_version': r.get('universe_version'),
                               'scope': r.get('scope'), 'applicability': r.get('applicability')} for r in context['shared_research']])
             self.store.task_stage(job['id'], 'publishing')
+            require_open_formal_window()
             valid = self.store.publish(job["id"], result, data_as_of)
             self.store.review_recommendations(self.quotes())
             self.store.event(job["id"], {"type": "published" if valid else "stale_result", "message": "结果已发布" if valid else "输入或任务已更新，迟到结果仅保留为过期历史"})
+        except ToolChoiceUnsupported as e:
+            self.store.set_job_state(job['id'], 'failed', str(e), error_code=e.code)
+            self.store.event(job['id'], {'type': 'failed', 'message': str(e), 'error_code': e.code})
         except ModelConfigurationError as e:
             self.store.set_job_state(job["id"], "waiting_config", str(e))
             self.store.event(job["id"], {"type": "configuration_missing", "message": str(e)})
@@ -468,6 +517,10 @@ class Service:
         except Exception as e:
             from .model import ModelError
             from .store import ReportPublicationError
+            if formal_limit and (getattr(e, 'code', None) == 'forecast_deadline_exceeded' or
+                    (formal_limit[1] <= analysis_deadline and time.monotonic() >= formal_limit[1])):
+                self.store.expire_forecast_batches(at=max(datetime.fromisoformat(now()), formal_limit[0]))
+                e = ModelTimeoutError('forecast_deadline_exceeded')
             message = str(e) if isinstance(e, (ModelError, ReportPublicationError)) else ("分析超过配置的总时限" if isinstance(e, TimeoutError) else f"分析失败：{type(e).__name__}")
             try:
                 recovery_context = dict(context) if 'context' in locals() else None
@@ -482,10 +535,14 @@ class Service:
             except Exception:
                 recovery = {'state': 'unverified', 'eligible': False, 'note': '恢复资格尚未核实；不能保证仅汇总恢复，已保存记录可查看'}
             message += '；' + recovery['note']
-            self.store.set_job_state(job["id"], "failed", message)
             code = getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__)
+            if isinstance(e, ReportPublicationError) and isinstance(locals().get('result'), dict) and isinstance(result.get('report'), str):
+                self.store.event(job['id'], {'type': 'delivery_candidate',
+                    'message': '最终候选文本未通过交付契约，未发布',
+                    'payload': {'text': result['report'], 'error_code': code}})
+            self.store.set_job_state(job["id"], "failed", message, error_code=code)
             self.store.event(job["id"], {"type": "failed", "message": message,
-                'error_code': code, 'cancelled_by': code if code.endswith('_exhausted') else None,
+                'error_code': code, 'cancelled_by': code if code.endswith('_exhausted') or code == 'forecast_deadline_exceeded' else None,
                 'recovery': recovery})
 
     async def news_scan(self):
@@ -602,7 +659,7 @@ class Service:
 
     async def execute_global(self, run):
         from .agents import run_research
-        from .model import ModelConfigurationError, ModelError
+        from .model import ModelConfigurationError, ModelError, ToolChoiceUnsupported
         snapshot = run.get('input_snapshot') or self.store.global_run(run['id']).get('input_snapshot')
         cfg = snapshot['config'] if snapshot else self.store.settings()
         analysis_deadline = time.monotonic() + float(cfg['analysis_timeout_seconds'])
@@ -626,6 +683,12 @@ class Service:
                        "pending_information": [index_of(self.store.material(mid)) for mid in self.store.public_information_for_run(run['id'])],
                        "news_topics": cfg.get('news_queries', []),
                        "generated_at": now(), "timezone": "Asia/Shanghai"}
+            demand_page = self.store.task_demands(run['id'], None)
+            delivery_scope = self.store.delivery_scope(run)
+            context['allowed_delivery_scope'] = delivery_scope['allowed']
+            context['required_delivery_scope'] = delivery_scope['required']
+            context['business_demands'] = demand_page['items']
+            context['business_demand_coverage'] = {key: value for key, value in demand_page.items() if key != 'items'}
             self.store.bind_public_information(run['id'], [m['id'] for m in context['pending_information']])
             context['_research_input_guard'] = self.store.research_guard(context)
             checkpoint = self.store.reusable_synthesis_checkpoint({**run, 'account_id': None}, context)
@@ -646,6 +709,10 @@ class Service:
             published = self.store.finish_global(run["id"], "completed", result)
             if published:
                 self.route_material_changes(run['id'], result, [m['id'] for m in context['pending_information']])
+        except ToolChoiceUnsupported as e:
+            from .delivery import incomplete_delivery
+            self.store.finish_global(run['id'], 'failed', result={'delivery': incomplete_delivery(e.code)}, error=str(e))
+            self.store.event(run['id'], {'type': 'failed', 'message': str(e), 'error_code': e.code})
         except ModelConfigurationError as e:
             self.store.finish_global(run["id"], "waiting_config", error=str(e))
         except asyncio.CancelledError as exc:
@@ -659,7 +726,8 @@ class Service:
             self.store.event(run['id'], {'type': 'interrupted', 'error_code': 'cancelled', 'cancelled_by': cancelled_by})
             raise  # Running state is recovered into durable pending demands at restart.
         except Exception as e:
-            message = str(e) if isinstance(e, ModelError) else ('公共研究总预算已耗尽' if isinstance(e, TimeoutError) else type(e).__name__)
+            from .delivery import DeliveryContractError, incomplete_delivery
+            message = str(e) if isinstance(e, (ModelError, DeliveryContractError)) else ('公共研究总预算已耗尽' if isinstance(e, TimeoutError) else type(e).__name__)
             try:
                 recovery_context = dict(context) if 'context' in locals() else None
                 if recovery_context:
@@ -669,7 +737,8 @@ class Service:
             except Exception:
                 recovery = {'state': 'unverified', 'eligible': False, 'note': '恢复资格尚未核实；已保存记录可查看'}
             message += '；' + recovery['note']
-            self.store.finish_global(run["id"], "failed", error=message)
+            code = getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__)
+            self.store.finish_global(run["id"], "failed", result={'delivery': incomplete_delivery(code)}, error=message)
             self.store.event(run['id'], {'type': 'failed', 'message': message,
                 'error_code': getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__),
                 'recovery': recovery})

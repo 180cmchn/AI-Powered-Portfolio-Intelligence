@@ -1,4 +1,6 @@
 """Real HTTP/SQLite submission identity, frozen scope and delivery semantics."""
+from delivery_helpers import runner_result
+from delivery_helpers import publish_fixture
 from ledger_helpers import snapshot_payload
 import json
 import sqlite3
@@ -85,9 +87,9 @@ def test_report_delivery_and_checkpoint_are_independent(app):
         a = account(c)
         job = app.state.store.claim_jobs()[0]
         with pytest.raises(ValueError, match='最终报告为空'):
-            app.state.store.publish(job['id'], {'agents':[{'status':'completed'}]}, None)
+            publish_fixture(app.state.store,job['id'], {'agents':[{'status':'completed'}]}, None)
         assert app.state.store.job(job['id'])['state'] == 'running'
-        app.state.store.publish(job['id'], {'report':'模型原报告：维持，条件为……', 'agents':[{'status':'failed'}]}, None)
+        publish_fixture(app.state.store,job['id'], {'report':'模型原报告：维持，条件为……', 'agents':[{'status':'failed'}]}, None)
         viewed = c.get('/api/jobs/' + job['id']).json()
         assert viewed['state'] == 'completed' and viewed['report_status'] == 'current'
         assert viewed['report_id'] and viewed['started_at'] and viewed['completed_at']
@@ -204,7 +206,7 @@ def test_restart_preserves_original_schedule_first_start_and_separate_attempt_st
         assert second['scheduled_at'] == planned and second['recovery_attempts'] == 1
         assert second['attempts'] == first['attempts'] + 1 and second['completed_at'] is None
         assert any(event['type'] == 'service_recovered' for event in s.job(first['id'], events=True)['events'])
-        s.publish(second['id'], {'report': '受控恢复后报告'}, None)
+        publish_fixture(s,second['id'], {'report': '受控恢复后报告'}, None)
         done = c.get('/api/jobs/' + second['id']).json()
         assert done['completed_at'] >= second['attempt_started_at']
         assert done['started_at'] == first['started_at'] and done['scheduled_at'] == planned
@@ -310,9 +312,9 @@ def test_single_security_api_worker_publishes_target_abstention_without_losing_r
         observed.append(batch)
         assert batch['kind'] == 'exploratory'
         assert {item['symbol'] for item in batch['items']} == {'SH:518880'}
-        return {'report': '受控协议替身：本次研究明确目标黄金ETF，证据不足时保留观察并弃权。',
+        return runner_result({'report': '受控协议替身：本次研究明确目标黄金ETF，证据不足时保留观察并弃权。',
                 'forecasts': [{'security_id': 'SH:518880', 'horizon': horizon,
-                    'direction': 'abstain', 'reason': '受控测试缺少方向证据；不是实际投资判断'} for horizon in (1, 5, 20)]}
+                    'direction': 'abstain', 'reason': '受控测试缺少方向证据；不是实际投资判断'} for horizon in (1, 5, 20)]}, context)
     app.state.service.runner = runner
     with TestClient(app) as c:
         a = account(c, holdings=with_holding)

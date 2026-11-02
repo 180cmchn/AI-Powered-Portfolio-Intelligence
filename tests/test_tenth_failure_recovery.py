@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Real runtime/store with controlled upstream failures; no live-model claims."""
 import asyncio
 import json
@@ -40,7 +41,7 @@ async def test_early_failure_keeps_completed_calculate_then_reuses_without_resea
             assert '有限分析' in json.dumps(payload,ensure_ascii=False)
             assert Decimal(seed['calculation_summaries'][0]['result'])==Decimal('8850')
             assert not any(t.get('name')=='spawn_research' or t['type']=='web_search' for t in payload['tools'])
-            return response(call('finish_analysis',{'report':'有限分析：已完成持仓估值计算8850；原专题尚未完成，保留未知。'}))
+            return response(call('finish_analysis',delivery_arguments(**{'report':'有限分析：已完成持仓估值计算8850；原专题尚未完成，保留未知。'})))
         if len(calls)==1:return response(call('calculate',{'operation':'multiply','values':['10000','.885']}))
         if failure=='deadline':return response(call('calculate',{'operation':'sum','values':['1','2']}))
         raise httpx.ReadTimeout('controlled early failure',request=request)
@@ -140,7 +141,7 @@ async def test_recovered_report_keeps_prior_child_gaps_separate_from_new_childre
         'partial_research':True,'unresolved_tasks':[{'agent_id':'old-child','title':'incomplete price study','status':'failed','error':'timeout'}]}
     context={'account':account,'job_id':job['id'],'input_version':account['version'],'universe_version':store.universe_snapshot()['universe_version'],
              'synthesis_checkpoint':original}
-    async def handler(request):return response(call('finish_analysis',{'report':'有限分析：旧价格专题未完成，保留其影响。'}))
+    async def handler(request):return response(call('finish_analysis',delivery_arguments(**{'report':'有限分析：旧价格专题未完成，保留其影响。'})))
     install(monkeypatch,handler)
     async def emit(event):pass
     result=await agents.run_research(context,store.settings(),ResearchTools(store,job,store.settings(),context),emit)

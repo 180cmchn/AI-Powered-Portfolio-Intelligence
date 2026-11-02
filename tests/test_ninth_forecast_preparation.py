@@ -1,4 +1,5 @@
 """Real scheduler/SQLite/capacity queues; providers are bounded offline fixtures."""
+from delivery_helpers import publish_fixture
 from ledger_helpers import save_snapshot_correction
 import asyncio
 from collections import Counter
@@ -116,7 +117,7 @@ async def test_scoring_capacity_wait_does_not_consume_new_baseline_budget(env):
     store, account, clock = env
     await tick(store, clock, Prices())
     current = claim(store, clock, account)
-    assert store.publish(current['id'], {'report': 'controlled due forecast', 'forecasts': [
+    assert publish_fixture(store,current['id'], {'report': 'controlled due forecast', 'forecasts': [
         {'symbol': A, 'horizon': 1, 'direction': 'up', 'reason': 'fixture'}]}, clock[0].isoformat())
     clock[0] += timedelta(days=1)
     prices = Prices(delay=.65)
@@ -160,7 +161,7 @@ async def test_scoring_late_response_cannot_replace_new_lease_or_record_score(en
     store, account, clock = env
     await tick(store, clock, Prices())
     current = claim(store, clock, account)
-    assert store.publish(current['id'], {'report': 'controlled forecast', 'forecasts': [
+    assert publish_fixture(store,current['id'], {'report': 'controlled forecast', 'forecasts': [
         {'symbol': A, 'horizon': 1, 'direction': 'up', 'reason': 'fixture'}]}, clock[0].isoformat())
     forecast_id = next(r['forecast_id'] for r in store.forecasts_page()['items'] if r['forecast_id'])
     clock[0] += timedelta(days=1)

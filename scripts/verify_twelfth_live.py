@@ -363,12 +363,17 @@ async def run(args):
         summary['final_source_unchanged'] = source_digest()==digest
         summary['final_environment_unchanged'] = env_file_stamp()==environment
         summary['audit_completed_at'] = now()
-        summary['single_report_acceptance_passed'] = bool(not summary.get('error') and summary.get('report_published') and
+        summary['mechanical_single_report_acceptance_passed'] = bool(not summary.get('error') and summary.get('report_published') and
             summary.get('report_current_after_observation') and summary.get('final_report_current') and len(summary['observations'])==20 and
             summary['business_jobs_with_http']==1 and not summary['automatic_tasks'] and not summary['binding_mismatches'] and
             summary['final_source_unchanged'] and summary['final_environment_unchanged'])
+        from scripts.verify_fourteenth_live import acceptance_layers
+        summary['acceptance_layers'] = acceptance_layers(summary)
+        summary['account_report_content_accepted'] = None  # Requires actual content inspection.
+        summary['overall_live_acceptance_passed'] = summary['acceptance_layers']['overall_live_acceptance_passed']
+        summary['single_report_acceptance_passed'] = summary['overall_live_acceptance_passed']
         save()
-    return 0 if summary['single_report_acceptance_passed'] else 2
+    return 0 if summary['overall_live_acceptance_passed'] else 2
 
 
 if __name__ == '__main__':

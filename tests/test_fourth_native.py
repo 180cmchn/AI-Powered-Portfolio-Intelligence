@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Protocol substitutes and production runtime tests; not real-network evidence."""
 import asyncio
 import json
@@ -6,6 +7,7 @@ import httpx
 import pytest
 
 from app import agents
+from app.delivery import FinalSubmissionMissing
 from app.model import ModelBudgetExceeded, ModelClient, ModelError, native_search_fingerprint, native_search_status, probe_native_search
 
 
@@ -141,7 +143,7 @@ async def test_commentary_only_does_not_complete_runtime_and_remains_budget_boun
     async def emit(event):
         events.append(event)
 
-    with pytest.raises(ModelBudgetExceeded):
+    with pytest.raises(FinalSubmissionMissing):
         await agents.run_research(CONTEXT, {**config, "max_model_calls": 2}, Tools(), emit)
     assert not any(event["type"] == "agent_completed" for event in events)
 
@@ -161,7 +163,7 @@ async def test_phase_omitted_or_null_remains_compatible_final_text(config):
 async def test_incomplete_final_keeps_finished_search_sources_without_publishing_partial(config, monkeypatch):
     tools, events = Tools(), []
     install(monkeypatch, lambda request: httpx.Response(200, json={"status": "incomplete",
-        "output": [SEARCH, message("HALF A REPORT"), call("finish_analysis", {"report": "HALF A REPORT"})]}))
+        "output": [SEARCH, message("HALF A REPORT"), call("finish_analysis", delivery_arguments(**{"report": "HALF A REPORT"}))]}))
 
     async def emit(event):
         events.append(event)
@@ -280,7 +282,7 @@ async def test_recovery_uses_fresh_context_existing_results_no_research_calls(co
         seen.append(payload)
         assert all(tool["type"] != "web_search" and tool.get("name") != "spawn_research" for tool in payload["tools"])
         assert "Recovered fact" in json.dumps(payload) and '"version": 4' in json.loads(payload["input"][0]["content"]).__str__().replace("'", '"')
-        return response(call("finish_analysis", {"report": "Complete recovered final report", "material_ids": ["m-1"]}))
+        return response(call("finish_analysis", delivery_arguments(**{"report": "Complete recovered final report", "material_ids": ["m-1"]})))
 
     async def emit(event):
         events.append(event)
@@ -294,13 +296,22 @@ async def test_recovery_uses_fresh_context_existing_results_no_research_calls(co
 
 @pytest.mark.asyncio
 async def test_recovery_stops_at_finite_request_budget(config, monkeypatch):
-    install(monkeypatch, lambda request: response(call("calculate", {"operation": "sum", "values": [2, 3]})))
+    requests = []
+    def handler(request):
+        requests.append(json.loads(request.content))
+        return response(call("calculate", {"operation": "sum", "values": [2, 3]}))
+    install(monkeypatch, handler)
 
     async def emit(event):
         pass
 
-    with pytest.raises(ModelBudgetExceeded, match="汇总恢复"):
+    # The endpoint keeps ignoring the forced final tool. Stop after the one
+    # allowed protocol correction instead of spending the rest of the budget.
+    with pytest.raises(FinalSubmissionMissing):
         await agents.run_research({**CONTEXT, "synthesis_checkpoint": {"phase": "synthesis"}}, config, Tools(), emit)
+    forced = [request for request in requests if request.get('tool_choice')]
+    assert len(forced) == 2 and len(requests) <= config['synthesis_max_calls']
+    assert all(request['tool_choice'] == {'type': 'function', 'name': 'finish_analysis'} for request in forced)
 
 
 @pytest.mark.asyncio
@@ -315,7 +326,7 @@ async def test_explicit_synthesis_compacts_context_at_resolved_function_boundary
         assert all(item.get("type") != "function_call_output" for item in payload["input"])
         assert all(tool.get("type") != "web_search" for tool in payload["tools"])
         assert "Completed visible research" in json.dumps(payload)
-        return response(call("finish_analysis", {"report": "Final report"}))
+        return response(call("finish_analysis", delivery_arguments(**{"report": "Final report"})))
 
     async def emit(event):
         pass

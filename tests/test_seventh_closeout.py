@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Visible closeout evidence, source boundaries and archive continuity.
 
 Controlled protocol substitutes validate runtime mechanics, not live quality.
@@ -37,7 +38,9 @@ def response(protocol, name, args, identity):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('protocol', ['responses', 'chat_completions'])
 async def test_manager_only_forced_final_keeps_delivered_results_and_updated_position(monkeypatch, protocol):
-    cfg = config(monkeypatch, model_protocol=protocol)
+    # Preserve all five source/long-output cases while reserving one correction
+    # turn. A successful first submission still uses only six HTTP attempts.
+    cfg = config(monkeypatch, model_protocol=protocol, max_agent_turns=7)
     payloads, events = [], []
     previous = {'report': 'Prior conclusion, not current position.', 'result': {
         'report': 'Prior conclusion, not current position.',
@@ -77,7 +80,7 @@ async def test_manager_only_forced_final_keeps_delivered_results_and_updated_pos
         assert 'UNEXPOSED_TAIL' not in encoded and 'UNREAD_OLD_BODY' not in encoded
         assert 'OPAQUE_PRIVATE_REASONING' not in encoded and 'DUPLICATE_PROMPT' not in encoded
         assert len(encoded) < cfg['max_context_chars'] * .78
-        return response(protocol, 'finish_analysis', {'report': '原文仍有缺口，未作方向判断。'}, 'final')
+        return response(protocol, 'finish_analysis', delivery_arguments(**{'report': '原文仍有缺口，未作方向判断。'}), 'final')
 
     transport = httpx.MockTransport(handler)
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))
@@ -180,7 +183,7 @@ async def test_many_visible_native_sources_cannot_trigger_generic_recompaction(m
         pass
     async def handler(request):
         payloads.append(json.loads(request.content))
-        return response('responses', 'finish_analysis', {'report': 'Only delivered source excerpts support this summary.'}, 'final')
+        return response('responses', 'finish_analysis', delivery_arguments(**{'report': 'Only delivered source excerpts support this summary.'}), 'final')
     transport = httpx.MockTransport(handler)
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))
     runtime = agents.ResearchRuntime({'account': {'id': 'A', 'version': 2}}, cfg, object(), emit)

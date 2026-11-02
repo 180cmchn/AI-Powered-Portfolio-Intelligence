@@ -1,4 +1,7 @@
+from delivery_helpers import runner_result
+from tests.delivery_helpers import delivery_arguments
 """Round three: deterministic production-store tests, never real model replies."""
+from delivery_helpers import finish_global_fixture, publish_fixture
 from ledger_helpers import save_snapshot_correction
 import asyncio
 
@@ -26,9 +29,9 @@ async def test_old_global_completion_cannot_replace_current_scope(store):
         if context['universe_version'] == 2:
             entered.set()
             await release.wait()
-        return {'report': str(context['candidates']), 'research_records': [{
+        return runner_result({'report': str(context['candidates']), 'research_records': [{
             'kind': 'market', 'title': 'same identity', 'reason': 'controlled asynchronous fixture',
-            'findings': [{'classification': 'agent_analysis', 'summary': str(context['candidates'])}]}]}
+            'findings': [{'classification': 'agent_analysis', 'summary': str(context['candidates'])}]}]}, context)
 
     store.save_universe({'watchlist': [], 'candidates': ['SH:600519']})
     old = store.claim_global()
@@ -92,7 +95,7 @@ def test_citations_resolve_ranges_and_do_not_disclose_private_material(store):
 def test_publication_preserves_valid_parts_and_unknown_citation_gap(store):
     a = store.save_account(AccountInput(name='A', holdings=[]))
     job = store.claim_jobs()[0]
-    assert store.publish(job['id'], {'report': 'deliver with gap', 'material_ids': ['unknown'],
+    assert publish_fixture(store,job['id'], {'report': 'deliver with gap', 'material_ids': ['unknown'],
         'suggestions': [{'security_id': 'SH:600519', 'action': 'watch', 'basis': 'uncertain', 'material_ids': ['unknown']}],
         'research_records': [{'kind': 'market', 'title': 'gap', 'reason': 'unknown ref', 'material_ids': ['unknown']}]}, None)
     assert store.analyses(a['id'])[0]['result']['references'][0]['status'] == 'unresolved'
@@ -132,7 +135,7 @@ def test_current_research_and_history_do_not_share_current_label(store):
     for n in range(3):
         store.request_analysis(None, 'fixture', f'fixture:{n}')
         run = store.claim_global()
-        store.finish_global(run['id'], 'completed', {'report': str(n)})
+        finish_global_fixture(store,run['id'], 'completed', {'report': str(n)})
     assert len(store.research_records()) == 1
     assert [r['applicability'] for r in store.research_records(current_only=False)].count('current') == 1
 
@@ -142,7 +145,7 @@ def test_account_fit_is_invalidated_without_invalidating_public_facts(store):
     record = {'kind': 'candidate', 'security_id': 'SH:600519', 'title': 'scope fixture', 'reason': 'controlled'}
     store.save_research_records([record], 'public-fixture')
     job = store.claim_jobs()[0]
-    store.publish(job['id'], {'report': 'account fit fixture', 'research_records': [{**record, 'account_fit': 'old input'}]}, None)
+    publish_fixture(store,job['id'], {'report': 'account fit fixture', 'research_records': [{**record, 'account_fit': 'old input'}]}, None)
     save_snapshot_correction(store, AccountInput(name='updated preferences', holdings=[], preferences={'risk': 'conservative'}), a['id'])
     current = store.research_records(a['id'])
     assert current == []  # Public model conclusions are not account research inputs.
@@ -187,7 +190,7 @@ async def test_reference_feedback_is_bounded_and_gap_does_not_block_report(store
         calls.append(json.loads(request.content))
         return httpx.Response(200, json={'id': 'fixture-response', 'status': 'completed', 'output': [{
             'type': 'function_call', 'call_id': f'finish-{len(calls)}', 'name': 'finish_analysis',
-            'arguments': json.dumps({'report': 'deterministic reference fixture', 'material_ids': ['unknown']})}]})
+            'arguments': json.dumps(delivery_arguments(**{'report': 'deterministic reference fixture', 'material_ids': ['unknown']}))}]})
     transport = httpx.MockTransport(handler)
     monkeypatch.setenv('REFERENCE_TEST_KEY', 'test-only')
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))

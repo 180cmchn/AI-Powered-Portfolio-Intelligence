@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Deterministic protocol/coordination tests, NOT a model-quality certification.
 
 HTTP responses below are scripted fixtures. Production has no scripted model;
@@ -11,6 +12,7 @@ import httpx
 import pytest
 
 from app import agents
+from app.delivery import FinalSubmissionMissing
 from app.model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, probe_model
 
 
@@ -155,7 +157,7 @@ async def test_real_independent_loops_two_children_followup_and_mixed_material(c
             all_inputs = json.dumps(payload["input"], ensure_ascii=False)
             assert '"category": "fact"' in all_inputs.replace('\\"', '"')
             assert '"category": "opinion"' in all_inputs.replace('\\"', '"')
-            return response(call("finish_analysis", {"report": "收入 10 亿元来自报告摘要 [m-1](https://example.org/report)。荐股为外部观点，不作为已证实事实。现金和成本未知，未计算收益。原文访问失败，时间未知。", "material_ids": ["m-1", "m-2"]}))
+            return response(call("finish_analysis", delivery_arguments(**{"report": "收入 10 亿元来自报告摘要 [m-1](https://example.org/report)。荐股为外部观点，不作为已证实事实。现金和成本未知，未计算收益。原文访问失败，时间未知。", "material_ids": ["m-1", "m-2"]})))
         task = initial["task"]
         child_requests.setdefault(task, []).append(payload)
         n = len(child_requests[task])
@@ -204,7 +206,7 @@ async def test_budget_failure_does_not_fabricate_result(config, monkeypatch):
     async def emit(event):
         events.append(event)
 
-    with pytest.raises(ModelBudgetExceeded):
+    with pytest.raises(FinalSubmissionMissing):
         await agents.run_research(CONTEXT, config, ResearchTools(), emit)
     assert events[-1]["type"] == "agent_failed"
     assert not any(e["type"] == "agent_completed" for e in events)
@@ -235,7 +237,8 @@ async def test_child_timeout_is_reported_manager_can_finish_partial(config, monk
             return response(call("spawn_research", {"task": "慢速资料"}))
         if not failed:
             return response(call("wait_agents", {"agent_ids": [child_id], "timeout_seconds": 1}))
-        return response(message("资料任务超时，以下仅分析已知持仓结构。"))
+        return response(call("finish_analysis", delivery_arguments(
+            "资料任务超时，以下仅分析已知持仓结构。", limitations=["资料任务超时，未取得新外部信息。"])))
 
     install_transport(monkeypatch, handler)
     result = await agents.run_research(CONTEXT, config, ResearchTools(), emit)
@@ -304,7 +307,8 @@ async def test_two_runtime_contexts_are_isolated(config, monkeypatch):
         context = json.loads(payload["input"][0]["content"])
         contexts.append(context)
         account = context["account"]
-        return response(message(f"{account['id']}: {account['holdings'][0]['quantity']} 股"))
+        return response(call("finish_analysis", delivery_arguments(
+            f"{account['id']}: {account['holdings'][0]['quantity']} 股")))
 
     install_transport(monkeypatch, handler)
 
@@ -379,7 +383,7 @@ async def test_subagents_really_parallel_but_obey_concurrency_limit(config, monk
         maximum = max(maximum, active)
         await asyncio.sleep(0.01)
         active -= 1
-        return response(message("独立子任务结果"))
+        return response(call("submit_report", {"summary": "独立子任务结果"}))
 
     install_transport(monkeypatch, handler)
     runtime = agents.ResearchRuntime(CONTEXT, config, ResearchTools(), emit)
@@ -414,7 +418,7 @@ async def test_malformed_or_forbidden_tools_return_errors_without_mutation(confi
         outputs = [json.loads(item["output"]) for item in payload["input"] if item.get("type") == "function_call_output"]
         assert len(outputs) == 4
         assert all(item["failed"] is True for item in outputs)
-        return response(message("工具参数错误均已说明，没有修改账户。"))
+        return response(call("finish_analysis", delivery_arguments("工具参数错误均已说明，没有修改账户。")))
 
     install_transport(monkeypatch, handler)
     result = await agents.run_research(CONTEXT, config, tools, emit)

@@ -1,4 +1,6 @@
 """Controlled SZ:159278 events exercise production outbox delivery, not real news."""
+from delivery_helpers import runner_result
+from delivery_helpers import publish_fixture
 import asyncio
 
 import pytest
@@ -97,7 +99,7 @@ def test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts(s
         body = {"report": "Controlled published account report"}
         if job["account_id"] == suggestion["id"]:
             body["suggestions"] = [{"security_id": ETF, "action": "watch", "basis": "Controlled suggestion"}]
-        store.publish(job["id"], body, None)
+        publish_fixture(store,job["id"], body, None)
     mid, result = event(store)
     Service(store).route_material_changes("controlled-public", result, [mid])
     assert len(delivered(store, holder)) == len(delivered(store, suggestion)) == 1
@@ -213,7 +215,7 @@ async def test_worker_routes_public_159278_judgment_to_cash_only_account(store):
     seen = []
     async def runner(context, cfg, tools, emit):
         seen.append(context)
-        return {"report": "Controlled research, not actual news", **(result if context.get("scope") == "global" else {})}
+        return runner_result({"report": "Controlled research, not actual news", **(result if context.get("scope") == "global" else {})}, context)
     service = Service(store, runner)
     await service.tick()
     await asyncio.gather(service.global_task, *list(service.active.values()))

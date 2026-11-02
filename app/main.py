@@ -50,6 +50,7 @@ class Settings(BaseModel):
     quote_fallback_provider: str = "sina"
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
     max_model_calls: int = Field(default=40, ge=2, le=300)
+    final_submission_reserved_calls: int = Field(default=2, ge=2, le=4)
     agent_timeout_seconds: int = Field(default=600, ge=5, le=1800)
     analysis_timeout_seconds: int = Field(default=1200, ge=10, le=3600)
     max_agent_turns: int = Field(default=12, ge=2, le=60)

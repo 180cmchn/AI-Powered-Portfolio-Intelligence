@@ -1,4 +1,5 @@
 """Controlled-clock and historical-price fixtures, never real forward accuracy."""
+from delivery_helpers import publish_fixture
 import json
 import sqlite3
 import asyncio
@@ -202,11 +203,11 @@ def test_publish_hook_atomic_and_cancelled_job_excluded(account, monkeypatch):
     store, acc = account
     _, job = batch_job(account)
     result = {"report": "fixture", "forecasts": [{"security_id": "SZ:159278", "horizon": 1, "direction": "up", "reason": "fixture"}]}
-    assert store.publish(job["id"], result, AT.isoformat()) is True
+    assert publish_fixture(store,job["id"], result, AT.isoformat()) is True
     detail = store.forecasts_page(kind="test")["items"][0]
     forecast = store.forecast_detail(detail["forecast_id"])
     assert store.analysis(forecast["report_id"])["report"] == "fixture"
-    assert store.publish(job["id"], result, AT.isoformat()) is True
+    assert publish_fixture(store,job["id"], result, AT.isoformat()) is True
     assert sum(bool(x["forecast_id"]) for x in store.forecasts_page(kind="test")["items"]) == 1
 
 
@@ -227,7 +228,7 @@ def test_invalid_forecast_rolls_back_report_transaction(account, monkeypatch):
     store, acc = account
     _, job = batch_job(account)
     with pytest.raises(ValueError):
-        store.publish(job["id"], {"report": "must roll back", "forecasts": [{"security_id": "SZ:159278", "horizon": 999, "direction": "up", "reason": "x"}]}, AT.isoformat())
+        publish_fixture(store,job["id"], {"report": "must roll back", "forecasts": [{"security_id": "SZ:159278", "horizon": 999, "direction": "up", "reason": "x"}]}, AT.isoformat())
     assert store.analyses(acc["id"]) == []
     assert store.job(job["id"])["state"] == "running"
 
@@ -238,7 +239,7 @@ def test_cancelled_publication_cannot_create_forecast(account, monkeypatch):
     store, _ = account
     _, job = batch_job(account)
     store.set_job_state(job["id"], "cancelled")
-    assert store.publish(job["id"], {"report": "late", "forecasts": [{"security_id": "SZ:159278", "horizon": 1, "direction": "up", "reason": "x"}]}, AT.isoformat()) is False
+    assert publish_fixture(store,job["id"], {"report": "late", "forecasts": [{"security_id": "SZ:159278", "horizon": 1, "direction": "up", "reason": "x"}]}, AT.isoformat()) is False
     assert all(x["forecast_id"] is None for x in store.forecasts_page()["items"])
 
 
@@ -395,7 +396,7 @@ def test_report_publication_accepts_system_resolved_forecast_citations(account, 
     private = store.save_material({"url": "https://example.com/private", "scope": "account", "content": "SECRET_PRIVATE_CONCLUSION", "representation": "agent_extraction"}, other["latest_job_id"], other["id"])
     result = {"report": "fixture with citations", "forecasts": [{"security_id": "SZ:159278", "horizon": 1,
         "direction": "up", "reason": "fixture", "material_ids": [raw["id"], private["id"]]}]}
-    assert store.publish(job["id"], result, AT.isoformat())
+    assert publish_fixture(store,job["id"], result, AT.isoformat())
     forecast_id = next(r["forecast_id"] for r in store.forecasts_page()["items"] if r["forecast_id"])
     detail = store.forecast_detail(forecast_id)
     references = detail["citations"]["references"]

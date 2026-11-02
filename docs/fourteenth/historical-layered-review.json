@@ -1,0 +1,31 @@
+{
+  "transport": {
+    "http_attempts": 40,
+    "complete_terminals": 40,
+    "all_complete": true
+  },
+  "delivery_contract": {
+    "satisfied": false,
+    "status": "legacy_or_missing"
+  },
+  "publication": {
+    "published": true,
+    "mechanical_checks_passed": true
+  },
+  "content": {
+    "status": "not_evaluated",
+    "accepted": null
+  },
+  "forecast_coverage": {
+    "status": "not_evaluated"
+  },
+  "forecast_effect": {
+    "status": "not_evaluated",
+    "note": "Requires naturally matured recorded forecasts"
+  },
+  "business_tasks": {
+    "attempted": 1,
+    "content_accepted": 0
+  },
+  "overall_live_acceptance_passed": false
+}

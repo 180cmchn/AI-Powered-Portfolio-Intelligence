@@ -3,7 +3,9 @@
 Never runs --run-real, never opens the daily database or project credentials,
 and never contacts a model or public data provider.
 """
+from delivery_helpers import runner_result
 from pathlib import Path
+from datetime import datetime
 from decimal import Decimal
 import json
 import shutil
@@ -22,6 +24,8 @@ from tests.helpers_sixth import configure_test_team
 
 @pytest.mark.asyncio
 async def test_single_round_verifier_contract_with_explicit_runner(tmp_path, monkeypatch):
+    from app import clock
+    monkeypatch.setattr(clock, '_utc_now', lambda: datetime.fromisoformat('2026-11-02T10:00:00+08:00'))
     source = Store(tmp_path/'controlled-source.sqlite3', 'live')
     cfg = {**source.settings(), 'quote_provider':'manual', 'reasoning_effort':'max',
            'model_name':'twelfth-cost-free-verifier-fixture'}
@@ -41,7 +45,7 @@ async def test_single_round_verifier_contract_with_explicit_runner(tmp_path, mon
                 'kind':kind,'status':'ok','identity_status':'confirmed','fetched_at':now(),
                 'source':'explicit-verifier-fixture'})
             store.put_cache('quotes',symbol,{'symbol':symbol,'price':'10.000','status':'closed',
-                'fresh_for_triggers':False,'as_of':now(),'source':'explicit-verifier-fixture'})
+                'fresh_for_triggers':False,'as_of':'2026-10-30T15:00:00+08:00','source':'explicit-verifier-fixture'})
         return store,settings
 
     async def controlled_runner(context, config, tools, emit):
@@ -54,9 +58,9 @@ async def test_single_round_verifier_contract_with_explicit_runner(tmp_path, mon
             'role_id':'manager','provider_id':config['provider_id'],'model':config['model_name'],
             'reasoning_effort_sent':'max','stream_terminal':'response.completed',
             'error':None,'usage':{'input_tokens':1,'output_tokens':1},'test_double':True}]}})
-        return {'report':'Explicit controlled verifier report; zero real model/network calls.',
+        return runner_result({'report':'Explicit controlled verifier report; zero real model/network calls.',
                 'suggestions':[{'security_id':'SH:518880','action':'watch','basis':'explicit fixture',
-                    'price_conditions':[{'operator':'gte','field':'price','value':'12'}]}]}
+                    'price_conditions':[{'operator':'gte','field':'price','value':'12'}]}]}, context)
 
     class ControlledASGIInstance:
         """Same production lifespan/API contracts, no sockets or external I/O."""
@@ -99,7 +103,12 @@ async def test_single_round_verifier_contract_with_explicit_runner(tmp_path, mon
     try:
         code=await verifier.run(SimpleNamespace(output=output,source=source.path,reference_account=account['id']))
         summary=json.loads((output/'summary.json').read_text())
-        assert code==0, summary.get('error') or summary
+        assert code==2, summary.get('error') or summary
+        assert summary['mechanical_single_report_acceptance_passed'] is True
+        assert summary['acceptance_layers']['delivery_contract']['satisfied'] is True
+        assert summary['acceptance_layers']['content']['accepted'] is None
+        assert summary['overall_live_acceptance_passed'] is False
+        assert summary['single_report_acceptance_passed'] is False  # No actual content review was performed.
         assert len(calls)==1
         assert summary['actual_real_model_calls']==0
         assert summary['prepared_ledger']['cash']=='86484.90'

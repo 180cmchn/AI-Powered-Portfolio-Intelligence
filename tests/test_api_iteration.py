@@ -1,4 +1,5 @@
 """HTTP integration regressions using local SQLite, no model or provider network calls."""
+from delivery_helpers import publish_fixture
 import json
 
 import pytest
@@ -54,7 +55,7 @@ def test_job_events_increment_and_report_body_is_on_demand(api):
     job = store.claim_jobs()[0]
     for i in range(3):
         store.event(job['id'], {'type': 'progress', 'message': f'步骤 {i}'})
-    store.publish(job['id'], {'report': '长报告正文' * 1000}, now())
+    publish_fixture(store,job['id'], {'report': '长报告正文' * 1000}, now())
     jobs = client.get(f"/api/accounts/{account['id']}/jobs", params={'limit': 1}).json()
     assert len(jobs) == 1 and 'events' not in jobs[0] and 'result' not in jobs[0]
     assert jobs[0]['event_count'] >= 3
@@ -74,7 +75,7 @@ def test_suggestions_public_research_and_demand_traceability(api):
     client, store = api
     account = make_account(store)
     job = store.claim_jobs()[0]
-    store.publish(job['id'], {'report': '已过期建议', 'suggestions': [{'symbol': 'SH:600519', 'action': 'hold',
+    publish_fixture(store,job['id'], {'report': '已过期建议', 'suggestions': [{'symbol': 'SH:600519', 'action': 'hold',
                   'valid_until': '2020-01-01T00:00:00+08:00', 'basis': '需复核的已保存依据'}]}, now())
     result = client.get(f"/api/accounts/{account['id']}/recommendations").json()
     assert result[0]['state'] == 'expired' and result[0]['input_version'] == 1

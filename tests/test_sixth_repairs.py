@@ -1,4 +1,6 @@
 """Sixth iteration: production stores/worker with explicit controlled input fixtures."""
+from delivery_helpers import runner_result
+from delivery_helpers import publish_fixture
 import json
 
 import pytest
@@ -38,8 +40,8 @@ async def test_150_demands_production_service_pages_and_explicit_coverage(store)
             assert page['total'] == 150
             visited.extend(page['items'])
             offset = page['next_offset']
-        return {'report': 'Controlled 100-item coverage, 50 still unresolved',
-                'covered_demand_ids': [row['id'] for row in visited[:100]]}
+        return runner_result({'report': 'Controlled 100-item coverage, 50 still unresolved',
+                'covered_demand_ids': [row['id'] for row in visited[:100]]}, context)
 
     service = Service(store, runner)
     await service.execute(job)
@@ -51,7 +53,7 @@ async def test_150_demands_production_service_pages_and_explicit_coverage(store)
     assert report['demand_coverage']['expected'] == 150
     assert report['demand_coverage']['completed'] == 100
     assert report['demand_coverage']['uncovered'] == 50
-    store.publish(job['id'], {'report': 'retry', 'covered_demand_ids': [row['id'] for row in rows]}, None)
+    publish_fixture(store,job['id'], {'report': 'retry', 'covered_demand_ids': [row['id'] for row in rows]}, None)
     assert sum(row['state'] == 'completed' for row in store.demands(account['id'], 1000, job_id=job['id'])) == 100
     reopened = Store(store.path)
     # Explicit retry includes uncovered work; ordinary dispatcher does not retry it endlessly.
@@ -70,7 +72,7 @@ async def test_unread_claim_and_other_task_ids_cannot_complete_work_or_repeat_fo
     job = store.claim_jobs(account_id=a['id'])[0]
     async def runner(context, config, tools, emit):
         rows = store.demands(a['id'], job_id=job['id'])
-        return {'report': 'No page 2 read', 'covered_demand_ids': [rows[0]['id'], foreign['id']]}
+        return runner_result({'report': 'No page 2 read', 'covered_demand_ids': [rows[0]['id'], foreign['id']]}, context)
     await Service(store, runner).execute(job)
     assert all(row['state'] == 'uncovered' for row in store.demands(a['id']))
     assert store.demands(b['id'])[0]['state'] == 'assigned'

@@ -150,7 +150,8 @@ class SchedulingStore:
         limit, offset = min(max(int(limit), 1), 50), max(int(offset), 0)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            owner = db.execute('SELECT account_id FROM jobs WHERE id=?', (job_id,)).fetchone()
+            account_id = account_id or ''
+            owner = db.execute('SELECT account_id FROM jobs WHERE id=?', (job_id,)).fetchone() if account_id else db.execute("SELECT '' FROM global_runs WHERE id=?", (job_id,)).fetchone()
             if not owner or owner[0] != account_id:
                 raise KeyError('研究需求不属于当前账户任务')
             frozen = db.execute('SELECT 1 FROM research_demand_scopes WHERE job_id=?', (job_id,)).fetchone()
@@ -180,6 +181,18 @@ class SchedulingStore:
         claimed = {value for value in claimed if type(value) is int} if isinstance(claimed, list) else set()
         readable = {row[0] for row in db.execute('SELECT demand_id FROM research_demand_reads WHERE job_id=?', (job_id,))}
         allowed = claimed & readable
+        scope = set(result.get('scope') or [])
+        if not scope & {'account', 'public', 'cash_only'}:
+            # A local security conclusion cannot discharge account-wide work.
+            # Only persisted recommendation identity gives a reliable symbol
+            # mapping; do not infer coverage from free-form demand wording.
+            local = {row[0] for row in db.execute('''SELECT d.id,r.security_id FROM research_demands d
+                JOIN recommendations r ON r.account_id=d.account_id
+                AND (d.event_key LIKE 'recommendation:' || r.id || ':%'
+                     OR d.event_key=json_extract(r.body,'$.review_event_key'))
+                WHERE d.job_id=? AND d.kind='recommendation_review' ''', (job_id,))
+                if row[1] in scope}
+            allowed &= local
         for demand_id in allowed:
             db.execute("""UPDATE research_demands SET state='completed',detail='explicitly covered in published report',updated_at=?
                 WHERE id=? AND job_id=? AND state='assigned'""", (now(), demand_id, job_id))
@@ -266,27 +279,45 @@ class SchedulingStore:
             return self._global_body(db.execute("SELECT * FROM global_runs WHERE id=?", (run_id,)).fetchone())
 
     def finish_global(self, run_id, state, result=None, error=None):
-        from .store import dumps
+        from .store import dumps, loads
+        from .delivery import DeliveryContractError, validate_final_result, bind_delivery, bind_submission_observation
         prior = self.global_run(run_id)
         if prior['state'] not in ('running', 'waiting_config'):
             return False
-        if result:
-            result = self.resolve_result_references(result)
-            result.update(universe_version=prior['universe_version'], input_snapshot=prior['input_snapshot'])
-        if state == "completed" and result and result.get("report") and not result.get("demo"):
-            report = self.save_material({"content": result["report"], "scope": "public", "classification": "agent_analysis",
-                                        "access": "generated_report", "source_title": "公共研究主 Agent 综合报告",
-                                        "material_ids": result.get("material_ids", []), "global_run_id": run_id})
-            result = {**result, "report_material_id": report["id"]}
-            if not result.get("research_records"):
-                result["research_records"] = [{"kind": "market", "title": "公共市场研究", "reason": "公共主 Agent 研究报告",
-                   "findings": [{"classification": "agent_analysis", "summary": result["report"][:4000], "material_id": report["id"]}],
-                   "material_ids": [report["id"], *(result.get("material_ids") or [])], "status": "reviewed"}]
+        if state == 'completed' and not (self.mode == 'demo' and isinstance(result, dict) and result.get('demo') is True):
+            snapshot = prior['input_snapshot'] or {}
+            scope = self.delivery_scope(prior)
+            result = validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'])
+            if any(result.get(key) for key in ('forecasts', 'suggestions', 'maintained_suggestion_ids', 'review_suggestion_ids', 'revoked_suggestion_ids')):
+                raise DeliveryContractError('公共研究不能发布账户预测或修改账户建议')
+            result = bind_delivery(result, job_id=run_id, account_id=None, input_version=None,
+                universe_version=prior['universe_version'],
+                team_id=((snapshot.get('config') or {}).get('_agent_team') or {}).get('team_id'))
+        elif state == 'completed':
+            result = {**result, 'delivery': {'status': 'demo', 'contract_verified': False,
+                                            'content_assessment': 'not_applicable'}}
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             run = db.execute('SELECT * FROM global_runs WHERE id=?', (run_id,)).fetchone()
             if run['state'] not in ('running', 'waiting_config'):
                 return False
+            if result:
+                result = self.resolve_result_references(result, db=db)
+                result.update(universe_version=prior['universe_version'], input_snapshot=prior['input_snapshot'])
+                if state == 'completed' and not result.get('demo'):
+                    bind_submission_observation(result, [loads(row[0]) for row in db.execute(
+                        "SELECT body FROM events WHERE job_id=? AND json_extract(body,'$.type') IN ('tool_started','tool_result','terminal_submission_rejected')", (run_id,))])
+            if state == "completed" and result and result.get("report") and not result.get("demo"):
+                # The public report material and its publication receipt belong
+                # to the same transaction, including rollback and restart.
+                report = self.save_material({"content": result["report"], "scope": "public", "classification": "agent_analysis",
+                    "access": "generated_report", "source_title": "公共研究主 Agent 综合报告",
+                    "material_ids": result.get("material_ids", []), "global_run_id": run_id}, db=db)
+                result = {**result, "report_material_id": report["id"]}
+                if not result.get("research_records"):
+                    result["research_records"] = [{"kind": "market", "title": "公共市场研究", "reason": "公共主 Agent 研究报告",
+                        "findings": [{"classification": "agent_analysis", "summary": result["report"][:4000], "material_id": report["id"]}],
+                        "material_ids": [report["id"], *(result.get("material_ids") or [])], "status": "reviewed"}]
             applicable = run['universe_version'] == self.universe_snapshot(db)['universe_version']
             applicability = 'current' if applicable else 'stale'
             terminal = state if applicable or state != 'completed' else 'superseded'
@@ -309,8 +340,12 @@ class SchedulingStore:
                             state='ready',decision=excluded.decision,updated_at=excluded.updated_at
                             WHERE information_routes.state<>'routed'""", (mid, run_id, dumps(decision), now(), now()))
             if state != "waiting_config":
-                db.execute("UPDATE research_demands SET state=?,detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
-                           ("completed" if state == "completed" else "failed", error or "global research completed", now(), run_id))
+                if state == 'completed' and result and applicable:
+                    result['demand_coverage'] = self.complete_task_demands(db, run_id, result)
+                    db.execute('UPDATE global_runs SET result=? WHERE id=?', (dumps(result), run_id))
+                else:
+                    db.execute("UPDATE research_demands SET state='failed',detail=?,updated_at=? WHERE job_id=? AND state='assigned'",
+                               (error or terminal, now(), run_id))
                 db.execute("""UPDATE information_routes SET state='awaiting_retry',updated_at=?
                     WHERE public_run_id=? AND state='researching'""", (now(), run_id))
             return applicable

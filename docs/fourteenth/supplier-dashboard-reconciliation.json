@@ -1,0 +1,83 @@
+{
+  "recorded_at": "2026-11-02T16:27:57.515443+08:00",
+  "source": "User-supplied supplier dashboard screenshot; user corrected previous unrefreshed-page observation",
+  "independent_account_login_performed": false,
+  "displayed_model": "grok-4.7",
+  "displayed_currency_symbol": "$",
+  "currency_code_independently_verified": false,
+  "rows": [
+    {
+      "attempt": 1,
+      "dashboard_at_shanghai": "2026-11-02 14:51:15",
+      "input_tokens": 53175,
+      "output_tokens": 4579,
+      "cached_tokens": null,
+      "displayed_cost": "0.020074",
+      "dashboard_duration_seconds": 184,
+      "dashboard_stream_state": "client_gone"
+    },
+    {
+      "attempt": 2,
+      "dashboard_at_shanghai": "2026-11-02 14:54:17",
+      "input_tokens": 53187,
+      "output_tokens": 4102,
+      "cached_tokens": null,
+      "displayed_cost": "0.019648",
+      "dashboard_duration_seconds": 181,
+      "dashboard_stream_state": "client_gone"
+    },
+    {
+      "attempt": 3,
+      "dashboard_at_shanghai": "2026-11-02 14:59:34",
+      "input_tokens": 28159,
+      "output_tokens": 9823,
+      "cached_tokens": 1152,
+      "displayed_cost": "0.01703",
+      "dashboard_duration_seconds": 127,
+      "dashboard_stream_state": "ended_no_error_indicator"
+    },
+    {
+      "attempt": 4,
+      "dashboard_at_shanghai": "2026-11-02 15:02:02",
+      "input_tokens": 28174,
+      "output_tokens": 11084,
+      "cached_tokens": 1152,
+      "displayed_cost": "0.018168",
+      "dashboard_duration_seconds": 147,
+      "dashboard_stream_state": "ended_no_error_indicator"
+    },
+    {
+      "attempt": 5,
+      "diagnostic_route": "environment",
+      "dashboard_at_shanghai": "2026-11-02 16:00:03",
+      "input_tokens": 1686,
+      "output_tokens": 301,
+      "cached_tokens": 1152,
+      "displayed_cost": "0.000518",
+      "dashboard_duration_seconds": 7,
+      "dashboard_stream_state": "ended_no_error_indicator"
+    },
+    {
+      "attempt": 6,
+      "diagnostic_route": "direct",
+      "dashboard_at_shanghai": "2026-11-02 16:00:18",
+      "input_tokens": 1686,
+      "output_tokens": 695,
+      "cached_tokens": 1664,
+      "displayed_cost": "0.000756",
+      "dashboard_duration_seconds": 14,
+      "dashboard_stream_state": "ended_no_error_indicator"
+    }
+  ],
+  "displayed_total_six": "0.076194",
+  "displayed_total_two_diagnostics": "0.001274",
+  "two_diagnostics_match_client_time_and_input_output_cache_counters": true,
+  "earlier_request4": {
+    "client_finished_shanghai": "2026-11-02 15:00:54.331585",
+    "dashboard_ended_shanghai": "2026-11-02 15:02:02",
+    "dashboard_end_later_seconds": 67.668415,
+    "interpretation": "Consistent with upstream continuing after the client-side stream failed; the screenshot does not identify the component that disconnected."
+  },
+  "cost_note": "Dashboard-displayed charges only; no ticks-to-currency conversion or invoice reconciliation",
+  "new_model_requests_during_this_reconciliation": 0
+}

@@ -1,4 +1,6 @@
 """Crash boundaries use production publication/outbox/SQLite routing code."""
+from delivery_helpers import runner_result
+from delivery_helpers import finish_global_fixture
 import asyncio
 
 import pytest
@@ -21,8 +23,8 @@ async def test_completed_public_report_resumes_route_without_model_or_duplicate_
 
     async def runner(context, cfg, tools, emit):
         calls.append(context)
-        return {"report": "Completed public relevance judgment", "information_impacts": [
-            {"material_id": material["id"], "status": "relevant", "symbols": ["SH:600519"], "explanation": "Issuer A only"}]}
+        return runner_result({"report": "Completed public relevance judgment", "information_impacts": [
+            {"material_id": material["id"], "status": "relevant", "symbols": ["SH:600519"], "explanation": "Issuer A only"}]}, context)
 
     def crash(*args, **kwargs):
         raise RuntimeError("controlled process crash boundary")
@@ -73,9 +75,9 @@ async def test_failed_public_discovery_does_not_schedule_itself_again(tmp_path, 
             entered.set()
             await release.wait()
             raise RuntimeError("controlled synthesis exhausted")
-        return {"report": "Controlled completed retry", "information_impacts": [
+        return runner_result({"report": "Controlled completed retry", "information_impacts": [
             {"material_id": item["id"], "status": "irrelevant", "explanation": "Controlled explicit relevance result"}
-            for item in context["pending_information"]]}
+            for item in context["pending_information"]]}, context)
 
     service = Service(store, runner)
     await service.tick()  # Normal worker dispatch, not a direct execute call.
@@ -131,15 +133,15 @@ async def test_failed_discovery_backlog_cannot_hide_new_external_event(tmp_path)
     mids = [store.save_material({'scope': 'public', 'url': f'https://issuer.example/{n}',
                                  'content': 'controlled earlier discovery'}, notify=True)['id'] for n in range(101)]
     store.bind_public_information(old['id'], mids)
-    store.finish_global(old['id'], 'failed', error='controlled failure')
+    finish_global_fixture(store,old['id'], 'failed', error='controlled failure')
     new = store.save_material({'scope': 'public', 'url': 'https://issuer.example/new',
                               'content': 'controlled new external event'}, notify=True)
     contexts = []
     async def runner(context, cfg, tools, emit):
         contexts.append(context)
-        return {'report': 'controlled relevance', 'information_impacts': [
+        return runner_result({'report': 'controlled relevance', 'information_impacts': [
             {'material_id': item['id'], 'status': 'irrelevant', 'explanation': 'controlled scope decision'}
-            for item in context['pending_information']]}
+            for item in context['pending_information']]}, context)
     service = Service(store, runner)
     await service.tick()
     await service.global_task

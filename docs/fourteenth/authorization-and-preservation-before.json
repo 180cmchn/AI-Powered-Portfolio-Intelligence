@@ -1,0 +1,21 @@
+{
+  "recorded_at": "2026-11-02T14:44:16.765506+08:00",
+  "head": "ee770061f40b092e4cb50a8b191530576d29ab36",
+  "daily_database_sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "daily_service_restart_authorized": false,
+  "real_model_http_attempts_so_far": 0,
+  "authorization": {
+    "answer": "授权最多 44 次，按上述顺序执行",
+    "total_http_attempts": 44,
+    "fixed_evidence_max": 4,
+    "full_research_max": 40,
+    "full_research_gate": "named terminal contract and actual content review accepted",
+    "source_models_and_efforts": "Existing account-effective bindings unchanged",
+    "input_scope": "Historical isolated evidence; simulated ledger in fresh isolated database; not daily holdings"
+  }
+}

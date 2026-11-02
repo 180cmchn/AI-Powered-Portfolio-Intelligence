@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import nullcontext
 from urllib.parse import urlsplit, urlunsplit
 
 from .domain import now
@@ -292,7 +293,7 @@ class MaterialStore:
         index = index_of(body)
         db.execute("INSERT OR REPLACE INTO material_catalog VALUES(?,?,?,?,?,?,?,?,?,?)", (body["id"], body["source_id"], body["version"], body.get("previous_id"), body["content_hash"], account_id or "", body.get("scope", "account"), index["summary"], dumps(index), index["char_count"]))
 
-    def save_material(self, material, job_id=None, account_id=None, notify=False, *, observation_id=None):
+    def save_material(self, material, job_id=None, account_id=None, notify=False, *, observation_id=None, db=None):
         from .store import dumps, loads, uid
         body = normalize_parent_references({k: v for k, v in material.items() if not k.startswith("_")})
         if representation_kind(body) == "native_search_source":
@@ -312,8 +313,10 @@ class MaterialStore:
         body.setdefault("source_title", body.get("title"))
         body.setdefault("fetched_at", now())
         body.setdefault("published_at", None)
-        with self.connect() as db:
-            db.execute("BEGIN IMMEDIATE")
+        owns_transaction = db is None
+        with (self.connect() if owns_transaction else nullcontext(db)) as db:
+            if owns_transaction:
+                db.execute("BEGIN IMMEDIATE")
             # References to existing immutable material never create a new revision.
             existing = db.execute("SELECT body FROM materials WHERE id=?", (body.get("id", ""),)).fetchone()
             created = document_created = False

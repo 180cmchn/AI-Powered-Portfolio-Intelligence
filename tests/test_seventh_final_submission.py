@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Terminal tool turns are atomic protocol commits, not prose-quality gates.
 
 Controlled HTTP fixtures exercise the real adapter and runtime. They do not
@@ -57,7 +58,7 @@ def assert_rejected_results(payload, expected_ids):
 @pytest.mark.parametrize("case", ["duplicate", "terminal_then_work", "work_then_terminal"])
 async def test_invalid_terminal_turn_is_atomic_then_can_correct(monkeypatch, case):
     tools, events, payloads = Tools(), [], []
-    rejected = [call("finish_analysis", {"report": f"Uncommitted candidate {i}"}, f"final-{i}")
+    rejected = [call("finish_analysis", delivery_arguments(**{"report": f"Uncommitted candidate {i}"}), f"final-{i}")
                 for i in range(3)]
     if case != "duplicate":
         rejected = [rejected[0], call("save_material", {"material": {"text": "Must not be saved"}}, "save")]
@@ -72,7 +73,7 @@ async def test_invalid_terminal_turn_is_atomic_then_can_correct(monkeypatch, cas
         assert_rejected_results(payload, {item["call_id"] for item in rejected})
         assert not tools.saved
         assert not any(event["type"] == "agent_completed" for event in events)
-        return response(call("finish_analysis", {"report": "资料不足，暂不作方向判断。"}, "corrected"))
+        return response(call("finish_analysis", delivery_arguments(**{"report": "资料不足，暂不作方向判断。"}), "corrected"))
 
     async def emit(event):
         events.append(event)
@@ -91,8 +92,8 @@ async def test_invalid_terminal_cannot_publish_when_correction_budget_exhausted(
 
     async def handler(request):
         payloads.append(json.loads(request.content))
-        return response(call("finish_analysis", {"report": "First uncommitted candidate"}, "first"),
-                        call("finish_analysis", {"report": "Last uncommitted candidate"}, "last"))
+        return response(call("finish_analysis", delivery_arguments(**{"report": "First uncommitted candidate"}), "first"),
+                        call("finish_analysis", delivery_arguments(**{"report": "Last uncommitted candidate"}), "last"))
 
     async def emit(event):
         events.append(event)
@@ -121,11 +122,11 @@ async def test_invalid_terminal_clears_old_reference_candidate(monkeypatch):
         payload = json.loads(request.content)
         payloads.append(payload)
         if len(payloads) == 1:
-            return response(call("finish_analysis", {"report": "Earlier citation candidate",
-                                                      "material_ids": ["unknown"]}, "citation"))
+            return response(call("finish_analysis", delivery_arguments(**{"report": "Earlier citation candidate",
+                                                      "material_ids": ["unknown"]}), "citation"))
         if len(payloads) == 2:
-            return response(call("finish_analysis", {"report": "Ambiguous first"}, "first"),
-                            call("finish_analysis", {"report": "Ambiguous last"}, "last"))
+            return response(call("finish_analysis", delivery_arguments(**{"report": "Ambiguous first"}), "first"),
+                            call("finish_analysis", delivery_arguments(**{"report": "Ambiguous last"}), "last"))
         assert_rejected_results(payload, {"first", "last"})
         raise httpx.ReadTimeout("controlled correction failure", request=request)
 
@@ -176,7 +177,7 @@ async def test_single_terminal_report_has_no_length_or_keyword_gate(monkeypatch,
 
     async def handler(request):
         payloads.append(json.loads(request.content))
-        return response(call("finish_analysis", {"report": report}, "single"))
+        return response(call("finish_analysis", delivery_arguments(**{"report": report}), "single"))
 
     async def emit(event):
         pass

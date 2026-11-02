@@ -1,0 +1,27 @@
+
+> test:browser
+> node tests/run_browser.mjs
+
+PASS (deterministic HTTP fixtures + Chromium): polling, protected drafts/focus/version, active/history pagination (106 rows, 12 active), price/review separation, resolved/source-only/unresolved evidence, selected PDF ranges, scope version labels, extraction/report provenance and unresolved origins, failed-source links, incremental events, three-field provider form, discovered-only model filtering and identical six-role account matrices.
+file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_production.mjs:24
+    const timeout=setTimeout(()=>reject(new Error('Temporary browser server did not start: '+diagnostic)),30000);
+                                        ^
+
+Error: Temporary browser server did not start:
+    at Timeout._onTimeout (file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_production.mjs:24:41)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+
+Node.js v25.9.0
+
+file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_seventh.mjs:15
+    let output='';const timer=setTimeout(()=>reject(Error(diagnostic || 'fixture timeout')),30000);
+                                                    ^
+
+Error: fixture timeout
+    at Timeout._onTimeout (file:///Users/chn/Documents/ChatGPT/%E9%87%91%E8%9E%8D%E8%82%A1%E7%A5%A8%202/tests/frontend_seventh.mjs:15:53)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+
+Node.js v25.9.0
+Ninth provider state recovery and target-bound race regressions passed

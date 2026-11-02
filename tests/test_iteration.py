@@ -1,4 +1,6 @@
 """Round-two deterministic regression/integration checks. No real model claims."""
+from delivery_helpers import runner_result
+from delivery_helpers import finish_global_fixture, publish_fixture
 from ledger_helpers import save_snapshot_correction
 import asyncio
 from datetime import datetime, timedelta
@@ -29,7 +31,7 @@ def publish(store, job, **extra):
         page = store.task_demands(job['id'], job['account_id'], limit=50, offset=offset)
         covered.extend(row['id'] for row in page['items'])
         offset = page['next_offset']
-    assert store.publish(job['id'], {'report':'deterministic report', 'covered_demand_ids': covered, **extra}, None)
+    assert publish_fixture(store,job['id'], {'report':'deterministic report', 'covered_demand_ids': covered, **extra}, None)
 
 
 @pytest.mark.asyncio
@@ -46,7 +48,10 @@ async def test_whole_trading_day_scan_and_account_demands_no_starvation(store):
         await service.scheduler_tick(stamp)  # same-bucket idempotency
         global_run = store.claim_global()
         if global_run:
-            store.finish_global(global_run['id'], 'completed', {'report':'shared fixture'})
+            # This scheduler fixture explicitly covers the delivered scan;
+            # publication alone no longer completes public demands.
+            covered = [row['id'] for row in store.task_demands(global_run['id'], None)['items']]
+            finish_global_fixture(store,global_run['id'], 'completed', {'report':'shared fixture', 'covered_demand_ids': covered})
         store.dispatch_demands()
         for job in store.claim_jobs(2):
             publish(store, job)
@@ -218,7 +223,7 @@ async def test_quote_reuse_and_preparation_timeout(store, monkeypatch):
     async def hanging(*args):
         await asyncio.Event().wait()
     async def runner(context,*args):
-        return {'report':'research completed using cache'}
+        return runner_result({'report':'research completed using cache'}, context)
     svc.refresh_quotes=hanging
     svc.runner=runner
     await asyncio.wait_for(svc.execute(store.claim_jobs()[0]),1)
@@ -375,8 +380,8 @@ async def test_global_runner_reused_by_two_accounts_with_independent_results(sto
     async def runner(context,cfg,tools,emit):
         contexts.append(context)
         if context.get('scope')=='global':
-            return {'report':'shared protocol fixture','research_records':[{'kind':'candidate','security_id':'SH:600519','title':'candidate','reason':'shared evidence'}]}
-        return {'report':context['account']['holdings'][0]['quantity'], 'research_records':[{'kind':'candidate','security_id':'SH:600519','title':'fit','reason':'different allocation','account_fit':context['account']['name']}]}
+            return runner_result({'report':'shared protocol fixture','research_records':[{'kind':'candidate','security_id':'SH:600519','title':'candidate','reason':'shared evidence'}]}, context)
+        return runner_result({'report':context['account']['holdings'][0]['quantity'], 'research_records':[{'kind':'candidate','security_id':'SH:600519','title':'fit','reason':'different allocation','account_fit':context['account']['name']}]}, context)
     svc=Service(store,runner=runner)
     store.request_analysis(None,'candidate_scan','global:fixture')
     await svc.execute_global(store.claim_global())
@@ -392,7 +397,7 @@ async def test_global_runner_reused_by_two_accounts_with_independent_results(sto
 def test_global_prose_report_stays_reusable_without_optional_records(store):
     store.request_analysis(None,'candidate_scan','global:prose')
     run=store.claim_global()
-    store.finish_global(run['id'],'completed',{'report':'公共研究结论并非原始事实','model_calls':1})
+    finish_global_fixture(store,run['id'],'completed',{'report':'公共研究结论并非原始事实','model_calls':1})
     record=store.research_records()[0]
     material=store.material(record['material_ids'][0])
     assert material['classification']=='agent_analysis'

@@ -4,6 +4,7 @@ Uses the production Store and Service.execute publication/review path in a fresh
 temporary database. Numeric conditions mirror the two suggestions that exposed
 the defect; this is not a rerun of the isolated live acceptance experiment.
 """
+from delivery_helpers import runner_result
 from datetime import datetime
 
 import pytest
@@ -34,11 +35,11 @@ async def test_service_publication_with_closed_quote_baseline_stays_current(tmp_
 
     async def controlled_replay(context, config, tools, emit):
         runs.append(context["job_id"])
-        return {"report": "受控重放报告：休市旧行情，价格触发条件未知；未调用真实模型。",
+        return runner_result({"report": "受控重放报告：休市旧行情，价格触发条件未知；未调用真实模型。",
                 "suggestions": [
                     {"security_id": security, "action": "watch", "basis": "受控重放条件，非实时建议",
                      "price_conditions": [{"operator": "gte", "field": "price", "value": threshold}]}
-                    for security, threshold in [("SZ:002354", "8.36"), ("SZ:159599", "2.287")]]}
+                    for security, threshold in [("SZ:002354", "8.36"), ("SZ:159599", "2.287")]]}, context)
 
     service = Service(store, runner=controlled_replay)
 

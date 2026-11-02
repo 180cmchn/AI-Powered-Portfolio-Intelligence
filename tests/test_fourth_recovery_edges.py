@@ -1,4 +1,5 @@
 """Recovery guards and successful-checkpoint consumption through production service."""
+from delivery_helpers import runner_result
 from copy import deepcopy
 
 import pytest
@@ -34,7 +35,7 @@ async def test_successful_recovery_is_not_reused_for_next_manual_research(tmp_pa
 
     async def runner(context, config, tools, emit):
         resumed.append(bool(context.get("synthesis_checkpoint")))
-        return {"report": "Complete report", "synthesis_checkpoint_job_id": "untrusted-model-value"}
+        return runner_result({"report": "Complete report", "synthesis_checkpoint_job_id": "untrusted-model-value"}, context)
 
     service = Service(store, runner)
     for _ in range(2):

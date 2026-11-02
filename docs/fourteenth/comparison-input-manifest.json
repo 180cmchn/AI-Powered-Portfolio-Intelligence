@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "historical_fixed_final_input_projection",
+  "package_sha256": "a4159c95ffe035948e111aabac129794309459fc59ca0c603ecf9caefccae238",
+  "input_sha256": "5824a3b872a093c0cb01c8a3eeea85b505970ecb200bbc8ec4abcd10ae103d75",
+  "input_characters": 129993,
+  "full_visible_reports": 2,
+  "visible_successful_calculation_summaries": 21,
+  "material_index_count": 295,
+  "original_material_receipts_in_model_input": false,
+  "model_calls": 0,
+  "not_historical_exact_http_payload": true,
+  "note": "Same deterministic projection in both final-only variants. Full receipts remain private; visible child reports retain their source chains. No claim of all original documents being read in this request."
+}

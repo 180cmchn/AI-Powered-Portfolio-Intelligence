@@ -1,4 +1,5 @@
 """Production HTTP/Store/worker boundaries; all prices and model output are fixtures."""
+from delivery_helpers import publish_fixture
 import asyncio
 from copy import deepcopy
 from decimal import Decimal
@@ -79,7 +80,7 @@ async def test_three_security_http_atomic_research_and_model_failure(api):
     assert sold.status_code == 201, sold.text
     assert sold.json()['cash_after'] == '87529.90'
     assert sold.json()['entry']['realized_pnl'] == '40.00'
-    store.publish(job['id'], {'report': 'late controlled result'}, None)
+    publish_fixture(store,job['id'], {'report': 'late controlled result'}, None)
     assert not store.previous_analysis(a['id'])
     assert store.account(a['id'])['version'] == 5
 

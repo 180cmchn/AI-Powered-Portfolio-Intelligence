@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-11-02T15:58:04.226254+08:00",
+  "authorization_note": "用户新增授权最多2次诊断请求：同一简短模拟现金输入，现有代理与本次进程直连各一次，无重试，不运行完整研究",
+  "authorized_new_http_attempts": 2,
+  "old_budget_reused": false,
+  "source_sha256": "b0e1f28820f2196c9c5eda365e95856dc69fbd95d554bdb3651693843e0b027a",
+  "head": "ee770061f40b092e4cb50a8b191530576d29ab36",
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "daily_database_sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+  "daily_database_unchanged_after_preflight": true,
+  "requested_configuration": {
+    "model_base_url": "https://api.xxyapi.com/v1",
+    "model_protocol": "responses",
+    "model_name": "grok-4.7",
+    "reasoning_effort": "max",
+    "max_output_tokens": 4000,
+    "analysis_timeout_seconds": 1200,
+    "synthesis_request_hard_timeout_seconds": 360
+  },
+  "input_sha256": "02108d1c68a13406213a580e686091a8a74100a23602824a6731e71865e4c648",
+  "prompt_sha256": "acd75956d809399a04eed6b7d23bd732ede289d373895168294581e575c1c89d",
+  "tool_schema_sha256": "0319d32e2e447a29625c49ff7ac2c17cf34abcf96af5bdb2a4aeccc4d0fefe5f",
+  "real_model_calls_during_preflight": 0,
+  "tests_pending": false,
+  "python_passed": 1165,
+  "python_warnings": 1,
+  "browser_fourteenth_passed": true
+}

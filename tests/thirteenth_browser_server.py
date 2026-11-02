@@ -1,6 +1,7 @@
 """Real FastAPI/SQLite, bounded fixture-only material and event changes.
 No worker, external data requests or user configuration; prices are arithmetic samples.
 """
+from delivery_helpers import publish_fixture
 import json
 import os
 import socket
@@ -33,7 +34,7 @@ for sid, name, kind in [('SH:518880', '华安黄金ETF', 'etf'), ('SZ:002354', '
 account = store.save_account(AccountInput(name='第十三轮工程 A', cash='100000', holdings=[]))
 other = store.save_account(AccountInput(name='第十三轮隔离 B', cash='200000', holdings=[]))
 for job in store.claim_jobs(10):
-    store.publish(job['id'], {'report': '工程报告，不是模型生成结果。'}, None)
+    publish_fixture(store,job['id'], {'report': '工程报告，不是模型生成结果。'}, None)
 sequence = 0
 
 @app.post('/__fixture/material')

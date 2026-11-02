@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Production runtime/store/client regressions; HTTP is controlled, never paid."""
 import asyncio
 import json
@@ -38,8 +39,8 @@ async def test_explicit_retry_continues_partial_work_and_delivers_saved_report(s
                 return response(call('get_material', {'material_id': material['id']}))
             if fail_once and state['recovery_calls'] == 2:
                 raise httpx.RemoteProtocolError('peer closed connection (incomplete chunked read)', request=request)
-            return response(call('finish_analysis', {'report': '有限分析：复用子研究，并补读已保存资料；其他范围未知。',
-                'material_ids': [material['id']]}))
+            return response(call('finish_analysis', delivery_arguments(**{'report': '有限分析：复用子研究，并补读已保存资料；其他范围未知。',
+                'material_ids': [material['id']]})))
         if 'task' in seed:
             state['child_done'] = True
             return response(call('submit_report', {'summary': 'Completed saved child report',
@@ -143,7 +144,7 @@ async def test_closeout_waits_within_budget_and_includes_completed_report(monkey
     runtime.deadline = time.monotonic() + 100
     try:
         await runtime._wait_for_closeout()
-        assert 60 < waits[0] <= 64  # 100 total minus 36 reserved, not fixed 30.
+        assert 50 < waits[0] <= 52  # 100 remaining minus 48 for submission/correction; not fixed 30.
         assert runtime.budget_closing
         await runtime._enter_synthesis_context(runtime.manager_session, reason='bounded_final_request')
         seed = json.loads(runtime.manager_session.history[0]['content'])

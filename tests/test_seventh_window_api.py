@@ -19,6 +19,8 @@ def test_manual_evaluation_does_not_pause_or_create_batches_and_missed_window_su
         monkeypatch.setattr(module + '.now', lambda: stamp[0].isoformat())
     app = create_app(tmp_path / 'manual-scoring.sqlite3', worker=False)
     store = app.state.store
+    store.put_cache('securities', 'SZ:159278', {'symbol': 'SZ:159278', 'name': '受控目录证券',
+        'kind': 'etf', 'status': 'ok', 'identity_status': 'confirmed', 'source': 'controlled directory fixture'})
     store.set_meta('settings', {'scheduled_research_enabled': True, 'forecast_evaluation_enabled': True})
     with TestClient(app) as client:
         response = client.post('/api/accounts', json={'name': 'manual-scoring fixture',

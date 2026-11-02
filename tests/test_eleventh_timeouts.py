@@ -1,3 +1,4 @@
+from tests.delivery_helpers import delivery_arguments
 """Scaled time tests exercise the real client/parser/runtime, not asyncio copies.
 
 All streams are controlled HTTPX transports; these are not provider results.
@@ -320,7 +321,7 @@ async def test_manager_does_not_start_ordinary_request_that_could_consume_final_
         assert {tool.get('name') for tool in payload['tools']} == {'finish_analysis'}
         return httpx.Response(200, json={'status': 'completed', 'output': [
             {'type': 'function_call', 'call_id': 'final', 'name': 'finish_analysis',
-             'arguments': json.dumps({'report': '预算内汇总；尚未完成的研究保持未知。'})}]})
+             'arguments': json.dumps(delivery_arguments(**{'report': '预算内汇总；尚未完成的研究保持未知。'}))}]})
     transport = httpx.MockTransport(handler)
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))
     async def emit(value):
@@ -330,10 +331,10 @@ async def test_manager_does_not_start_ordinary_request_that_could_consume_final_
         max_model_calls=20, max_agent_turns=12)
     runtime = agents.ResearchRuntime({'job_id': 'reserve-boundary'}, cfg, object(), emit)
     try:
-        # Reserve .36 + an ordinary request .30: .70 has room, .64 does not.
-        runtime.deadline = time.monotonic() + .70
+        # Two submissions reserve min(.72, 40% of 1.2) = .48; plus .30 research.
+        runtime.deadline = time.monotonic() + .82
         assert not runtime._shared_closeout()
-        runtime.inherited_deadline = time.monotonic() + .64
+        runtime.inherited_deadline = time.monotonic() + .76
         result = await runtime.run()
         assert result['report'].startswith('预算内汇总')
         assert len(sent) == 1

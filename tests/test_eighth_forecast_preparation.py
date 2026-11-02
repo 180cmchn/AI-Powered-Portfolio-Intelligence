@@ -1,4 +1,5 @@
 """Production SQLite, queue, Service and ResearchTools; prices/model are explicit fixtures."""
+from delivery_helpers import runner_result
 from ledger_helpers import save_snapshot_correction
 import asyncio
 from collections import Counter
@@ -62,10 +63,10 @@ def claim(store, clock, account):
 
 
 def directions(context, direction='up'):
-    return {'report': 'Explicit offline protocol model fixture: fresh reasoning invocation',
+    return runner_result({'report': 'Explicit offline protocol model fixture: fresh reasoning invocation',
             'forecasts': [{'symbol': item['symbol'], 'horizon': item['horizon'],
                 'direction': direction, 'reason': 'protocol test judgement, not an actual forecast'}
-                for item in context['forecast_batch']['items'] if item['direction_eligible']]}
+                for item in context['forecast_batch']['items'] if item['direction_eligible']]}, context)
 
 
 def service_for(store, monkeypatch, runner):
@@ -320,9 +321,9 @@ async def test_published_abstain_not_replaced_and_rejected_direction_requires_ne
         runs.append(context['job_id'])
         # Deliberately attempts a direction without B's exact baseline on run 1.
         # The server rejects B; it must never auto-resurrect this old direction.
-        return {'report': 'protocol fixture', 'forecasts': [
+        return runner_result({'report': 'protocol fixture', 'forecasts': [
             {'symbol': A, 'horizon': 1, 'direction': 'abstain', 'reason': 'visible uncertainty'},
-            {'symbol': B, 'horizon': 1, 'direction': 'up' if len(runs) == 1 else 'down', 'reason': 'fresh fixture judgment'}]}
+            {'symbol': B, 'horizon': 1, 'direction': 'up' if len(runs) == 1 else 'down', 'reason': 'fresh fixture judgment'}]}, context)
     service = service_for(store, monkeypatch, runner)
     await tick(store, clock, prices)
     await service.execute(claim(store, clock, account))

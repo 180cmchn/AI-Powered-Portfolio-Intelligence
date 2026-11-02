@@ -28,7 +28,7 @@ try {
  assert.ok((await page.locator(`#material-${fixture.rumor_id}`).textContent()).includes('传闻 / 待核实'));
  assert.ok(await page.locator('button').filter({hasText:'查看检索元数据'}).count()>0);
  const testedRuntime=(await api('/api/status')).runtime_version;
- assert.equal(testedRuntime.api_contract,12);
+ assert.equal(testedRuntime.api_contract,13);
  assert.equal(await page.getByText('页面与后端接口版本尚未确认一致',{exact:false}).count(),0,'current source and backend API contract must agree');
  const refs=page.locator(`[data-report-id="${fixture.report_id}"] .evidence-references`);
  assert.equal(await refs.getAttribute('open'),null);await refs.screenshot({path:'test-results/tenth-report-collapsed.png'});

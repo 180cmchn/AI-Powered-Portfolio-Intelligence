@@ -1,4 +1,5 @@
 """Production Store/Service/API integration with explicitly controlled inputs."""
+from delivery_helpers import runner_result
 import asyncio
 import json
 import sqlite3
@@ -107,7 +108,7 @@ async def test_scheduler_native_news_uses_public_worker_once(tmp_path, monkeypat
     monkeypatch.setattr(providers, 'search', forbidden)
     async def runner(context, cfg, tools, emit):
         called.append(context)
-        return {'report': 'controlled public discovery', 'information_impacts': []}
+        return runner_result({'report': 'controlled public discovery', 'information_impacts': []}, context)
     service = Service(store, runner)
     stamp = datetime(2026, 10, 25, 10, tzinfo=TZ)  # Sunday: only information scheduling.
     await service.scheduler_tick(stamp)

@@ -4,6 +4,7 @@ No worker, provider, or model is started. The native probe has a deterministic
 protocol double; all resulting capability claims are explicitly marked fixtures.
 The parent supplies a new temporary directory; importing app.main also uses that DB.
 """
+from delivery_helpers import finish_global_fixture, publish_fixture
 import json
 import asyncio
 import os
@@ -76,9 +77,9 @@ store.save_universe({'watchlist': ['SH:600519'], 'candidates': []})
 old = store.claim_global()
 store.save_universe({'watchlist': ['SH:600519'], 'candidates': ['SZ:000001']})
 current = store.claim_global()
-store.finish_global(current['id'], 'completed', {'report': '受控当前范围公共研究',
+finish_global_fixture(store,current['id'], 'completed', {'report': '受控当前范围公共研究',
     'research_records': [{'kind': 'market', 'title': '浏览器公共研究', 'summary': '当前范围结论'}]})
-store.finish_global(old['id'], 'completed', {'report': '受控历史范围公共研究',
+finish_global_fixture(store,old['id'], 'completed', {'report': '受控历史范围公共研究',
     'research_records': [{'kind': 'market', 'title': '浏览器公共研究', 'summary': '历史范围结论'}]})
 account = store.save_account(AccountInput(name='受控浏览器账户 A', holdings=[{'symbol': 'SH:600519', 'quantity': '10'}]))
 other = store.save_account(AccountInput(name='受控浏览器账户 B', holdings=[]))
@@ -106,22 +107,22 @@ for job in store.claim_jobs(10):
     result = {'report': '受控初始报告'}
     if job['account_id'] == account['id']:
         result['suggestions'] = [suggestion('SH:600519', 0)]
-    assert store.publish(job['id'], result, None)
+    assert publish_fixture(store,job['id'], result, None)
 for index in range(105):
     job = store.enqueue(account['id'], 'manual_security:SZ:000001')
     claimed = next(j for j in store.claim_jobs(10) if j['id'] == job['id'])
-    assert store.publish(claimed['id'], {'report': f'受控替代报告 {index}',
+    assert publish_fixture(store,claimed['id'], {'report': f'受控替代报告 {index}',
         'suggestions': [suggestion('SZ:000001', index)]}, None)
 job = store.enqueue(account['id'], 'manual')
 claimed = next(j for j in store.claim_jobs(10) if j['id'] == job['id'])
-assert store.publish(claimed['id'], {'report': '受控待复核报告 https://example.test/source-link',
+assert publish_fixture(store,claimed['id'], {'report': '受控待复核报告 https://example.test/source-link',
     'material_ids': [material['id'], private['id'], unknown]}, None)
 stamp = datetime.now(TZ)
 store.review_recommendations({symbol: {'status': 'ok', 'price': '120', 'as_of': stamp.isoformat()}
                               for symbol in ['SH:600519', 'SZ:000001']}, stamp)
 # Complete one real queued review without a structured resolution to expose explicit retry.
 for job in store.claim_jobs(10):
-    assert store.publish(job['id'], {'report': '受控复核尚无最终判断 https://example.test/source-link',
+    assert publish_fixture(store,job['id'], {'report': '受控复核尚无最终判断 https://example.test/source-link',
         'material_ids': [material['id'], private['id'], unknown, native_link['id'], native_excerpt['id']]}, None)
 coverage = store.recommendations_page(account['id'], view='active', limit=10)
 assert coverage['total'] == 2 and coverage['counts']['history'] == 104
