@@ -1,0 +1,47 @@
+{
+  "kind": "post_a_old_checkpoint_readonly_evidence_audit",
+  "checked_at": "2026-11-02T15:27:52.095909+00:00",
+  "original_job_id": "ea36a754a353426693d015300b4e4422",
+  "original_created_at": "2026-11-02T22:23:43.746431+08:00",
+  "original_resume_count": 0,
+  "stored_recovery_state": "synthesis_ready",
+  "stored_material_ids_count": 51,
+  "manager_content_delivery_count": 27,
+  "omitted_guard_materials": [
+    {
+      "material_id": "188951b42dcc482d831e3836ed1eb872",
+      "tool": "fundamentals",
+      "read_document_version": 1,
+      "visible_result_hash_recorded": true,
+      "visible_result_body_saved": false,
+      "delivered_rows": null
+    },
+    {
+      "material_id": "1e17d632bf634ff980c0a27301a80bae",
+      "tool": "fundamentals",
+      "read_document_version": 2,
+      "visible_result_hash_recorded": true,
+      "visible_result_body_saved": false,
+      "delivered_rows": null
+    },
+    {
+      "material_id": "cd2bb41a575f43ddbd2ebc5cd4ff8a04",
+      "tool": "fundamentals",
+      "read_document_version": 1,
+      "visible_result_hash_recorded": true,
+      "visible_result_body_saved": false,
+      "delivered_rows": null
+    }
+  ],
+  "current_pure_diagnostic_issues": [
+    "manager_material_guard_incomplete"
+  ],
+  "ttl_seconds_unchanged": 1800,
+  "original_checkpoint_body_sha256": "67aa523eb7f2d4076e799f758dbe773bd7c6f6471aa2f147ea52e08efa7f2bca",
+  "old_body_or_guard_backfilled": false,
+  "old_timestamp_modified": false,
+  "paid_model_requests": 0,
+  "original_database_sha256_before": "a48cde602da4b2aef1e59aa60f184aaafd555c0c05be59275373230fc198e55c",
+  "original_database_sha256_after": "a48cde602da4b2aef1e59aa60f184aaafd555c0c05be59275373230fc198e55c",
+  "note": "Saved synthesis_ready remains the historical value. Current read-only validation refuses missing guard coverage; old missing visible bodies are never reconstructed. Independently the original checkpoint has expired."
+}

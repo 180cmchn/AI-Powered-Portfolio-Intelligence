@@ -1,0 +1,25 @@
+{
+  "kind": "controlled_production_full_chain",
+  "passed": true,
+  "port": 54488,
+  "account_id": "088fb20067464cef82513ea802285a57",
+  "report_id": "d4c5e6b15a924a85a603fab86dd88e53",
+  "failed_job_id": "ba504ec2a8154bc4a0abf4d7058b7845",
+  "model_fixture_http_requests": 5,
+  "paid_model_requests": 0,
+  "structured_account_id": "4169e00ec327476290b8a318f5015156",
+  "structured_job_id": "40e8640f59c7414db0750a14be3139af",
+  "structured_report_id": "21e27904704e429d8d84f60952dc681e",
+  "browser": "151.0.7922.34",
+  "scenarios": [
+    "failed_submission_api_page",
+    "finite_report_body_scope",
+    "old_current_report_preserved",
+    "explicit_retry_visible",
+    "scope_corrected_before_acceptance",
+    "applied_suggestion_receipt",
+    "waiting_data_forecast_receipt",
+    "job_and_report_receipts_agree"
+  ],
+  "console_errors": []
+}

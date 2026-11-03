@@ -1,0 +1,159 @@
+{
+  "kind": "xhigh_full_schema_required_output_success",
+  "run": "v10",
+  "recorded_at": "2026-11-02T20:23:49.566117+08:00",
+  "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v10",
+  "started_at": "2026-11-02T20:15:33.847316+08:00",
+  "completed_at": "2026-11-02T20:17:30.207389+08:00",
+  "change_from_v9": "Only historical final task output instruction: request five required fields, retain all three-security questions/source/calculation attribution in report; production schema unchanged",
+  "request": {
+    "status_code": 200,
+    "response_id": "92640b1f-5eaf-9c94-a54d-52643ea1aafd",
+    "request_id": null,
+    "started_at": "2026-11-02T12:15:33.887679+00:00",
+    "finished_at": "2026-11-02T12:17:30.169134+00:00",
+    "duration_ms": 116282.03,
+    "stream_terminal": "response.completed",
+    "protocol_terminal": "responses.completed",
+    "http_body_complete": true,
+    "stream_close_reason": "http_eof",
+    "response_incomplete_reason": null,
+    "reasoning_effort_sent": "xhigh",
+    "reported_reasoning_effort": "xhigh",
+    "requested_max_output_tokens": 6000,
+    "usage": {
+      "input_tokens": 26509,
+      "input_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "output_tokens": 9099,
+      "output_tokens_details": {
+        "reasoning_tokens": 4315
+      },
+      "total_tokens": 35608,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0,
+      "cost_in_usd_ticks": 343685600,
+      "context_details": {
+        "input_tokens": 26509,
+        "output_tokens": 9106
+      }
+    },
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 3,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 49,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 3,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 2425,
+      "response.function_call_arguments.delta": 1,
+      "response.function_call_arguments.done": 1,
+      "response.output_text.done": 1,
+      "response.content_part.done": 1,
+      "response.completed": 1
+    },
+    "cancelled_by": null,
+    "error_code": null,
+    "stream_tail_drain_ms": 2.42,
+    "stream_first_byte_ms": 3807.8,
+    "stream_last_byte_ms": 116278.03,
+    "stream_last_progress_ms": 116279.39,
+    "stream_max_idle_ms": 13003.44,
+    "tool_choice_satisfied": true
+  },
+  "request_inputs": [
+    {
+      "payload_sha256": "ad2442a01a65ff09baff0827160a31f034715372e6e381d7cc0f9094a0f07e9c",
+      "payload_bytes": 81136,
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "max_output_tokens_sent": 6000,
+      "output_limit_matches": true,
+      "task_instruction_sha256": "98e611a90a23d8ee872c9a68093ea5df7a39b52de7c0ff0129826fd775da194f",
+      "task_instruction_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "raw_function_argument_keys": [
+    "report",
+    "completion",
+    "scope",
+    "decision_summary",
+    "limitations"
+  ],
+  "raw_function_is_provider_output": true,
+  "json_repair_or_developer_report_substitution": false,
+  "outcome": {
+    "http_requests": 1,
+    "contract_accepted": true,
+    "published": true,
+    "submission_outcome": "first_attempt",
+    "error_code": null,
+    "report_chars": 3059,
+    "report_sha256": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+    "content_assessment": {
+      "status": "evaluated",
+      "overall": "qualified",
+      "accepted_without_qualification": false,
+      "historical_only_readable": true,
+      "review": "xhigh-v10-content-review.json"
+    },
+    "content_review": "xhigh-v10-content-review.json",
+    "formal_predictions": 0,
+    "forecast_target_denominator": 0,
+    "structured_suggestions_submitted": 0,
+    "structured_suggestions_applied": 0,
+    "source_unchanged": true,
+    "environment_unchanged": true
+  },
+  "private_artifacts": {
+    "model_result": "execution/model-result.json",
+    "report": "execution/historical-account-report.md",
+    "visible_terminal": "execution/visible-terminal-01.json",
+    "terminal_capture_note": "not_accepted marks capture before validation; later real preflight and publication accepted this response."
+  },
+  "billing": {
+    "supplier_displayed_at": "2026-11-02 20:17:29",
+    "displayed_amount": "0.015162",
+    "currency_symbol": "$",
+    "input_tokens": 26509,
+    "output_tokens": 9099,
+    "cached_tokens": 4352,
+    "duration_seconds": 114,
+    "first_token_seconds": 2.3,
+    "matched_by": "time/model/input/output/cache counts",
+    "invoice_verified": false,
+    "cost_ticks_converted": false,
+    "api_counter_discrepancy_preserved": "usage.output_tokens=9099; usage.context_details.output_tokens=9106; neither overwritten"
+  },
+  "budget": {
+    "shared_maximum": 10,
+    "used_total": 7,
+    "remaining": 3,
+    "renewed_investigation_used": 4,
+    "stopped_after_first_valid_submission": true,
+    "new_investigation_supplier_displayed_amount": "0.084444",
+    "ten_attempt_cohort_supplier_displayed_amount": "0.133932"
+  },
+  "interpretation_limits": [
+    "Historical limited report, not current market research or normal multi-agent business matrix",
+    "No real structured suggestions/forecast samples submitted in this output-policy comparison",
+    "Returning output ceiling to 4000 after this instruction change was not tested",
+    "One success does not establish unattended stability or causal attribution of old client_gone",
+    "API raw execution content_assessment remains not_evaluated; independent content review is separate"
+  ],
+  "publication_check": "xhigh-v10-publication-check.json",
+  "regression_summary": "xhigh-regression-summary.json",
+  "preservation": "xhigh-preservation-after.json"
+}

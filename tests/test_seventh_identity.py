@@ -255,6 +255,8 @@ def test_formal_direction_requires_each_symbols_exact_baseline(setup):
     store, account, _, original_job = setup
     # An existing successful test report prevents formal retry reconciliation.
     assert publish_fixture(store,original_job['id'], report(), AT.isoformat())
+    # Both explicit forecast securities belong to this task's frozen universe.
+    store.save_universe({'watchlist': [], 'candidates': ['SH:510300']})
     baseline={'SZ:159278':{'status':'ready','symbol':'SZ:159278','base_date':'2026-10-28',
         'target_date':'2026-10-28','base_price':'1.10','source':'controlled-history','price_policy':'same_source_pair_v1'}}
     batch=store.create_forecast_batch(account['id'],kind='formal',at=AT,

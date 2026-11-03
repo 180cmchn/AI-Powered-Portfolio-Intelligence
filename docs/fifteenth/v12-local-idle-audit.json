@@ -1,0 +1,96 @@
+{
+  "kind": "read_only_modelclient_idle_timeout_audit",
+  "audited_at": "2026-11-02T21:42:32.184031+08:00",
+  "source_sha256": "75b0a784660e321c1deea29e0f63cef39d64c3751d582db60f2daa7fd33a8523",
+  "real_summary": "data/evaluations/fifteenth-historical-xhigh-v12-final/execution/summary.json",
+  "real_summary_sha256": "3e0c8571fce43be53b8a04c0dfb01845097012ab085f7a404b032f75de230453",
+  "real_observations": {
+    "status_code": 200,
+    "request_accepted": true,
+    "output_bytes": 444977,
+    "stream_event_count": 1389,
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 2,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 184,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 1,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 1196
+    },
+    "stream_last_byte_ms": 160026.59,
+    "stream_last_progress_ms": 160026.73,
+    "stream_last_progress_kind": "response.output_text.delta",
+    "stream_max_idle_ms": 120002.6,
+    "duration_ms": 280029.29,
+    "error_code": "stream_idle_timeout",
+    "cancelled_by": "stream_idle_timeout",
+    "stream_terminal": null,
+    "http_body_complete": false,
+    "transport_phase": "receiving_body",
+    "timeout_policy": {
+      "policy_version": 2,
+      "first_event_seconds": 90.0,
+      "stream_idle_seconds": 120.0,
+      "request_hard_seconds": 360.0,
+      "connect_seconds": 15.0,
+      "pool_seconds": 15.0,
+      "write_seconds": 30.0,
+      "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+    },
+    "retry_suppressed": "upstream_execution_may_continue"
+  },
+  "last_decoded_chunk_to_effective_progress_ms": 0.14,
+  "duration_minus_last_progress_ms": 120002.56,
+  "static_findings": [
+    {
+      "location": "app/model.py:871",
+      "finding": "progress synchronously stamps monotonic and reschedules idle timer to stamp+120s. stream_max_idle includes local elapsed time, not only socket-read time."
+    },
+    {
+      "location": "app/model.py:908",
+      "finding": "Hard/progress asyncio timeout scopes enclose the complete _receive_stream coroutine; a local await inserted within it can consume idle."
+    },
+    {
+      "location": "app/model.py:583",
+      "finding": "consume_event does bounded in-memory SSE/JSON/credential/sequence checks and synchronous progress. No per-delta emit/Store/DB/Agent consumer callback or await."
+    },
+    {
+      "location": "app/model.py:701",
+      "finding": "Sequential response.aiter_bytes pull; no separate application consumer queue or backpressure await."
+    },
+    {
+      "location": "HTTPX0.28.1 Response.aiter_bytes/aiter_raw; HTTPCore1.0.9 _receive_event/AnyIOStream.read",
+      "finding": "Default ByteChunker(None) yields available decoded chunks without size buffering. Decoding is synchronous; subsequent transport awaits reach AnyIO stream.receive. HTTPX read timeout is None; application semantic idle is120s."
+    },
+    {
+      "location": "scripts/verify_fifteenth_aggregate.py:347; app/agents.py:895",
+      "finding": "Runtime publishes request observations after complete/error, not per received delta."
+    }
+  ],
+  "controlled_probe": "test-results/fifteenth/v12-idle-local-consumer-audit.json",
+  "probe_script": "/tmp/fifteenth-idle-local-consumer-audit.py",
+  "probe_results": [
+    "Immediate in-memory stream completes+EOF.",
+    "Artificial121s local async consumer wait with terminal already in fixture memory yields stream_idle_timeout. This wait was injected and is absent from production.",
+    "Artificial121s synchronous effective-event parse cost succeeds: synchronous work does not run timeout callbacks; progress refreshes when parsing resumes."
+  ],
+  "conclusion": "The120s local effective-progress timeout matches observed timestamps. No current per-delta event storage/downstream consumer await explains the stall. Final observed chunk-to-progress took0.14ms, providing no evidence of slow parsing of that chunk.",
+  "unresolved": [
+    "stream_last_byte records decoded chunks, not wire/kernel/rawTLS arrivals.",
+    "No content-encoding/raw-byte counts/event-loop-lag observations: lower-layer buffering/decompression or global event-loop/scheduler pause cannot be excluded.",
+    "Injected await demonstrates a measurement boundary, not an observed v12 cause or supplier-only fault.",
+    "Provider/proxy outcome after cancellation remains unknown; no automatic retry."
+  ],
+  "changes": {
+    "production_files": 0,
+    "daily_database": 0,
+    "env_proxy_model_config": 0,
+    "external_http": 0,
+    "real_model_requests": 0
+  },
+  "source_unchanged": true
+}

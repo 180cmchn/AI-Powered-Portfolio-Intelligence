@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-11-02T22:54:08.902918+08:00",
+  "source_sha256": "803b3a64a2a65b3aa7f23020eac92b45e9ba849ccbaa94065e906ccf8ae64395",
+  "macos": {
+    "passed": 62,
+    "seconds": 14.81,
+    "evidence": "test-results/fifteenth/business-recovery-macos-targeted.txt",
+    "file_hashes_match_frozen_linux_snapshot": true
+  },
+  "linux": {
+    "evidence": "test-results/fifteenth/business-recovery-linux-targeted.json",
+    "passed": 62,
+    "seconds": 11.7,
+    "source_unchanged": true,
+    "host_files_unchanged": true
+  },
+  "production_app_unchanged_from_851a": true,
+  "changed_files": [
+    "scripts/verify_fifteenth_recovery.py",
+    "tests/test_fifteenth_recovery.py"
+  ],
+  "external_http": 0,
+  "real_recovery_authorized": false,
+  "prepared_manifest": "business-a-recovery-preparation.json",
+  "preparation_sha256": "689f85e2d57bcbcc9f11d8afae456267be5244c995136b8047c1e215144c524b",
+  "checkpoint_created_at": "2026-11-02T22:23:43.746431+08:00",
+  "checkpoint_max_age_seconds": 1800,
+  "preparation_outcome": "Prepared offline while eligible; actual request never authorized or sent; checkpoint subsequently expired unchanged",
+  "expiry_evidence": "business-a-recovery-expired.json",
+  "retained_failures": [
+    "test-results/fifteenth/recovery-first-chain-red.txt",
+    "test-results/fifteenth/recovery-service-event-red.txt",
+    "test-results/fifteenth/recovery-chain-current.txt",
+    "test-results/fifteenth/recovery-chain-current2.txt"
+  ],
+  "snapshot_preparation_initial_failure": "Temporary Linux snapshot helper initially referenced its own not-yet-created manifest; corrected to v13 baseline before snapshot/test. No application source or test expectation changed.",
+  "key_cases_passed": 16,
+  "key_cases_evidence": "test-results/fifteenth/recovery-chain-expanded.txt"
+}

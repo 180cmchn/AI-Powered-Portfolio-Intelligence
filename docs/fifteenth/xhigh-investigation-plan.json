@@ -1,0 +1,75 @@
+{
+  "kind": "renewed_xhigh_bounded_investigation",
+  "authorization": {
+    "recorded_at": "2026-11-02T19:45:00.076372+08:00",
+    "user_answer": "将思考强度改为xhigh，大胆重试，直到找出失败原因并修复",
+    "explicit_recovery_authorized": true,
+    "reasoning_effort_override": "xhigh",
+    "override_scope": "Historical isolated manager verification only; daily role/model matrix unchanged",
+    "additional_model_requests_authorized_now": 7,
+    "shared_maximum": 10,
+    "previously_used": 3,
+    "maximum_used_after_this_execution_series": 10,
+    "first_comparison": "Only max -> xhigh; same evidence, production schema, output 4000, original route and deadlines",
+    "adaptive_experiments_authorized": true,
+    "automatic_http_retries": 0,
+    "unknown_outcome_policy": "Preserve failure and review evidence before a separately launched bounded attempt under this renewed investigation authorization; no blind transport replay",
+    "stop_on_valid_content_reviewed_delivery": true,
+    "normal_business_matrix_authorized": false,
+    "old_conditional_40_used": 0,
+    "fee_note": "Existing acceptance of supplier actual charges continues; no enforceable monetary ceiling known."
+  },
+  "status": "stopped_content_accepted_and_ten_attempt_cap_exhausted",
+  "planned_first_run_maximum": 1,
+  "known_evidence": "Both latest max/4000 responses ended incomplete/max_output_tokens with HTTP EOF and no function-call events.",
+  "comparability": "Input reports/calculations/source indexes, full schema, model, route and deadlines remain frozen. Private known-terminal visible output recording does not change requests.",
+  "validity": "No acceptance of ordinary text or incomplete function calls; actual Agent preflight and Store publish remain required.",
+  "source_sha256": "7814848e927972c46f9aa55332870210d492ab73e61e7bf6668baf3df542ad0e",
+  "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v7",
+  "preparation": "xhigh-input-manifest-v7.json",
+  "evidence_bytes_identical": true,
+  "prompt_identical": true,
+  "full_schema_identical": true,
+  "output_limit": 4000,
+  "macos_targeted_tests": {
+    "passed": 19,
+    "log": "test-results/fifteenth/xhigh-verifier-offline-tests.txt"
+  },
+  "actual_runs": [
+    "xhigh-v7-evidence.json",
+    "xhigh-v8-evidence.json",
+    "xhigh-v9-evidence.json",
+    "xhigh-v10-evidence.json",
+    "xhigh-v11-evidence.json",
+    "xhigh-v12-evidence.json",
+    "xhigh-v13-evidence.json"
+  ],
+  "used_total": 10,
+  "remaining": 0,
+  "latest_result": "v13 completed/EOF/full-schema valid submission/published; independent accepted=true limited historical review",
+  "next_run": null,
+  "further_paid_requests_stopped": true,
+  "historical_v10_status": {
+    "status": "stopped_first_valid_published_report_content_review_separate",
+    "used_total": 7,
+    "remaining": 3,
+    "latest_result": "v10 completed/EOF/provider finish_analysis/preflight/publication; independent historical content review",
+    "next_run": {
+      "run": "v10",
+      "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v10",
+      "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+      "http_maximum": 1,
+      "single_variable": "Historical aggregate output instructions request the five required fields only; keep all three-security questions and evidence/source/calculation attribution in report",
+      "task_instruction_sha256": "98e611a90a23d8ee872c9a68093ea5df7a39b52de7c0ff0129826fd775da194f",
+      "same_evidence_full_schema_model_effort_output_route_deadlines": true,
+      "effort": "xhigh",
+      "max_output_tokens": 6000,
+      "preparation": "xhigh-input-manifest-v10.json",
+      "targeted_tests": {
+        "passed": 34,
+        "log": "test-results/fifteenth/required-fields-verifier-offline-tests.txt"
+      }
+    }
+  },
+  "latest_source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70"
+}

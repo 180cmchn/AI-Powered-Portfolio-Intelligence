@@ -189,21 +189,15 @@ class RecommendationStore:
         revoked, maintained, pending = ids("revoked_suggestion_ids"), ids("maintained_suggestion_ids"), ids("review_suggestion_ids")
         suggestions = result.get("suggestions") or []
         prepared = []
-        for item in suggestions[:100] if isinstance(suggestions, list) else []:
-            if not isinstance(item, dict):
-                continue
-            try:
-                security_id = symbol(str(item.get("security_id") or item.get("symbol") or ""))
-            except ValueError:
-                continue
-            # IDs are account-scoped; neither stale nor foreign IDs can create an update.
-            old = current.get(item.get("id")) if item.get("id") else None
-            if item.get("id") and (not old or old["security_id"] != security_id):
-                continue
-            if target and security_id != target:
-                continue
-            if covered_symbols is not None and security_id not in covered_symbols:
-                continue
+        # Publication already ran the shared contract in this transaction. Keep
+        # a defensive check here too: malformed new output must never disappear.
+        from .delivery import validate_structured_delivery, unapplied_delivery
+        validate_structured_delivery(result, allowed_scope=self.delivery_scope(dict(job), db)['allowed'],
+                                     contract_context=self.delivery_contract_context(dict(job), db))
+        receipt = result.setdefault('delivery_application', unapplied_delivery(result, '尚未应用'))
+        for item in suggestions:
+            security_id = item.get('security_id', item.get('symbol'))
+            old = current.get(item.get('id')) if item.get('id') else None
             prepared.append((item, security_id, old))
         updated_ids = {old["id"] for _, _, old in prepared if old}
         new_symbols = {security for _, security, old in prepared if not old}
@@ -249,9 +243,7 @@ class RecommendationStore:
                 WHERE job_id=? AND state='assigned' AND (event_key LIKE ? OR event_key=?)""",
                 (now(), job["id"], f"recommendation:{row['id']}:%", body.get("review_event_key", "")))
             self._write_recommendation(db, row, body, event=not was_pending)
-        for item, security_id, old in prepared:
-            if old and old["id"] in revoked:
-                continue
+        for index, (item, security_id, old) in enumerate(prepared):
             stamp = now()
             previous = self._recommendation_body(old) if old else {}
             raw_expiry = item.get("valid_until", previous.get("valid_until", result.get("valid_until")))
@@ -306,6 +298,17 @@ class RecommendationStore:
                     old_body = self._recommendation_body(prior)
                     old_body["replaced_by_id"] = body["id"]
                     self._write_recommendation(db, prior, old_body, event=False)
+
+            receipt['suggestions'][index].update(status='applied', reason=body['review_reason'],
+                                                  recommendation_id=body['id'])
+        for item in receipt['suggestion_actions']:
+            row = db.execute('SELECT * FROM recommendations WHERE id=? AND account_id=?',
+                             (item['id'], job['account_id'])).fetchone()
+            body = self._recommendation_body(row)
+            expected_status = {'maintained_suggestion_ids': 'valid', 'review_suggestion_ids': 'needs_review',
+                               'revoked_suggestion_ids': 'revoked'}[item['field']]
+            applied = body['review_status'] == expected_status
+            item.update(status='applied' if applied else 'not_applied', reason=body['review_reason'])
 
     @staticmethod
     def _recommendation_filter(view):
@@ -485,19 +488,17 @@ class RecommendationStore:
 
     def save_research_records(self, records, job_id, account_id=None, db=None):
         from .store import dumps, loads, uid
+        from .delivery import validate_research_records
+        validate_research_records(records)
         if db is None:
             with self.connect() as conn:
                 conn.execute("BEGIN IMMEDIATE")
                 return self.save_research_records(records, job_id, account_id, conn)
-        if not isinstance(records, list):
-            return
         run = db.execute('SELECT * FROM global_runs WHERE id=?', (job_id,)).fetchone() if not account_id else None
         current_version = self.universe_snapshot(db)['universe_version']
         version = run['universe_version'] if run else current_version
         applicability = ('current' if version == current_version and (not run or run['applicability'] == 'current') else 'stale')
-        for record in records[:100]:
-            if not isinstance(record, dict) or record.get("kind") not in ("market", "sector", "candidate"):
-                continue
+        for record in records:
             identity = str(record.get("security_id") or record.get("sector_id") or record.get("title") or "market")
             logical_identity = record["kind"] + ":" + identity
             # Preserve each public synthesis and scope. A late old job never

@@ -1,0 +1,109 @@
+{
+  "kind": "local_stream_fix_validation",
+  "at": "2026-11-02T18:20:17.789529+08:00",
+  "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "source_manifest": "local-stream-fix-source.json",
+  "source_files_changed_since_test_freeze": [],
+  "macos_python": {
+    "passed": 1227,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 118.88,
+    "log": "test-results/fifteenth/python-macos-local-stream-fix.txt",
+    "log_sha256": "f3e88c527cb75c75e3bc9ea6405836f7c15821b1913fc4e7a873d553fe2b3318"
+  },
+  "browser": {
+    "groups": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 2110
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 9244
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4620
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16751
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 19992
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 61268
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 103353
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16891
+      },
+      {
+        "group": "thirteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 41262
+      },
+      {
+        "group": "thirteenth_correction",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 6536
+      },
+      {
+        "group": "fourteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1419
+      }
+    ],
+    "passed": 11,
+    "failed": 0,
+    "log": "test-results/fifteenth/browser-local-stream-fix.txt",
+    "log_sha256": "d996a24a305958770f0d6cd3b0a0075ce7d6861a555e101b08e5fe86ed86b847",
+    "browser_version": "151.0.7922.34"
+  },
+  "linux_python": {
+    "status": "passed",
+    "passed": 1227,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 132.99,
+    "evidence": "stream-fix-linux-validation.json",
+    "log": "test-results/fifteenth/python-linux-stream-fix-a2c.txt"
+  },
+  "new_stream_boundary_cases": 16,
+  "deterministic_clock_cases": 2,
+  "targeted_stream_transport_model_deadline_passed": 154,
+  "targeted_after_clock_strengthening_passed": 32,
+  "initial_wait_preserved": "test-results/fifteenth/stream-deadline-targeted-macos-initial-wait.txt",
+  "new_paid_requests": 0,
+  "same_historical_failure_root_cause_proven": false,
+  "raw_pre_fix_reproduction": "test-results/fifteenth/transport-local-audit-before.json",
+  "raw_post_fix_reproduction": "test-results/fifteenth/transport-local-audit-after.json",
+  "all_full_regressions_passed": true
+}

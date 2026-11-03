@@ -1,0 +1,44 @@
+{
+  "kind": "postfix_supplier_dashboard_reconciliation",
+  "checked_at": "2026-11-02T18:44:35.276394+08:00",
+  "method": "Read-only existing logged-in browser usage logs; refreshed search; no account or wallet mutation",
+  "rows": [
+    {
+      "request_number": 1,
+      "response_id": "e354ac89-a012-9014-9b09-015ae999dd16",
+      "supplier_displayed_at": "2026-11-02 18:38:06",
+      "model": "grok-4.7",
+      "input_tokens": 26378,
+      "output_tokens": 13905,
+      "cached_tokens": 1152,
+      "displayed_cost_amount": "0.020168",
+      "currency_symbol": "$",
+      "supplier_first_token_seconds": 4.1,
+      "supplier_duration_seconds": 199,
+      "supplier_tokens_per_second": 70
+    },
+    {
+      "request_number": 2,
+      "response_id": "2e874da1-0d8e-97d2-b40c-6179eea23b7c",
+      "supplier_displayed_at": "2026-11-02 18:41:34",
+      "model": "grok-4.7",
+      "input_tokens": 26525,
+      "output_tokens": 13380,
+      "cached_tokens": 17536,
+      "displayed_cost_amount": "0.016054",
+      "currency_symbol": "$",
+      "supplier_first_token_seconds": 2.5,
+      "supplier_duration_seconds": 205,
+      "supplier_tokens_per_second": 65
+    }
+  ],
+  "matching_basis": "End time, model, input/output and cached-token counts all agree. Dashboard rows did not expose request/response IDs; no invoice-level reconciliation.",
+  "new_displayed_total_amount": "0.036222",
+  "new_authorization_cumulative_displayed_amount": "0.049488",
+  "currency_symbol": "$",
+  "currency_code_independently_verified": false,
+  "invoice_verified": false,
+  "api_cost_in_usd_ticks_preserved_without_conversion": true,
+  "unrelated_user_playground_or_recharge_rows_excluded": true,
+  "previous_v5_evidence": "supplier-screenshot-evidence.json"
+}

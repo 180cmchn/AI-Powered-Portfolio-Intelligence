@@ -1,0 +1,44 @@
+{
+  "observed_at": "2026-11-02T19:24:15.058368+00:00",
+  "kind": "supplier_and_client_stream_correlation",
+  "supplier_page": "https://xxyapi.com/usage-logs/common",
+  "method": "Fresh native Chrome AX full reload plus visible screenshot. Row association uses tightly matching times and surrounding successful token counts; supplier row does not expose response_id here.",
+  "observations": [
+    {
+      "client_job": "467cfca197234476ab538d4c96a6b667",
+      "response_id": "6181d998-46ac-9a8a-bfba-bc3032f749e2",
+      "supplier_log_time": "2026-11-03 03:10:35",
+      "supplier_input_tokens": 70643,
+      "supplier_output_tokens": 15970,
+      "supplier_duration_seconds": 357,
+      "supplier_fee_usd": "0.035566",
+      "visible_red_stream_marker": true,
+      "specific_marker_error_not_opened": true,
+      "local_duration_ms": 357739.51,
+      "local_cancelled_by": null,
+      "local_terminal_received": false
+    },
+    {
+      "client_job": "62018d6878534a03aa3ce107fcf73ed6",
+      "response_id": "0b23acf0-f19c-926b-84d4-31e40c3bf946",
+      "supplier_log_time": "2026-11-03 03:14:24",
+      "supplier_input_tokens": 66015,
+      "supplier_output_tokens": 1402,
+      "supplier_duration_seconds": 20,
+      "supplier_fee_usd": "0.013434",
+      "visible_red_stream_marker": false,
+      "local_duration_ms": 156950.18,
+      "local_last_byte_ms": 13298.62,
+      "local_event_count": 9,
+      "local_cancelled_by": null,
+      "local_terminal_received": false
+    }
+  ],
+  "inference": "The latter request was shown complete by the provider while the client had stopped receiving early. This warrants testing the model transport route; it does not alone prove which network hop caused loss.",
+  "next_comparison": {
+    "status": "helper_implementation_in_progress",
+    "scope": "Explicit direct transport for an isolated ModelClient process only, original provider/model/schema/effort and TLS/CA retained; quote/PDF routes and system/day-to-day settings unchanged",
+    "normal_retry_not_identical_payload_replay": true,
+    "no_final_causal_conclusion_yet": true
+  }
+}

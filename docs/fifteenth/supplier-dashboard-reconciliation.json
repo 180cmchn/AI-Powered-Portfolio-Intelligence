@@ -1,0 +1,77 @@
+{
+  "kind": "fifteenth_supplier_dashboard_reconciliation_attempt",
+  "observed_at_utc": "2026-11-02T09:46:01Z",
+  "method": "Read-only native Chrome accessibility, existing logged-in supplier session; new temporary usage-log tab only",
+  "initial_existing_view": {
+    "six_old_rows_visible": true,
+    "displayed_total_amount": "0.076194",
+    "currency_symbol": "$",
+    "currency_code_verified": false,
+    "latest_visible_old_row_at": "2026-11-02 16:00:18",
+    "new_request_row_visible": false,
+    "freshness": "Existing loaded view; not considered a refreshed current ledger"
+  },
+  "fresh_usage_log_load": {
+    "outcome": "Cloudflare origin SSL handshake error page",
+    "http_error_code_shown": 525,
+    "ray_id": "a54235ade808dfe9",
+    "model_http_request_sent": false,
+    "browser_certificate_bypass": false
+  },
+  "new_request_fee_amount": "0.013266",
+  "new_request_server_result": "User identifies supplier stream error as client_gone; no completed terminal payload obtained.",
+  "verified_match_to_response_id": false,
+  "inference_limit": "A later frontend dashboard 525 does not establish the cause of the earlier model-stream disconnect or prove zero charge. No assumptions about result retrieval capability.",
+  "ui_cleanup": "Temporary log tab closed, original page restored. No credential, wallet, subscription, proxy, or TLS changes.",
+  "sensitive_ui_content_exported": false,
+  "followup_checks": [
+    {
+      "observed_at_utc": "2026-11-02T09:48:58Z",
+      "outcome": "Cloudflare 525 again on a fresh temporary usage-log tab",
+      "ray_id": "a54239fdfef3f6b9",
+      "new_request_record_obtained": false,
+      "new_model_requests": 0,
+      "temporary_tab_closed": true,
+      "original_page_restored": true
+    }
+  ],
+  "later_user_supplied_evidence": {
+    "recorded_at": "2026-11-02T18:02:36.271251+08:00",
+    "source": "User-provided supplier usage-log screenshot; user explicitly identified the red exclamation stream error as client_gone.",
+    "screenshot_sha256": "7c1ecd59e576020d256259c1448c96404e1e4e46c59051a605b893225d39d641",
+    "displayed_timestamp": "2026-11-02 17:35:15",
+    "timezone_context": "Asia/Shanghai",
+    "model_displayed": "grok-4.7",
+    "stream_error": "client_gone",
+    "stream_error_provenance": "User explanation; cropped screenshot itself shows the red exclamation icon, not its tooltip text.",
+    "token_pair_displayed": [
+      24833,
+      6463
+    ],
+    "token_pair_text": "24,833 / 6,463",
+    "token_count_semantics": "Preserved supplier display values; not substituted into missing client API usage.",
+    "displayed_charge_amount": "0.013266",
+    "currency_symbol": "$",
+    "currency_code_verified": false,
+    "displayed_first_token_seconds": "7.4",
+    "displayed_duration_seconds": 297,
+    "displayed_rate_tokens_per_second": 22,
+    "correlation": {
+      "status": "consistent_by_timestamp_model_and_duration",
+      "local_finished_at": "2026-11-02T17:35:15.884856+08:00",
+      "local_duration_seconds": "300.05374",
+      "local_response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+      "response_id_visible_in_screenshot": false,
+      "request_id_level_match_verified": false
+    },
+    "independent_invoice_reconciliation": false,
+    "terminal_payload_or_report_recovered": false,
+    "root_cause_determined": false,
+    "new_model_requests": 0
+  },
+  "fee_amount_provenance": "Supplier-displayed charge, correlated by timestamp/model/duration; no ID-level or invoice reconciliation.",
+  "currency_symbol": "$",
+  "currency_code_verified": false,
+  "displayed_amount_total_with_prior_six": "0.089460",
+  "displayed_amount_total_note": "Derived sum of prior six displayed amounts plus this new row; not the subtotal of this cropped five-row image, not an invoice."
+}

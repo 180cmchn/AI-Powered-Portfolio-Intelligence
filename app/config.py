@@ -46,29 +46,46 @@ REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 TIMEOUT_FIELDS = ('model_first_event_timeout_seconds', 'model_stream_idle_timeout_seconds',
                   'model_request_hard_timeout_seconds', 'synthesis_request_hard_timeout_seconds')
+TIMEOUT_DEFAULTS_REVISION = 3
+LONG_TASK_TIMEOUT_DEFAULTS = {
+    'model_first_event_timeout_seconds': 90,
+    'model_stream_idle_timeout_seconds': 300,
+    'model_request_hard_timeout_seconds': 900,
+    'synthesis_request_hard_timeout_seconds': 900,
+    'agent_timeout_seconds': 1800,
+    'analysis_timeout_seconds': 3600,
+}
 
 
 def migrate_timeout_policy(saved: dict) -> dict:
-    """Derive v2 settings for *new* work, never rewrite old job snapshots.
+    """Upgrade complete old factory profiles for new work, never snapshots.
 
-    The old factory 90/120 second absolute limits are replaced by the documented
-    v2 factory policy. Explicit non-factory limits retain their absolute meaning.
-    The old values stay present for audit/old API readers, not as idle aliases.
+    Partial/custom profiles retain every supplied limit. Revision3 marks an
+    explicit modern choice, including a deliberate return to an old full profile.
+    Legacy hard-limit names remain audit fields and keep their absolute meaning.
     """
     result = dict(saved)
-    for new, old, factory, replacement in (
-        ('model_request_hard_timeout_seconds', 'model_request_timeout_seconds', 90, 300),
-        ('synthesis_request_hard_timeout_seconds', 'synthesis_request_timeout_seconds', 120, 360),
+    revision = saved.get('timeout_defaults_revision')
+    legacy_profile = {'model_request_timeout_seconds': 90, 'synthesis_request_timeout_seconds': 120,
+                      'agent_timeout_seconds': 120, 'analysis_timeout_seconds': 600}
+    previous_profile = {**LONG_TASK_TIMEOUT_DEFAULTS, 'model_stream_idle_timeout_seconds': 120,
+                        'model_request_hard_timeout_seconds': 300,
+                        'synthesis_request_hard_timeout_seconds': 360,
+                        'agent_timeout_seconds': 600, 'analysis_timeout_seconds': 1200}
+    complete_legacy = (not any(key in saved for key in TIMEOUT_FIELDS)
+                       and all(key in saved and saved[key] == value for key, value in legacy_profile.items()))
+    complete_previous = (all(key in saved and saved[key] == value for key, value in previous_profile.items())
+                         and all(key not in saved or saved[key] == legacy_profile[key]
+                                 for key in ('model_request_timeout_seconds', 'synthesis_request_timeout_seconds')))
+    if not saved or (revision is None and (complete_legacy or complete_previous)):
+        result.update(LONG_TASK_TIMEOUT_DEFAULTS, timeout_defaults_revision=TIMEOUT_DEFAULTS_REVISION)
+    for new, old in (
+        ('model_request_hard_timeout_seconds', 'model_request_timeout_seconds'),
+        ('synthesis_request_hard_timeout_seconds', 'synthesis_request_timeout_seconds'),
     ):
         if new not in result:
-            previous = result.get(old, factory)
-            result[new] = replacement if previous == factory else previous
-    result.setdefault('model_first_event_timeout_seconds', 90)
-    result.setdefault('model_stream_idle_timeout_seconds', 120)
-    if not any(key in saved for key in TIMEOUT_FIELDS):
-        for key, old, new in (('agent_timeout_seconds', 120, 600), ('analysis_timeout_seconds', 600, 1200)):
-            if saved.get(key, old) == old:
-                result[key] = new
+            if old in result:
+                result[new] = result[old]
     return result
 
 
@@ -90,9 +107,9 @@ def timeout_policy(config: dict, phase='research') -> dict:
 def timeout_policy_warnings(config: dict) -> list[str]:
     normal, final = timeout_policy(config), timeout_policy(config, 'synthesis')
     warnings = []
-    if float(config.get('agent_timeout_seconds', 600)) < normal['request_hard_seconds']:
+    if float(config.get('agent_timeout_seconds', 1800)) < normal['request_hard_seconds']:
         warnings.append('子任务总预算短于普通请求硬上限；请求以子任务剩余预算为准。')
-    if float(config.get('analysis_timeout_seconds', 1200)) < final['request_hard_seconds']:
+    if float(config.get('analysis_timeout_seconds', 3600)) < final['request_hard_seconds']:
         warnings.append('账户总预算短于汇总请求硬上限；汇总以账户剩余预算为准。')
     for label, policy in (('普通请求', normal), ('汇总请求', final)):
         if policy['first_event_seconds'] > policy['request_hard_seconds']:
@@ -134,16 +151,13 @@ def defaults() -> dict:
         "model_request_timeout_seconds": 90,
         "model_responses_stream": True,
         "synthesis_request_timeout_seconds": 120,
-        "model_first_event_timeout_seconds": 90,
-        "model_stream_idle_timeout_seconds": 120,
-        "model_request_hard_timeout_seconds": 300,
-        "synthesis_request_hard_timeout_seconds": 360,
+        **LONG_TASK_TIMEOUT_DEFAULTS,
+        "timeout_defaults_revision": TIMEOUT_DEFAULTS_REVISION,
         "synthesis_max_calls": 4, "synthesis_checkpoint_max_age_seconds": 1800,
         "quote_provider": os.getenv("QUOTE_PROVIDER", "eastmoney"),
         "quote_fallback_provider": os.getenv("QUOTE_FALLBACK_PROVIDER", "sina"),
         "max_concurrent_agents": 3, "max_model_calls": 40, "final_submission_reserved_calls": 2,
-        "agent_timeout_seconds": 600, "analysis_timeout_seconds": 1200,
-        "max_agent_turns": 12, "max_output_tokens": 4000,
+        "max_agent_turns": 12, "max_output_tokens": None,
         "quote_interval_seconds": 60, "scan_interval_minutes": 5,
         "scheduled_research_enabled": True,
         "forecast_evaluation_batch_size": 30, "forecast_review_batch_size": 6,

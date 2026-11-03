@@ -1,0 +1,48 @@
+{
+  "kind": "last_authorized_historical_direct_route_control",
+  "authorization_basis": "User latest instruction 将思考强度改为xhigh，大胆重试，直到找出失败原因并修复, within original ten aggregate attempts; one remaining after9. Earlier pause was superseded by explicit recovery. Original investigation permits isolated direct controls retaining TLS.",
+  "maximum_http_attempts": 1,
+  "shared_maximum": 10,
+  "shared_used_before": 9,
+  "normal_business_matrix_authorized": false,
+  "old40_transfer_authorized": false,
+  "previous_evidence": "xhigh-v12-evidence.json",
+  "local_audit": "v12-local-idle-audit.json",
+  "hypothesis": "Supplier usage row ends normally before client idle cancellation, but application sees no decoded bytes or final object. A separately launched direct transport control can test route sensitivity without attributing the gap to the model.",
+  "primary_change": "Explicit AsyncHTTPTransport only in this isolated verifier process. It disables AsyncClient environment proxy mounts while retaining TLS verification and environment CA settings.",
+  "held_constant": {
+    "provider_model": "grok-4.7",
+    "effort": "xhigh",
+    "output_limit": 6000,
+    "full_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "required_fields_only": true,
+    "task_instruction": "v12 comparison-direction instruction; unchanged for direct control",
+    "stream_idle_seconds": 120,
+    "request_hard_seconds": 360,
+    "analysis_seconds": 1200,
+    "search_or_child_requests": 0
+  },
+  "comparison_limit": "Frozen substantive evidence, schema, model and policy are the same. New run/task identities and actual execution clock are regenerated honestly, so payload is not byte-for-byte identical. One result cannot prove a route is the sole cause.",
+  "global_proxy_or_env_file_changes": false,
+  "automatic_http_retries": 0,
+  "terminal_or_unknown_result_stop": true,
+  "no_server_result_retrieval_assumed": true,
+  "cost_cap": null,
+  "cost_note": "Supplier actual charges; no reliable currency ceiling. Last attempt is counted even for an unknown outcome.",
+  "status": "frozen_and_regressions_passed_one_last_attempt_authorized",
+  "recorded_at": "2026-11-02T21:53:04.310351+08:00",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v13-direct",
+  "manifest": "docs/fifteenth/xhigh-input-manifest-v13-direct.json",
+  "macos_targeted": {
+    "passed": 91,
+    "evidence": "test-results/fifteenth/direct-route-business-offline-tests.json"
+  },
+  "full_production_regression": "final-followup-regression.json; production app byte-identical to source75b0",
+  "linux_targeted": {
+    "passed": 91,
+    "evidence": "test-results/fifteenth/v13-direct-linux-targeted.json"
+  },
+  "execution_start_recorded_at": "2026-11-02T21:53:55.397706+08:00"
+}

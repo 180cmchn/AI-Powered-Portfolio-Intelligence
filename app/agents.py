@@ -13,6 +13,7 @@ import time
 import uuid
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from datetime import datetime
 from .clock import now_datetime
 from pathlib import Path
 from typing import Any, Awaitable, Callable
@@ -20,9 +21,10 @@ from zoneinfo import ZoneInfo
 
 from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelTimeoutError, ModelSession, ToolCall, cancellation_source
 from .config import timeout_policy, timeout_policy_warnings
-from .context import archive, recall, references, visible_message
+from .context import archive, recall, references, visible_message, compact_calculation_metadata, bounded_result
 from .calculation_context import checkpoint_summaries, projection as calculation_projection, signature as calculation_signature
-from .delivery import validate_final_result, DeliveryContractError, FinalSubmissionMissing
+from .delivery import validate_final_result, DeliveryContractError, FinalSubmissionMissing, MAX_RESEARCH_RECORDS
+from .recovery import manager_material_deliveries, restored_manager_material_evidence
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -30,6 +32,30 @@ SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 class ResearchTimeout(ModelError):
     code = 'analysis_budget_exhausted'
+
+
+def _time_context(context):
+    """Describe decision dates without changing the clock or elapsed deadlines."""
+    execution_time = now_datetime(SHANGHAI).isoformat()
+    historical = context.get('historical_evidence')
+    replay = isinstance(historical, dict)
+    decision_as_of = None if replay else execution_time
+    basis = 'historical_checkpoint_unavailable' if replay else 'execution_time'
+    checkpoint = historical.get('historical_checkpoint_at') if replay else None
+    if isinstance(checkpoint, str):
+        try:
+            parsed = datetime.fromisoformat(checkpoint)
+            if parsed.tzinfo is not None and parsed.utcoffset() is not None:
+                decision_as_of = parsed.isoformat()
+                basis = 'historical_checkpoint_at'
+        except ValueError:
+            pass
+    return {'execution_time': execution_time, 'data_as_of': copy.deepcopy(context.get('data_as_of')),
+        'historical_replay': replay, 'decision_as_of': decision_as_of, 'decision_time_basis': basis,
+        'instruction': ('execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。'
+            '今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。'
+            + ('历史检查点缺失或没有合法时区，历史判断时点未知；使用明确绝对日期，不猜测相对日期。'
+               if replay and decision_as_of is None else ''))}
 
 
 def _team_context(team):
@@ -178,9 +204,9 @@ RESEARCH_TOOLS = [
             {"material_id": STRING, "start": STRING, "end": STRING, "fields": STRINGS,
              "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER,
              "order": {"type": "string", "enum": ["asc", "desc"]}, "symbol": STRING}, ["material_id"]),
-    _schema("market_indicators", "对已保存同口径行情计算可复算的收益、均线、区间波动及可选基准比较；按交易日期对齐，返回输入日期与样本，不以缺失值补零。",
+    _schema("market_indicators", "对已保存同口径行情计算可复算的收益、均线、区间波动及可选基准比较；return 是 start/end 筛选后全部日期的首尾收益，window 只控制均线。按返回的日期与收益间隔描述期间，不能将 window 当作收益天数；不以缺失值补零。",
             {"material_id": STRING, "start": STRING, "end": STRING,
-             "window": {"type": "integer", "minimum": 2, "maximum": 252}, "benchmark_material_id": STRING}, ["material_id"]),
+             "window": {"type": "integer", "minimum": 2, "maximum": 252, "description": "仅均线所用收盘样本数；收益区间由start/end及实际行情日期决定"}, "benchmark_material_id": STRING}, ["material_id"]),
     _schema("get_material", "按材料 ID 读取元数据与有限首段；正文较长时按 next_start 继续。", {"material_id": STRING}, ["material_id"]),
     _schema("read_material_range", "读取指定材料字符范围，保留来源、页码、访问限制及范围信息。", {"material_id": STRING, "start": INTEGER, "length": {"type": "integer", "minimum": 1, "maximum": 12000}}, ["material_id"]),
     _schema("list_recommendations", "分页取得当前账户建议，先按业务状态筛选。active 包含所有仍需关注的建议；按 next_offset 继续读取，不能将价格满足视为判断有效。公共研究不能读取账户建议。",
@@ -233,7 +259,7 @@ MANAGER_TOOLS = [
                  "material_id": STRING, "status": {"type": "string", "enum": ["relevant", "irrelevant", "uncertain"]},
                  "symbols": STRINGS, "sectors": STRINGS, "market_wide": {"type": "boolean"}, "explanation": STRING,
                  "event_key": STRING}, "required": ["material_id", "status", "explanation"]}},
-             "research_records": {"type": "array", "items": RESEARCH_RECORD}}, ["report", "completion", "scope", "decision_summary", "limitations"]),
+             "research_records": {"type": "array", "items": RESEARCH_RECORD, "maxItems": MAX_RESEARCH_RECORDS}}, ["report", "completion", "scope", "decision_summary", "limitations"]),
 ]
 CHILD_TOOLS = [
     _schema("report_progress", "把阶段发现交给主 Agent，不结束任务。仅提交可见摘要，不提交隐藏思维链。", {"summary": STRING, "material_ids": STRINGS}, ["summary"]),
@@ -311,6 +337,7 @@ class ResearchRuntime:
         self.submitted_report_counts: dict[str, int] = {}
         self.report_tool_messages: dict[str, str] = {}
         self.calculations: list[dict] = []
+        self.restored_material_evidence: list[dict] = []
         self.synthesis_checkpoint = copy.deepcopy(context.get("synthesis_checkpoint"))
         self.restored_checkpoint = copy.deepcopy(self.synthesis_checkpoint)
         self.synthesis_only = bool(self.synthesis_checkpoint and self.synthesis_checkpoint.get('recovery_mode') != 'continue_research')
@@ -324,6 +351,7 @@ class ResearchRuntime:
         self.manager_session.agent_id = "manager"
         self.calculation_coverage: list[dict] = []
         self._restore_calculations()
+        self._restore_material_evidence()
         if self.synthesis_only:
             self.manager_session.phase = "synthesis"
             self.manager_session.native_search = False
@@ -366,6 +394,34 @@ class ResearchRuntime:
                               'input_version': (self.synthesis_checkpoint or {}).get('input_version'),
                               'research_round': None, 'model_config': None})
 
+    def _restore_material_evidence(self):
+        # A previous session's record_id is not a capability in this session.
+        # Rebuild records from exact saved visible objects only; raw tool-result
+        # archives and legacy receipts without bodies are never expanded.
+        indexes = []
+        for item in restored_manager_material_evidence(self.synthesis_checkpoint or {}):
+            record = archive(self.manager_session, {'tool': item['tool'], 'result': item['result']},
+                             'restored_material')
+            self.restored_material_evidence.append({**item, 'record_id': record['record_id'],
+                'visibility': 'previously_delivered_manager_tool_output'})
+            indexes.append({key: item[key] for key in
+                ('material_id', 'source_task_id', 'source_agent_id', 'tool', 'delivered_range')} |
+                {'retrieve': {'tool': 'recall_context', 'record_id': record['record_id'],
+                              'start': 0, 'total_chars': record['total_chars']}})
+        if indexes:
+            limit = max(500, min(int(self.config.get('max_tool_result_chars', 16000)),
+                                int(self.config.get('max_context_chars', 240_000)) // 12))
+            visible_index = bounded_result(self.manager_session, indexes, limit)
+            self.context['restored_material_index'] = visible_index
+            seed = json.loads(self.manager_session.history[0]['content'])
+            seed['restored_material_index'] = visible_index
+            self.manager_session.history[0]['content'] = json.dumps(seed, ensure_ascii=False, default=str)
+
+    def _manager_material_receipts(self):
+        if not hasattr(self.tools, 'store'):
+            return []
+        return manager_material_deliveries(self.tools.store.checkpoint_deliveries(self.task_id))
+
     def _available_calculations(self, agent_id):
         if agent_id != 'manager':
             return [record for record in self.calculations if record['agent_id'] == agent_id]
@@ -380,7 +436,7 @@ class ResearchRuntime:
         A whole summary either fits or becomes an explicit index; individual
         values are never silently removed from a JSON prefix.
         """
-        for key in ('calculation_summaries', 'calculation_indexes', 'calculation_access'):
+        for key in ('calculation_summaries', 'calculation_indexes', 'calculation_access', 'calculation_contexts'):
             seed.pop(key, None)
         records = self._available_calculations(agent_id)
         if not records:
@@ -391,7 +447,7 @@ class ResearchRuntime:
         max_chars = int(self.config.get('max_context_chars', 240_000))
         # Keep the seed and all summaries below the generic compactor threshold.
         budget = max(0, min(int(max_chars * .60), int(max_chars * .66) - size(seed) - 1200))
-        summaries, indexes = [], []
+        prepared = []
         for record in records:
             summary = copy.deepcopy(record['summary'])
             if agent_id == 'manager' and summary.get('agent_id') != 'manager':
@@ -402,11 +458,21 @@ class ResearchRuntime:
                     local['calculation_id'] = record['calculation_id']
                 summary['full_inputs'] = {'record_id': local['record_id'], 'tool': 'recall_context',
                     'start': 0, 'total_chars': local['total_chars'], 'session_agent_id': agent_id}
-            if size([*summaries, summary]) <= budget:
+            prepared.append(summary)
+        prepared, contexts = compact_calculation_metadata(prepared)
+        summaries, indexes, included_contexts = [], [], {}
+        for summary in prepared:
+            proposed_contexts = dict(included_contexts)
+            if summary.get('context_ref') in contexts:
+                proposed_contexts[summary['context_ref']] = contexts[summary['context_ref']]
+            if size([*summaries, summary]) + size(proposed_contexts) <= budget:
                 summaries.append(summary)
+                included_contexts = proposed_contexts
             else:
                 indexes.append({key: summary.get(key) for key in
                     ('calculation_id', 'tool', 'agent_id', 'source_task_id', 'status', 'full_inputs')})
+        if included_contexts:
+            seed['calculation_contexts'] = included_contexts
         seed['calculation_summaries'] = summaries
         # Index rows are bounded independently. Full accounting stays in the
         # coverage event; no unbounded list can force the seed over its limit.
@@ -597,6 +663,7 @@ class ResearchRuntime:
         status = {"agent_id": agent_id, "model_calls_used": self.calls,
             "remaining_shared_model_calls": self._remaining_calls(),
             "remaining_agent_turns": remaining_turns, "closing": self.budget_closing,
+            "time_context": _time_context(self.context),
             "children": visible,
             "instruction": "这是当前运行状态。已有子任务不要重复创建；旧报告不代表后续补查已完成，阶段进展不等于最终报告。"}
         if getattr(session, 'submission_feedback', None):
@@ -605,6 +672,11 @@ class ResearchRuntime:
             status['candidate_draft'] = session.submission_candidate
         if final_request:
             status["instruction"] += " 当前只提交已有证据支持的报告；明确列出未完成任务、资料缺口及其影响，未知数字或分类保持未知，不再扩展研究。"
+            if agent_id == "manager":
+                status["instruction"] += (" 直接且仅调用一次 finish_analysis，将最终结果写入工具参数，不先输出普通消息或单独 JSON。"
+                    "report 简明地一次写清账户判断、范围内每只证券的动作、依据、重要反向因素和改变看法的条件；"
+                    "完整填写必填字段，可选结构仅在必要时填写，避免重复正文。"
+                    "正文关键来源就近使用已有 URL、材料ID或子报告身份，计算保留输入口径；不复制整份来源索引。")
         limit = max(1000, int(self.config.get("max_context_chars", 240_000)) // 3)
         if len(json.dumps(status, ensure_ascii=False)) > limit:
             record = archive(session, status, "runtime_status")
@@ -1086,6 +1158,11 @@ class ResearchRuntime:
                 except (ValueError, TypeError):
                     pass
         evidence, source_messages, extra_messages, seen = [], [], [], set()
+        for item in self.restored_material_evidence:
+            signature = json.dumps({'tool': item['tool'], 'result': item['result']},
+                                   sort_keys=True, ensure_ascii=False, default=str)
+            if signature not in seen:
+                evidence.append(copy.deepcopy(item)); seen.add(signature)
         latest_budget = None
         for record_id, message in messages:
             text = message.get('output') if message.get('type') == 'function_call_output' else message.get('content')
@@ -1132,6 +1209,14 @@ class ResearchRuntime:
         seed.pop('runtime_status', None)
         if self.synthesis_checkpoint:
             seed['synthesis_checkpoint'] = _checkpoint_context(self.synthesis_checkpoint)
+            checkpoint = seed['synthesis_checkpoint']
+            # Keep current metrics once when the saved copy is exactly the same
+            # JSON value. Different historical values and the stored checkpoint
+            # remain intact; reports and calculation evidence are not reduced.
+            if ('metrics' in seed and 'metrics' in checkpoint and
+                    json.dumps(seed['metrics'], sort_keys=True, default=str) ==
+                    json.dumps(checkpoint['metrics'], sort_keys=True, default=str)):
+                checkpoint.pop('metrics')
         seed['synthesis_transition'] = {'reason': reason, 'archive_count': len(session.archive),
             'instruction': '仅基于已经交付的可见研究结果汇总。保留未决问题和资料范围；索引及截断部分不等于新阅读。只提交一次最终报告，不再扩展研究。'}
         max_chars = int(self.config.get('max_context_chars', 240_000))
@@ -1354,7 +1439,8 @@ class ResearchRuntime:
                     visible["summary_truncated"] = True
                 reports.append({"agent_id": child.id, "role_id": child.role_id, "model_config": copy.deepcopy(child.model_config), "title": child.title, **visible})
         available_calculations = self._available_calculations('manager')
-        if not reports and not declaration and not available_calculations:
+        material_receipts = self._manager_material_receipts()
+        if not reports and not declaration and not available_calculations and not material_receipts:
             return {}
         unresolved_tasks = [*copy.deepcopy(restored.get('unresolved_tasks', [])), *[{"agent_id": child.id, "title": child.title, "task": child.task,
             "status": child.status, "round": child.round, "error": child.error,
@@ -1383,6 +1469,9 @@ class ResearchRuntime:
         if restored:
             checkpoint['restored_material_deliveries'] = copy.deepcopy(restored.get('material_deliveries', []))
         if hasattr(self.tools, 'store'):
+            deliveries = [*checkpoint.get('restored_material_deliveries', []), *material_receipts]
+            checkpoint = self.tools.store.include_manager_materials(checkpoint, deliveries, self.account_id)
+            checkpoint['material_deliveries'] = copy.deepcopy(deliveries)
             checkpoint['report_deliveries'] = self.tools.store.checkpoint_report_deliveries(self.task_id)
         if interruption:
             checkpoint.update(partial_research=True, interruption=copy.deepcopy(interruption))
@@ -1405,15 +1494,20 @@ class ResearchRuntime:
         calculations = self._available_calculations('manager')
         reports = [*(self.restored_checkpoint or {}).get('reports', []),
                    *[report for child in self.children.values() for report in child.reports]]
-        if not reports and not any(c.get('summary', {}).get('status') == 'ok' for c in calculations) and not self.restored_checkpoint:
+        material_receipts = self._manager_material_receipts()
+        if not reports and not any(c.get('summary', {}).get('status') == 'ok' for c in calculations) and not self.restored_checkpoint and not material_receipts:
             return
         previous = self.synthesis_checkpoint or {}
         old_ids = {c.get('calculation_id') for c in previous.get('calculations', [])}
         new_ids = {c.get('calculation_id') for c in calculations}
         old_reports = {r.get('report_id') for r in previous.get('reports', [])}
         new_reports = {r.get('report_id') for r in reports}
+        old_materials = {item['id'] for item in manager_material_deliveries(previous.get('material_deliveries', []))}
+        new_materials = {item['id'] for item in [*material_receipts,
+            *manager_material_deliveries((self.restored_checkpoint or {}).get('material_deliveries', []))]}
         if previous.get('task_id') == self.task_id and (not old_ids <= new_ids or not old_reports <= new_reports or
-                (old_ids == new_ids and old_reports == new_reports)):
+                not old_materials <= new_materials or
+                (old_ids == new_ids and old_reports == new_reports and old_materials == new_materials)):
             return  # Preserve a more complete or already-ready final checkpoint.
         interruption = {'stage': stage, 'completed_calculations': len(calculations), 'completed_child_reports': len(reports),
             'note': '研究在完整交付前中断；仅完成的工具结果/子报告可复用。未终止SSE、未完成专题、未读取材料不计作成果。'}
@@ -1572,6 +1666,8 @@ class ResearchRuntime:
         if name in {"submit_report", "finish_analysis"}:
             self._text(args, "summary" if name == "submit_report" else "report")
             if name == "finish_analysis":
+                if hasattr(self.tools, 'preflight_delivery'):
+                    args = await self.tools.preflight_delivery(args)
                 if 'covered_demand_ids' in args and (not isinstance(args['covered_demand_ids'], list) or
                         any(type(value) is not int or value < 1 for value in args['covered_demand_ids'])):
                     raise ValueError('covered_demand_ids 需要分页需求中已实际处理的正整数 ID 数组')
@@ -1592,7 +1688,7 @@ class ResearchRuntime:
                         return {'accepted': False, 'reference_feedback': resolved,
                                 'message': '部分引用不存在或不在当前范围。可查已有材料修正；不要编造或静默换来源。仅反馈一次，再次提交仍有缺口将明确保留并交付有效部分。'}
                     return {'accepted': True, 'resolved_result': resolved}
-            return {"accepted": True}
+            return {"accepted": True, "resolved_result": args}
         raise ValueError("未知工具")
 
     async def _spawn(self, args: dict) -> dict:

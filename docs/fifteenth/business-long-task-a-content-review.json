@@ -1,0 +1,530 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-03T01:38:39.923032+08:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/delivery_validation",
+    "method": "Independent full reading of the actual final report, findings, limitations, suggestions, nine forecasts, information impacts and research records; complete reading of all four checkpoint child reports; Decimal crosscheck of 29 saved calculations; read-only checks of actual received financial excerpts and structured data, ledger, permissions, application receipts and real-process restart observations. No new source fetch or hidden reasoning access.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "report_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "report_characters": 2462,
+    "job_id": "0fcc724b67af4629a883922e1f0731c2",
+    "source_sha256": "be9223ff6c60958362d2e39edd5dde47d8eeff901cc19bc9e80377559b77a361",
+    "account_input_version": 4,
+    "private_report_location": "data/evaluations/fifteenth-business-long-task-a-v4/execution/account-report.md",
+    "model_result_location": "data/evaluations/fifteenth-business-long-task-a-v4/execution/model-result.json"
+  },
+  "content_assessment": "evaluated",
+  "overall": "pass_with_nonblocking_observations",
+  "accepted": true,
+  "accepted_definition": "Accepts this actual limited normal-A simulated-account report as a readable, attributable account decision covering all three securities, cash, alternatives, adverse evidence and change conditions. The two precise representation errors below remain errors; this review neither rewrites them nor accepts its wording as proof of formal forecasting. It is not investment accuracy, a complete research dossier, human sign-off or completion of the A-sale/B matrix.",
+  "acceptance_boundaries": {
+    "normal_a_limited_account_content_accepted": true,
+    "content_prerequisite_for_a_sale_satisfied": true,
+    "blocking_content_findings": 0,
+    "formal_forecast_claim_accepted": false,
+    "formal_window_or_direction_acceptance_verified": false,
+    "formal_forecast_samples": 0,
+    "exploratory_direction_samples": 2,
+    "exploratory_abstentions": 7,
+    "naturally_matured_scores": 0,
+    "a_sale_and_b_completed": false,
+    "continuous_operation_validated": false,
+    "application_assessment_rewritten": false
+  },
+  "checks": [
+    {
+      "id": "account_and_time",
+      "status": "pass",
+      "finding": "Cash 86484.90, quantities 100/1000/1000, fee-inclusive costs 1005.00/10005.10/2505.00 and total fees 15.10 match the actual three-buy ledger and version 4. The November 3 pre-open decision uses November 2 last-close quotes 7.941/7.900/1.989. Values 10683.10, assets 97168.00 and P&L -2832.00 reconcile. Simulated booking prices are explicitly separate from market quotes; sale availability dates and unknown future fees are preserved."
+    },
+    {
+      "id": "scope_actions_alternatives",
+      "status": "pass",
+      "finding": "All three securities have an account action, supporting facts, adverse or contrary considerations, and concrete change conditions. The report evaluates retaining cash, adding and immediate liquidation, and distinguishes security-only concentration from total-asset exposure. This is a substantive limited three-security report, not merely a process or cash-only answer."
+    },
+    {
+      "id": "financial_provenance",
+      "status": "pass_with_observation",
+      "finding": "Q3 revenue 383804809.20, profit 10142806.55, their -26.33%/-46.85% year-on-year changes, YTD amounts and -2.04%/+19.11% changes are in the actual manager-read PDF page 2. YTD amounts and derived quarterly differences agree with saved structured cumulative rows and calculations. Goodwill 500967184.56 is in received page 7. Equity increase 546916090.78 is page-2 equity subtraction, not revenue. Cumulative and single-quarter semantics are correctly distinguished. A narrow material-ID/page mapping error is retained below."
+    },
+    {
+      "id": "source_access_fidelity",
+      "status": "pass",
+      "finding": "The report does not promote failed ETF PDF keyword search, source links, missing IOPV or absent industry originals to verified facts. The historical-price comparison and precise 20/60-day/volatility gaps are explicitly qualified. The manager had independent financial PDF pages beyond the filing child; child limitations are not treated as absence of all manager evidence."
+    },
+    {
+      "id": "calculation_identity",
+      "status": "pass_with_observation",
+      "finding": "All six abbreviated calculation references uniquely match actual saved calculation IDs; account percentages and quarterly results reconcile. IDs are shortened rather than full direct identifiers, so the mapping below is needed for exact navigation. All 29 saved operations were independently reproduced with Decimal; arithmetic success does not itself validate an unattributed price-date association."
+    },
+    {
+      "id": "application_and_restart",
+      "status": "pass",
+      "finding": "Three submitted suggestions persisted as three watching recommendations. All nine submitted exploratory targets persisted (two down, seven abstain). Each receipt ID matches its stored row. One version-4 current report remains identical across two after-publication and two after-real-process-restart observations; ledger facts are unchanged and no extra model task ran."
+    },
+    {
+      "id": "forecast_classification",
+      "status": "pass_with_nonblocking_label_error",
+      "finding": "The system batch and all nine rows are exploratory. Narrative use of 正式预测 is not an accurate system classification and is rejected as such. Actual directions and abstentions match the report, but formal forecast sample count remains zero and there is no mature accuracy evidence."
+    }
+  ],
+  "blocking_findings": [],
+  "nonblocking_observations": [
+    {
+      "id": "formal_label_does_not_match_exploratory_batch",
+      "severity": "nonblocking_for_limited_account_content; incorrect_forecast_classification",
+      "exact_short_quote": "正式预测：1日、5日down；20日abstain。",
+      "finding": "The body and decision summary repeatedly call forecasts formal, while the actual batch and all nine persisted samples have kind=exploratory. Report wording cannot override system batch type.",
+      "acceptance_reason": "This is a real labeling error, not validated formal forecasting. It does not alter the stored classifications, figures, account actions, conditional reasoning or actual two-direction/seven-abstention outcomes. This review accepts only the limited account content and explicitly excludes the formal claim.",
+      "consequence": "Public reporting and later gates must count 2 exploratory directions, 7 exploratory abstentions, 0 formal samples; formal-window/direction acceptance remains unverified.",
+      "model_report_not_edited": true
+    },
+    {
+      "id": "financial_material_range_mismatch",
+      "severity": "nonblocking_provenance_precision_error",
+      "finding": "The authored financial reference/information_impacts point to 66f6410ee78943fba512a203270c7933 (PDF pages 5–7), while the single-quarter table is actually in manager-delivered 0f0acf5b9ccf4245a748ec722ac92eed pages 1–4, page 2. The report names the correct common PDF URL, but the narrow saved locator does not itself support those table values. Its statement of pages 1–3 also omits the actually delivered page 4.",
+      "acceptance_reason": "The exact facts are present in actual manager-delivered material from that same PDF and match structured data/calculations; they are not invented or inferred from an unread source. The range error remains explicit and is not silently repaired in the report or database.",
+      "supporting_material_id": "0f0acf5b9ccf4245a748ec722ac92eed",
+      "mispointed_material_id": "66f6410ee78943fba512a203270c7933",
+      "source_url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF",
+      "model_report_not_edited": true
+    }
+  ],
+  "account_numeric_crosscheck": {
+    "cash": "86484.90",
+    "securities_value": "10683.10",
+    "total_assets": "97168.00",
+    "unrealized_pnl": "-2832.00",
+    "realized_pnl": "0.00",
+    "total_buy_fees": "15.10",
+    "cash_percent": "89.01",
+    "securities_percent": "10.99",
+    "stock_percent_of_securities": "73.95",
+    "stock_percent_of_total_assets": "8.13",
+    "sellable_on": {
+      "SH:518880": "2026-11-03",
+      "SZ:002354": "2026-11-04",
+      "SZ:159599": "2026-11-04"
+    },
+    "prepared_final_and_reopened_ledger_facts_equal": true
+  },
+  "security_reviews": [
+    {
+      "security_id": "SH:518880",
+      "status": "pass_limited",
+      "action": "Hold the small existing position, do not add.",
+      "basis": "Correct 0.82% total-asset weight and recent weak last-close path.",
+      "counter_and_conditions": "Missing verified gold/rate originals and ETF structure; recovery near 8.0 or adverse tracking/liquidity evidence changes the view.",
+      "forecast_boundary": "Two exploratory down directions and one abstention; no proof of future investment effectiveness."
+    },
+    {
+      "security_id": "SZ:002354",
+      "status": "pass_limited",
+      "action": "Hold/observe, do not add; ledger availability begins November 4.",
+      "basis": "Correct 8.13% asset / 73.95% security concentration and adverse single-quarter financial disclosure balanced against the last-day rebound.",
+      "counter_and_conditions": "Continued weakness below about 7.15 or further adverse disclosure prompts reduction review; incomplete business/ownership-source evidence is retained.",
+      "forecast_boundary": "Three exploratory abstentions, not sideways predictions."
+    },
+    {
+      "security_id": "SZ:159599",
+      "status": "pass_limited",
+      "action": "Observe existing position, do not add; ledger availability begins November 4.",
+      "basis": "Small total-asset weight, limited received price-path evidence and unverified ETF structure.",
+      "counter_and_conditions": "Below about 1.948 prompts reduction review; recovery near 2.157 changes price observation without automatic buying.",
+      "forecast_boundary": "Three exploratory abstentions; no invented tracking/IOPV or company-profit analysis."
+    }
+  ],
+  "calculation_mapping": {
+    "saved": 29,
+    "arithmetic_reproduced": 29,
+    "arithmetic_mismatches": 0,
+    "final_requests": [
+      {
+        "request_number": 38,
+        "summaries": 29
+      },
+      {
+        "request_number": 39,
+        "summaries": 29
+      }
+    ],
+    "authored_abbreviated_references": [
+      {
+        "authored_reference": "calculation-50914c0a",
+        "full_calculation_id": "calculation-50914c0a371d4f11bbb7338ae4b69964",
+        "arguments": {
+          "operation": "percent",
+          "values": [
+            "86484.90",
+            "97168.00"
+          ]
+        },
+        "result": "89.00553680223942038531203688",
+        "unique_prefix_match": true
+      },
+      {
+        "authored_reference": "calculation-0c123ed2",
+        "full_calculation_id": "calculation-0c123ed2ba634ff683537a1e85a5169e",
+        "arguments": {
+          "operation": "percent",
+          "values": [
+            "10683.10",
+            "97168.00"
+          ]
+        },
+        "result": "10.99446319776057961468796312",
+        "unique_prefix_match": true
+      },
+      {
+        "authored_reference": "calculation-f01d6363",
+        "full_calculation_id": "calculation-f01d63630fc241bb85f47cf430a085d3",
+        "arguments": {
+          "operation": "percent",
+          "values": [
+            "7900.00",
+            "97168.00"
+          ]
+        },
+        "result": "8.130248641528075086448213404",
+        "unique_prefix_match": true
+      },
+      {
+        "authored_reference": "calculation-d952bedb",
+        "full_calculation_id": "calculation-d952bedb751343c28030fc050aeb2fa1",
+        "arguments": {
+          "operation": "percent",
+          "values": [
+            "-0.627",
+            "8.568"
+          ]
+        },
+        "result": "-7.317927170868347338935574230",
+        "unique_prefix_match": true
+      },
+      {
+        "authored_reference": "calculation-bc6cc567",
+        "full_calculation_id": "calculation-bc6cc567b07d46cfb0a3359ce483dc79",
+        "arguments": {
+          "operation": "subtract",
+          "values": [
+            "1477619199.45",
+            "1093814390.25"
+          ]
+        },
+        "result": "383804809.20",
+        "unique_prefix_match": true
+      },
+      {
+        "authored_reference": "calculation-083d5d8b",
+        "full_calculation_id": "calculation-083d5d8b8d3e4a5c8e7ac9fb74fdaa32",
+        "arguments": {
+          "operation": "subtract",
+          "values": [
+            "50865243.13",
+            "40722436.58"
+          ]
+        },
+        "result": "10142806.55",
+        "unique_prefix_match": true
+      }
+    ]
+  },
+  "child_report_visibility": {
+    "completed_child_reports": 4,
+    "reports": [
+      {
+        "report_id": "5ddc7a357e8244ed927c7fb6b3f892fd",
+        "role_id": "market_researcher",
+        "title": "三证券价格与相对表现",
+        "findings": 6,
+        "open_questions": 4
+      },
+      {
+        "report_id": "50631071f1d14062a0a5dd03755803db",
+        "role_id": "filing_researcher",
+        "title": "天娱数科披露核对",
+        "findings": 12,
+        "open_questions": 5
+      },
+      {
+        "report_id": "cd2c64ecf2e342b6b8bf32b40d4dc8f6",
+        "role_id": "etf_researcher",
+        "title": "两只ETF结构与跟踪",
+        "findings": 8,
+        "open_questions": 6
+      },
+      {
+        "report_id": "7f0c40a36b394358af22729c98815aea",
+        "role_id": "industry_researcher",
+        "title": "黄金广告芯片行业事实",
+        "findings": 8,
+        "open_questions": 5
+      }
+    ],
+    "final_request_numbers": [
+      38,
+      39
+    ],
+    "unique_full_reports_in_successful_request": 4,
+    "summary_receipts_are_duplicate_projections_not_extra_reports": true,
+    "child_reports_do_not_imply_manager_read_all_originals": true
+  },
+  "source_visibility": {
+    "checkpoint_material_indexes": 293,
+    "checkpoint_material_ids": 199,
+    "material_receipts": 309,
+    "content_receipts": 21,
+    "metadata_only_receipts": 288,
+    "coverage_statuses": {
+      "index_only": 180,
+      "needs_research": 14,
+      "covered": 3
+    },
+    "critical_material_permissions": {
+      "9e71ac0b3b034c55bec2f3bbadc9a6e4": true,
+      "98c51667a9a64129bac585f8fbced2c7": true,
+      "6311225c4bab4204b6a02e210161d506": true,
+      "66f6410ee78943fba512a203270c7933": true,
+      "e7d7ffc4f08e4a8a9c99ed0a2b3b6edc": true,
+      "0f0acf5b9ccf4245a748ec722ac92eed": true,
+      "fce98a7787f44c6db061f583fbe1d885": true
+    },
+    "stored_reference_summary": {
+      "resolved": 40,
+      "source_link": 309,
+      "unresolved": 0
+    },
+    "top_level_references": 5,
+    "source_link_counts_do_not_mean_full_text_reads": true,
+    "network_reachability_tested": false,
+    "financial_manager_excerpt": {
+      "material_id": "0f0acf5b9ccf4245a748ec722ac92eed",
+      "physical_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "access": "excerpt",
+      "truncated": true
+    },
+    "financial_other_excerpt": {
+      "material_id": "66f6410ee78943fba512a203270c7933",
+      "physical_pages": [
+        5,
+        6,
+        7
+      ],
+      "access": "excerpt",
+      "truncated": true
+    }
+  },
+  "application_state_separate_from_review": {
+    "summary_content_assessment": "not_evaluated",
+    "published_delivery_content_assessment": "not_evaluated",
+    "contract_accepted": true,
+    "published": true,
+    "publication_status": "current",
+    "submission_outcome": "recovered",
+    "submission_corrections": 1,
+    "suggestions_submitted": 3,
+    "suggestions_applied": 3,
+    "suggestion_actions_submitted": 0,
+    "forecasts_submitted": 9,
+    "forecasts_applied": 9,
+    "forecast_coverage": {
+      "expected": 9,
+      "direction_published": 2,
+      "abstained": 7,
+      "uncovered": 0,
+      "waiting_data": 0,
+      "missed": 0,
+      "failed": 0
+    },
+    "batch_kind": "exploratory",
+    "formal_samples": 0,
+    "recommendations": [
+      {
+        "id": "912cb959d4ee4fdbb37e525bca0dc49f",
+        "security_id": "SH:518880",
+        "state": "watching",
+        "input_version": 4,
+        "valid_until": "2026-11-04T15:00:00+08:00"
+      },
+      {
+        "id": "ee3e4b19299c45fcaa23dcdb55857c68",
+        "security_id": "SZ:002354",
+        "state": "watching",
+        "input_version": 4,
+        "valid_until": "2026-11-04T15:00:00+08:00"
+      },
+      {
+        "id": "3973c29cd5c44601aaf24d4ead015bfb",
+        "security_id": "SZ:159599",
+        "state": "watching",
+        "input_version": 4,
+        "valid_until": "2026-11-09T15:00:00+08:00"
+      }
+    ],
+    "forecasts": [
+      {
+        "id": "aa7944e077814d1d950759c85e6dd7a6",
+        "kind": "exploratory",
+        "symbol": "SH:518880",
+        "base_date": "2026-11-02",
+        "horizon": 1,
+        "target_date": "2026-11-03",
+        "direction": "down",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "1bc0e359ecca4e72a4a1e3bafe250b77",
+        "kind": "exploratory",
+        "symbol": "SH:518880",
+        "base_date": "2026-11-02",
+        "horizon": 5,
+        "target_date": "2026-11-09",
+        "direction": "down",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "ba64d9e2bce44c1792ef04171b8e0748",
+        "kind": "exploratory",
+        "symbol": "SH:518880",
+        "base_date": "2026-11-02",
+        "horizon": 20,
+        "target_date": "2026-11-30",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "1889b799db8b4d6ebe08592c2ac8590f",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 1,
+        "target_date": "2026-11-03",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "730265f875024b55b90c2eee31e583d2",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 5,
+        "target_date": "2026-11-09",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "3745b607c0364226897ae8a29640e1fd",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 20,
+        "target_date": "2026-11-30",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "3d69421ad31f42b8b98b5fd88af73ee5",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 1,
+        "target_date": "2026-11-03",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "5363a128d3564ca097303e98bdcb4460",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 5,
+        "target_date": "2026-11-09",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      },
+      {
+        "id": "ceab6dddc0fd405e8880532ac4a59712",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 20,
+        "target_date": "2026-11-30",
+        "direction": "abstain",
+        "published_at": "2026-11-03T01:31:28.714385+08:00",
+        "information_cutoff": "2026-11-03T01:31:28.714385+08:00"
+      }
+    ],
+    "no_saved_assessment_rewritten": true
+  },
+  "publication_and_restart": {
+    "unique_report_id": "576433dea9114d2b8b4fcd0a1460cc8c",
+    "version": 4,
+    "after_publish_observations": 2,
+    "after_restart_observations": 2,
+    "all_report_hashes_and_structured_ids_equal": true,
+    "real_process_restart_pids": [
+      94326,
+      95201
+    ],
+    "execution_stopped_reported": true,
+    "direct_os_pid_check": "Unavailable in this audit sandbox (ps denied); restart evidence is actual harness process IDs/health and API observation records, not a claim that SQLite reopen alone restarts a service.",
+    "new_model_tasks_during_observation": 0
+  },
+  "denominators": {
+    "actual_model_http_attempts": 39,
+    "response_completed_and_http_eof": 38,
+    "response_incomplete_max_output_tokens_and_http_eof": 1,
+    "reports_published": 1,
+    "first_final_submission_succeeded": false,
+    "bounded_contract_correction_succeeded": true,
+    "required_securities": 3,
+    "securities_with_account_actions": 3,
+    "suggestions_submitted_and_applied": 3,
+    "exploratory_forecast_targets": 9,
+    "exploratory_direction_predictions": 2,
+    "exploratory_abstentions": 7,
+    "uncovered_targets": 0,
+    "formal_forecast_samples": 0,
+    "naturally_matured_evaluations": 0
+  },
+  "immutability": {
+    "model_report_not_edited": true,
+    "private_export_byte_identical_to_report": true,
+    "export_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "protected_file_hashes_before": {
+      "summary.json": "d752fcfaae48f3be1e518ccdbf20558e6fc9653692edef2f948a87e15d7998d8",
+      "model-result.json": "04b0724f81d719692d3a485d36518e1bac8ddff618751c54190efa8f9560d550"
+    },
+    "sqlite_access": "mode=ro + PRAGMA query_only; isolated v4 database only",
+    "database_logical_sha256_before": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "source_sha256_at_review": "be9223ff6c60958362d2e39edd5dde47d8eeff901cc19bc9e80377559b77a361",
+    "public_review_copies_full_private_report": false,
+    "database_logical_sha256_after": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451",
+    "database_logical_hash_unchanged": true,
+    "protected_file_hashes_unchanged": true
+  },
+  "remaining_limits": [
+    "The report is a limited normal-A result; ETF contracts, matched IOPV, precise 20/60-day aligned returns/volatility and several industry/original-filing gaps remain unresolved.",
+    "A version-changing sale and B cash-candidate stages require their own actual reports and independent review; this file does not claim the whole goal complete.",
+    "Formal prediction windows/directions and natural maturity/accuracy remain unverified.",
+    "Correct calculations and attributable conditional opinions are not guarantees of future investment performance."
+  ]
+}

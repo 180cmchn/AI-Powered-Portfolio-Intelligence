@@ -1,0 +1,26 @@
+{
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "run": {
+    "id": 41413931460,
+    "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_attempt": 1,
+    "event": "push",
+    "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460"
+  },
+  "python": {
+    "job_id": 125173106146,
+    "passed": 1164,
+    "failed": 1,
+    "warnings": 1,
+    "failed_test": "tests/test_fourteenth_deadlines.py::test_inflight_request_honors_the_earliest_cap_and_keeps_saved_material[analysis]",
+    "expected_http_requests": 1,
+    "observed_http_requests": 0,
+    "error_code": "analysis_budget_exhausted"
+  },
+  "browser_groups": 11,
+  "browser_all_success": true,
+  "required_aggregate": "failure",
+  "source": "Read-only GitHub API and workflow job log rechecked at start"
+}

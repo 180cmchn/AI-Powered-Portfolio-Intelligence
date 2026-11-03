@@ -91,7 +91,7 @@ async def test_default_budget_preserves_every_value_in_final_http_after_archive(
         for original in expected:
             item = results[original['material_id']]
             for key in ('return', 'relative_return', 'aligned_asset_return', 'aligned_benchmark_return',
-                        'returned_range', 'valid_samples', 'return_samples', 'adjustment', 'methods', 'material_identity'):
+                        'returned_range', 'return_period', 'moving_average_period', 'valid_samples', 'return_samples', 'adjustment', 'methods', 'material_identity'):
                 assert item[key] == original[key]
             assert item['benchmark']['material_identity'] == original['benchmark']['material_identity']
             assert item['agent_id'] == 'manager' and item['input_version'] == context['input_version']

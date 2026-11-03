@@ -27,6 +27,7 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
     account = store.save_account(AccountInput(name="Budget regression", holdings=[]))
     job = store.claim_jobs(account_id=account["id"])[0]
     context = {"job_id": job["id"], "account": account, "input_version": account["version"],
+               "universe_version": store.universe_snapshot()["universe_version"],
                "metrics": {"positions": []}, "scope": "account"}
     tools = ResearchTools(store, job, config, context)
     requests, budgets, events = [], [], []

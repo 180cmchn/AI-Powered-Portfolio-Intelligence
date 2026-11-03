@@ -285,12 +285,24 @@ def test_same_price_condition_new_report_no_infinite_reanalysis(store):
     assert store.claim_jobs()
 
 
-def test_malformed_tracking_metadata_keeps_report_and_does_not_break_worker(store):
+def test_legacy_malformed_tracking_metadata_remains_readable_but_new_output_is_rejected(store):
     a=account(store)
-    publish(store,store.claim_jobs()[0],suggestions=[{**suggestion(None),'price_conditions':['bad condition']}])
+    publish(store,store.claim_jobs()[0],suggestions=[suggestion(None)])
+    # An already stored legacy malformed condition remains readable; new
+    # submissions must be corrected before acceptance, not silently applied.
+    with store.connect() as db:
+        row=db.execute('SELECT id,body FROM recommendations WHERE account_id=?',(a['id'],)).fetchone()
+        body=json.loads(row['body']);body['price_conditions']=['bad condition']
+        db.execute('UPDATE recommendations SET body=? WHERE id=?',(json.dumps(body),row['id']))
     store.review_recommendations({'SH:600519':{'price':'10','status':'ok','as_of':now()}})
-    assert store.recommendations(a['id'])[0]['state']=='needs_review'
+    assert store.recommendations(a['id'])[0]['review_status']=='needs_review'
+    assert store.recommendations(a['id'])[0]['price_state']=='uncomputable'
     assert store.analyses(a['id'])[0]['report']=='deterministic report'
+    from app.delivery import DeliveryContractError
+    store.enqueue(a['id'],'manual')
+    with pytest.raises(DeliveryContractError,match=r'suggestions\[0\].price_conditions\[0\]'):
+        publish(store,store.claim_jobs()[0],suggestions=[{**suggestion(None),'price_conditions':['bad condition']}])
+    assert len(store.analyses(a['id']))==1
 
 
 @pytest.mark.asyncio
@@ -335,7 +347,12 @@ def test_repeated_invalid_or_past_report_expiry_does_not_loop(store):
     publish(store,store.claim_jobs()[0],valid_until='2020-01-01T00:00:00+08:00')
     store.review_recommendations()
     correction=store.claim_jobs()[0]
-    publish(store,correction,valid_until='not-a-date')
+    publish(store,correction,valid_until=None)
+    # Explicit legacy persistence fixture: new submissions reject malformed
+    # expiry; historical invalid rows must still expire without a retry loop.
+    with store.connect() as db:
+        db.execute("UPDATE analyses SET result=json_set(result,'$.valid_until','not-a-date') WHERE job_id=?", (correction['id'],))
+        db.execute("UPDATE jobs SET result=json_set(result,'$.valid_until','not-a-date') WHERE id=?", (correction['id'],))
     store.review_recommendations()
     assert not store.claim_jobs()
     assert store.account(a['id'])['analysis_state']=='expired'

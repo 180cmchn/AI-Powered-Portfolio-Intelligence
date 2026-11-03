@@ -1,0 +1,11 @@
+{
+  "kind": "actual_business_content_status",
+  "job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+  "status": "not_evaluated",
+  "accepted": null,
+  "reason": "No accepted/persisted final report; model-result.json absent. Partial text or function arguments are not substituted.",
+  "report_published": false,
+  "report_file_created": false,
+  "whole_business_stage_passed": false,
+  "model_result_exists": false
+}

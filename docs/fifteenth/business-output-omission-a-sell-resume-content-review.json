@@ -1,0 +1,163 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-03T03:27:05.225224+08:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/delivery_validation",
+    "method": "Read-only final-state and preservation checks against parent failed execution and accepted original-A database. Reuses prior 68-calculation/source pre-review without rerunning it. No model/third-party HTTP, service startup or source edit.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "job_id": "62018d6878534a03aa3ce107fcf73ed6",
+    "parent_job_id": "467cfca197234476ab538d4c96a6b667",
+    "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "account_input_version": 5,
+    "report_sha256": null,
+    "private_execution_location": "data/evaluations/fifteenth-business-output-omission-a-sell-resume-v1/execution"
+  },
+  "accepted": null,
+  "content_assessment": "not_evaluated",
+  "overall": "failed_before_final_delivery",
+  "acceptance_boundary": "No final model result or report exists. Partial checkpoint reuse and two successful intermediate requests do not constitute content acceptance; B remains gated by an actually accepted sale report.",
+  "execution": {
+    "started_at": "2026-11-03T03:12:54.461344+08:00",
+    "completed_at": "2026-11-03T03:16:40.762331+08:00",
+    "job_state": "failed",
+    "actual_recovery_mode": "continue_research",
+    "checkpoint_job_id": "467cfca197234476ab538d4c96a6b667",
+    "published": false,
+    "contract_accepted": false,
+    "mechanical_passed": false,
+    "execution_stopped": true,
+    "model_result_exists": false,
+    "private_account_report_created": false,
+    "new_http_attempts": 3,
+    "completed_and_http_eof": 2,
+    "accepted_request_unknown_outcome": 1,
+    "budget": {
+      "maximum": 40,
+      "reserved_attempts": 3,
+      "kind": "fifteenth_independent_business_stage_v1",
+      "stage": "a_after_sell",
+      "stops": [
+        {
+          "reason": "accepted_or_sent_request_outcome_unknown",
+          "at": "2026-11-03T03:16:40.194244+08:00"
+        }
+      ],
+      "denied_job_ids": []
+    },
+    "additional_tasks": 0
+  },
+  "last_request": {
+    "status_code": 200,
+    "request_accepted": true,
+    "duration_ms": 156950.18,
+    "stream_last_byte_ms": 13298.62,
+    "stream_last_progress_ms": 13298.73,
+    "stream_terminal": null,
+    "http_body_complete": false,
+    "error": "RemoteProtocolError",
+    "error_code": "upstream_transport_error",
+    "cancelled_by": null,
+    "stream_close_reason": "transport_error_before_terminal",
+    "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+    "requested_max_output_tokens": null
+  },
+  "supplier_client_observation_boundary": {
+    "source_document": "docs/fifteenth/output-omission-transport-correlation.json",
+    "supplier_log_time": "2026-11-03 03:14:24",
+    "supplier_duration_seconds": 20,
+    "supplier_visible_red_stream_marker": false,
+    "local_duration_ms": 156950.18,
+    "local_last_byte_ms": 13298.62,
+    "local_terminal_received": false,
+    "association_method": "Fresh native Chrome AX full reload plus visible screenshot. Row association uses tightly matching times and surrounding successful token counts; supplier row does not expose response_id here.",
+    "dashboard_independently_opened_by_this_reviewer": false,
+    "finding": "The supplier dashboard record and local stream observation differ. Dashboard absence of a red marker does not supply a locally received terminal event. This comparison does not prove which hop or endpoint caused loss; no final narrative can be reconstructed from it."
+  },
+  "preservation": {
+    "cash": "87479.90",
+    "input_version": 5,
+    "quantities": {
+      "SH:518880": "0",
+      "SZ:002354": "1000",
+      "SZ:159599": "1000"
+    },
+    "realized_pnl": "-10.00",
+    "total_fees": "20.10",
+    "single_sale_entry_id": "4f4647b887f14be08561a3a5122a1b34",
+    "sale_count": 1,
+    "new_ledger_entries_since_failed_parent": 0,
+    "ledger_all_rows_equal_parent": true,
+    "prepared_and_reopened_and_parent_ledger_facts_equal": true,
+    "prior_report_id": "576433dea9114d2b8b4fcd0a1460cc8c",
+    "prior_report_version": 4,
+    "prior_report_status": "stale",
+    "prior_report_body_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "prior_report_body_id_version_unchanged": true,
+    "prior_nine_forecast_rows_exactly_unchanged": true,
+    "new_rows": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0
+    },
+    "new_report_authored_suggestions_submitted": 0,
+    "new_report_authored_suggestions_applied": 0,
+    "new_forecasts_submitted": 0,
+    "new_forecasts_applied": 0,
+    "new_delivery_application": null,
+    "new_batches": [
+      {
+        "id": "032f9eb619b640ecbda02477075bc20e",
+        "kind": "exploratory",
+        "state": "open",
+        "expected_count": 6,
+        "input_version": 5
+      }
+    ],
+    "new_checkpoint_saved": true,
+    "new_checkpoint_completed_reports": 2,
+    "new_checkpoint_calculations": 68,
+    "checkpoint_age_or_future_reuse_not_promised": true,
+    "old_recommendation_state_boundary": "Input-version-triggered review states are legitimate; no new report-authored recommendation was applied.",
+    "postpublication_restart_observations": 0,
+    "postpublication_restart_assessment": "not_evaluated because publication did not occur"
+  },
+  "prior_partial_review": "docs/fifteenth/business-output-omission-a-sell-content-review.json",
+  "immutability": {
+    "database_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-resume-v1/execution/evaluation.sqlite3": "9f5501ae75427652c02181ce429dbef6d436e84d1cae277adfd397c5bb25f72f",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/evaluation.sqlite3": "7cc48d1a08b6ca145aff19273c5685dd89a28f92b8a5dcb7ae0f1d6aa2ef1339",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451"
+    },
+    "protected_file_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-resume-v1/execution/summary.json": "5f58d8b1d6b5fb105bd10002ab4ff8555d8cc6079835920810c0e9178c7e7e8f",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/summary.json": "981117f9f0aae102309c9327a696db5fc67b311c62db418458fc31512a7a4c2c",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/model-result.json": "04b0724f81d719692d3a485d36518e1bac8ddff618751c54190efa8f9560d550",
+      "docs/fifteenth/business-output-omission-a-sell-content-review.json": "f652e68f74537a7439107266c85ebcc53bdef66bf0a563aa3b9c4b5f03aa3af5",
+      "docs/fifteenth/business-output-omission-a-sell-content-review.md": "2931dc4d547dd56e79b81a7d6b588c6d00b4c1e126c80ab164a0c653805fcbbd",
+      "docs/fifteenth/business-long-task-a-sell-content-review.json": "a2dc5cfaeaa18120bb8a181f33db360c54d49f1da9dc5b812066245eb97086d4"
+    },
+    "source_at_execution_preserved": true,
+    "environment_at_execution_preserved": true,
+    "source_sha256_at_review": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "source_identity_boundary": "Execution identity is retained from the completed summary. Any later helper development is separate from that identity.",
+    "sqlite_access": "mode=ro + PRAGMA query_only; isolated databases only",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "old_rejected_and_not_evaluated_reviews_untouched": true,
+    "database_hashes_after": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-resume-v1/execution/evaluation.sqlite3": "9f5501ae75427652c02181ce429dbef6d436e84d1cae277adfd397c5bb25f72f",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/evaluation.sqlite3": "7cc48d1a08b6ca145aff19273c5685dd89a28f92b8a5dcb7ae0f1d6aa2ef1339",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451"
+    },
+    "database_logical_hashes_unchanged": true,
+    "protected_file_hashes_unchanged": true
+  },
+  "remaining_limits": [
+    "No final report to evaluate or export.",
+    "No successful after-sale content prerequisite for B.",
+    "The subsequent direct-transport comparison is a different execution and cannot change this result."
+  ]
+}

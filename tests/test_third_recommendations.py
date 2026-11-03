@@ -13,6 +13,9 @@ from app.store import Store
 def store(tmp_path):
     store = Store(tmp_path / "recommendations.sqlite3")
     store.set_meta("settings", {"debounce_seconds": 0, "quote_provider": "manual"})
+    # New account-wide deliveries may only act on the frozen universe.
+    store.save_universe({"watchlist": [], "candidates": ["SH:600519", "SZ:000002",
+        *[f"SH:{600000 + n}" for n in range(65)]]})
     return store
 
 
@@ -102,7 +105,8 @@ def test_local_scope_expiry_and_account_isolation(store):
     assert unchanged["review_status"] == "valid" and unchanged["updated_at"] == a["updated_at"]
     with pytest.raises(KeyError):
         store.recommendation(second["id"], a["id"])
-    publish(store, second["id"], maintained_suggestion_ids=[a["id"]], revoked_suggestion_ids=[a["id"]], suggestions=[suggestion(id=a["id"])])
+    with pytest.raises(ValueError, match="建议 ID|冲突"):
+        publish(store, second["id"], maintained_suggestion_ids=[a["id"]], revoked_suggestion_ids=[a["id"]], suggestions=[suggestion(id=a["id"])])
     assert store.recommendation(first["id"], a["id"])["review_status"] == "valid"
     assert store.recommendations_page(second["id"])["total"] == 0
     store.review_recommendations(stamp=datetime.now(TZ) + timedelta(hours=2))

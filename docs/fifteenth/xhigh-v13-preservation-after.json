@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-11-02T22:13:37.346130+08:00",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "protected_files": {
+    "data/live.sqlite3": {
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904,
+      "mtime_ns": 1793525469929264343
+    },
+    "data/live.sqlite3-wal": {
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632,
+      "mtime_ns": 1793542794634590748
+    }
+  },
+  "listener_8765": "",
+  "daily_files_unchanged": true,
+  "environment_stamp_unchanged": true,
+  "source_unchanged": true
+}

@@ -1,0 +1,465 @@
+{
+  "kind": "fifteenth_business_checkpoint_recovery_v1",
+  "prepared_at": "2026-11-02T22:53:03.409640+08:00",
+  "source_sha256": "803b3a64a2a65b3aa7f23020eac92b45e9ba849ccbaa94065e906ccf8ae64395",
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "parent": {
+    "execution": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/fifteenth-business-a-initial-v1/execution",
+    "summary_sha256": "465bbb2c6bcc6d1637cfa111065f2d48c79afdc9dd0ea98c9efe749b886415bb",
+    "database_sha256": "e95817ed73b61b26c80c62bd5eb77128df2fa79f9364f6cd746bbadd4e7ad734",
+    "ledger_database_sha256": "0e7576c50487356321a2363308032071d7e3ac09c5a01af9097ae7932f7100c6",
+    "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+    "job_id": "ea36a754a353426693d015300b4e4422",
+    "account_id": "58a8de793ef04c07b3e139ad72a0af76",
+    "input_version": 4,
+    "ledger_facts_sha256": "1ab153b73235a591716363840d00ee87340a75cc738d904b835d11291bf08dfc",
+    "maximum": 16,
+    "used": 10,
+    "stops": [
+      {
+        "reason": "accepted_or_sent_request_outcome_unknown",
+        "at": "2026-11-02T22:23:43.693231+08:00"
+      }
+    ],
+    "frozen": {
+      "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+      "environment_stamp": {
+        "exists": true,
+        "mtime_ns": 1793291266379543661,
+        "size": 951
+      },
+      "configuration_source": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+      "reference_account": "96b91df38e854008b989206c63808c3a",
+      "configuration_sha256": "f1c4ff9298f0dd5183c5c9058f567cf233dbb62e004a14928b1007bbc109ef36",
+      "max_output_tokens": 6000,
+      "roles": {
+        "manager": {
+          "model": "grok-4.7",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "xhigh"
+        },
+        "filing_researcher": {
+          "model": "grok-4.6",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "high"
+        },
+        "market_researcher": {
+          "model": "grok-4.7",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "medium"
+        },
+        "industry_researcher": {
+          "model": "grok-4.7",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "medium"
+        },
+        "etf_researcher": {
+          "model": "grok-4.7",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "medium"
+        },
+        "portfolio_researcher": {
+          "model": "grok-4.7",
+          "base_url": "https://api.xxyapi.com/v1",
+          "protocol": "responses",
+          "reasoning_effort": "medium"
+        }
+      }
+    }
+  },
+  "checkpoint": {
+    "created_at": "2026-11-02T22:23:43.746431+08:00",
+    "resume_count": 0,
+    "body_sha256": "d88b82c2bcbab433ccd3ad8f7a97c75479c54282385add78f4cb51b4c6eb67b2",
+    "guard": "2e702c1997fcd56b6f9f04d37bcf41bd91fc70d7ab9ad34599f05bda1643084e",
+    "max_age_seconds": 1800,
+    "diagnostic": {
+      "checkpoint_job_id": "ea36a754a353426693d015300b4e4422",
+      "eligible": true,
+      "partial_research": true,
+      "state": "partial_synthesis_ready",
+      "note": "当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+    },
+    "partial_research": true,
+    "report_count": 0,
+    "calculation_count": 22,
+    "material_index_count": 51,
+    "material_delivery_count": 94,
+    "visibility_boundary": "Only the production checkpoint projection is delivered. Saved original materials/receipts outside that projection are not newly read. No historical package or missing financial rows are injected."
+  },
+  "prepared_database_sha256": "7a18c86f100c5069fb66ac28579e4d6bb325dff1d314cb6aebf1e671f38e6ca4",
+  "maximum_http_attempts": 2,
+  "parent_used": 10,
+  "combined_maximum_used": 12,
+  "original_stage_maximum": 16,
+  "remaining_after_maximum": 4,
+  "execution_policy": {
+    "model_protocol": "responses",
+    "model_responses_stream": true,
+    "model_native_search": true,
+    "model_first_event_timeout_seconds": 90,
+    "model_stream_idle_timeout_seconds": 120,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200,
+    "agent_timeout_seconds": 600,
+    "max_context_chars": null,
+    "max_tool_result_chars": null,
+    "max_output_tokens": 6000,
+    "chat_use_max_completion_tokens": null,
+    "reasoning": null,
+    "synthesis_max_calls": 2,
+    "manager_final_reserved_calls": null
+  },
+  "network_route": "environment",
+  "listener": "http://127.0.0.1:18765",
+  "production_final_schema": {
+    "name": "finish_analysis",
+    "description": "仅在准备交付时调用一次，且必须是本轮唯一工具调用；不能用于测试或占位。提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "string"
+        },
+        "completion": {
+          "type": "string",
+          "enum": [
+            "full",
+            "limited"
+          ]
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "实际回答的目标：account、cash_only、public 或本轮规范证券代码；单证券任务仅填该证券"
+        },
+        "decision_summary": {
+          "type": "string",
+          "description": "本轮已有依据支持的判断及适用条件；可持有、观察或有理由弃权"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "具体未完成内容与影响；limited 必须说明，完整范围可为空"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "material_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "covered_demand_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "forecasts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "security_id": {
+                "type": "string"
+              },
+              "horizon": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "up",
+                  "sideways",
+                  "down",
+                  "abstain"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "security_id",
+              "horizon",
+              "direction",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "更新当前账户已有建议时填写其 ID；省略则新建并替代同证券旧建议"
+              },
+              "security_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "watch",
+                  "buy_candidate",
+                  "add_candidate",
+                  "hold",
+                  "reduce_candidate",
+                  "exit_candidate"
+                ]
+              },
+              "basis": {
+                "type": "string"
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "valid_until": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "price_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "price"
+                      ]
+                    },
+                    "operator": {
+                      "type": "string",
+                      "enum": [
+                        "gte",
+                        "lte",
+                        "between"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "lower": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "upper": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "operator"
+                  ]
+                }
+              },
+              "agent_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "security_id",
+              "action",
+              "basis"
+            ]
+          },
+          "maxItems": 100
+        },
+        "maintained_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revoked_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "information_impacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "material_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "relevant",
+                  "irrelevant",
+                  "uncertain"
+                ]
+              },
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sectors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "market_wide": {
+                "type": "boolean"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "event_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "material_id",
+              "status",
+              "explanation"
+            ]
+          }
+        },
+        "research_records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "market",
+                  "sector",
+                  "candidate"
+                ]
+              },
+              "security_id": {
+                "type": "string"
+              },
+              "sector_id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "status": {
+                "type": "string"
+              },
+              "key_changes": {
+                "type": "string"
+              },
+              "account_fit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "title",
+              "reason"
+            ]
+          }
+        }
+      },
+      "required": [
+        "report",
+        "completion",
+        "scope",
+        "decision_summary",
+        "limitations"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "production_final_schema_sha256": "f6fb015d9ace46963c21b38882f29303cc9e7bd6ed36c97ed7c18db2f82fb2f9",
+  "model_requests": 0,
+  "network_started": false,
+  "authorized": false,
+  "observation_seconds_each": 10,
+  "recovery_method": "POST original failed job retry; normal Service selection, actual synthesis_only before any model HTTP",
+  "content_boundary": "Limited normal business recovery only; incomplete topics remain gaps, with independent content review required."
+}

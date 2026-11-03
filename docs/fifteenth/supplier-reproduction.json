@@ -1,0 +1,108 @@
+{
+  "kind": "sanitized_supplier_reproduction",
+  "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+  "application_job_id": "0b0ebfe079564bb096fb1bdb4267236c",
+  "http_request_id": null,
+  "response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+  "started_at_utc": "2026-11-02T09:30:15.830666+00:00",
+  "finished_at_utc": "2026-11-02T09:35:15.884856+00:00",
+  "protocol": "responses",
+  "model_requested": "grok-4.7",
+  "effort_requested": "max",
+  "effort_reported": null,
+  "max_output_tokens_requested": 4000,
+  "stream": true,
+  "store": false,
+  "tool_choice": {
+    "type": "function",
+    "name": "finish_analysis"
+  },
+  "tools": "One complete production finish_analysis schema; no native search",
+  "schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+  "payload_sha256": "c62388600a12777e00924ac0a3042bd6f9f622e2397eb93f0ce21063c3efaf7b",
+  "payload_chars": 66258,
+  "payload_bytes": 80511,
+  "input_organization": "fifteenth-exact-calculation-metadata-v1",
+  "content_description": "Historical simulated three-security account, two complete saved delegated reports, 21 calculation summaries and arguments, 40 source metadata indexes; no current-market or daily-account claim.",
+  "route": "Existing environment proxy; no route/config/TLS change. Endpoint and proxy identifiers withheld from public artifact.",
+  "observed": {
+    "http_status": 200,
+    "http_version": "HTTP/1.1",
+    "duration_ms": 300053.74,
+    "first_byte_ms": 10307.99,
+    "first_effective_event_ms": 10547.14,
+    "last_progress_ms": 212559.53,
+    "last_byte_ms": 250339.11,
+    "maximum_idle_ms": 87494.25,
+    "terminal_event": null,
+    "http_eof": false,
+    "tail_drain": "not entered because no protocol terminal",
+    "error_code": "upstream_transport_error",
+    "exception_types": [
+      "RemoteProtocolError",
+      "RemoteProtocolError"
+    ],
+    "failure_kind": "incomplete_response_body",
+    "cancelled_by": null,
+    "usage": null,
+    "reported_effort": null,
+    "response_bytes_observed": 242767
+  },
+  "application_limits": {
+    "policy_version": 2,
+    "first_event_seconds": 90.0,
+    "stream_idle_seconds": 120.0,
+    "request_hard_seconds": 360.0,
+    "connect_seconds": 15.0,
+    "pool_seconds": 15.0,
+    "write_seconds": 30.0,
+    "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+  },
+  "application_analysis_remaining_at_send_ms": 1199989.31,
+  "retry_policy": {
+    "automatic_http_retries": 0,
+    "actual_http_attempts": 1,
+    "unknown_accepted_outcome_resend": false
+  },
+  "interpretation": "Client received an incomplete HTTP response before any protocol terminal; these observations do not identify the disconnecting component or prove a 300-second upstream limit.",
+  "supplier_checks": [
+    "Correlate the local response_id and UTC interval with the supplier row timestamp 2026-11-02 17:35:15 +08:00; screenshot has no response/request ID.",
+    "Check whether a complete terminal object existed and which hop closed the HTTP body; client has no completed final tool payload.",
+    "Explain the displayed token pair 24,833 / 6,463 and $0.013266 charge, including counter definitions and any terminal/incomplete record; client API usage is absent."
+  ],
+  "not_executed": "No automated replay, result retrieval assumption, direct-route switch or new model request accompanies this artifact.",
+  "supplier_followup": {
+    "recorded_at": "2026-11-02T18:02:36.271251+08:00",
+    "source": "User-provided supplier usage-log screenshot; user explicitly identified the red exclamation stream error as client_gone.",
+    "screenshot_sha256": "7c1ecd59e576020d256259c1448c96404e1e4e46c59051a605b893225d39d641",
+    "displayed_timestamp": "2026-11-02 17:35:15",
+    "timezone_context": "Asia/Shanghai",
+    "model_displayed": "grok-4.7",
+    "stream_error": "client_gone",
+    "stream_error_provenance": "User explanation; cropped screenshot itself shows the red exclamation icon, not its tooltip text.",
+    "token_pair_displayed": [
+      24833,
+      6463
+    ],
+    "token_pair_text": "24,833 / 6,463",
+    "token_count_semantics": "Preserved supplier display values; not substituted into missing client API usage.",
+    "displayed_charge_amount": "0.013266",
+    "currency_symbol": "$",
+    "currency_code_verified": false,
+    "displayed_first_token_seconds": "7.4",
+    "displayed_duration_seconds": 297,
+    "displayed_rate_tokens_per_second": 22,
+    "correlation": {
+      "status": "consistent_by_timestamp_model_and_duration",
+      "local_finished_at": "2026-11-02T17:35:15.884856+08:00",
+      "local_duration_seconds": "300.05374",
+      "local_response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+      "response_id_visible_in_screenshot": false,
+      "request_id_level_match_verified": false
+    },
+    "independent_invoice_reconciliation": false,
+    "terminal_payload_or_report_recovered": false,
+    "root_cause_determined": false,
+    "new_model_requests": 0
+  }
+}

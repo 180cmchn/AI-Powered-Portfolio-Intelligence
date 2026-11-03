@@ -165,6 +165,13 @@ def encode(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str, allow_nan=False)
 
 
+def _output_limit(config: dict) -> int | None:
+    value = config.get('max_output_tokens')
+    if value is not None and (type(value) is not int or value <= 0):
+        raise ModelConfigurationError('max_output_tokens 必须为正整数或 null（不发送输出上限）')
+    return value
+
+
 class ModelClient:
     def __init__(
         self,
@@ -177,6 +184,7 @@ class ModelClient:
             self.reasoning_effort = reasoning_effort(config)
         except ValueError as exc:
             raise ModelConfigurationError(str(exc)) from exc
+        _output_limit(config)
         if 'reasoning' in config and not isinstance(config['reasoning'], dict):
             raise ModelConfigurationError('Responses reasoning 配置必须为对象')
         self.protocol = config.get("model_protocol", "responses")
@@ -267,15 +275,17 @@ class ModelClient:
         if len(encode(session.history)) > int(self.config.get("max_context_chars", 240_000)):
             raise ModelProtocolError("初始账户或任务输入超过上下文上限；历史材料已有按需归档，请减少单次账户输入或检查 max_context_chars")
         history = [{key: copy.deepcopy(value) for key, value in item.items() if not key.startswith("_context_")} for item in session.history]
+        output_limit = _output_limit(self.config)
         if self.protocol == "responses":
             payload = {
                 "model": self.model, "instructions": session.system,
                 "input": history, "store": False,
-                "max_output_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", **tool, "strict": False} for tool in tools],
                 "include": ["reasoning.encrypted_content"],
                 "reasoning": {**copy.deepcopy(self.config.get("reasoning") or {}), "effort": self.reasoning_effort},
             }
+            if output_limit is not None:
+                payload['max_output_tokens'] = output_limit
             if self.config.get("model_native_search", True) and session.native_search:
                 # The documented Responses boundary shared by OpenAI and xAI.
                 # Compatibility endpoints remain unverified until they return
@@ -288,12 +298,12 @@ class ModelClient:
                 "model": self.model,
                 "reasoning_effort": self.reasoning_effort,
                 "messages": [{"role": "system", "content": session.system}, *history],
-                "max_tokens": int(self.config.get("max_output_tokens", 4000)),
                 "tools": [{"type": "function", "function": {**tool, "strict": False}} for tool in tools],
             }
             # Providers differ here. Explicit configuration replaces guesswork.
-            if self.config.get("chat_use_max_completion_tokens", False):
-                payload["max_completion_tokens"] = payload.pop("max_tokens")
+            if output_limit is not None:
+                field = 'max_completion_tokens' if self.config.get('chat_use_max_completion_tokens', False) else 'max_tokens'
+                payload[field] = output_limit
             endpoint = "chat/completions"
         if tool_choice is not None:
             payload['tool_choice'] = tool_choice
@@ -578,6 +588,7 @@ class ModelClient:
                                stream_first_event_ms=None, stream_first_byte_ms=None)
             buffer, event_data, event_name, event_size = bytearray(), [], None, 0
             response_id, last_sequence, first_line = None, None, True
+            skip_lf_after_cr = False
 
             def consume_event():
                 nonlocal event_data, event_name, event_size, response_id, last_sequence
@@ -629,6 +640,8 @@ class ModelClient:
                 # native tool state transitions prove progress; no delta content
                 # (in particular hidden reasoning) is retained in diagnostics.
                 effective = ((kind.endswith('.delta') and bool(event.get('delta')))
+                    or (kind == 'response.function_call_arguments.done'
+                        and isinstance(event.get('arguments'), str) and bool(event['arguments'].strip()))
                     or kind.startswith(('response.web_search_call.', 'response.file_search_call.',
                                             'response.code_interpreter_call.'))
                     or kind in {'response.completed', 'response.incomplete', 'response.failed', 'response.cancelled'}
@@ -707,13 +720,20 @@ class ModelClient:
                     raise ModelProtocolError('模型流超过有限接收大小；未采用部分结果')
                 buffer.extend(chunk)
                 while True:
+                    # CR itself terminates an SSE line. Waiting for the next
+                    # byte can strand a complete CR-only terminal indefinitely
+                    # on an open stream. Swallow one following LF instead,
+                    # including when that LF arrives in a later HTTP chunk.
+                    if skip_lf_after_cr and buffer:
+                        skip_lf_after_cr = False
+                        if buffer[0] == 10:
+                            del buffer[:1]
                     endings = [position for position in (buffer.find(b'\n'), buffer.find(b'\r')) if position >= 0]
                     if not endings:
                         break
                     end = min(endings)
-                    if buffer[end] == 13 and end == len(buffer) - 1:
-                        break  # A CRLF may straddle network chunks.
-                    width = 2 if buffer[end:end + 2] == b'\r\n' else 1
+                    skip_lf_after_cr = buffer[end] == 13
+                    width = 1
                     line = bytes(buffer[:end]); del buffer[:end + width]
                     if first_line:
                         line = line.removeprefix(b'\xef\xbb\xbf')
@@ -749,10 +769,6 @@ class ModelClient:
                     raise ModelProtocolError('单个模型流事件超过有限接收大小')
             observation.update(response_body_received=True, http_body_complete=True,
                                stream_close_reason='http_eof')
-            if buffer == b'\r':  # final CR-only blank line at clean EOF
-                terminal = consume_event()
-                if terminal is not None:
-                    return response, terminal
             observation['error'] = 'stream_missing_terminal'
             raise ModelProtocolError('模型流在完整终止事件前结束；未采用部分正文或工具调用')
 
@@ -788,6 +804,7 @@ class ModelClient:
                            "stage": session.phase if session else "probe",
                            "input_chars": len(encode(payload)), "input_items": len(payload.get("input", payload.get("messages", []))),
                            "requested_max_output_tokens": payload.get("max_output_tokens", payload.get("max_completion_tokens", payload.get("max_tokens"))),
+                           "output_limit_fields_present": [key for key in ('max_output_tokens', 'max_completion_tokens', 'max_tokens') if key in payload],
                            "requested_tool_choice": copy.deepcopy(payload.get('tool_choice')),
                            "tool_choice_status": 'requested' if isinstance(payload.get('tool_choice'), dict) else None,
                            "tool_choice_satisfied": None,
@@ -1109,9 +1126,11 @@ async def probe_native_search(config: dict[str, Any], *, transport: httpx.AsyncB
         return {**status, "ok": False, "requests": []}
     cfg = {**config, "model_retries": 0,
            "model_request_timeout_seconds": min(float(config.get("model_request_timeout_seconds", 90)), 60),
-           "model_request_hard_timeout_seconds": min(timeout_policy(config)['request_hard_seconds'], 60),
-           "max_output_tokens": min(int(config.get("max_output_tokens", 4000)), 1200)}
+           "model_request_hard_timeout_seconds": min(timeout_policy(config)['request_hard_seconds'], 60)}
     try:
+        limit = _output_limit(cfg)
+        if limit is not None:
+            cfg['max_output_tokens'] = min(limit, 1200)
         client = ModelClient(cfg, transport=transport)
     except ModelConfigurationError as exc:
         return {"ok": False, "status": "authentication_failed" if "缺少环境变量" in str(exc) else "configuration_error",

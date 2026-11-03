@@ -1,0 +1,40 @@
+{
+  "kind": "independent_business_stage_authorization",
+  "recorded_at": "2026-11-02T22:13:37.346130+08:00",
+  "stage": "a_initial",
+  "user_answer": "授权 A 首次验证，最多 16 次",
+  "maximum_model_http_attempts": 16,
+  "final_reserved_included": 2,
+  "preparation": "data/evaluations/fifteenth-business-a-initial-v1/preparation.json",
+  "preparation_sha256": "885840f17761a529277d944119d54c2bf59ec6a0d2f1e882cb37add595faacd8",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "manager": "grok-4.7/xhigh",
+  "other_roles": "Existing frozen matrix",
+  "max_output_tokens": 6000,
+  "network_route": "environment",
+  "port": 18765,
+  "old_40_transferred": 0,
+  "aggregate_allowance_transferred": 0,
+  "currency_hard_cap": null,
+  "stop_conditions": [
+    "first valid publication",
+    "unknown accepted/sent result",
+    "failure",
+    "budget exhausted",
+    "source/config/evidence drift"
+  ],
+  "other_stages_authorized": false,
+  "execution_started": true,
+  "execution_started_at": "2026-11-02T22:13:53.398010+08:00",
+  "job_id": "ea36a754a353426693d015300b4e4422",
+  "outcome": {
+    "completed_at": "2026-11-02T22:23:43.995182+08:00",
+    "used": 10,
+    "remaining_preserved": 6,
+    "execution_stopped": true,
+    "unknown_outcome": true,
+    "additional_requests_currently_authorized": 0,
+    "evidence": "business-a-live-evidence.json",
+    "recovery": "No fresh recovery authorization requested/granted; no additional HTTP; saved checkpoint expired unchanged during offline engineering"
+  }
+}

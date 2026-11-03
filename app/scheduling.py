@@ -287,9 +287,7 @@ class SchedulingStore:
         if state == 'completed' and not (self.mode == 'demo' and isinstance(result, dict) and result.get('demo') is True):
             snapshot = prior['input_snapshot'] or {}
             scope = self.delivery_scope(prior)
-            result = validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'])
-            if any(result.get(key) for key in ('forecasts', 'suggestions', 'maintained_suggestion_ids', 'review_suggestion_ids', 'revoked_suggestion_ids')):
-                raise DeliveryContractError('公共研究不能发布账户预测或修改账户建议')
+            result = self.preflight_delivery(prior, result)
             result = bind_delivery(result, job_id=run_id, account_id=None, input_version=None,
                 universe_version=prior['universe_version'],
                 team_id=((snapshot.get('config') or {}).get('_agent_team') or {}).get('team_id'))

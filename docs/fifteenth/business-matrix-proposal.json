@@ -1,0 +1,621 @@
+{
+  "kind": "reviewable_normal_business_stage_proposal",
+  "recorded_at": "2026-11-02T21:03:13.490840+08:00",
+  "status": "a_initial_original10_plus_fresh5_failed_unknown_stopped_total15_of16",
+  "not_an_authorization_or_prepared_execution": false,
+  "model_http_sent": 0,
+  "quote_search_http_sent": 0,
+  "gate": {
+    "required": "Actual persisted contract-accepted historical report plus independent body-bound accepted=true review",
+    "current_evidence": "v13 published; body-bound independent accepted=true",
+    "normal_prepare_run_executed": true,
+    "qualified_bypass_supported": false
+  },
+  "scope": {
+    "implemented_offline_tested": [
+      "a_initial",
+      "a_after_sell",
+      "b_cash"
+    ],
+    "planned_not_implemented_or_run": [
+      "a_after_buy"
+    ],
+    "b_cash_candidate": "SZ:159278",
+    "full_matrix_completed": false,
+    "alternative_not_selected": "a_after_buy; original A buy-or-sell requirement selects a_after_sell",
+    "required_matrix_stages": [
+      "a_initial",
+      "a_after_sell",
+      "b_cash"
+    ],
+    "later_live_not_run": [
+      "a_after_sell",
+      "b_cash"
+    ],
+    "offline_expansion_evidence": "test-results/fifteenth/business-matrix-targeted.txt",
+    "offline_expansion_counts": "100 passed: business34 + recovery16 + context50"
+  },
+  "isolation": {
+    "port": 18765,
+    "host": "127.0.0.1",
+    "prepared_directory": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/fifteenth-business-a-initial-v1",
+    "database": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/fifteenth-business-a-initial-v1/execution/evaluation.sqlite3",
+    "authorization_ledger": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/fifteenth-business-a-initial-v1/execution/business-attempts.sqlite3",
+    "port_policy": "Exact port atomically reserved by parent; FD inherited by child; occupancy rejects with no fallback",
+    "daily_db_access": "Configuration-only SQLite mode=ro; no daily DB/env/service writes or restart",
+    "daily_8765_used": false
+  },
+  "source_configuration_observed": {
+    "path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+    "reference_account": "96b91df38e854008b989206c63808c3a",
+    "sha256": "f1c4ff9298f0dd5183c5c9058f567cf233dbb62e004a14928b1007bbc109ef36",
+    "role_resolution": "Read-only daily role defaults plus actual reference-account overrides; real preparation repeats production configure_isolated and exact baseline/effective-team guards"
+  },
+  "effective_proposed_role_matrix": [
+    {
+      "role_id": "manager",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "source_reasoning_effort": "max",
+      "proposed_reasoning_effort": "xhigh"
+    },
+    {
+      "role_id": "filing_researcher",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.6",
+      "source_reasoning_effort": "high",
+      "proposed_reasoning_effort": "high"
+    },
+    {
+      "role_id": "market_researcher",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "source_reasoning_effort": "medium",
+      "proposed_reasoning_effort": "medium"
+    },
+    {
+      "role_id": "industry_researcher",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "source_reasoning_effort": "medium",
+      "proposed_reasoning_effort": "medium"
+    },
+    {
+      "role_id": "etf_researcher",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "source_reasoning_effort": "medium",
+      "proposed_reasoning_effort": "medium"
+    },
+    {
+      "role_id": "portfolio_researcher",
+      "provider_id": "legacy-09a15ec53c70",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "source_reasoning_effort": "medium",
+      "proposed_reasoning_effort": "medium"
+    }
+  ],
+  "explicit_isolated_overrides": {
+    "manager_reasoning_effort": "xhigh",
+    "max_output_tokens": 6000
+  },
+  "policy": {
+    "model_protocol": "responses",
+    "model_responses_stream": true,
+    "model_native_search": true,
+    "model_first_event_timeout_seconds": 90,
+    "model_stream_idle_timeout_seconds": 120,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200,
+    "agent_timeout_seconds": 600,
+    "max_context_chars": null,
+    "max_tool_result_chars": null,
+    "max_output_tokens": 6000,
+    "chat_use_max_completion_tokens": null,
+    "reasoning": null,
+    "synthesis_max_calls": 4,
+    "manager_final_reserved_calls": null
+  },
+  "production_final_schema_sha256": "f6fb015d9ace46963c21b38882f29303cc9e7bd6ed36c97ed7c18db2f82fb2f9",
+  "production_final_schema": {
+    "name": "finish_analysis",
+    "description": "仅在准备交付时调用一次，且必须是本轮唯一工具调用；不能用于测试或占位。提交账户最终报告；重要结论附来源与条件，数值取自代码计算。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "string"
+        },
+        "completion": {
+          "type": "string",
+          "enum": [
+            "full",
+            "limited"
+          ]
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "实际回答的目标：account、cash_only、public 或本轮规范证券代码；单证券任务仅填该证券"
+        },
+        "decision_summary": {
+          "type": "string",
+          "description": "本轮已有依据支持的判断及适用条件；可持有、观察或有理由弃权"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "具体未完成内容与影响；limited 必须说明，完整范围可为空"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "material_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "covered_demand_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "forecasts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "security_id": {
+                "type": "string"
+              },
+              "horizon": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "up",
+                  "sideways",
+                  "down",
+                  "abstain"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "security_id",
+              "horizon",
+              "direction",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "更新当前账户已有建议时填写其 ID；省略则新建并替代同证券旧建议"
+              },
+              "security_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "watch",
+                  "buy_candidate",
+                  "add_candidate",
+                  "hold",
+                  "reduce_candidate",
+                  "exit_candidate"
+                ]
+              },
+              "basis": {
+                "type": "string"
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "valid_until": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "price_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "price"
+                      ]
+                    },
+                    "operator": {
+                      "type": "string",
+                      "enum": [
+                        "gte",
+                        "lte",
+                        "between"
+                      ]
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "lower": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "upper": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "operator"
+                  ]
+                }
+              },
+              "agent_conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "security_id",
+              "action",
+              "basis"
+            ]
+          },
+          "maxItems": 100
+        },
+        "maintained_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revoked_suggestion_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "information_impacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "material_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "relevant",
+                  "irrelevant",
+                  "uncertain"
+                ]
+              },
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sectors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "market_wide": {
+                "type": "boolean"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "event_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "material_id",
+              "status",
+              "explanation"
+            ]
+          }
+        },
+        "research_records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "market",
+                  "sector",
+                  "candidate"
+                ]
+              },
+              "security_id": {
+                "type": "string"
+              },
+              "sector_id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "material_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "status": {
+                "type": "string"
+              },
+              "key_changes": {
+                "type": "string"
+              },
+              "account_fit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "title",
+              "reason"
+            ]
+          }
+        }
+      },
+      "required": [
+        "report",
+        "completion",
+        "scope",
+        "decision_summary",
+        "limitations"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "budget": {
+    "authorized_now": 0,
+    "proposed_model_http_total": 16,
+    "final_reserved_included_in_16": 2,
+    "includes": "All manager/child provider HTTP attempts and contract corrections; final reserves are not additional attempts",
+    "external_quote_material_http": "Performed only in independently authorized run as needed by actual Service/Agent tools; not model-provider attempt units",
+    "old_40_transferred": 0,
+    "aggregate_remaining_transferred": 0,
+    "required_new_authorization": "Explicit a_initial + exactly16 + nonempty authorization note; fresh exclusive stage ledger. Current script flags record authorization, never grant it.",
+    "money_ceiling": "No verified monetary hard ceiling; native tools, provider billing, incomplete/unknown requests may incur fees",
+    "remaining_preserved": 6
+  },
+  "account_inputs": {
+    "cash": "100000",
+    "mode": "simulated",
+    "trades": [
+      {
+        "symbol": "SH:518880",
+        "side": "buy",
+        "quantity": "100",
+        "price": "10.000",
+        "fee": "5.00",
+        "cost": "1005.00"
+      },
+      {
+        "symbol": "SZ:002354",
+        "side": "buy",
+        "quantity": "1000",
+        "price": "10.00",
+        "fee": "5.10",
+        "cost": "10005.10"
+      },
+      {
+        "symbol": "SZ:159599",
+        "side": "buy",
+        "quantity": "1000",
+        "price": "2.500",
+        "fee": "5.00",
+        "cost": "2505.00"
+      }
+    ],
+    "expected_cash": "86484.90",
+    "total_fees": "15.10",
+    "total_position_cost": "13515.10",
+    "price_note": "Declared synthetic accounting inputs, not current market prices or broker fills",
+    "fee_plan": {
+      "name": "常见模拟模板（待用户确认佣金协议）",
+      "version": 1,
+      "confirmed": false,
+      "effective_from": "2023-08-28",
+      "stock": {
+        "commission_rate": "0.0003",
+        "minimum_commission": "5.00",
+        "transfer_included": false,
+        "transfer_rate": "0.00001",
+        "stamp_rate": "0.0005",
+        "included_fees": [
+          "handling",
+          "regulatory"
+        ]
+      },
+      "etf": {
+        "commission_rate": "0.0003",
+        "minimum_commission": "5.00",
+        "transfer_included": true,
+        "transfer_rate": "0",
+        "stamp_rate": "0",
+        "included_fees": [
+          "handling"
+        ]
+      },
+      "market_overrides": {},
+      "sources": [
+        {
+          "title": "财政部 税务总局公告2023年第39号",
+          "url": "https://www.mof.gov.cn/jrttts/202308/t20230828_3904235.htm",
+          "effective_from": "2023-08-28",
+          "published_at": "2023-08-27",
+          "scope": "股票卖方印花税0.05%",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "title": "国新证券公开收费标准（示例，非用户协议）",
+          "url": "https://www.crsec.com.cn/business/standard.html",
+          "effective_from": null,
+          "published_at": null,
+          "scope": "A股过户0.001%；沪深佣金包含项不同；ETF不收股票印花税和过户费",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "title": "上交所收费一览表",
+          "url": "https://www.sse.com.cn/services/tradingservice/charge/ssecharge/",
+          "effective_from": null,
+          "published_at": "2026-01",
+          "scope": "经手费由方案说明是否包含，不重复加收",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "title": "深交所ETF交易说明",
+          "url": "https://investor.szse.cn/warning/activities/fundIntroduction/t20210104_584079.html",
+          "effective_from": null,
+          "published_at": "2021-01-04",
+          "scope": "ETF二级市场不收股票印花税",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "rounding": "ROUND_HALF_UP_each_component_to_cent",
+      "charging_unit": "one_record_one_fee",
+      "cash_scope": "模拟可用现金；未实现券商提现清算"
+    }
+  },
+  "sequence": [
+    "Accepted historical review gate → offline sealed preparation",
+    "Separate A_initial authorization → atomic port reservation → worker-free actual create-account/fee/preview/trade APIs",
+    "Reconcile three actual committed trades/cash/fees → release only latest input-version task",
+    "Original Service worker→Agent dispatch/tools→ModelClient→shared final validation→transaction publication",
+    "First valid publication stops additional provider calls; compare report/forecast/recommendation IDs and ledger over10s",
+    "Stop only owned isolated process → restart actual worker on same isolatedDB → repeat10s persistence observation",
+    "Record all tasks/requests/tool outcomes; perform independent actual content review before proposing next stage"
+  ],
+  "stops": [
+    "First valid publication",
+    "Unknown accepted-or-sent HTTP outcome (no replay)",
+    "HTTP ledger exhausted",
+    "Failed job or deadline",
+    "Source/env/model-binding/wire effort/output drift",
+    "Publication/ledger/restart mismatch"
+  ],
+  "automatic_events": "Legitimate input/material/price events remain observable; do not classify all new tasks as loops. This single-job budget does not authorize their HTTP; observed provenance and denied IDs are retained. No continuous-operation claim from a20s observation.",
+  "coverage_limits": [
+    "Offline valid-path uses real API/Service/Agent/ModelClient with fixture credential/quote cache/MockTransport and ASGI lifecycle restart; not real provider or OS process evidence",
+    "Real wrapper uses subprocess/uvicorn FD and same production paths, but no authorized normal business execution has occurred",
+    "No actual A buy/sell version-change stage or B cash candidate stage; those commands explicitly reject",
+    "Formal forecast maturity/accuracy and continuous stability remain unverified"
+  ],
+  "artifacts": [
+    "scripts/verify_fifteenth_business.py",
+    "tests/test_fifteenth_business.py",
+    "test-results/fifteenth/business-wrapper-offline-tests.txt"
+  ],
+  "prepare_command_after_gate": ".venv/bin/python scripts/verify_fifteenth_business.py --source data/live.sqlite3 --reference-account 96b91df38e854008b989206c63808c3a --output data/evaluations/fifteenth-business-a-initial-v1 --stage a_initial --max-http-attempts 16 --manager-reasoning-effort xhigh --max-output-tokens 6000 --approved-summary <accepted-execution-summary.json> --content-review <accepted-body-review.json>",
+  "run_command_only_after_new_stage_authorization": ".venv/bin/python scripts/verify_fifteenth_business.py --run-real --prepared data/evaluations/fifteenth-business-a-initial-v1 --authorize-stage a_initial --authorized-http-attempts 16 --authorization-note <explicit-new-stage-authorization>",
+  "latest_engineering": {
+    "source_sha256": "75b0a784660e321c1deea29e0f63cef39d64c3751d582db60f2daa7fd33a8523",
+    "wrapper_tests_passed": 31,
+    "unknown_outcome_boundaries": 11,
+    "full_macos_python": 1311,
+    "full_linux_python": 1311,
+    "evidence": "final-followup-regression.json",
+    "final_source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70"
+  },
+  "actual_preparation": "business-a-initial-preparation.json",
+  "actual_authorization": "business-a-initial-authorization.json",
+  "outcome": "business-a-live-evidence.json",
+  "latest_actual": "business-a-fresh-v2-live-evidence.json"
+}

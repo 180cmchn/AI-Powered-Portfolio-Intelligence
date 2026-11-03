@@ -1,0 +1,24 @@
+{
+  "kind": "goal_blocked_audit",
+  "recorded_at": "2026-11-02T17:55:06.919350+08:00",
+  "same_blocker_consecutive_goal_turns": 3,
+  "previous_turn_classification": "progress: exact canonical payload was reconstructed offline and the single-variable recovery proposal was prepared; no model HTTP request",
+  "current_authoritative_state": {
+    "failed_request_terminal": true,
+    "new_final_reports": 0,
+    "shared_attempts_used": 1,
+    "shared_attempts_maximum": 10,
+    "explicit_user_recovery_received": false,
+    "recovery_proposal": "recovery-proposal.json"
+  },
+  "blocker": "Accepted/sent request has unknown upstream outcome. User section 6 requires explicit recovery; the ten-attempt cap does not revoke that stop condition. Existing dashboard failed with 525 on two read-only checks.",
+  "unaffected_work": "Engineering fixes, full Mac/Linux suites, all eleven browser groups, verifier regression, preservation checks, failure evidence and offline request reconstruction are complete.",
+  "not_achieved": [
+    "Actual three-security model report and content acceptance",
+    "Subsequent normal business matrix",
+    "Successful real-report publication/restart observation"
+  ],
+  "next_required_input": "User explicitly resumes the prepared one-attempt direct-route comparison, or supplies externally verified result/recovery evidence.",
+  "no_additional_model_request": true,
+  "completion_claim": false
+}

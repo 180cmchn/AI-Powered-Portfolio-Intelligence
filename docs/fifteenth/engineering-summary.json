@@ -1,0 +1,1856 @@
+{
+  "recorded_at": "2026-11-02T17:24:56.693061+08:00",
+  "status": "passed",
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "final_source_integrity": {
+    "snapshot": "final-source.json",
+    "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+    "checked_files": 211,
+    "mismatches": [],
+    "matches": true
+  },
+  "before_suggestion_action_conflict_fix": {
+    "source_sha256": "1aaa4aa756d47f754e54a871074a3b8615d1ac02e38cfbe52b9ecf3352dace95",
+    "macos_python": {
+      "passed": 1203,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 121.73
+    },
+    "linux_python": {
+      "passed": 1203,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 164.68
+    },
+    "applies_to_final_fix": false
+  },
+  "final_validation": {
+    "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+    "python_macos": {
+      "log": "test-results/fifteenth/python-macos-verified.txt",
+      "log_sha256": "c2decd8a2dea77760745814db8f44eaae0063c07e916140923adb8cac955488f",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1208,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 123.75,
+      "summary": "1208 passed, 1 warning in 123.75s",
+      "collected_case_count": 1208,
+      "failed_tests": [],
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    "python_linux_3_12": {
+      "log": "test-results/fifteenth/python-linux-verified.txt",
+      "log_sha256": "c3f653fab3583d571a9ecb167ecefea999edb7d965b8a7e0a53a95116b3b3cd6",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1208,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 154.85,
+      "summary": "1208 passed, 1 warning in 154.85s",
+      "collected_case_count": 1208,
+      "failed_tests": [],
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    "eleven_browser_groups": {
+      "log": "test-results/fifteenth/browser-all-verified.txt",
+      "log_sha256": "e06a8bb099d47999430d03af8576148175f433be35f06bfa0195824c19932d7f",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "browser",
+      "status": "passed",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2128
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 9346
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4814
+        },
+        {
+          "group": "ninth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16770
+        },
+        {
+          "group": "tenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 20590
+        },
+        {
+          "group": "eleventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 61559
+        },
+        {
+          "group": "twelfth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 103417
+        },
+        {
+          "group": "twelfth_select",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16897
+        },
+        {
+          "group": "thirteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 41487
+        },
+        {
+          "group": "thirteenth_correction",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 6630
+        },
+        {
+          "group": "fourteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1390
+        }
+      ],
+      "group_count": 11,
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    "deadline_repeated": {
+      "status": "passed",
+      "platforms": 2,
+      "runs_per_platform": 10,
+      "unique_cases_per_run": 16
+    },
+    "all_required_passed": true,
+    "browser_evidence": {
+      "file": "browser-evidence.json",
+      "sha256": "30e051cd7d17784b11e5a55749d8b97865441a6b6feb5158755a5e32cc3e39eb",
+      "kind": "controlled production fixture; no paid requests or live report claim"
+    }
+  },
+  "review_discovered_after_previous_pass": {
+    "issue": "A no-ID new suggestion for security A combined with maintained/review old A-ID could replace the old row while receipt incorrectly marked the old action applied.",
+    "discovery": "Read-only independent review; earlier suites lacked this case.",
+    "response": "Add pre-acceptance action conflict validation and real Agent chain regression, then rerun frozen source.",
+    "fix_status": "implemented; final_frozen_suites_passed"
+  },
+  "environments": {
+    "macos": {
+      "python": "3.14.4",
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "node": "25.9.0",
+      "browser": "Playwright Chromium 151.0.7922.34"
+    },
+    "linux": {
+      "python": "3.12.3",
+      "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+      "scope": "Isolated local Linux container; matches Linux/Python 3.12 requirement, not claimed identical architecture to hosted GitHub runner",
+      "fixture_packaging": "Committed data/calendar_2026.json included after initial packaging error",
+      "lifecycle_dependency": "lsof installed in container after initial missing-tool failure"
+    }
+  },
+  "commands": {
+    "full_macos": ".venv/bin/python -m pytest -q",
+    "full_linux": "/opt/guanlan-venv/bin/python -m pytest -q",
+    "browser": "PYTHON=.venv/bin/python npm run test:browser",
+    "deadline": ".venv/bin/python -m pytest -q tests/test_fourteenth_deadlines.py"
+  },
+  "warning": "One StarletteDeprecationWarning from fastapi/testclient.py using httpx; recorded, not hidden.",
+  "all_recorded_logs": [
+    {
+      "log": "test-results/fifteenth/browser-all-final.txt",
+      "log_sha256": "6aaf0476d1857baf1634ac9b2470c35efc3c0c3d106ed2fd51f724526d8e5451",
+      "note": "Started at 1aaa...; production source changed to 5355... before this sequential eleven-group run completed. This remains integration evidence, not a frozen-source browser pass.",
+      "kind": "browser",
+      "status": "passed",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2322
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 9330
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4694
+        },
+        {
+          "group": "ninth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16802
+        },
+        {
+          "group": "tenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 20374
+        },
+        {
+          "group": "eleventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 61504
+        },
+        {
+          "group": "twelfth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 107420
+        },
+        {
+          "group": "twelfth_select",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16793
+        },
+        {
+          "group": "thirteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 41388
+        },
+        {
+          "group": "thirteenth_correction",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 6640
+        },
+        {
+          "group": "fourteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1500
+        }
+      ],
+      "group_count": 11,
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null,
+      "source_sha256_at_start": "1aaa4aa756d47f754e54a871074a3b8615d1ac02e38cfbe52b9ecf3352dace95",
+      "source_changed_during_run": true
+    },
+    {
+      "log": "test-results/fifteenth/browser-all-macos.txt",
+      "log_sha256": "28dbc654cd3117b6fe927448f8ac728dda98d527e99a9a561abe453f9627ee86",
+      "note": "All eleven independent groups passed during integration; source was not yet frozen.",
+      "kind": "browser",
+      "status": "passed",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1981
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 9263
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4737
+        },
+        {
+          "group": "ninth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16551
+        },
+        {
+          "group": "tenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 19906
+        },
+        {
+          "group": "eleventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 61061
+        },
+        {
+          "group": "twelfth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 103294
+        },
+        {
+          "group": "twelfth_select",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 17060
+        },
+        {
+          "group": "thirteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 41327
+        },
+        {
+          "group": "thirteenth_correction",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 6627
+        },
+        {
+          "group": "fourteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1683
+        }
+      ],
+      "group_count": 11,
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/browser-all-verified.txt",
+      "log_sha256": "e06a8bb099d47999430d03af8576148175f433be35f06bfa0195824c19932d7f",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "browser",
+      "status": "passed",
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2128
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 9346
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4814
+        },
+        {
+          "group": "ninth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16770
+        },
+        {
+          "group": "tenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 20590
+        },
+        {
+          "group": "eleventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 61559
+        },
+        {
+          "group": "twelfth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 103417
+        },
+        {
+          "group": "twelfth_select",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16897
+        },
+        {
+          "group": "thirteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 41487
+        },
+        {
+          "group": "thirteenth_correction",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 6630
+        },
+        {
+          "group": "fourteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1390
+        }
+      ],
+      "group_count": 11,
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    {
+      "log": "test-results/fifteenth/browser-fourteenth-fixed-fixture.txt",
+      "log_sha256": "3cb3538635c8a6bbd6ae6debbaf5a5864a21f6829a5cde6b6073be960c95669c",
+      "note": "Corrected browser fixture verifies actual published row and delivery receipt.",
+      "kind": "browser",
+      "status": "passed",
+      "group_count": 1,
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/browser-fourteenth-integration.txt",
+      "log_sha256": "816c08f175ab9fc5596766c23626dd8a8cc8176bcc6def47503ab0040f652bb4",
+      "note": "Single browser group timed out waiting for the expected current report. The second fixture publication made the selected old report no longer the expected current row; isolated fixture order corrected.",
+      "kind": "browser",
+      "status": "failed",
+      "group_count": 1,
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/delivery-boundaries-final-macos.log",
+      "log_sha256": "856de4f5a57fb76af9ca2d1d0bee3fd24011ba1d890597d7a4c64eb1e484a7d7",
+      "note": "Nine selected regression modules after suggestion-action, transactional-cutoff and top-level expiry boundary fixes; all 180 cases passed.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 180,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 16.54,
+      "summary": "180 passed in 16.54s",
+      "collected_case_count": 180,
+      "failed_tests": [],
+      "validation_stage": "after_suggestion_action_conflict_fix",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    {
+      "log": "test-results/fifteenth/delivery-conflict-fix-macos.log",
+      "log_sha256": "a951769bdf05abc9a73f29d2209ce139e0ddfa14bd232e251d7b41b7dd4dcf1f",
+      "note": "Targeted regression after rejecting same-security new suggestion plus maintain/review existing ID; legal revoke+new remains accepted.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 6.04,
+      "summary": "62 passed in 6.04s",
+      "collected_case_count": 62,
+      "failed_tests": [],
+      "validation_stage": "after_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/delivery-review-regressions-macos-corrected.log",
+      "log_sha256": "d8eb5ad4dbea3c75939adf7d5b09b5ecc8f4144f5b44e05214d07721bcbe83d1",
+      "note": "Corrected fixture scope plus expanded delivery coverage.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 110,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 18.59,
+      "summary": "110 passed, 1 warning in 18.59s",
+      "collected_case_count": 110,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/delivery-review-regressions-macos.log",
+      "log_sha256": "f40db10711beef759cfec572da4a0e79dbd796d154a56ff397612409030a28ba",
+      "note": "23 third-iteration recommendation fixtures submitted securities outside their frozen empty-account scope. Explicit candidate scope setup corrected; no production scope permission was broadened.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 73,
+      "failed": 23,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 16.47,
+      "summary": "23 failed, 73 passed, 1 warning in 16.47s",
+      "collected_case_count": 96,
+      "failed_tests": [
+        "tests/test_third_recommendations.py::test_plain_report_keeps_observing_and_deduplicates_followup",
+        "tests/test_third_recommendations.py::test_active_pagination_is_not_crowded_out_by_history",
+        "tests/test_third_recommendations.py::test_maintain_and_update_bind_verified_current_account_version",
+        "tests/test_third_recommendations.py::test_local_scope_expiry_and_account_isolation",
+        "tests/test_third_recommendations.py::test_active_pages_and_direct_event_context_cover_beyond_first_page",
+        "tests/test_third_recommendations.py::test_restart_and_repeated_omissions_do_not_create_new_review_work",
+        "tests/test_third_recommendations.py::test_material_event_replay_cannot_undo_explicit_review",
+        "tests/test_third_recommendations.py::test_material_event_deduplication_survives_changed_notification_batches",
+        "tests/test_third_recommendations.py::test_stale_quote_does_not_claim_price_or_judgment_validity[ok-True]",
+        "tests/test_third_recommendations.py::test_stale_quote_does_not_claim_price_or_judgment_validity[closed-True]",
+        "tests/test_third_recommendations.py::test_stale_quote_does_not_claim_price_or_judgment_validity[ok-False]",
+        "tests/test_third_recommendations.py::test_stale_quote_does_not_claim_price_or_judgment_validity[error_cached-True]",
+        "tests/test_third_recommendations.py::test_previously_fresh_quote_becoming_stale_creates_one_durable_review",
+        "tests/test_third_recommendations.py::test_initial_stale_baseline_keeps_real_review_triggers[manual]",
+        "tests/test_third_recommendations.py::test_initial_stale_baseline_keeps_real_review_triggers[input]",
+        "tests/test_third_recommendations.py::test_initial_stale_baseline_keeps_real_review_triggers[material]",
+        "tests/test_third_recommendations.py::test_initial_stale_baseline_keeps_real_review_triggers[price_crossing]",
+        "tests/test_third_recommendations.py::test_production_research_tools_paginate_and_enforce_account_scope",
+        "tests/test_third_recommendations.py::test_legacy_migration_preserves_id_and_unknown_price_observation",
+        "tests/test_third_recommendations.py::test_replacement_lineage_and_untrusted_runtime_fields",
+        "tests/test_third_recommendations.py::test_inflight_price_event_is_not_consumed_by_an_older_research_context[maintain]",
+        "tests/test_third_recommendations.py::test_inflight_price_event_is_not_consumed_by_an_older_research_context[update]",
+        "tests/test_third_recommendations.py::test_inflight_price_event_is_not_consumed_by_an_older_research_context[replace]"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/delivery-targeted-corrected-macos.log",
+      "log_sha256": "8eaad77308f4d6b57cddcf19852b45db1bf4ed0c62f552828e44a61d2d933023",
+      "note": "Corrected forecast fixture ordering plus expanded coverage.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 71,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 7.11,
+      "summary": "71 passed in 7.11s",
+      "collected_case_count": 71,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/delivery-targeted-final-macos.log",
+      "log_sha256": "e635f9022f8256c8dc9b5a0a19800800c8314c6ad024e03ffd8e295e664ccf13",
+      "note": "Forecast fixture changed universe after creating batch, incrementing account version and correctly failing batch binding. Moved explicit universe setup before batch creation.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 68,
+      "failed": 1,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 7.3,
+      "summary": "1 failed, 68 passed in 7.30s",
+      "collected_case_count": 69,
+      "failed_tests": [
+        "tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/linux-install-lsof.txt",
+      "log_sha256": "1a69b49ba2609cb9fe3d1284bc8ea0cb3881bf0b015371a312374712b7b496d5",
+      "note": null,
+      "kind": "environment_setup",
+      "status": "recorded",
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-deadline-transport-with-sockets.txt",
+      "log_sha256": "052038ffdc66795cb7dcfb4a0efc748275174f59340d6ad0e6455c53d119b75e",
+      "note": "Same targeted production deadline/transport coverage with localhost sockets permitted.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 34,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 3.43,
+      "summary": "34 passed in 3.43s",
+      "collected_case_count": 34,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-deadline-transport.txt",
+      "log_sha256": "d0be91a489d1a35041d2d843489a28411fc94bbde621d3c1f844d42c42526e45",
+      "note": "Sandbox denied localhost bind for eight real HTTP/1.1 socket tests. Product deadlines not weakened; authorized socket-capable rerun passed all 34.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 26,
+      "failed": 8,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 3.18,
+      "summary": "8 failed, 26 passed in 3.18s",
+      "collected_case_count": 34,
+      "failed_tests": [
+        "tests/test_fourteenth_transport_close.py::test_peer_closes_mid_body_is_remote_error_without_local_cancel_or_retry",
+        "tests/test_fourteenth_transport_close.py::test_complete_terminal_waits_for_short_delayed_http_terminator",
+        "tests/test_fourteenth_transport_close.py::test_stalled_tail_is_bounded_without_repeating_accepted_response",
+        "tests/test_fourteenth_transport_close.py::test_tail_drain_finishes_before_earliest_parent_deadline",
+        "tests/test_fourteenth_transport_close.py::test_clean_http_eof_without_response_terminal_still_cannot_publish",
+        "tests/test_fourteenth_transport_close.py::test_truncated_http_tail_does_not_discard_already_complete_terminal",
+        "tests/test_fourteenth_transport_close.py::test_incomplete_terminal_keeps_safe_reason_and_http_completion_distinct",
+        "tests/test_fourteenth_transport_close.py::test_local_first_event_timeout_is_explicitly_not_peer_close"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-legacy-scope-fixed.txt",
+      "log_sha256": "f3e82bce4307d30db41785e546eee137cf13bfe2ada73a9a7c82f94c5584d20f",
+      "note": "A historical malformed-condition fixture remained readable and watching, while assertion expected needs_review; fixture expectation corrected, new malformed submissions remain rejected.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 39,
+      "failed": 1,
+      "errors": 0,
+      "warnings": 0,
+      "skipped": 0,
+      "duration_seconds": 5.22,
+      "summary": "1 failed, 39 passed in 5.22s",
+      "collected_case_count": 40,
+      "failed_tests": [
+        "tests/test_iteration.py::test_legacy_malformed_tracking_metadata_remains_readable_but_new_output_is_rejected"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-linux-final.txt",
+      "log_sha256": "0bb30e0d419c296659fdcc89b2aeddb5acefa8f7147a1aa52070ef268624b1e2",
+      "note": "1203-case pass at source 1aaa..., before suggestion action conflict fix; superseded for final delivery.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1203,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 164.68,
+      "summary": "1203 passed, 1 warning in 164.68s",
+      "collected_case_count": 1203,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": "1aaa4aa756d47f754e54a871074a3b8615d1ac02e38cfbe52b9ecf3352dace95"
+    },
+    {
+      "log": "test-results/fifteenth/python-linux-integration.txt",
+      "log_sha256": "2f5e5e80c1afc2df7225bc8d78c102e56ce599a8d1a68fb9bcd5bf4ca9ef72db",
+      "note": "Eight shared fixture/scope/legacy cases plus lifecycle check could not verify legacy PID without lsof. lsof was installed in the isolated Linux test environment; no lifecycle safety bypass.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 1188,
+      "failed": 9,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 145.09,
+      "summary": "9 failed, 1188 passed, 1 warning in 145.09s",
+      "collected_case_count": 1197,
+      "failed_tests": [
+        "tests/test_fifth_candidate_events.py::test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts",
+        "tests/test_iteration.py::test_malformed_tracking_metadata_keeps_report_and_does_not_break_worker",
+        "tests/test_iteration_edge_review.py::test_candidate_suggestion_is_monitored_until_expiry",
+        "tests/test_iteration_edge_review.py::test_optional_or_targeted_suggestions_do_not_implicitly_revoke_other_symbols",
+        "tests/test_ninth_lifecycle.py::test_legacy_pidfile_stop_requires_mode_and_database_evidence",
+        "tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline",
+        "tests/test_third_consistency.py::test_publication_preserves_valid_parts_and_unknown_citation_gap",
+        "tests/test_third_review.py::test_targeted_research_does_not_complete_unrelated_recommendation_demand",
+        "tests/test_third_review.py::test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bounded"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-linux-verified.txt",
+      "log_sha256": "c3f653fab3583d571a9ecb167ecefea999edb7d965b8a7e0a53a95116b3b3cd6",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1208,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 154.85,
+      "summary": "1208 passed, 1 warning in 154.85s",
+      "collected_case_count": 1208,
+      "failed_tests": [],
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    {
+      "log": "test-results/fifteenth/python-macos-final.txt",
+      "log_sha256": "f155d49225d0af85404158af39db7ea4cf35f6e726ab82d109c5085025bcf022",
+      "note": "1203-case pass at source 1aaa..., before suggestion action conflict fix; superseded for final delivery.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1203,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 121.73,
+      "summary": "1203 passed, 1 warning in 121.73s",
+      "collected_case_count": 1203,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": "1aaa4aa756d47f754e54a871074a3b8615d1ac02e38cfbe52b9ecf3352dace95"
+    },
+    {
+      "log": "test-results/fifteenth/python-macos-integration.txt",
+      "log_sha256": "96a8e1463056cfc6c868a012d63834319123985d9b13cdc7c5f01e2cb7e1da3d",
+      "note": "Integration failures: six old fixture scopes omitted candidate securities; one legacy-invalid-condition test used new submission instead of injecting historical row; one forecast fixture scope; one new account-CAS fixture omitted correction preview token; one verifier source guard fired while source was being edited. Original failures retained.",
+      "kind": "python",
+      "status": "failed",
+      "passed": 1187,
+      "failed": 10,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 117.62,
+      "summary": "10 failed, 1187 passed, 1 warning in 117.62s",
+      "collected_case_count": 1197,
+      "failed_tests": [
+        "tests/test_fifteenth_delivery.py::test_real_state_change_after_preflight_cannot_apply_and_retains_candidate[account_version]",
+        "tests/test_fifth_candidate_events.py::test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts",
+        "tests/test_iteration.py::test_malformed_tracking_metadata_keeps_report_and_does_not_break_worker",
+        "tests/test_iteration_edge_review.py::test_candidate_suggestion_is_monitored_until_expiry",
+        "tests/test_iteration_edge_review.py::test_optional_or_targeted_suggestions_do_not_implicitly_revoke_other_symbols",
+        "tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline",
+        "tests/test_third_consistency.py::test_publication_preserves_valid_parts_and_unknown_citation_gap",
+        "tests/test_third_review.py::test_targeted_research_does_not_complete_unrelated_recommendation_demand",
+        "tests/test_third_review.py::test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bounded",
+        "tests/test_twelfth_live_verifier.py::test_single_round_verifier_contract_with_explicit_runner"
+      ],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    },
+    {
+      "log": "test-results/fifteenth/python-macos-verified.txt",
+      "log_sha256": "c2decd8a2dea77760745814db8f44eaae0063c07e916140923adb8cac955488f",
+      "note": "Final frozen source 5355..., after all reviewed boundary fixes.",
+      "kind": "python",
+      "status": "passed",
+      "passed": 1208,
+      "failed": 0,
+      "errors": 0,
+      "warnings": 1,
+      "skipped": 0,
+      "duration_seconds": 123.75,
+      "summary": "1208 passed, 1 warning in 123.75s",
+      "collected_case_count": 1208,
+      "failed_tests": [],
+      "validation_stage": "final_frozen_source",
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    {
+      "log": "test-results/fifteenth/python-targeted-integration.txt",
+      "log_sha256": "6eb31292710011125d785b113d10c5934d7e7d220bf2400be0eb9453d6c64475",
+      "note": "Command referenced nonexistent tests/test_fourteenth_transport.py; zero tests collected. Correct existing transport files used subsequently.",
+      "kind": "collection",
+      "status": "failed",
+      "collected_case_count": 0,
+      "failed_tests": [],
+      "validation_stage": "before_suggestion_action_conflict_fix",
+      "source_sha256": null
+    }
+  ],
+  "deadline_repeated_runs": [
+    {
+      "log": "test-results/fifteenth/deadline-repeat-macos.json",
+      "log_sha256": "f2cca78dfe1e2a329c990e2695834157344fef90fa5d651d20835ceea5b1f4e1",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.37,
+          "summary": "16 passed in 2.37s"
+        },
+        {
+          "attempt": 2,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.52,
+          "summary": "16 passed in 2.52s"
+        },
+        {
+          "attempt": 3,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.06,
+          "summary": "16 passed in 2.06s"
+        },
+        {
+          "attempt": 4,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.02,
+          "summary": "16 passed in 2.02s"
+        },
+        {
+          "attempt": 5,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.03,
+          "summary": "16 passed in 2.03s"
+        },
+        {
+          "attempt": 6,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.13,
+          "summary": "16 passed in 2.13s"
+        },
+        {
+          "attempt": 7,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.15,
+          "summary": "16 passed in 2.15s"
+        },
+        {
+          "attempt": 8,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.13,
+          "summary": "16 passed in 2.13s"
+        },
+        {
+          "attempt": 9,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.05,
+          "summary": "16 passed in 2.05s"
+        },
+        {
+          "attempt": 10,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.04,
+          "summary": "16 passed in 2.04s"
+        }
+      ],
+      "run_count": 10,
+      "all_passed": true,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 160,
+      "source_unchanged": null,
+      "source_sha256": null,
+      "deadline_test_sha256": null,
+      "container_exit_code": null,
+      "container_image": null,
+      "isolation": null,
+      "source_file_count": 0,
+      "source_files_manifest_sha256": null,
+      "representative_source_files_sha256": {},
+      "environment": {
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "platform": null
+      },
+      "stage": "before_suggestion_action_conflict_fix",
+      "method": "Fixed ten runs, not retry-until-green; handler/event fence establishes inflight phase before advancing monotonic wall/loop clocks."
+    },
+    {
+      "log": "test-results/fifteenth/deadline-repeat-macos-final.json",
+      "log_sha256": "7baf971e41ae483305b5ccd079e9153692d715c8dd327f8db4af567323c51181",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.13,
+          "summary": "16 passed in 2.13s"
+        },
+        {
+          "attempt": 2,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.13,
+          "summary": "16 passed in 2.13s"
+        },
+        {
+          "attempt": 3,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.11,
+          "summary": "16 passed in 2.11s"
+        },
+        {
+          "attempt": 4,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.17,
+          "summary": "16 passed in 2.17s"
+        },
+        {
+          "attempt": 5,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.61,
+          "summary": "16 passed in 2.61s"
+        },
+        {
+          "attempt": 6,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.42,
+          "summary": "16 passed in 2.42s"
+        },
+        {
+          "attempt": 7,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.34,
+          "summary": "16 passed in 2.34s"
+        },
+        {
+          "attempt": 8,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.33,
+          "summary": "16 passed in 2.33s"
+        },
+        {
+          "attempt": 9,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.39,
+          "summary": "16 passed in 2.39s"
+        },
+        {
+          "attempt": 10,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.47,
+          "summary": "16 passed in 2.47s"
+        }
+      ],
+      "run_count": 10,
+      "all_passed": true,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 160,
+      "source_unchanged": true,
+      "source_sha256": null,
+      "deadline_test_sha256": null,
+      "container_exit_code": null,
+      "container_image": null,
+      "isolation": null,
+      "source_file_count": 90,
+      "source_files_manifest_sha256": "d1074216f3c686426951b914d9638371009dc638b7e4a5842beff0cb14b9a537",
+      "representative_source_files_sha256": {
+        "app/agents.py": "7b1fe049480a5f7ecf5483f5df196c2145eedf64b40286824409ed927948aa37",
+        "app/model.py": "a42dc0b88117e279872f42fedee1fd749a91a04cc91f2fb5c82bb34f7beff92f",
+        "app/service.py": "c3e059e1fecfd4f1e831ee38465713df4f433096d2b77896ca8f3c5d663d65d1",
+        "tests/conftest.py": "e192c6b8beeef3bc39cbc8934f4a3e34d9b8886d64f6bf473b35e4bfca0e1a68",
+        "tests/test_fourteenth_deadlines.py": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680"
+      },
+      "environment": {
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "platform": "macOS-27.2-arm64-arm-64bit-Mach-O"
+      },
+      "stage": "before_suggestion_action_conflict_fix",
+      "method": "Fixed ten runs, not retry-until-green; handler/event fence establishes inflight phase before advancing monotonic wall/loop clocks."
+    },
+    {
+      "log": "test-results/fifteenth/deadline-repeat-linux.json",
+      "log_sha256": "5d06ed68c3fd34a348397cdadb2bb739032c1bf02612b894693586487be43909",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.45,
+          "summary": "16 passed in 2.45s"
+        },
+        {
+          "attempt": 2,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.45,
+          "summary": "16 passed in 2.45s"
+        },
+        {
+          "attempt": 3,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.42,
+          "summary": "16 passed in 2.42s"
+        },
+        {
+          "attempt": 4,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.42,
+          "summary": "16 passed in 2.42s"
+        },
+        {
+          "attempt": 5,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.45,
+          "summary": "16 passed in 2.45s"
+        },
+        {
+          "attempt": 6,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.52,
+          "summary": "16 passed in 2.52s"
+        },
+        {
+          "attempt": 7,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.5,
+          "summary": "16 passed in 2.50s"
+        },
+        {
+          "attempt": 8,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.46,
+          "summary": "16 passed in 2.46s"
+        },
+        {
+          "attempt": 9,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.55,
+          "summary": "16 passed in 2.55s"
+        },
+        {
+          "attempt": 10,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.46,
+          "summary": "16 passed in 2.46s"
+        }
+      ],
+      "run_count": 10,
+      "all_passed": true,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 160,
+      "source_unchanged": null,
+      "source_sha256": null,
+      "deadline_test_sha256": null,
+      "container_exit_code": null,
+      "container_image": null,
+      "isolation": null,
+      "source_file_count": 201,
+      "source_files_manifest_sha256": "3748018a2b0ec1384665fdc22f790517c09ee5073e65daa6d88689d7f5c96a72",
+      "representative_source_files_sha256": {
+        "app/agents.py": "7b1fe049480a5f7ecf5483f5df196c2145eedf64b40286824409ed927948aa37",
+        "app/model.py": "a42dc0b88117e279872f42fedee1fd749a91a04cc91f2fb5c82bb34f7beff92f",
+        "app/service.py": "c85dc0002eafdb7ef73d5e69daa451dd7d494c63a2d796bb11c4dc3eee51f27b",
+        "data/calendar_2026.json": "3d40e5438c14570d2c3c17384c8a9e4449d032376ff0aaffc77b5a2d4d5b06ab",
+        "tests/conftest.py": "e192c6b8beeef3bc39cbc8934f4a3e34d9b8886d64f6bf473b35e4bfca0e1a68",
+        "tests/test_fourteenth_deadlines.py": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680"
+      },
+      "environment": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39\n3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]\n",
+      "stage": "before_suggestion_action_conflict_fix",
+      "method": "Fixed ten runs, not retry-until-green; handler/event fence establishes inflight phase before advancing monotonic wall/loop clocks."
+    },
+    {
+      "log": "test-results/fifteenth/deadline-linux-missing-calendar-failure.json",
+      "log_sha256": "18e0ee49c5ed30ad462b977183a5d6a116d92d21526d1841189f245269eff66b",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 1,
+          "passed": 2,
+          "failed": 14,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.09,
+          "summary": "14 failed, 2 passed in 2.09s"
+        }
+      ],
+      "run_count": 1,
+      "all_passed": false,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 16,
+      "source_unchanged": null,
+      "source_sha256": null,
+      "deadline_test_sha256": null,
+      "container_exit_code": null,
+      "container_image": null,
+      "isolation": null,
+      "source_file_count": 200,
+      "source_files_manifest_sha256": "cc6f9b6654cbac798d9d4962efa2fa0546d12078244863c1eef1427c4033ee86",
+      "representative_source_files_sha256": {
+        "app/agents.py": "7b1fe049480a5f7ecf5483f5df196c2145eedf64b40286824409ed927948aa37",
+        "app/model.py": "a42dc0b88117e279872f42fedee1fd749a91a04cc91f2fb5c82bb34f7beff92f",
+        "app/service.py": "c85dc0002eafdb7ef73d5e69daa451dd7d494c63a2d796bb11c4dc3eee51f27b",
+        "tests/conftest.py": "e192c6b8beeef3bc39cbc8934f4a3e34d9b8886d64f6bf473b35e4bfca0e1a68",
+        "tests/test_fourteenth_deadlines.py": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680"
+      },
+      "environment": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39\n3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]\n",
+      "stage": "before_suggestion_action_conflict_fix",
+      "method": "Initial Linux fixture packaging omitted committed calendar JSON; all sixteen outcomes retained."
+    },
+    {
+      "log": "test-results/fifteenth/deadline-repeat-macos-verified.json",
+      "log_sha256": "17887ff3a04ff6a24b3f4979b9eccc27be97f2dba04fbf789f9a6e90fea2965e",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.3,
+          "summary": "16 passed in 2.30s"
+        },
+        {
+          "attempt": 2,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.35,
+          "summary": "16 passed in 2.35s"
+        },
+        {
+          "attempt": 3,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.46,
+          "summary": "16 passed in 2.46s"
+        },
+        {
+          "attempt": 4,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.45,
+          "summary": "16 passed in 2.45s"
+        },
+        {
+          "attempt": 5,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.36,
+          "summary": "16 passed in 2.36s"
+        },
+        {
+          "attempt": 6,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.57,
+          "summary": "16 passed in 2.57s"
+        },
+        {
+          "attempt": 7,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.59,
+          "summary": "16 passed in 2.59s"
+        },
+        {
+          "attempt": 8,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.61,
+          "summary": "16 passed in 2.61s"
+        },
+        {
+          "attempt": 9,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.59,
+          "summary": "16 passed in 2.59s"
+        },
+        {
+          "attempt": 10,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.56,
+          "summary": "16 passed in 2.56s"
+        }
+      ],
+      "run_count": 10,
+      "all_passed": true,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 160,
+      "source_unchanged": true,
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+      "deadline_test_sha256": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680",
+      "container_exit_code": null,
+      "container_image": null,
+      "isolation": null,
+      "source_file_count": 0,
+      "source_files_manifest_sha256": null,
+      "representative_source_files_sha256": {},
+      "environment": {
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "platform": "macOS-27.2-arm64-arm-64bit-Mach-O"
+      },
+      "stage": "final_frozen_source",
+      "method": "Fixed ten runs, not retry-until-green; handler/event fence establishes inflight phase before advancing monotonic wall/loop clocks."
+    },
+    {
+      "log": "test-results/fifteenth/deadline-repeat-linux-verified.json",
+      "log_sha256": "78506509e0c510ae190057b2ccadc488e9826d345b1a58e9dcd29be2a40d4ce9",
+      "runs": [
+        {
+          "attempt": 1,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.06,
+          "summary": "16 passed in 3.06s"
+        },
+        {
+          "attempt": 2,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.67,
+          "summary": "16 passed in 2.67s"
+        },
+        {
+          "attempt": 3,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.71,
+          "summary": "16 passed in 2.71s"
+        },
+        {
+          "attempt": 4,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 2.66,
+          "summary": "16 passed in 2.66s"
+        },
+        {
+          "attempt": 5,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.2,
+          "summary": "16 passed in 3.20s"
+        },
+        {
+          "attempt": 6,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.59,
+          "summary": "16 passed in 3.59s"
+        },
+        {
+          "attempt": 7,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.82,
+          "summary": "16 passed in 3.82s"
+        },
+        {
+          "attempt": 8,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.44,
+          "summary": "16 passed in 3.44s"
+        },
+        {
+          "attempt": 9,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.17,
+          "summary": "16 passed in 3.17s"
+        },
+        {
+          "attempt": 10,
+          "returncode": 0,
+          "passed": 16,
+          "failed": 0,
+          "errors": 0,
+          "warnings": 0,
+          "skipped": 0,
+          "duration_seconds": 3.52,
+          "summary": "16 passed in 3.52s"
+        }
+      ],
+      "run_count": 10,
+      "all_passed": true,
+      "unique_test_cases_per_run": 16,
+      "total_case_executions": 160,
+      "source_unchanged": true,
+      "source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+      "deadline_test_sha256": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680",
+      "container_exit_code": 0,
+      "container_image": "guanlan-iteration15-ci:local",
+      "isolation": "read-only source copied to private container tmpfs /work, network none",
+      "source_file_count": 0,
+      "source_files_manifest_sha256": null,
+      "representative_source_files_sha256": {},
+      "environment": {
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39"
+      },
+      "stage": "final_frozen_source",
+      "method": "Fixed ten runs, not retry-until-green; handler/event fence establishes inflight phase before advancing monotonic wall/loop clocks."
+    }
+  ],
+  "remote_ci": {
+    "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "run": {
+      "id": 41413931460,
+      "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_attempt": 1,
+      "event": "push",
+      "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460"
+    },
+    "python": {
+      "job_id": 125173106146,
+      "passed": 1164,
+      "failed": 1,
+      "warnings": 1,
+      "failed_test": "tests/test_fourteenth_deadlines.py::test_inflight_request_honors_the_earliest_cap_and_keeps_saved_material[analysis]",
+      "expected_http_requests": 1,
+      "observed_http_requests": 0,
+      "error_code": "analysis_budget_exhausted"
+    },
+    "browser_groups": 11,
+    "browser_all_success": true,
+    "required_aggregate": "failure",
+    "source": "Read-only GitHub API and workflow job log rechecked at start"
+  },
+  "remote_ci_note": "Read-only main branch, latest workflow run and all job statuses rechecked at 2026-11-02T17:47:22+08:00. Remote main remains baseline 654065e8676e39fd6eba73f84d16155dcbe1ecab; run 41413931460 attempt 1 remains failure (Python failure, all 11 browser groups success, required aggregate failure). Local work remains unpushed; local validation does not change remote CI.",
+  "paid_requests_in_engineering_tests": 0,
+  "ad_hoc_context_tests": {
+    "source": "Agent tool outputs in this conversation, no standalone log saved",
+    "initial_fixture_import_failure": {
+      "failed": 3,
+      "passed": 1,
+      "reason": "Incorrect test mixin import name, fixed to AgentConfigStore._vault"
+    },
+    "last_targeted_context_result": {
+      "passed": 9,
+      "failed": 0,
+      "seconds": 0.78
+    },
+    "earlier_joint_context_regression": {
+      "passed": 23,
+      "failed": 0,
+      "seconds": 3.58
+    },
+    "not_counted_as_full_suite": true
+  },
+  "failure_excerpt_file": "engineering-failures.txt",
+  "denominator_note": "Each run is reported separately. Repeated runs and targeted selections are not added to the unique final full-suite case count; fixtures do not establish live model content quality.",
+  "post_engineering_verifier_fix": {
+    "kind": "aggregate_verifier_effective_team_identity_fix",
+    "recorded_at": "2026-11-02T17:29:12.553996+08:00",
+    "rejected_execution": "fifteenth-historical-verified-v4",
+    "preflight_outcome": {
+      "model_client_created": false,
+      "http_attempts_reserved": 0,
+      "paid_requests_sent": 0,
+      "shared_authorization_consumed": 0
+    },
+    "observed_difference": {
+      "role_list_fields": [
+        "six role updated_at fields only"
+      ],
+      "prepared_migration_time": "2026-11-02T17:19:01.485xxx+08:00",
+      "execution_migration_time": "2026-11-02T17:25:17.981xxx+08:00",
+      "role_order_prompts_tools_versions_bindings_errors_and_warnings_identical": true,
+      "prepared_catalog_version": 2,
+      "execution_catalog_version": 3,
+      "effective_team_ids_equal": true
+    },
+    "cause": "Each isolated configure step copies old built-ins and performs the same exact-hash prompt migration; migration observation timestamps differ.",
+    "fix": "Reuse production freeze_agent_team().team_id for prepared effective configuration identity; no custom field-deletion identity rule, no production guard relaxed.",
+    "changed_files": [
+      "scripts/verify_fifteenth_aggregate.py",
+      "tests/test_fifteenth_context.py"
+    ],
+    "production_app_files_changed": [],
+    "engineering_full_suite_source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+    "post_fix_source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+    "regression": {
+      "command": ".venv/bin/python -m pytest -q tests/test_fifteenth_context.py tests/test_fourteenth_chain.py tests/test_fourteenth_transport_probe.py",
+      "log": "test-results/fifteenth/aggregate-team-identity-targeted.txt",
+      "log_sha256": "4fba52a39ffc1e5ff6dda0000008a0dd965db5df03beb1d2ed09279fc4fab384",
+      "passed": 43,
+      "failed": 0,
+      "warnings": 0,
+      "seconds": 4.37,
+      "new_scenarios": [
+        "Same exact old builtin migrated at two distinct times, real Agent/HTTP fixture/Store publication succeeds once",
+        "Custom prompt modification rejected before ModelClient",
+        "Discovered model modification rejected before ModelClient",
+        "Effort modification rejected before ModelClient"
+      ]
+    },
+    "full_suite_and_browser_scope": "The 1208-case Mac/Linux passes and eleven groups apply to unchanged production app at engineering source 5355...; they were not rerun or relabelled as full validation of the later verifier-only patch.",
+    "regression_linux": {
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+      "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+      "modules": [
+        "tests/test_fifteenth_context.py",
+        "tests/test_fourteenth_chain.py",
+        "tests/test_fourteenth_transport_probe.py"
+      ],
+      "returncode": 0,
+      "source_unchanged": true,
+      "container_exit_code": 0,
+      "image": "guanlan-iteration15-ci:local",
+      "isolation": "read-only ff8 source copied to private container tmpfs /work; network none",
+      "checked_at": "2026-11-02T17:33:14.500946+08:00",
+      "passed": 43,
+      "failed": 0,
+      "warnings": 0,
+      "result_line": "43 passed in 5.40s",
+      "raw_log": "test-results/fifteenth/verifier-fix-linux-ff8.log",
+      "raw_record_sha256": "f6313dc8427157fed3931d586e14c5d83c59c6d8486a395eee6029e09f9b9992",
+      "scope": "Verifier script identity fix and related context/chain/transport probes only; full application suite and 11 browser groups remain separately evidenced at 5355 source identity."
+    }
+  },
+  "latest_runtime_source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "source_identity_note": "Original full suites at 5355 and verifier-only followup at ff8 remain preserved. Later local stream fixes at a2c748 have independent full Mac/Linux 1227-case passes and all eleven browser groups; see post_local_stream_fix.",
+  "remote_ci_at_delivery": {
+    "checked_at_utc": "2026-11-02 09:47:22 UTC",
+    "remote_branch": "main",
+    "remote_head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "run": {
+      "id": 41413931460,
+      "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_attempt": 1,
+      "event": "push",
+      "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460",
+      "created_at": "2026-11-02T08:33:23Z",
+      "updated_at": "2026-11-02T08:37:04Z"
+    },
+    "jobs": [
+      {
+        "id": 125173106146,
+        "name": "python",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 125173106580,
+        "name": "browser (seventh)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106581,
+        "name": "browser (twelfth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106648,
+        "name": "browser (thirteenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106685,
+        "name": "browser (iteration)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106690,
+        "name": "browser (eleventh)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106701,
+        "name": "browser (tenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106745,
+        "name": "browser (fourteenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106793,
+        "name": "browser (twelfth-select)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106810,
+        "name": "browser (thirteenth-correction)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106811,
+        "name": "browser (production)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106824,
+        "name": "browser (ninth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125174489557,
+        "name": "tests",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "browser_groups_success": 11,
+    "required_aggregate": "failure",
+    "new_worktree_code_pushed": false,
+    "source": "Read-only connected GitHub GET: main branch, latest workflow-run collection and current run jobs; no push or workflow rerun performed.",
+    "checked_at": "2026-11-02T17:47:22+08:00",
+    "previous_checked_at_utc": "2026-11-02 09:32:01 UTC",
+    "python": {
+      "passed": 1164,
+      "failed": 1,
+      "warnings": 1,
+      "job_id": 125173106146,
+      "counts_source": "Previously retrieved log of unchanged job/run attempt; current failure status rechecked via run jobs API"
+    }
+  },
+  "post_local_stream_fix": {
+    "kind": "local_stream_fix_validation",
+    "at": "2026-11-02T18:20:17.789529+08:00",
+    "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "source_manifest": "local-stream-fix-source.json",
+    "source_files_changed_since_test_freeze": [],
+    "macos_python": {
+      "passed": 1227,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 118.88,
+      "log": "test-results/fifteenth/python-macos-local-stream-fix.txt",
+      "log_sha256": "f3e88c527cb75c75e3bc9ea6405836f7c15821b1913fc4e7a873d553fe2b3318"
+    },
+    "browser": {
+      "groups": [
+        {
+          "group": "iteration",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 2110
+        },
+        {
+          "group": "production",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 9244
+        },
+        {
+          "group": "seventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 4620
+        },
+        {
+          "group": "ninth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16751
+        },
+        {
+          "group": "tenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 19992
+        },
+        {
+          "group": "eleventh",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 61268
+        },
+        {
+          "group": "twelfth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 103353
+        },
+        {
+          "group": "twelfth_select",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 16891
+        },
+        {
+          "group": "thirteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 41262
+        },
+        {
+          "group": "thirteenth_correction",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 6536
+        },
+        {
+          "group": "fourteenth",
+          "code": 0,
+          "signal": null,
+          "duration_ms": 1419
+        }
+      ],
+      "passed": 11,
+      "failed": 0,
+      "log": "test-results/fifteenth/browser-local-stream-fix.txt",
+      "log_sha256": "d996a24a305958770f0d6cd3b0a0075ce7d6861a555e101b08e5fe86ed86b847",
+      "browser_version": "151.0.7922.34"
+    },
+    "linux_python": {
+      "status": "passed",
+      "passed": 1227,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 132.99,
+      "evidence": "stream-fix-linux-validation.json",
+      "log": "test-results/fifteenth/python-linux-stream-fix-a2c.txt"
+    },
+    "new_stream_boundary_cases": 16,
+    "deterministic_clock_cases": 2,
+    "targeted_stream_transport_model_deadline_passed": 154,
+    "targeted_after_clock_strengthening_passed": 32,
+    "initial_wait_preserved": "test-results/fifteenth/stream-deadline-targeted-macos-initial-wait.txt",
+    "new_paid_requests": 0,
+    "same_historical_failure_root_cause_proven": false,
+    "raw_pre_fix_reproduction": "test-results/fifteenth/transport-local-audit-before.json",
+    "raw_post_fix_reproduction": "test-results/fifteenth/transport-local-audit-after.json",
+    "all_full_regressions_passed": true
+  }
+}

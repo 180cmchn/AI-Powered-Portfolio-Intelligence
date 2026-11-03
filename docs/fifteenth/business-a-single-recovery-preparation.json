@@ -1,0 +1,131 @@
+{
+  "checked_at": "2026-11-02T16:27:43.033251+00:00",
+  "status": "prepared_not_authorized_not_executed",
+  "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+  "preparation": "data/evaluations/fifteenth-business-a-single-recovery-v1/preparation.json",
+  "preparation_sha256": "f9e9e3b038c4140729cf3e7f8d7e390ff22032ef2e9e76994fac191d9e3891da",
+  "maximum_http_attempts": 1,
+  "A_used_before": 15,
+  "A_total_ceiling": 16,
+  "expired_at": "2026-11-03T00:31:40.673489+08:00",
+  "checkpoint": {
+    "created_at": "2026-11-03T00:01:40.673489+08:00",
+    "resume_count": 0,
+    "body_sha256": "6b441171ea7203ab36ef8ebe4fde53d32efee0d8ac73a70bad6b2fcbf9ac1afb",
+    "guard": "b3f647be0b7bf57e62a4c1cf9a0234cdb195066c6269fe4aa554112c4e00115d",
+    "max_age_seconds": 1800,
+    "diagnostic": {
+      "checkpoint_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "eligible": true,
+      "partial_research": false,
+      "state": "synthesis_ready",
+      "note": "当前具备仅汇总恢复资格；重试前再校验输入与时效"
+    },
+    "partial_research": false,
+    "report_count": 0,
+    "calculation_count": 12,
+    "material_index_count": 33,
+    "material_delivery_count": 40,
+    "visibility_boundary": "Only the production checkpoint projection is delivered. Saved original materials/receipts outside that projection are not newly read. No historical package or missing financial rows are injected."
+  },
+  "macos": {
+    "started_at": "2026-11-02T16:26:55.481199+00:00",
+    "completed_at": "2026-11-02T16:27:23.454942+00:00",
+    "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "command": [
+      "/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_fifteenth_recovery.py",
+      "tests/test_fifteenth_business.py",
+      "tests/test_fifteenth_context.py",
+      "tests/test_fifteenth_checkpoint_materials.py",
+      "--junitxml=test-results/fifteenth/single-recovery-macos-junit.xml"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 27.97,
+    "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "source_sha256_after": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "source_unchanged": true,
+    "file_hashes_unchanged": true,
+    "environment_stamp_unchanged": true,
+    "log": "test-results/fifteenth/single-recovery-macos-targeted.txt",
+    "log_sha256": "c376b12eb6282398acc952010522d7d11349651d970dfc24b71d81f823698179",
+    "new_paid_model_requests": 0,
+    "counts": {
+      "passed": 123,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    }
+  },
+  "linux": {
+    "started_at": "2026-11-02T16:26:57.749849+00:00",
+    "completed_at": "2026-11-02T16:27:17.130119+00:00",
+    "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "source_sha256_after": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "source_unchanged": true,
+    "file_hashes_unchanged": true,
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "image_id": "sha256:f9d7abbf1311067e4ede1943a2b495be13b56094824fff16f9189d6804ac47a4",
+    "isolation": "network none, immutable existing image, read-only safe snapshot; /work and /tmp tmpfs; no credentials or private data",
+    "command": [
+      "/opt/guanlan-venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_fifteenth_recovery.py",
+      "tests/test_fifteenth_business.py",
+      "tests/test_fifteenth_context.py",
+      "tests/test_fifteenth_checkpoint_materials.py",
+      "--junitxml=/work/pytest-results.xml"
+    ],
+    "returncode": 0,
+    "counts": {
+      "passed": 123,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "junit_suites": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "123",
+        "time": "18.437",
+        "timestamp": "2026-11-02T16:26:57.947191+00:00",
+        "hostname": "73d5aa4ea06d"
+      }
+    ],
+    "module_counts": {
+      "tests.test_fifteenth_checkpoint_materials": 17,
+      "tests.test_fifteenth_delivery": 0,
+      "tests.test_fifteenth_recovery": 22
+    },
+    "elapsed_seconds": 19.39,
+    "new_paid_model_requests": 0
+  },
+  "changed_since_full_regression": [
+    "scripts/verify_fifteenth_recovery.py",
+    "tests/test_fifteenth_recovery.py"
+  ],
+  "full_regression_source": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "full_regression": "Mac/Linux 1367 each; 11 browser groups; all app files unchanged",
+  "model_requests": 0,
+  "authorized": false,
+  "route": "original environment route, TLS retained",
+  "request_identity_boundary": "Production checkpoint projection is rebuilt; not byte-identical to the failed request; no standalone network-causality inference",
+  "stop": "Any result, one HTTP maximum, no correction or retry; expired checkpoint is zero HTTP",
+  "approval_basis": "Original task 2.4/8.2; prior unknown outcome stop requires explicit resume"
+}

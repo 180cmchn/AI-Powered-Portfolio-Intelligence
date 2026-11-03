@@ -21,7 +21,7 @@ from .forecasts import ForecastStore, SCHEMA as FORECAST_SCHEMA
 from .forecast_windows import ForecastWindowStore, SCHEMA as FORECAST_WINDOW_SCHEMA
 from .task_tracking import TaskTrackingStore
 from .ledger import LedgerStore
-from .delivery import DeliveryContractError, bind_delivery, bind_submission_observation, incomplete_delivery, validate_final_result
+from .delivery import DeliveryContractError, DeliveryStateConflict, unapplied_delivery, bind_delivery, bind_submission_observation, incomplete_delivery, validate_final_result
 
 
 def uid() -> str:
@@ -568,6 +568,76 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             allowed.add('cash_only')
         return {'allowed': sorted(allowed), 'required': sorted(symbols)}
 
+    def execution_forecast_batches(self, job, db=None):
+        """Frozen execution bindings, shared by Service and commit-time cutoff."""
+        if db is None:
+            with self.connect() as conn:
+                return self.execution_forecast_batches(job, conn)
+        return [dict(row) for row in db.execute('''SELECT DISTINCT b.id,b.kind,b.deadline
+            FROM forecast_batches b WHERE b.account_id=? AND b.input_version=? AND (
+                b.job_id=? OR b.id IN (SELECT batch_id FROM forecast_research_scopes WHERE job_id=?)
+                OR b.id IN (SELECT batch_id FROM forecast_execution_attempts WHERE job_id=? AND attempt=?)
+                OR b.id IN (SELECT s.batch_id FROM forecast_research_scope_samples r
+                    JOIN forecast_samples s ON s.id=r.sample_id WHERE r.job_id=?)
+                OR b.id IN (SELECT s.batch_id FROM forecast_sample_attempts sa
+                    JOIN forecast_samples s ON s.id=sa.sample_id
+                    JOIN forecast_execution_attempts a ON a.id=sa.attempt_id WHERE a.job_id=? AND a.attempt=?))''',
+            (job['account_id'], job['input_version'], job['id'], job['id'], job['id'],
+             job.get('attempts', 0), job['id'], job['id'], job.get('attempts', 0)))]
+
+
+    def require_publication_deadline(self, job, db):
+        """Check both transaction boundaries; a late transaction rolls back all writes."""
+        from .model import ModelTimeoutError
+        publication_time = datetime.fromisoformat(now())
+        if any(batch['kind'] == 'formal' and publication_time >= datetime.fromisoformat(batch['deadline'])
+               for batch in self.execution_forecast_batches(job, db)):
+            raise ModelTimeoutError('forecast_deadline_exceeded')
+
+    def delivery_contract_context(self, job, db):
+        """Read only authorized indexes; no model/network, mutation or deadline lease."""
+        context = {'account_id': job.get('account_id'), 'recommendations': {},
+                   'forecast_batch_id': None, 'forecast_targets': set(),
+                   'restricted_targets': None, 'revisable_forecasts': {}}
+        if not job.get('account_id'):
+            return context
+        context['recommendations'] = {row['id']: dict(row) for row in db.execute(
+            "SELECT id,security_id,state,updated_at FROM recommendations WHERE account_id=? AND state IN ('watching','triggered','needs_review')",
+            (job['account_id'],))}
+        batch = db.execute('SELECT id FROM forecast_batches WHERE job_id=? AND account_id=?',
+                           (job['id'], job['account_id'])).fetchone()
+        if batch:
+            context['forecast_batch_id'] = batch[0]
+            context['forecast_targets'] = {(row[0], row[1]) for row in db.execute(
+                'SELECT symbol,horizon FROM forecast_samples WHERE batch_id=? AND account_id=?',
+                (batch[0], job['account_id']))}
+            if db.execute("SELECT 1 FROM forecast_research_scopes WHERE job_id=? AND purpose='explicit_subset'", (job['id'],)).fetchone():
+                context['restricted_targets'] = {(row[0], row[1]) for row in db.execute(
+                    'SELECT s.symbol,s.horizon FROM forecast_research_scope_samples r JOIN forecast_samples s ON s.id=r.sample_id WHERE r.job_id=?', (job['id'],))}
+        context['revisable_forecasts'] = {row[0]: (row[1], row[2]) for row in db.execute(
+            'SELECT id,symbol,horizon FROM forecasts WHERE account_id=? AND published_at<=?', (job['account_id'], now()))}
+        return context
+
+    def preflight_delivery(self, job, result, db=None):
+        """The Agent runs this before accepted; publication repeats it in its transaction."""
+        if db is None:
+            with self.connect() as conn:
+                checked = self.preflight_delivery(job, result, conn)
+                checked['_delivery_preflight_job_id'] = job['id']
+                return checked
+        scope = self.delivery_scope(job, db)
+        return validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'],
+                                     contract_context=self.delivery_contract_context(job, db))
+
+    def retain_delivery_candidate(self, job_id, result, reason):
+        """A failed commit preserves visible authored work, never a published report."""
+        candidate = dict(result)
+        candidate['delivery_application'] = unapplied_delivery(candidate, reason)
+        candidate['delivery'] = incomplete_delivery(reason)
+        with self.connect() as db:
+            if not db.execute('SELECT 1 FROM analyses WHERE job_id=?', (job_id,)).fetchone():
+                db.execute('UPDATE jobs SET result=? WHERE id=?', (dumps(candidate), job_id))
+
     def publish(self, job_id, result, data_as_of):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -586,21 +656,25 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 if not isinstance(result.get('report'), str) or not result['report'].strip():
                     raise ReportPublicationError('最终报告为空')
             else:
-                result = validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'])
-                if 'account' not in result['scope'] and any(item.get('security_id', item.get('symbol')) not in result['scope'] for item in result.get('forecasts', [])):
-                    raise ReportPublicationError('结构化预测超出本次明确交付的 scope')
+                try:
+                    result = self.preflight_delivery(dict(job), result, db)
+                except DeliveryContractError as exc:
+                    if result.get('_delivery_preflight_job_id') == job_id:
+                        raise DeliveryStateConflict('预检后提交状态冲突：' + str(exc)) from exc
+                    raise
                 config = loads(job['config_snapshot'], {}) or {}
                 result = bind_delivery(result, job_id=job_id, account_id=job['account_id'],
                     input_version=job['input_version'], universe_version=metadata.get('universe_version'),
                     team_id=(config.get('_agent_team') or {}).get('team_id'))
                 bind_submission_observation(result, [loads(row[0]) for row in db.execute(
                     "SELECT body FROM events WHERE job_id=? AND json_extract(body,'$.type') IN ('tool_started','tool_result','terminal_submission_rejected')", (job_id,))])
-                if result.get('forecasts') and not db.execute('SELECT 1 FROM forecast_batches WHERE job_id=?', (job_id,)).fetchone():
-                    raise ReportPublicationError('当前任务没有服务端冻结的预测批次，不能发布模型自建预测')
             result.update(mode=self.mode, data_as_of=data_as_of)
             acc = db.execute("SELECT * FROM accounts WHERE id=?", (job["account_id"],)).fetchone()
             valid = bool(acc and acc["version"] == job["input_version"] and acc["latest_job_id"] == job_id and job["state"] == "running")
+            if valid and not result.get('demo'):
+                self.require_publication_deadline(dict(job), db)
             result = self.resolve_result_references(result, job['account_id'], db)
+            result['delivery_application'] = unapplied_delivery(result, '账户版本或任务归属已变化' if not valid else '尚未应用')
             # Retain late results as explicitly stale history, never the current recommendation.
             analysis_id = uid()
             db.execute("INSERT OR IGNORE INTO analyses VALUES(?,?,?,?,?,?,?,?,?,?)",
@@ -627,6 +701,8 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 result['demand_coverage'] = self.complete_task_demands(db, job_id, result)
                 db.execute('UPDATE analyses SET result=? WHERE job_id=?', (dumps(result), job_id))
                 db.execute('UPDATE jobs SET result=? WHERE id=?', (dumps(result), job_id))
+                if not result.get('demo'):
+                    self.require_publication_deadline(dict(job), db)
             return valid
 
     def analyses(self, account_id, limit=100, offset=0, summary=False):

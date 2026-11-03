@@ -36,7 +36,7 @@ def projection(tool, output, arguments=None):
     keys = ('status', 'material_id', 'material_identity', 'symbol', 'source', 'fetched_at',
         'as_of', 'source_status', 'adjustment', 'interval', 'source_requested_range',
         'source_truncated', 'requested_range', 'returned_range', 'valid_samples',
-        'return_samples', 'window', 'return', 'moving_average', 'moving_average_gap',
+        'return_samples', 'window', 'return', 'return_period', 'moving_average', 'moving_average_period', 'moving_average_gap',
         'volatility', 'relative_return', 'aligned_asset_return', 'aligned_benchmark_return',
         'comparison_status', 'aligned_samples', 'alignment', 'same_fetch_snapshot',
         'fetch_snapshot_comparison_basis', 'methods', 'reason', 'error', 'matched_rows')

@@ -1,0 +1,71 @@
+{
+  "kind": "iteration_fifteen_delivery_requirements_audit",
+  "requirements_source": "/Users/chn/.codex/attachments/bc7baf89-7392-4c70-871f-7250018216dc/pasted-text-1.txt",
+  "sections": ["4.2", "4.3", "8.1"],
+  "method": {
+    "production_chain_read": ["app/delivery.py", "app/agents.py", "app/service.py", "app/store.py", "app/recommendations.py", "app/forecasts.py", "app/references.py", "app/scheduling.py"],
+    "model_requests_external": 0,
+    "daily_database_opened": false,
+    "full_suite_rerun": false,
+    "browser_rerun": false,
+    "local_fixture_model_requests": "Controlled httpx.MockTransport only; no paid or external endpoint.",
+    "initial_readonly_audit_followed_by": "Parent explicitly authorized the narrowly scoped research_records truncation fix and regression tests."
+  },
+  "finding": {
+    "id": "research_records_silent_truncation",
+    "status": "fixed_and_targeted_regressions_passed",
+    "before": "validate_final_result accepted 101 valid research_records; save_research_records silently iterated records[:100]. No persistence error informed the same manager before accepted.",
+    "readonly_reproduction": {"accepted_research_records": 101, "persistence_loop_limit": 100},
+    "fix": "One validate_research_records helper enforces the existing object/kind contract and the 100-record cap both in final preflight and persistence. Oversize feedback identifies research_records[100]. Persistence iterates the validated complete list; it no longer truncates or silently skips malformed new entries.",
+    "files_owned_by_delivery_agent": ["app/delivery.py", "app/recommendations.py", "tests/test_fifteenth_delivery.py"],
+    "schema_integration": "Parent owns app/agents.py finish_analysis.properties.research_records: add maxItems from delivery.MAX_RESEARCH_RECORDS; the delivery agent did not edit agents.py.",
+    "unchanged_boundaries": ["No content quality scoring", "No minimum evidence or source count", "No forced buy/sell/direction", "No historical data migration or reader rewrite", "No default timeout or model configuration change"],
+    "red": {"log": "test-results/fifteenth/research-record-limit-red.txt", "failed": 2, "passed": 2, "deselected": 28, "seconds": 0.74},
+    "green": {"log": "test-results/fifteenth/research-record-limit-targeted.txt", "passed": 4, "deselected": 28, "seconds": 0.65},
+    "regression": {"log": "test-results/fifteenth/research-record-limit-regressions.txt", "passed": 152, "failed": 0, "warnings": 1, "seconds": 14.10, "warning": "Existing Starlette httpx TestClient deprecation."},
+    "meaningful_assertions": [
+      "Actual ModelClient -> Agent -> Service -> temporary SQLite -> API: 101 records rejected before accepted and corrected to 100 in the same manager budget.",
+      "No analyses or research records exist when the correction request is made.",
+      "Valid 1-record and 100-record submissions publish on their first request.",
+      "Every distinct submitted record is returned by the real /api/research endpoint, including the last record.",
+      "Duplicate publication plus Store.recover do not add reports or records.",
+      "Direct persistence of 101 records raises the same field-path error and leaves existing rows byte-for-byte unchanged."
+    ]
+  },
+  "section_4_2": [
+    {"requirement": "One rule source before accepted and at commit", "evidence": ["app/agents.py::_loop validate_final_result", "app/agents.py::_dispatch finish_analysis", "app/service.py::ResearchTools.preflight_delivery", "app/store.py::preflight_delivery", "app/store.py::publish"], "status": "covered"},
+    {"requirement": "Readonly preflight, exact field feedback and bounded correction", "evidence": ["tests/test_fifteenth_delivery.py::test_fixable_errors_return_before_acceptance_and_commit_once", "tests/test_fifteenth_delivery.py::test_account_scope_does_not_grant_arbitrary_security_and_preflight_is_readonly", "tests/test_fifteenth_delivery.py::test_research_record_limit_corrects_before_acceptance_and_persists_every_record"], "status": "covered"},
+    {"requirement": "Commit rechecks account version, task ownership, frozen scope, deadlines and live recommendation state", "evidence": ["app/store.py::publish BEGIN IMMEDIATE and current account/latest_job/state checks", "app/store.py::require_publication_deadline at both transaction boundaries", "tests/test_fifteenth_delivery.py::test_real_state_change_after_preflight_cannot_apply_and_retains_candidate", "tests/test_fifteenth_delivery.py::test_recommendation_expiring_after_preflight_is_conflict_and_preserves_old_report", "tests/test_fifteenth_delivery.py::test_transaction_crossing_formal_cutoff_rolls_back_all_applied_writes"], "status": "covered", "qualification": "Configuration and allowed scope come from the server-owned claimed task snapshot. Preflight is not a permanent publication lease."},
+    {"requirement": "Submitted versus applied intents remain visible; no silent invalid suggestion loss", "evidence": ["app/delivery.py::unapplied_delivery", "app/store.py::retain_delivery_candidate", "app/recommendations.py::_save_suggestions", "app/forecasts.py::publish_forecasts", "tests/frontend_fourteenth.mjs"], "status": "covered_for_suggestions_suggestion_actions_and_forecasts", "qualification": "delivery_application covers these three intent groups, not arbitrary report fields. The research_records fix prevents oversize loss but does not add a new generic receipt platform."},
+    {"requirement": "Limited, watch, hold and justified abstention remain legal; legacy data remains readable", "evidence": ["app/delivery.py::validate_final_result", "app/delivery.py::validate_structured_delivery", "tests/test_fourteenth_publication.py::test_legacy_plain_text_remains_readable", "tests/test_fifteenth_delivery.py::test_missing_baseline_is_application_receipt_not_protocol_error"], "status": "covered"}
+  ],
+  "section_4_3": [
+    {"requirement": "Account is not permission for arbitrary securities; public/single-security/cash scopes differ", "evidence": ["app/store.py::delivery_scope frozen at claim", "app/store.py::delivery_contract_context", "app/delivery.py::validate_structured_delivery", "tests/test_fifteenth_delivery.py::test_account_scope_does_not_grant_arbitrary_security_and_preflight_is_readonly", "tests/test_fourteenth_publication.py::test_public_submission_requires_action_and_explicit_demand_coverage"], "status": "covered"},
+    {"requirement": "Recommendation identity and sources cannot gain cross-account access", "evidence": ["app/delivery.py::validate_structured_delivery recommendation account/same-security lookup", "app/references.py::resolve_result_references using material_accessible", "tests/test_third_recommendations.py::test_local_scope_expiry_and_account_isolation", "tests/test_fifteenth_references.py::test_fixed_bare_url_retains_saved_excerpt_and_cross_account_boundaries"], "status": "covered", "qualification": "Unknown or inaccessible source IDs remain unresolved and do not reveal private contents; a source_link is not a claim that the original document was read."},
+    {"requirement": "Published predictions immutable, formal deadlines unchanged, incomplete targets do not complete all demands", "evidence": ["app/forecasts.py::publish_forecasts already_published/waiting_data receipts", "app/store.py::require_publication_deadline", "app/scheduling.py::complete_task_demands", "tests/test_fourteenth_publication.py::test_limited_security_scope_cannot_complete_account_wide_demand", "tests/test_fifteenth_delivery.py::test_fixable_errors_return_before_acceptance_and_commit_once"], "status": "covered"},
+    {"requirement": "Atomic and idempotent publication; first valid final ends the manager loop", "evidence": ["app/store.py::publish one BEGIN IMMEDIATE for report/forecast/suggestion/demand writes", "app/agents.py::_loop immediate return after accepted submission", "tests/test_fourteenth_publication.py::test_report_forecasts_and_suggestions_share_rollback", "tests/test_fourteenth_publication.py::test_duplicate_after_restart_uses_receipt_and_never_republishes", "tests/test_fifteenth_delivery.py::test_transaction_crossing_formal_cutoff_rolls_back_all_applied_writes"], "status": "covered"}
+  ],
+  "section_8_1": [
+    {"scenario": "Before-send versus confirmed in-flight earliest deadlines", "evidence": "tests/test_fourteenth_deadlines.py::test_request_deadline_boundaries_keep_saved_material", "level": "Real ModelClient/Agent/Service/SQLite/API; controlled clock and HTTP-handler entry fence distinguish zero HTTP from actual cancellation."},
+    {"scenario": "Ordinary process text without finish_analysis", "evidence": "tests/test_fourteenth_chain.py::test_plain_completed_process_message_fails_through_api_without_budget and test_complete_plain_draft_requires_explicit_correction_then_short_cash_report_publishes", "level": "Full application chain; visible candidate event, bounded correction and no mistaken publication."},
+    {"scenario": "Out-of-scope/no-batch/wrong-horizon/duplicate forecast and malformed suggestion", "evidence": "tests/test_fifteenth_delivery.py::test_fixable_errors_return_before_acceptance_and_commit_once", "level": "Full application chain; precise feedback, zero writes before correction, single final publication."},
+    {"scenario": "Limited scope, omitted targets and baseline absence", "evidence": "tests/test_fifteenth_delivery.py::test_fixable_errors_return_before_acceptance_and_commit_once and test_missing_baseline_is_application_receipt_not_protocol_error", "level": "Full application chain; uncovered denominator preserved; baseline absence produces waiting_data rather than forced abstention or protocol error."},
+    {"scenario": "Version/deadline/concurrent recommendation changes after preflight", "evidence": "tests/test_fifteenth_delivery.py state-change, recommendation-expiry and transaction-crossing cases", "level": "Full application chain; actual correction API for version change, transaction rollback, retained candidate receipts."},
+    {"scenario": "Duplicate final, retry/reopen and ledger idempotency", "evidence": ["tests/test_fifteenth_delivery.py correction cases re-publish and recover", "tests/test_fourteenth_publication.py::test_duplicate_after_restart_uses_receipt_and_never_republishes", "tests/test_fifteenth_business.py::test_actual_api_ledger_service_agent_model_publication_and_restart", "tests/test_thirteenth_ledger.py"], "level": "Covered across publication/recovery and actual ledger API fixtures; no claim that a readonly SQLite reopen is a full service restart."},
+    {"scenario": "Completed terminal followed by delayed/no EOF/tail error, missing terminal and parent deadline", "evidence": ["tests/test_fourteenth_transport_close.py", "tests/test_fifteenth_stream_boundaries.py"], "level": "Actual localhost HTTP socket and production ModelClient/parser/watchdog. These boundary tests stop at ModelClient; they are not each a separate Agent/Service/SQLite/browser end-to-end test."},
+    {"scenario": "Actual calculations and child reports remain in final input with truthful receipts", "evidence": ["tests/test_fourteenth_chain.py::test_successful_calculation_remains_visible_in_actual_final_request", "tests/test_fourteenth_chain.py::test_single_child_is_material_for_main_not_automatic_account_report", "tests/test_fifteenth_context.py::test_actual_runtime_request_contains_shared_calculation_explanations"], "level": "Actual request payload assertions and production delivery context; index visibility is not full-document access."},
+    {"scenario": "UI/ledger values, scroll/selection, correction, exact cost and sellable dates", "evidence": ["tests/frontend_thirteenth.mjs", "tests/frontend_thirteenth_correction.mjs", "tests/frontend_twelfth.mjs", "tests/frontend_twelfth_select.mjs", "tests/test_thirteenth_ledger.py", "tests/test_twelfth_time_boundaries.py", "tests/frontend_fourteenth.mjs"], "level": "Existing API and 11-group browser evidence inspected; no browser rerun in this audit."}
+  ],
+  "limitations": [
+    "This is engineering contract/transaction verification, not evaluation of investment opinions or real-provider reliability.",
+    "Do not describe every 8.1 scenario as independently traversing every layer: real-socket terminal framing cases are ModelClient-level and compose with separately tested application publication paths.",
+    "No newly discovered blocking defect in the core suggestions/forecast scope, CAS, formal deadline or receipt paths after inspection. The adjacent research_records truncation defect was reproduced and fixed as recorded above.",
+    "Other agents are editing separately owned files. The source digest below is an observation, not a global freeze claim or a full-suite result for the eventual merged source."
+  ],
+  "owned_files_frozen": {
+    "app/delivery.py": "223b522bd3d720cf1a53c454be436c5f737e72a8c82a9d023e85c7ab2deb3324",
+    "app/recommendations.py": "c3f3615f8cea24abcaa93129e7bf0f8f9fb79453d0a684e0eb7643fd706b6b35",
+    "tests/test_fifteenth_delivery.py": "5e795a4cc7c85c8ca5470d38f1a7f037e8a835e7513671554100d5e39b51c426"
+  },
+  "source_sha256_observed_after_targeted_regressions": "0e4cd8da70fbd26e260e0972dd70843906ea92bbbadc87dc1af2ab51ab44fdbf"
+}

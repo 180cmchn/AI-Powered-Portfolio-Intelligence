@@ -30,9 +30,9 @@ def configure_isolated(source, target, account_id):
         for key, value in origin.execute("SELECT key,value FROM meta WHERE key LIKE 'revoked_provider_credentials:%'"):
             dest.execute('INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)', (key, value))
         # Store initialized an empty target before the source roles were copied.
-        # Re-run only this exact-hash migration on the copied isolated roles;
+        # Re-run exact-hash prompt migrations on the copied isolated roles;
         # customized prompts and all bindings remain unchanged.
-        dest.execute("DELETE FROM meta WHERE key='fourteenth_role_migration'")
+        dest.execute("DELETE FROM meta WHERE key IN ('fourteenth_role_migration','fifteenth_synthesis_prompt_migration')")
         store.migrate_fourteenth_roles(dest)
     return store, cfg
 

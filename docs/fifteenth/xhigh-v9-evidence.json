@@ -1,0 +1,128 @@
+{
+  "kind": "xhigh_output_6000_single_variable_run",
+  "run": "v9",
+  "recorded_at": "2026-11-02T20:14:26.600419+08:00",
+  "source_sha256": "021619ebab1855f407e8ffd2beb52de671fd5a655129654f1b95a1c5a836142b",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v9",
+  "started_at": "2026-11-02T20:06:52.985928+08:00",
+  "completed_at": "2026-11-02T20:10:49.588518+08:00",
+  "change_from_v8": "Only isolated max_output_tokens 4000 -> 6000",
+  "request": {
+    "status_code": 200,
+    "response_id": "c0f99be6-d962-9fb3-9737-d0be6bf3ff7a",
+    "request_id": null,
+    "started_at": "2026-11-02T12:06:53.023766+00:00",
+    "finished_at": "2026-11-02T12:10:49.569563+00:00",
+    "duration_ms": 236546.7,
+    "stream_terminal": "response.incomplete",
+    "http_body_complete": true,
+    "stream_close_reason": "http_eof",
+    "response_incomplete_reason": "max_output_tokens",
+    "reasoning_effort_sent": "xhigh",
+    "reported_reasoning_effort": "xhigh",
+    "requested_max_output_tokens": 6000,
+    "usage": {
+      "input_tokens": 26458,
+      "input_tokens_details": {
+        "cached_tokens": 1152
+      },
+      "output_tokens": 17491,
+      "output_tokens_details": {
+        "reasoning_tokens": 11491
+      },
+      "total_tokens": 43949,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0,
+      "cost_in_usd_ticks": 530855600,
+      "context_details": {
+        "input_tokens": 26458,
+        "output_tokens": 17491
+      }
+    },
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 2,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 136,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 1,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 6000,
+      "response.incomplete": 1
+    },
+    "cancelled_by": null,
+    "error_code": null,
+    "stream_tail_drain_ms": 3.26,
+    "stream_first_byte_ms": 8017.12,
+    "stream_last_byte_ms": 236541.09,
+    "stream_last_progress_ms": 236543.14,
+    "stream_max_idle_ms": 8336.36
+  },
+  "request_inputs": [
+    {
+      "payload_sha256": "62a3cc18cec28fc4a147edf8ada53e58068eef0b1b6a9162a8713daf80341c9b",
+      "payload_bytes": 80852,
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "max_output_tokens_sent": 6000,
+      "output_limit_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "outcome": {
+    "http_requests": 1,
+    "contract_accepted": false,
+    "published": false,
+    "error_code": "delivery_contract_failed",
+    "content_assessment": "not_evaluated",
+    "formal_predictions": 0,
+    "source_unchanged": true,
+    "environment_unchanged": true
+  },
+  "visible_output_diagnostic": {
+    "artifact": "execution/visible-terminal-01.json",
+    "sha256": "f74f9c3ef95882d2fdb51907430914ec966404e41f7908b62eb88c23eedc5b78",
+    "private": true,
+    "not_accepted": true,
+    "types": [
+      "message"
+    ],
+    "text_chars": 10878,
+    "json_complete": false,
+    "parse_error": {
+      "type": "JSONDecodeError",
+      "position": 10877,
+      "reason": "Unterminated string starting at"
+    },
+    "observation": "Incomplete JSON after report/required fields and optional information_impacts; continued into research_records and was truncated.",
+    "hypothesis_result": "Increasing isolated output to 6000 alone did not resolve output expansion. No JSON repair, prefix publication or content acceptance."
+  },
+  "billing": {
+    "supplier_displayed_at": "2026-11-02 20:10:48",
+    "displayed_amount": "0.02342",
+    "currency_symbol": "$",
+    "input_tokens": 26458,
+    "output_tokens": 17491,
+    "cached_tokens": 1152,
+    "duration_seconds": 232,
+    "first_token_seconds": 4.3,
+    "matched_by": "time/model/input/output/cache counts",
+    "invoice_verified": false,
+    "cost_ticks_converted": false
+  },
+  "budget": {
+    "shared_maximum": 10,
+    "used_total": 6,
+    "remaining": 4,
+    "renewed_investigation_used": 3
+  },
+  "next_hypothesis": "Explicit isolated historical-final output policy requests only the five required fields; all three-security questions and source/calculation attribution remain in report, full production schema unchanged. Same xhigh/6000/route/deadlines."
+}

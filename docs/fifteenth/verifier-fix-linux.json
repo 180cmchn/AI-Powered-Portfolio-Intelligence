@@ -1,0 +1,23 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+  "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+  "modules": [
+    "tests/test_fifteenth_context.py",
+    "tests/test_fourteenth_chain.py",
+    "tests/test_fourteenth_transport_probe.py"
+  ],
+  "returncode": 0,
+  "source_unchanged": true,
+  "container_exit_code": 0,
+  "image": "guanlan-iteration15-ci:local",
+  "isolation": "read-only ff8 source copied to private container tmpfs /work; network none",
+  "checked_at": "2026-11-02T17:33:14.500946+08:00",
+  "passed": 43,
+  "failed": 0,
+  "warnings": 0,
+  "result_line": "43 passed in 5.40s",
+  "raw_log": "test-results/fifteenth/verifier-fix-linux-ff8.log",
+  "raw_record_sha256": "f6313dc8427157fed3931d586e14c5d83c59c6d8486a395eee6029e09f9b9992",
+  "scope": "Verifier script identity fix and related context/chain/transport probes only; full application suite and 11 browser groups remain separately evidenced at 5355 source identity."
+}

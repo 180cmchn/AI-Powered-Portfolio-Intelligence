@@ -1,0 +1,373 @@
+{
+  "kind": "xhigh_v11_isolated_publication_readonly_check",
+  "checked_at": "2026-11-02T20:57:39.941965+08:00",
+  "execution": "data/evaluations/fifteenth-historical-xhigh-v11/execution",
+  "source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+  "run_completed_at": "2026-11-02T20:54:45.264720+08:00",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "independent_reopen_passes": 2,
+    "store_initialized": false,
+    "migrations_run": false,
+    "recovery_called": false,
+    "server_started": false,
+    "daily_database_opened": false,
+    "external_requests_sent": 0,
+    "reference_resolver": "Production ReferenceStore.resolve_result_references and MaterialStore.material_accessible with an explicitly supplied read-only SQLite connection; no Store constructor or API server."
+  },
+  "checks": {
+    "one_new_current_report": true,
+    "exactly_one_new_analysis_row": true,
+    "job_completed_once": true,
+    "expected_job_identity_matches": true,
+    "report_hashes_match": true,
+    "report_matches_announced_sha256": true,
+    "job_and_analysis_result_identical": true,
+    "five_required_fields_only": true,
+    "receipt_counts_reconcile": true,
+    "no_structured_rows_for_new_job": true,
+    "old_reports_retained_with_only_legal_status_transitions": true,
+    "account_facts_unchanged": true,
+    "protected_tables_unchanged": true,
+    "resolved_and_saved_source_link_references_accessible": true,
+    "saved_reference_locators_account_scoped": true,
+    "reference_summary_matches_recount_and_readonly_resolution": true,
+    "reference_projection_matches_readonly_resolver": true,
+    "second_readonly_reopen_identical": true,
+    "historical_source_matches_frozen_preparation": true,
+    "frozen_source_unchanged": true,
+    "main_database_files_unchanged_during_recorded_recheck": true,
+    "no_known_malformed_bare_url_references": false
+  },
+  "all_checks_passed": false,
+  "sqlite_quick_check": {
+    "historical": [
+      "ok"
+    ],
+    "execution": [
+      "ok"
+    ]
+  },
+  "publication": {
+    "published": true,
+    "contract_accepted": true,
+    "submission_outcome": "first_attempt",
+    "http_requests": 1,
+    "job_state": "completed",
+    "job_stage": "published",
+    "job_attempts": 1,
+    "delivery_status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "rows_for_job": {
+      "analyses": 1,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "account_current_report_count": 1,
+    "total_analysis_count_before": 1,
+    "total_analysis_count_after": 2,
+    "report_chars": 4694,
+    "report_sha256": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+    "report_hash_sources_agree": {
+      "model_result": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+      "analysis_column": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+      "analysis_result": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+      "job_result": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+      "terminal_arguments": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+      "summary": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77"
+    },
+    "job_and_analysis_application_receipts_equal": true,
+    "actual_terminal_function_count": 1,
+    "actual_terminal_argument_fields": [
+      "completion",
+      "decision_summary",
+      "limitations",
+      "report",
+      "scope"
+    ],
+    "receipt_counts": {
+      "suggestions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "suggestion_actions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "forecasts": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      }
+    },
+    "request_terminals": [
+      {
+        "status_code": 200,
+        "response_status": "completed",
+        "stream_terminal": "response.completed",
+        "http_body_complete": true,
+        "stream_close_reason": "http_eof",
+        "tool_choice_satisfied": true
+      }
+    ]
+  },
+  "references": {
+    "occurrence_count": 9,
+    "unique_material_id_count": 1,
+    "status_counts": {
+      "source_link": 9
+    },
+    "reason_counts": {
+      "not_located_in_saved_material": 8,
+      "native_search_link_only": 1
+    },
+    "persisted_reference_summary": {
+      "resolved": 0,
+      "source_link": 9,
+      "unresolved": 0
+    },
+    "recounted_reference_summary": {
+      "resolved": 0,
+      "source_link": 9,
+      "unresolved": 0
+    },
+    "readonly_resolved_summary": {
+      "resolved": 0,
+      "source_link": 9,
+      "unresolved": 0
+    },
+    "report_explicit_material_id_count": 0,
+    "report_explicit_id_scan_limited": false,
+    "material_backed_reference_occurrences": 1,
+    "accessible_material_backed_occurrences": 1,
+    "resolved_reference_permission_failures": 0,
+    "locator_account_mismatches": 0,
+    "projection_matches_current_readonly_resolver": true,
+    "access_labels": {
+      "source_link": 1
+    },
+    "note": "Resolved means mechanically located and accessible in the isolated account, not independently verified fact or full-document reading. source_link and unresolved retain their weaker access boundaries; no URL was fetched and no API/browser request was made. Nine source_link entries are nine parsed occurrences, not nine verified usable links: five retained Chinese delimiters/prose and are known malformed. The remaining four were not fetched or independently network-validated.",
+    "known_malformed_bare_url_count": 5,
+    "malformed_bare_url_findings": [
+      {
+        "reference_index": 1,
+        "status": "source_link",
+        "url_sha256": "3ceb4dcdce47ab7647fd4d36ccd510ecc794be869da7b94d77f89f677177ba87",
+        "first_delimiter": "）",
+        "characters_from_delimiter": 6,
+        "problem": "Bare-URL extraction retained a surrounding Chinese closing delimiter and following report prose."
+      },
+      {
+        "reference_index": 2,
+        "status": "source_link",
+        "url_sha256": "a86d3c95c20ded81287361fd64562c6ec8d241b1135dbbbe1554f7da5bf29304",
+        "first_delimiter": "）",
+        "characters_from_delimiter": 37,
+        "problem": "Bare-URL extraction retained a surrounding Chinese closing delimiter and following report prose."
+      },
+      {
+        "reference_index": 4,
+        "status": "source_link",
+        "url_sha256": "4343dc936a2536001e7ca8e1951dbaee350b0c25d4b331c519602c7885c524e2",
+        "first_delimiter": "）",
+        "characters_from_delimiter": 13,
+        "problem": "Bare-URL extraction retained a surrounding Chinese closing delimiter and following report prose."
+      },
+      {
+        "reference_index": 5,
+        "status": "source_link",
+        "url_sha256": "a7bed7a2ffa693c847856a08e9b5e922a1df1f046e2b94b2b5377dc64ff49bda",
+        "first_delimiter": "）",
+        "characters_from_delimiter": 1,
+        "problem": "Bare-URL extraction retained a surrounding Chinese closing delimiter and following report prose."
+      },
+      {
+        "reference_index": 8,
+        "status": "source_link",
+        "url_sha256": "58c6b4ada76213072e0dda4b4e8273b3a708e8f114764f4e2eea13aa0bae8c6f",
+        "first_delimiter": "）",
+        "characters_from_delimiter": 45,
+        "problem": "Bare-URL extraction retained a surrounding Chinese closing delimiter and following report prose."
+      }
+    ],
+    "remaining_source_links_not_proven_read_or_network_valid": 4
+  },
+  "old_reports": [
+    {
+      "previous_status": "current",
+      "current_status": "stale",
+      "changed_columns": [
+        "status"
+      ],
+      "expected_transition": true,
+      "identity_and_content_preserved": true,
+      "prior_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44",
+      "retained_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44"
+    }
+  ],
+  "protected_state": {
+    "recommendations": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identical": true
+    },
+    "forecasts": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identical": true
+    },
+    "forecast_batches": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89",
+      "after_sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89",
+      "identical": true
+    },
+    "ledger_entries": {
+      "before_count": 4,
+      "after_count": 4,
+      "before_sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d",
+      "after_sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d",
+      "identical": true
+    },
+    "ledger_operations": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732",
+      "after_sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732",
+      "identical": true
+    },
+    "ledger_accounts": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4",
+      "after_sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4",
+      "identical": true
+    },
+    "ledger_positions": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e",
+      "after_sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e",
+      "identical": true
+    },
+    "materials": {
+      "before_count": 212,
+      "after_count": 212,
+      "before_sha256": "799d4da27350e95d8bac470a4919df43e37a65be4952d63a7fea5b88ab21788c",
+      "after_sha256": "799d4da27350e95d8bac470a4919df43e37a65be4952d63a7fea5b88ab21788c",
+      "identical": true
+    }
+  },
+  "account_facts": {
+    "compared_fields": [
+      "cash",
+      "holdings",
+      "preferences",
+      "version"
+    ],
+    "unchanged": true,
+    "account_latest_job_matches": true,
+    "analysis_state": "current",
+    "input_version_matches": true
+  },
+  "reopen_scope": {
+    "sqlite_persistence_reopened_twice": true,
+    "same_completed_job_and_single_report_after_reopen": true,
+    "job_matches_recover_running_selector": false,
+    "recover_rerun_performed": false,
+    "full_application_restart_verified": false,
+    "duplicate_publication_attempted": false,
+    "note": "Two mode=ro reopen passes preserved one completed new job/report. Store.recover, re-publication, worker and API restart were not exercised; no full service-restart or retry-idempotency conclusion is claimed."
+  },
+  "limitations": [
+    "model-result.json and visible-terminal archive are saved before publication; final transaction receipts come from the persisted job/analysis, and the six report hashes agree.",
+    "Zero submitted structured suggestions/actions/forecasts is an empty denominator, not a tracking or formal forecast success.",
+    "Old current report is retained as stale, not overwritten or deleted.",
+    "This check verifies persistence and mechanical reference access, not investment judgment, current market accuracy or continuous stability.",
+    "A reproducible local bare-URL regex boundary defect affects five persisted source_link URLs. The authored v11 report and stored DB have not been repaired or rewritten. Mechanical source_link counting previously did not detect this syntax defect."
+  ],
+  "initial_file_inventory_comparison": {
+    "all_database_and_sidecar_files_unchanged": false,
+    "limitation": "The initial broad comparison included SQLite WAL/SHM sidecars, whose presence or bytes changed while independent read-only audits were active. Its two SQL snapshots were identical. The individual initial file snapshots were not retained, so the exact first-sidecar difference is not reconstructed."
+  },
+  "file_recheck": {
+    "mode": "ro",
+    "query_only": true,
+    "separate_connections": 2,
+    "before": {
+      "historical": {
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "size": 10047488,
+        "sha256": "29c4707122f6309b344c3115652ae954c9fc06bb8df78ec0e99947330afc2c4c"
+      },
+      "execution-wal": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution-shm": {
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      }
+    },
+    "after": {
+      "historical": {
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "size": 10047488,
+        "sha256": "29c4707122f6309b344c3115652ae954c9fc06bb8df78ec0e99947330afc2c4c"
+      },
+      "execution-wal": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution-shm": {
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      }
+    },
+    "main_database_files_unchanged": true,
+    "sidecar_inventory_unchanged": true,
+    "sql_result_unchanged": true
+  },
+  "publication_and_account_protection_passed": true
+}

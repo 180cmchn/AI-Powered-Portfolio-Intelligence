@@ -1,0 +1,62 @@
+{
+  "kind": "post_a_frozen_engineering_regression",
+  "recorded_at": "2026-11-02T15:57:23.575742+00:00",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "frozen_files": 210,
+  "macos": {
+    "counts": {
+      "passed": 1367,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1
+    },
+    "elapsed_seconds": 147.64,
+    "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "source_unchanged": true,
+    "file_hashes_unchanged": true
+  },
+  "linux": {
+    "counts": {
+      "passed": 1367,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1
+    },
+    "elapsed_seconds": 116.65,
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+    "source_unchanged": true,
+    "file_hashes_unchanged": true,
+    "image_id": "sha256:f9d7abbf1311067e4ede1943a2b495be13b56094824fff16f9189d6804ac47a4"
+  },
+  "browser": {
+    "passed_groups": 11,
+    "total_groups": 11,
+    "elapsed_seconds": 282.61,
+    "source_unchanged": true,
+    "file_hashes_unchanged": true
+  },
+  "evidence": {
+    "frozen": "test-results/fifteenth/post-a-frozen-source.json",
+    "macos": "test-results/fifteenth/post-a-macos-full.json",
+    "linux": "test-results/fifteenth/post-a-linux-full.json",
+    "browser": "test-results/fifteenth/post-a-browser-full.json"
+  },
+  "production_fixes": [
+    "durable bounded manager-visible material recovery with source guards",
+    "keep newly completed materials after interrupted research continuation",
+    "reject oversized research_records before acceptance and persistence"
+  ],
+  "new_paid_model_requests": 0,
+  "normal_business_live_passed": false,
+  "whole_goal_completed": false,
+  "old_live_evidence_preserved": true,
+  "remote_ci": "Original unpushed commit remains failure; see post-a-remote-ci.json"
+}

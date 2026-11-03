@@ -1,0 +1,174 @@
+{
+  "recorded_at": "2026-11-02T19:56:05.411536+00:00",
+  "status": "required_limited_business_matrix_accepted",
+  "latest_user_request": "Omit max_output_tokens from subsequent supplier requests",
+  "implemented_behavior": {
+    "blank_or_null": "Omit max_output_tokens, max_tokens and max_completion_tokens from wire payload",
+    "saved_numeric": "Preserved until explicitly cleared",
+    "inflight_snapshot": "Preserved",
+    "supplier_default": "Not assumed unlimited or a specific number"
+  },
+  "accepted_stages": [
+    {
+      "stage": "a_initial",
+      "summary": "data/evaluations/fifteenth-business-long-task-a-v4/execution/summary.json",
+      "review": "docs/fifteenth/business-long-task-a-content-review.json",
+      "private_report": "data/evaluations/fifteenth-business-long-task-a-v4/execution/account-report.md",
+      "source_sha256": "be9223ff6c60958362d2e39edd5dde47d8eeff901cc19bc9e80377559b77a361",
+      "job_id": "0fcc724b67af4629a883922e1f0731c2",
+      "report_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+      "report_characters": 2462,
+      "review_sha256": "07efb1cf317ffee930a3752d190b5681557408c8183d89102ccba60b70d10eec",
+      "actual_http": 39,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_accepted": true,
+      "postpublish_and_restart_observations": 4,
+      "exploratory_directions": {
+        "down": 2,
+        "abstain": 7
+      },
+      "formal_forecasts": 0,
+      "network_route": "environment",
+      "output_limit": 6000
+    },
+    {
+      "stage": "a_after_sell",
+      "summary": "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/summary.json",
+      "review": "docs/fifteenth/business-output-omission-a-sell-direct-content-review.json",
+      "private_report": "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/account-report.md",
+      "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+      "job_id": "5e4e36432824431ca8e5cf3ac85fdc1d",
+      "report_sha256": "be5881cc5c72e9934a44d7c2b7f95c71bcb1d2b9cc7f6f27402860d0cb9f33fa",
+      "report_characters": 3924,
+      "review_sha256": "acefaedc069c846b8b8435cd9e44d9e0894b379237f2ef38eaeea99be45d89b1",
+      "actual_http": 29,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_accepted": true,
+      "postpublish_and_restart_observations": 4,
+      "exploratory_directions": {
+        "abstain": 6
+      },
+      "formal_forecasts": 0,
+      "network_route": "direct",
+      "output_limit": null
+    },
+    {
+      "stage": "b_cash",
+      "summary": "data/evaluations/fifteenth-business-output-omission-b-v1/execution/summary.json",
+      "review": "docs/fifteenth/business-output-omission-b-content-review.json",
+      "private_report": "data/evaluations/fifteenth-business-output-omission-b-v1/execution/account-report.md",
+      "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+      "job_id": "1f30a8dc2cb646ebad33b79d0215c930",
+      "report_sha256": "195ad2c191d4f9bf095befe584741ef25d05c7214f8d77186d7d9c9ecd8c7a8f",
+      "report_characters": 2606,
+      "review_sha256": "b06379bcee820c8228a802163c12f3b59a8735165b3249c636bd13b3f6335a1d",
+      "actual_http": 11,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_accepted": true,
+      "postpublish_and_restart_observations": 4,
+      "exploratory_directions": {
+        "abstain": 3
+      },
+      "formal_forecasts": 0,
+      "network_route": "direct",
+      "output_limit": null
+    }
+  ],
+  "latest_omission_validation": {
+    "model_http": 40,
+    "completed_and_http_eof": 40,
+    "all_output_limit_fields_absent": true,
+    "route": "explicit isolated direct ModelClient only; TLS and environment CA retained",
+    "daily_route_changed": false
+  },
+  "all_attempts_including_failures": "docs/fifteenth/long-task-validation.json",
+  "full_regression_source": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+  "macos_full_passed": 1500,
+  "linux_full_passed": 1500,
+  "browser_groups_passed": 11,
+  "latest_source": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+  "only_changed_since_full": [
+    "scripts/verify_fifteenth_business.py",
+    "tests/test_fifteenth_business.py"
+  ],
+  "latest_helper_tests_each_os": 204,
+  "costs": {
+    "method": "Chrome usage log full reload, time/token-correlated displayed consumption; client HTTP and supplier row denominators separate",
+    "A_v2_displayed_usd": "0.264382",
+    "A_v3_displayed_usd": "0.021524",
+    "A_v3_visible_consumption_rows": 3,
+    "A_v3_client_http": 11,
+    "A_v4_displayed_usd": "0.456382",
+    "new_long_task_displayed_subtotal_usd": "2.633988",
+    "today_dashboard_total_usd": "2.718394",
+    "prior_today_usd": "0.084406",
+    "all_preceding_and_current_time_correlated_usd": "3.132086",
+    "invoice_verified": false,
+    "sale_v1_displayed_usd": "0.345762",
+    "sale_v2_displayed_usd": "0.350728",
+    "finalized_long_task_subtotal_usd": "2.633988",
+    "all_preceding_and_finalized_time_correlated_usd": "3.132086",
+    "today_dashboard_total_displayed_usd": "2.7184",
+    "today_total_exact_note": "Sum of individually correlated displayed row fees; latest headline rounds to2.7184. Prior interim1.637726 was a transcription error; original phase values sum1.637728.",
+    "updated_at": "2026-11-02T19:52:28.741804+00:00",
+    "sale_continue_6000_displayed_usd": "0.197052",
+    "sale_omit_v1_displayed_usd": "0.424096",
+    "sale_omit_resume_v1_displayed_usd": "0.058382",
+    "displayed_today_row_count": 225,
+    "prior_interim_retry_partial_observation": {
+      "through_dashboard_time": "2026-11-03 02:34:23",
+      "rows": 9,
+      "displayed_usd": "0.114544",
+      "final": false
+    },
+    "sale_omit_direct_v1_displayed_usd": "0.379542",
+    "b_omit_direct_v1_displayed_usd": "0.136138"
+  },
+  "preservation": "docs/fifteenth/output-omission-final-preservation.json",
+  "remote_ci": "docs/fifteenth/long-task-remote-ci.json",
+  "not_claimed": [
+    "Continuous unattended stability",
+    "Formal live-window forecasts or naturally matured accuracy",
+    "Unique cause of previous remote transport failures",
+    "Third-party unlimited/default128000 output guarantee",
+    "Invoice-level fee verification",
+    "Deployment or pushed/green remote CI"
+  ],
+  "report_review_boundary": "Independent development review accepts limited account content; reports retain nonblocking terminology/period-label observations and are not human investment signoff.",
+  "all_omission_attempts": {
+    "business_attempts": 4,
+    "model_http": 78,
+    "completed_and_http_eof": 76,
+    "transport_unknown": 2,
+    "order": [
+      "environment sale35HTTP/34complete",
+      "environment resume3HTTP/2complete",
+      "isolated direct sale29HTTP/29complete",
+      "isolated direct B11HTTP/11complete"
+    ],
+    "boundary": "Actual request bodies and research mode differ; do not attribute improvement uniquely to route or output omission."
+  },
+  "all_long_task_attempts": {
+    "business_attempts": 10,
+    "client_http": 222,
+    "supplier_consumption_rows": 220,
+    "client_and_supplier_denominators_not_interchangeable": true
+  },
+  "final_document_checks": {
+    "checked_at": "2026-11-02T20:01:38.028891+00:00",
+    "json_files_parsed": 131,
+    "markdown_local_links_verified": 215,
+    "audit_evidence_paths_verified": 152,
+    "requirements_preserved": 38,
+    "frozen_source_files_unchanged": 217,
+    "independent_document_checker": "/root/deadline_tests",
+    "git_diff_check_passed": true
+  },
+  "updated_at": "2026-11-02T20:01:38.028891+00:00"
+}

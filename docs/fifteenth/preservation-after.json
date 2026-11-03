@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-02T18:21:01.593829+08:00",
+  "before_at": "2026-11-02T16:59:00.866566+08:00",
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "working_tree_clean": false,
+  "daily_files": {
+    "data/live.sqlite3": {
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904,
+      "mtime_ns": 1793525469929264343,
+      "stable_during_read": true
+    },
+    "data/live.sqlite3-wal": {
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632,
+      "mtime_ns": 1793542794634590748,
+      "stable_during_read": true
+    }
+  },
+  "daily_files_unchanged": {
+    "data/live.sqlite3": true,
+    "data/live.sqlite3-wal": true
+  },
+  "env_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "env_stamp_unchanged": true,
+  "daily_8765_listener_observed": false,
+  "daily_8765_listener_pids": [],
+  "listener_check": {
+    "method": "lsof -nP -iTCP:8765 -sTCP:LISTEN -Fp",
+    "returncode": 1,
+    "stderr_present": false
+  },
+  "listener_observation_unchanged": true,
+  "daily_service_restarted_by_this_task": false,
+  "daily_files_opened_as_sqlite_in_this_check": false,
+  "method": "Read filesystem bytes only to hash daily SQLite/WAL; stat only for .env, no secret values read; read-only process listener inspection.",
+  "paid_attempts": "Tracked separately in authorization and live evidence; preservation checks make no model requests.",
+  "new_worktree_code_pushed": false,
+  "previous_check_at": "2026-11-02T17:39:21.341637+08:00",
+  "actual_model_http_attempts_after_execution": 1
+}

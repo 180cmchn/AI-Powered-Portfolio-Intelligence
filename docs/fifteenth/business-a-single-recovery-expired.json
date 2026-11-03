@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-11-02T16:31:50.316861+00:00",
+  "checkpoint_created_at": "2026-11-03T00:01:40.673489+08:00",
+  "max_age_seconds": 1800,
+  "current_diagnostic": {
+    "checkpoint_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+    "eligible": false,
+    "partial_research": false,
+    "state": "invalidated",
+    "reasons": [
+      "expired"
+    ],
+    "note": "检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+  },
+  "resume_count": 0,
+  "executed_before_expiry_but_guard_rejected": true,
+  "actual_model_http": 0,
+  "A_total_used": 15,
+  "remaining_requests": 1,
+  "current_further_authorization": false,
+  "parent_identity_unchanged": true,
+  "stop_and_claim_preserved": true,
+  "note": "No TTL extension or claim removal; earlier authorization was valid-time-only and any failure stop."
+}

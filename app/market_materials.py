@@ -115,7 +115,7 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
     rows = selected_rows(body, start, end)
     base = {**provenance(material, body), 'access': 'calculation', 'requested_range': {'start': start, 'end': end},
             'status': 'insufficient_data', 'classification': 'calculation',
-            'methods': {'return': 'last_close / first_close - 1', 'moving_average': 'mean(last window closes)',
+            'methods': {'return': 'last_close/first_close-1 across return_period', 'moving_average': 'mean(last window closes)',
                         'volatility': 'sample standard deviation of consecutive close returns; not annualized',
                         'relative_return': 'asset return minus benchmark return on common trading dates'}}
     window = int(window)
@@ -150,7 +150,11 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
     returns = [data[i][1]/data[i-1][1]-1 for i in range(1,len(data))]
     result = {**base, 'status': 'ok', 'input_closes': [[d,str(c)] for d,c in data], 'valid_samples': len(data),
               'returned_range': {'start': data[0][0], 'end': data[-1][0]}, 'return': str(ret(data)),
+              'return_period': {'start': data[0][0], 'end': data[-1][0],
+                                'return_intervals': len(data)-1},
               'window': window, 'moving_average': str(sum(c for _,c in data[-window:])/window) if len(data) >= window else None,
+              'moving_average_period': {'start': data[-window][0] if len(data) >= window else None,
+                                        'end': data[-1][0], 'window': window},
               'moving_average_gap': None if len(data) >= window else 'insufficient_window_rows',
               'volatility': statistics.stdev([float(x) for x in returns]) if len(returns) >= 2 else None,
               'return_samples': len(returns)}

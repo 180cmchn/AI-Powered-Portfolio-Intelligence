@@ -1,0 +1,218 @@
+{
+  "kind": "postfix_isolated_sqlite_readonly_reopen_check",
+  "checked_at": "2026-11-02T18:44:42.247002+08:00",
+  "execution": "data/evaluations/fifteenth-historical-postfix-prepared-v6/execution",
+  "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "run_completed_at": "2026-11-02T18:41:35.412933+08:00",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "separate_reopen_connections": 2,
+    "store_initialized": false,
+    "migrations_run": false,
+    "recovery_called": false,
+    "server_started": false,
+    "daily_database_opened": false,
+    "external_requests_sent": 0,
+    "scope": "SQLite persistence reopen verification, not a full application/service restart"
+  },
+  "sqlite_quick_check": [
+    "ok"
+  ],
+  "second_connection_identical": true,
+  "database_files_unchanged_by_checks": true,
+  "historical_source_matches_frozen_preparation": true,
+  "execution_result": {
+    "published": false,
+    "contract_accepted": false,
+    "error_code": "delivery_contract_failed",
+    "http_requests": 2,
+    "attempt_budget": {
+      "maximum": 2,
+      "reserved_attempts": 2
+    },
+    "request_terminals": [
+      {
+        "index": 1,
+        "status_code": 200,
+        "response_status": "incomplete",
+        "stream_terminal": "response.incomplete",
+        "response_incomplete_reason": "max_output_tokens",
+        "http_body_complete": true,
+        "stream_close_reason": "http_eof",
+        "tool_choice_satisfied": false
+      },
+      {
+        "index": 2,
+        "status_code": 200,
+        "response_status": "incomplete",
+        "stream_terminal": "response.incomplete",
+        "response_incomplete_reason": "max_output_tokens",
+        "http_body_complete": true,
+        "stream_close_reason": "http_eof",
+        "tool_choice_satisfied": false
+      }
+    ]
+  },
+  "current_attempt": {
+    "job_exists": true,
+    "account_identity_matches_summary": true,
+    "input_version": 4,
+    "input_version_matches_summary": true,
+    "job_state": "failed",
+    "job_stage": "synthesizing",
+    "result_keys": [
+      "delivery"
+    ],
+    "delivery": {
+      "status": "incomplete",
+      "contract_verified": false,
+      "content_assessment": "not_evaluated",
+      "error_code": "delivery_contract_failed"
+    },
+    "delivery_application_present": false,
+    "report_text_present": false,
+    "rows_for_job": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "event_counts": {
+      "model_error": 2,
+      "terminal_submission_rejected": 2,
+      "tool_started": 0,
+      "tool_result": 0,
+      "final_submission_candidate": 0,
+      "delivery_candidate": 0,
+      "published": 0,
+      "agent_failed": 1,
+      "historical_evidence_delivery": 2
+    }
+  },
+  "protected_historical_state": {
+    "analyses": {
+      "before": {
+        "count": 1,
+        "sha256": "4d98e156161699de70dda7d9b213957159ab9c47693d60b2d924f56128c93ef2"
+      },
+      "after": {
+        "count": 1,
+        "sha256": "4d98e156161699de70dda7d9b213957159ab9c47693d60b2d924f56128c93ef2"
+      },
+      "identical": true
+    },
+    "recommendations": {
+      "before": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identical": true
+    },
+    "forecasts": {
+      "before": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "after": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identical": true
+    },
+    "forecast_batches": {
+      "before": {
+        "count": 1,
+        "sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89"
+      },
+      "after": {
+        "count": 1,
+        "sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89"
+      },
+      "identical": true
+    },
+    "ledger_entries": {
+      "before": {
+        "count": 4,
+        "sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d"
+      },
+      "after": {
+        "count": 4,
+        "sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d"
+      },
+      "identical": true
+    },
+    "ledger_operations": {
+      "before": {
+        "count": 3,
+        "sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732"
+      },
+      "after": {
+        "count": 3,
+        "sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732"
+      },
+      "identical": true
+    },
+    "ledger_accounts": {
+      "before": {
+        "count": 1,
+        "sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4"
+      },
+      "after": {
+        "count": 1,
+        "sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4"
+      },
+      "identical": true
+    },
+    "ledger_positions": {
+      "before": {
+        "count": 3,
+        "sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e"
+      },
+      "after": {
+        "count": 3,
+        "sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e"
+      },
+      "identical": true
+    }
+  },
+  "old_report_states": {
+    "before": {
+      "current": 1
+    },
+    "after": {
+      "current": 1
+    },
+    "identical": true
+  },
+  "account_facts_unchanged": true,
+  "business_demands": {
+    "before": [
+      {
+        "kind": "ledger_update",
+        "state": "uncovered",
+        "count": 3
+      }
+    ],
+    "after": [
+      {
+        "kind": "ledger_update",
+        "state": "uncovered",
+        "count": 3
+      }
+    ],
+    "identical": true
+  },
+  "model_result_file_exists": false,
+  "candidate_and_receipt_limitations": [
+    "Both requests ended explicitly as response.incomplete/max_output_tokens with HTTP EOF; neither produced an accepted finish_analysis.",
+    "Visible partial text from response.incomplete was not archived as a candidate. No model-result.json or final_submission_candidate event exists; do not claim those text fragments were retained.",
+    "The persisted job result contains only incomplete delivery status. No final structured suggestions/forecasts were accepted, so there are no per-item application receipts to reconcile in this run.",
+    "The frozen historical evidence and the existing current report remain available; the new failed run did not replace them.",
+    "No new report, recommendation, forecast or forecast batch was created. This is failure containment evidence, not successful account research or continuous stability evidence."
+  ]
+}

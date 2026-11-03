@@ -1,0 +1,428 @@
+{
+  "kind": "fifteenth_business_a_content_status",
+  "identity": {
+    "job_id": "ea36a754a353426693d015300b4e4422",
+    "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+    "report_sha256": null,
+    "reviewer": "Codex development subtask /root/evidence_context; read-only evidence comparison, not a human sign-off",
+    "reviewed_at": "2026-11-02T22:39:12.167092+08:00",
+    "summary_sha256": "465bbb2c6bcc6d1637cfa111065f2d48c79afdc9dd0ea98c9efe749b886415bb",
+    "checkpoint_body_sha256": "67aa523eb7f2d4076e799f758dbe773bd7c6f6471aa2f147ea52e08efa7f2bca"
+  },
+  "method": [
+    "Read original iteration-15 task; inspect saved execution summary, isolated SQLite rows and completed visible tool outputs with SQLite mode=ro.",
+    "Inspect current production checkpoint projection and call only pure _checkpoint_context on the saved body; no Store instantiation, recovery claim, network or model request.",
+    "Do not read/export hidden reasoning; do not synthesize, repair or replace a model report."
+  ],
+  "content": {
+    "assessment": "not_evaluated",
+    "accepted": null,
+    "accepted_definition": "null means there is no final model report to review; evidence availability is not content acceptance.",
+    "model_result_present": false,
+    "final_report_count": 0,
+    "security_scope_count": 3,
+    "security_reports_evaluated": 0,
+    "actions_alternatives_counterconditions_evaluated": 0,
+    "coverage_inference": "No completed report exists; neither all-abstain nor successful directional research can be inferred."
+  },
+  "delivery": {
+    "published": false,
+    "contract_accepted": false,
+    "mechanical_passed": false,
+    "database_result_counts_for_job": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "research_report_deliveries": 0
+    },
+    "execution_stopped": true
+  },
+  "request_denominators": {
+    "authorized_maximum": 16,
+    "reserved_and_sent": 10,
+    "unused_arithmetic": 6,
+    "completed_protocol_and_http_eof_research_requests": 9,
+    "unknown_result_requests": 1,
+    "manager_requests": 10,
+    "child_requests": 0,
+    "final_submissions": 0,
+    "native_web_search_calls_reported_in_completed_requests": 11,
+    "stop_reason": "accepted_or_sent_request_outcome_unknown",
+    "unused_budget_is_resume_permission": false
+  },
+  "last_failure": {
+    "response_id": "489aeda5-bbd5-92c7-8825-51754fac7f1f",
+    "status_code": 200,
+    "request_accepted": true,
+    "duration_ms": 300002.89,
+    "stream_terminal": null,
+    "response_status": null,
+    "http_body_complete": false,
+    "error_code": "request_hard_timeout",
+    "cancelled_by": "request_hard_timeout",
+    "stream_last_byte_ms": 299993.01,
+    "stream_last_progress_ms": 299993.09,
+    "stream_max_idle_ms": 7038.44,
+    "started_at": "2026-11-02T14:18:43.686359+00:00",
+    "finished_at": "2026-11-02T14:23:43.692540+00:00"
+  },
+  "failure_interpretation": "The research request hit its 300-second local hard limit while still receiving progress about 10 ms before cancellation. This is not an idle-timeout finding or proof of an upstream stall. Upstream outcome and cost of the tenth request remain unknown.",
+  "usage": {
+    "known_requests": 9,
+    "unknown_requests": 1,
+    "reported_known_input_tokens": 344788,
+    "reported_known_output_tokens": 16127,
+    "total_monetary_cost_known": false,
+    "note": "Known-request usage is not a total-run bill. No unverified conversion from provider ticks to currency."
+  },
+  "account": {
+    "nature": "Isolated simulated ledger created through the actual business API; not the daily user account or a broker trade.",
+    "frozen_input_version": 4,
+    "current_version": 4,
+    "cash_and_holdings_still_match_snapshot": true,
+    "analysis_state": "failed",
+    "cash": "86484.90",
+    "securities_value": "10683.10",
+    "total_assets": "97168.00",
+    "unrealized_pnl": "-2832.00",
+    "realized_pnl": "0.00",
+    "total_fees": "15.10",
+    "cash_weight_pct": "89.00553680223942038531203688",
+    "metrics_at": "2026-11-02T22:13:54.900642+08:00",
+    "positions": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "cost_price": "10.05",
+        "total_cost": "1005.00",
+        "price": "7.941",
+        "market_value": "794.10",
+        "unrealized_pnl": "-210.90",
+        "weight_pct": "7.43",
+        "weight_pct_basis": "已录入持仓证券市值（不含现金）",
+        "total_assets_weight_pct": "0.8172443602832208134365223119",
+        "quote": {
+          "as_of": "2026-11-02T16:11:37+08:00",
+          "fetched_at": "2026-11-02T22:13:54.871899+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed",
+          "quote_kind": "last_close",
+          "change_pct": "-2.14"
+        }
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "cost_price": "10.0051",
+        "total_cost": "10005.10",
+        "price": "7.9",
+        "market_value": "7900.00",
+        "unrealized_pnl": "-2105.10",
+        "weight_pct": "73.95",
+        "weight_pct_basis": "已录入持仓证券市值（不含现金）",
+        "total_assets_weight_pct": "8.130248641528075086448213404",
+        "quote": {
+          "as_of": "2026-11-02T15:34:18+08:00",
+          "fetched_at": "2026-11-02T22:13:54.882613+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed",
+          "quote_kind": "last_close",
+          "change_pct": "5.05"
+        }
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "cost_price": "2.505",
+        "total_cost": "2505.00",
+        "price": "1.989",
+        "market_value": "1989.00",
+        "unrealized_pnl": "-516.00",
+        "weight_pct": "18.62",
+        "weight_pct_basis": "已录入持仓证券市值（不含现金）",
+        "total_assets_weight_pct": "2.046970195949283714803227400",
+        "quote": {
+          "as_of": "2026-11-02T15:34:42+08:00",
+          "fetched_at": "2026-11-02T22:13:54.887450+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed",
+          "quote_kind": "last_close",
+          "change_pct": "2.1"
+        }
+      }
+    ],
+    "cost_boundary": "Recorded simulated execution prices plus known fees determine cost. Close-based unrealized loss is not a measured live trading strategy return.",
+    "sellable_on": {
+      "SH:518880": "2026-11-02",
+      "SZ:002354": "2026-11-03",
+      "SZ:159599": "2026-11-03"
+    }
+  },
+  "market_time": {
+    "research_started_at": "2026-11-02T22:13:53.398010+08:00",
+    "research_ended_at": "2026-11-02T22:23:43.995182+08:00",
+    "phase": "after_close",
+    "data_as_of": "2026-11-02T15:34:18+08:00",
+    "quote_status": "All three saved observations are November 2 last-close quotes, not live executable prices; their individual timestamps are preserved above.",
+    "historical_price_data_through": "2026-11-02",
+    "future_targets_not_observed": true
+  },
+  "evidence_inventory": {
+    "tool_result_events": 51,
+    "completed_child_reports": 0,
+    "checkpoint_manager_summary_empty": true,
+    "checkpoint_calculation_records": 22,
+    "calculation_status_counts": {
+      "ok": 19,
+      "insufficient_data": 3
+    },
+    "calculation_tool_counts": {
+      "calculate": 13,
+      "market_indicators": 9
+    },
+    "successful_market_indicators": 6,
+    "insufficient_market_indicators": 3,
+    "insufficient_reason": "input_exceeds_response_budget on the initially unbounded 104-row requests; later bounded requests succeeded.",
+    "successful_arithmetic": 13,
+    "actual_used_distinct_material_ids": 54,
+    "material_access_counts": {
+      "source_link": 47,
+      "structured_data": 7
+    },
+    "checkpoint_material_ids": 51,
+    "checkpoint_material_index_entries_including_duplicates": 67,
+    "distinct_native_source_links": 47,
+    "source_coverage_counts": {
+      "index_only": 47,
+      "covered": 4
+    },
+    "material_delivery_receipts": 94,
+    "material_delivery_receipts_by_tool": {
+      "history": 3,
+      "benchmark_history": 1,
+      "fundamentals": 3,
+      "native_search": 67,
+      "market_indicators": 12,
+      "query_market_rows": 8
+    },
+    "full_original_document_reads": 0,
+    "native_link_boundary": "67 native-search index entries reduce to 47 unique source links. These do not establish reading original corporate/ETF documents or a visible search excerpt."
+  },
+  "saved_trend_indicators": [
+    {
+      "calculation_id": "calculation-5df2ee58e83040b283c51bbee4e0c3c6",
+      "symbol": "SH:518880",
+      "material_id": "44da7215356e483f8d5ff440ff4b9099",
+      "returned_range": {
+        "start": "2026-10-09",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 17,
+      "return_samples": 16,
+      "window": 10,
+      "return": "-0.0784495764187072066844609493",
+      "moving_average": "8.2286",
+      "volatility": 0.008567641362946351,
+      "relative_return": "-0.0088844597356334907773441504",
+      "aligned_samples": 17,
+      "same_fetch_snapshot": false
+    },
+    {
+      "calculation_id": "calculation-d856190c6fd4475eb9e703b1fe51fce7",
+      "symbol": "SZ:002354",
+      "material_id": "4ac83fa9af644e388aa705ae11ac9ac7",
+      "returned_range": {
+        "start": "2026-10-09",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 17,
+      "return_samples": 16,
+      "window": 10,
+      "return": "0.071913161465400271370420624",
+      "moving_average": "7.927",
+      "volatility": 0.050696889373724824,
+      "relative_return": "0.1414782781484739872775374229",
+      "aligned_samples": 17,
+      "same_fetch_snapshot": false
+    },
+    {
+      "calculation_id": "calculation-ae4d631da95345d59c7afb4280108db7",
+      "symbol": "SZ:159599",
+      "material_id": "45d813e551f84f148afb819d8cf59c02",
+      "returned_range": {
+        "start": "2026-10-09",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 17,
+      "return_samples": 16,
+      "window": 10,
+      "return": "-0.1871679607682876992235390274",
+      "moving_average": "2.1226",
+      "volatility": 0.027731021140523598,
+      "relative_return": "-0.1176028440852139833164222285",
+      "aligned_samples": 17,
+      "same_fetch_snapshot": false
+    },
+    {
+      "calculation_id": "calculation-7c1394003edc4a3fb42e985da14ca6db",
+      "symbol": "SH:518880",
+      "material_id": "44da7215356e483f8d5ff440ff4b9099",
+      "returned_range": {
+        "start": "2026-08-03",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 60,
+      "return_samples": 59,
+      "window": 20,
+      "return": "-0.0565522157538315314244980397",
+      "moving_average": "8.38965",
+      "volatility": 0.013219033381841694,
+      "relative_return": "-0.0001624729978587788751403440",
+      "aligned_samples": 39,
+      "same_fetch_snapshot": false
+    },
+    {
+      "calculation_id": "calculation-29af70d7b10e4cc4b41f71303a2a5637",
+      "symbol": "SZ:002354",
+      "material_id": "4ac83fa9af644e388aa705ae11ac9ac7",
+      "returned_range": {
+        "start": "2026-08-03",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 60,
+      "return_samples": 59,
+      "window": 20,
+      "return": "0.103351955307262569832402235",
+      "moving_average": "7.6465",
+      "volatility": 0.041922215664947145,
+      "relative_return": "0.0738989292864917512818339778",
+      "aligned_samples": 39,
+      "same_fetch_snapshot": false
+    },
+    {
+      "calculation_id": "calculation-9e9070b7ce2f4385815e11b7c0d767b3",
+      "symbol": "SZ:159599",
+      "material_id": "45d813e551f84f148afb819d8cf59c02",
+      "returned_range": {
+        "start": "2026-08-03",
+        "end": "2026-11-02"
+      },
+      "valid_samples": 60,
+      "return_samples": 59,
+      "window": 20,
+      "return": "-0.2138339920948616600790513834",
+      "moving_average": "2.25575",
+      "volatility": 0.02799673635176405,
+      "relative_return": "-0.1548365999152732596676433592",
+      "aligned_samples": 39,
+      "same_fetch_snapshot": false
+    }
+  ],
+  "calculation_boundaries": [
+    "The 17-observation range is October 9–November 2; window=10 controls moving average, not the return period. The 60-observation range is August 3–November 2; window=20 likewise does not make its return a 20-day return.",
+    "The long-range relative return uses only 39 common actual trading dates, September 1–November 2; 21 August asset observations are excluded from the benchmark comparison.",
+    "Returns are ratios; relative returns are differences of ratios, converted to percentage points if multiplied by 100. Volatility is sample standard deviation of consecutive close returns, not annualized.",
+    "A divide output is a price ratio, not itself a return percentage. The generic calculate tool does not attach security, date or source to its operands.",
+    "The four generic financial subtractions can be matched by this audit to saved SZ:002354 cumulative revenue and parent-net-profit rows: nine months minus six months for 2026 and 2025 respectively. That mapping is not present in the restored calculation summaries, so a resumed model must retrieve the saved source rows before asserting the financial interpretation."
+  ],
+  "saved_fundamentals": [
+    {
+      "material_id": "188951b42dcc482d831e3836ed1eb872",
+      "symbol": "SZ:002354",
+      "source": "eastmoney:datacenter-public-website",
+      "source_url": "https://data.eastmoney.com/bbsj/002354.html",
+      "as_of": "2026-10-29 00:00:00",
+      "fetched_at": "2026-11-02T22:14:12.747785+08:00",
+      "rows": 8,
+      "amount_unit": "人民币元",
+      "truncated": true,
+      "coverage_note": "结构化供应商利润表，非原始财报全文；报告期与披露时间分开保存，数值一般为年初至报告期累计值。不同报告类型或更正版本不可直接相减当作环比。",
+      "in_checkpoint_material_ids": false,
+      "in_default_recovery_projection": false
+    },
+    {
+      "material_id": "cd2bb41a575f43ddbd2ebc5cd4ff8a04",
+      "symbol": "SZ:002354",
+      "source": "eastmoney:datacenter-public-website",
+      "source_url": "https://data.eastmoney.com/bbsj/002354.html",
+      "as_of": "2026-10-29 00:00:00",
+      "fetched_at": "2026-11-02T22:14:12.747785+08:00",
+      "rows": 8,
+      "amount_unit": "人民币元",
+      "truncated": true,
+      "coverage_note": "结构化供应商利润表，非原始财报全文；报告期与披露时间分开保存，数值一般为年初至报告期累计值。不同报告类型或更正版本不可直接相减当作环比。",
+      "in_checkpoint_material_ids": false,
+      "in_default_recovery_projection": false
+    },
+    {
+      "material_id": "1e17d632bf634ff980c0a27301a80bae",
+      "symbol": "SZ:002354",
+      "source": "eastmoney:datacenter-public-website",
+      "source_url": "https://data.eastmoney.com/bbsj/002354.html",
+      "as_of": "2026-10-29 00:00:00",
+      "fetched_at": "2026-11-02T22:18:15.075223+08:00",
+      "rows": 6,
+      "amount_unit": "人民币元",
+      "truncated": true,
+      "coverage_note": "结构化供应商利润表，非原始财报全文；报告期与披露时间分开保存，数值一般为年初至报告期累计值。不同报告类型或更正版本不可直接相减当作环比。",
+      "in_checkpoint_material_ids": false,
+      "in_default_recovery_projection": false
+    }
+  ],
+  "checkpoint": {
+    "present": true,
+    "created_at": "2026-11-02T22:23:43.746431+08:00",
+    "input_version": 4,
+    "resume_count": 0,
+    "partial_research": true,
+    "saved_recovery_state": "synthesis_ready",
+    "default_projection_calculation_count": 22,
+    "default_projection_fundamental_material_count": 0,
+    "material_guard_version": 3,
+    "max_age_seconds": 1800,
+    "age_seconds_at_review": 928.421,
+    "approximate_age_limit_at": "2026-11-02T22:53:43.746431+08:00",
+    "runtime_recovery_guard_executed_by_this_review": false,
+    "guard_boundary": "Saved synthesis_ready is not a permanent recovery authorization. Account/input/configuration relation, material versions, checkpoint age, resume count, current task and market scope must still satisfy the production recovery path."
+  },
+  "limited_synthesis_feasibility": {
+    "evidence_sufficient_for_bounded_account_and_price_report": true,
+    "future_model_delivery_guaranteed": false,
+    "authorized_by_this_review": false,
+    "basis": "Frozen ledger, three dated close observations, six attributable successful trend indicators and completed arithmetic allow a useful limited three-security account report. Lack of original ETF/corporate documents limits those subjects, not every account or trend conclusion.",
+    "required_retrieval_if_using_fundamentals": "Existing local list_materials/search_materials and get_material/read_material_range can retrieve the saved financial table under account/public permissions. The three material IDs and original table rows are absent from the default checkpoint projection; no automatic restored visibility is claimed.",
+    "remaining_gaps": [
+      "No final report, decision_summary, security actions, alternatives or reversal conditions were submitted; these must come from the model, not the developer.",
+      "No completed delegated reports or manager synthesis. No original corporate report, ETF holdings report, fee/NAV/IOPV document or industry source text was locally read.",
+      "Native-search URLs alone cannot support specific event, holdings, valuation, fee or industry claims.",
+      "Separate the simulated ledger cost and costs/fees from close-based market measurements; preserve source timing and denominator distinctions.",
+      "Formal directional accuracy and natural maturity are not established."
+    ]
+  },
+  "forecast_denominators": {
+    "bound_batches": [
+      {
+        "kind": "exploratory",
+        "base_date": "2026-11-02",
+        "deadline": "2026-11-03T22:13:54.352488+08:00",
+        "state": "open"
+      }
+    ],
+    "expected_exploratory_samples": 9,
+    "persisted_sample_state_counts": {
+      "failed": 9
+    },
+    "published_directions": 0,
+    "published_abstentions": 0,
+    "unpublished_targets": 9,
+    "formal_predictions": 0,
+    "matured_scores": 0,
+    "interpretation": "Nine exploratory targets ended failed after the research error. They are not nine abstentions and not formal direction/accuracy evidence."
+  },
+  "uncovered_business_stages": [
+    "a_after_buy",
+    "a_after_sell",
+    "b_cash"
+  ],
+  "public_redaction": "No account identifier, provider endpoint, credentials, hidden reasoning or complete private body included. No source/configuration/Store changes or extra requests made."
+}

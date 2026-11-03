@@ -1,0 +1,107 @@
+{
+  "reviewed_at": "2026-11-02T16:41:51.398268+00:00",
+  "source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+  "method": "Read-only project lifecycle code, existing safe transport observations, and destination-filtered existing local Clash Verge service logs. No provider HTTP, proxy writes, credential export, or original log export.",
+  "model_failure": {
+    "parent_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+    "response_id": "63bffd45-7713-90df-9b67-b7d9474d9893",
+    "request_number": 5,
+    "status": 200,
+    "body_send_completed_ms": 1.29,
+    "headers_received_ms": 6129.52,
+    "receive_response_body_failed_ms": 290121.47,
+    "finished_ms": 290123.09,
+    "cancelled_by": null,
+    "terminal": null,
+    "http_eof": false,
+    "error": "RemoteProtocolError",
+    "failure_kind": "incomplete_response_body",
+    "hard_limit_seconds": 360,
+    "largest_idle_seconds": 6.2364,
+    "idle_limit_seconds": 120,
+    "stream_bytes": 963912,
+    "stream_events": 3173
+  },
+  "lifecycle_findings": {
+    "model_client_scope": "Per Runtime; sole manager, zero children in this actual task. Service configuration-check client is a separate closed instance with no model request.",
+    "close_order": "Transport body read fails, then model_error and agent_failed are recorded; Runtime finally closes its client afterwards.",
+    "payload": "Session payload is copied, body send completes before receiving response, no overlapping manager completion call found.",
+    "cancellation": "Project separately records CancelledError; HTTPX exception mapping catches Exception and does not map asyncio CancelledError to RemoteProtocolError.",
+    "unused_paths": [
+      "terminal-tail drain not entered because no terminal event",
+      "8 MiB body limit and 20000 event limit not reached",
+      "hard/parent/idle deadlines not reached"
+    ],
+    "libraries": {
+      "httpx": "0.28.1",
+      "httpcore": "1.0.9"
+    },
+    "specific_local_defect_identified": false,
+    "new_code_or_tests_needed_by_this_review": false
+  },
+  "existing_local_route_logs": {
+    "safe_file_identities": [
+      {
+        "basename": "service_2026-11-02_21-56-33.log",
+        "sha256": "2f6d2be2ef25681ff07ca99ae528c10ad37d514ce523322992cdc6dd82129a1d",
+        "size": 131206
+      },
+      {
+        "basename": "service_2026-11-02_23-41-12.log",
+        "sha256": "96bb1d616fc059ced8071177b7e2c20dbacc8b00dc98a0236003ee3bd952fab7",
+        "size": 131107
+      },
+      {
+        "basename": "service_2026-11-03_00-02-46.log",
+        "sha256": "6cefdf9fdc01bdc336b1ba745b07a647e2b8ba2f9d6599125ea1ebe2aa1e47a9",
+        "size": 131216
+      }
+    ],
+    "destination_filtered_entries": [
+      {
+        "log": "service_2026-11-02_21-56-33.log",
+        "line": 400,
+        "local_timestamp": "2026-11-02 22:13:55.110",
+        "destination_host": "api.xxyapi.com",
+        "match_rule": "Match",
+        "outbound_is_direct": false,
+        "route_label_sha256": "3efa7ef1a76b2c7f170323c208c9a97a2fcb3b5836cad8a809d66ba1f35cdcba",
+        "connection_entry": true,
+        "contains_timeout": false,
+        "contains_reset": false,
+        "contains_eof": false
+      },
+      {
+        "log": "service_2026-11-02_23-41-12.log",
+        "line": 551,
+        "local_timestamp": "2026-11-03 00:00:18.365",
+        "destination_host": "api.xxyapi.com",
+        "match_rule": "Match",
+        "outbound_is_direct": false,
+        "route_label_sha256": "c2777bf86410e5e6459d5ba0de1d80be2ba90925d0e605f2c71a3b38653f01dd",
+        "connection_entry": true,
+        "contains_timeout": false,
+        "contains_reset": false,
+        "contains_eof": false
+      }
+    ],
+    "associated_route_labels_differ": true,
+    "association_basis": "Same destination hostname and timestamps near each isolated A first request; log rows lack application request/response IDs, so correlation is not ID-level proof.",
+    "meaning_of_original_environment_route": "Application proxy environment was retained. This does not freeze the independently running proxy application's selected upstream route.",
+    "limits": [
+      "Info-level connect entries do not show the failure-time close/error or identify the hop that ended the HTTP body.",
+      "Different route labels are not proof that a particular route caused failure.",
+      "Absent unprivileged lsof output does not prove the proxy was stopped.",
+      "Current configuration is not retroactive proof of historical routing."
+    ],
+    "historical_direct_boundary": "Historical v13 direct describes explicit HTTPX environment-proxy bypass, not a blanket claim about all OS-level routing."
+  },
+  "conclusion": "No project lifecycle fault explains the observed 290-second failure. The incomplete HTTP response is established; the failing network hop remains unproven. No transport protection or default route was changed.",
+  "new_model_http": 0,
+  "A_used": 15,
+  "A_ceiling": 16,
+  "remaining_numeric_allowance": 1,
+  "current_execution_authorization": false,
+  "checkpoint_expired": true,
+  "goal_complete": false
+}

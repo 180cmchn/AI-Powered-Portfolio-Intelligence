@@ -1,0 +1,535 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-02T14:07:49.372334+00:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/evidence_context",
+    "method": "Independent full reading of actual v13 report and limitations; re-reading both frozen child reports (summaries, all findings and open questions), checking all 21 calculation arguments/results and attribution limits, exact source-URL mapping, actual request time_context, and read-only isolated ledger/publication state. No hidden reasoning or new original-source fetch.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+    "report_characters": 5109,
+    "job_id": "7523b2ae0f144d399a1410628f256caf",
+    "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "private_report_location": "data/evaluations/fifteenth-historical-xhigh-v13-direct/execution/model-result.json",
+    "actual_request_payload_sha256": "5d5281605b5df74831b6df2ec7fced3a3427d9f36991f14bee463a7f0347f15e",
+    "input_bytes_equal_to_previously_reviewed_v11": true
+  },
+  "content_assessment": "evaluated",
+  "overall": "pass",
+  "accepted": true,
+  "accepted_definition": "accepted=true accepts this actual authored limited historical three-security simulated-account report against the original task: known account facts, complete requested scope, attributable basis/calculations, alternatives, counter-factors, change conditions and localized limitations. It is not an investment-accuracy guarantee, current-account approval, human sign-off or proof of later business stages. Nonblocking wording observations are preserved explicitly; no report text was edited or supplied by the reviewer.",
+  "acceptance_boundaries": {
+    "historical_simulated_report_obtained": true,
+    "historical_scope_content_accepted": true,
+    "historical_time_semantics_accepted": true,
+    "substantive_three_security_analysis_present": true,
+    "blocking_content_findings": 0,
+    "content_prerequisite_for_later_business_stage_satisfied": true,
+    "new_paid_request_authorization_granted": false,
+    "current_account_or_current_market_guidance_accepted": false,
+    "normal_business_matrix_executed": false,
+    "investment_accuracy_validated": false,
+    "continuous_operation_validated": false
+  },
+  "checks": [
+    {
+      "id": "account_facts_and_cost_semantics",
+      "status": "pass",
+      "finding": "All three quantities, simulated fill prices, recorded fees, fee-inclusive remaining costs, cash, market values, realized/unrealized P&L and sellability dates match the frozen ledger. The report explicitly distinguishes the November 1 simulated booking from the October 30 market close and says no new post-booking market path is supplied. Future sale fees remain unknown and are not deducted twice. The wording observation below does not establish another P&L attribution."
+    },
+    {
+      "id": "numeric_subject_direction_denominator",
+      "status": "pass",
+      "finding": "All nine referenced account percentage calculations match saved arguments and results rounded to four decimals. Prices are below their fee-inclusive costs, loss signs are negative, and total-asset weights are distinguished from security-only weights. The v11 gold cost/close direction reversal is absent."
+    },
+    {
+      "id": "historical_time_anchor",
+      "status": "pass",
+      "finding": "The body and decision summary explicitly state the November 1 decision clock and November 2 execution clock, with October 30 valuation. Sellability dates are evaluated relative to November 1. Future trading conditions are anchored to that decision point, and execution is not treated as updated market evidence."
+    },
+    {
+      "id": "complete_three_security_account_scope",
+      "status": "pass",
+      "finding": "All three requested securities have actions, reasons, alternative choices, counter-factors and change conditions. The account section evaluates cash deployment and liquidation; the chip section compares replacement of the stock with the ETF. This is substantive limited portfolio analysis, not a cash-only or process-status answer."
+    },
+    {
+      "id": "source_and_calculation_provenance",
+      "status": "pass",
+      "finding": "The report names both actual child report IDs, uses nine actual calculation IDs for account ratios, and names three additional actual IDs specifically to exclude unbound arithmetic as company fundamentals. All eleven displayed source URLs occur exactly in the frozen input and authored body."
+    },
+    {
+      "id": "source_access_fidelity",
+      "status": "pass",
+      "finding": "Company filings remain metadata/source-link-only and financial statements/business/risk events remain unknown. ETF product facts are limited to received excerpts; third-party NAV, holdings, fees and media returns are identified as unverified retransmission. Tracking-error targets are not described as realized values. No claim that the manager re-read all originals."
+    },
+    {
+      "id": "localized_gaps",
+      "status": "pass",
+      "finding": "Failed price research limits 20/60-day trend, CSI300 comparison and volume conclusions, without erasing known ledger facts. Missing ETF IOPV/amount/units and unread company documents have specific stated effects. No unsupported single-quarter calculation or market-direction sample is fabricated."
+    },
+    {
+      "id": "reference_navigation_representation",
+      "status": "pass",
+      "finding": "All eleven persisted URL targets exactly match intended input URLs; no Chinese punctuation/prose suffix remains. They remain source_link rather than resolved full-text evidence. This is a local target/attribution check, not a network reachability test."
+    },
+    {
+      "id": "formal_forecasts_tracking_and_trades",
+      "status": "not_applicable",
+      "finding": "No forecast batch/targets in this historical aggregate. Structured suggestions were omitted under the bounded final-only format. No trade execution, tracking matrix or mature forecast accuracy can be inferred."
+    }
+  ],
+  "blocking_findings": [],
+  "nonblocking_observations": [
+    {
+      "id": "pnl_wording_requires_whole_paragraph",
+      "severity": "nonblocking_wording_observation",
+      "exact_short_quote": "浮亏不全是模拟价差",
+      "reviewer_interpretation": "Do not use this isolated sentence as an additional accounting decomposition. The earlier account section explicitly states that the recorded loss compares simulated booking prices with a pre-existing close, plus recorded buy fees, and is not a new post-booking market move. The surrounding counter-factor paragraph points to historical weak closing performance and possible future market loss; it supplies no conflicting P&L number or post-booking price observation.",
+      "acceptance_reason": "The actual arithmetic, dates and explicit causal boundary remain correct in the same authored report. This imprecise phrase is not the categorical cost/price direction contradiction present in v11.",
+      "no_report_rewrite": true
+    },
+    {
+      "id": "beta_is_qualitative_not_estimated",
+      "severity": "nonblocking_inference_boundary",
+      "exact_short_quote": "更高的芯片行业贝塔",
+      "reviewer_interpretation": "Treat this as qualitative reasoning about allocating more to the chip-index ETF in the proposed replacement, not an estimated beta coefficient or proof of higher measured total risk. The same paragraph explicitly says the stock business is unknown and that swapping cannot be presumed to reduce the same risk.",
+      "acceptance_reason": "No numeric beta/correlation or verified company-sector comparison is asserted. The portfolio alternative is explained from known fund identity with explicit uncertainty; empirical risk sensitivity remains unvalidated.",
+      "no_report_rewrite": true
+    }
+  ],
+  "time_review": {
+    "actual_request_time_context": {
+      "execution_time": "2026-11-02T21:54:00.675316+08:00",
+      "data_as_of": "2026-10-30T15:34:06+08:00",
+      "historical_replay": true,
+      "decision_as_of": "2026-11-01T23:14:23.530972+08:00",
+      "decision_time_basis": "historical_checkpoint_at",
+      "instruction": "execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。"
+    },
+    "body_decision_time": "2026-11-01T23:14:23+08:00",
+    "body_execution_time": "2026-11-02T21:54:00+08:00",
+    "timestamp_precision": "Body omits fractional seconds; date, whole seconds and zone agree with payload.",
+    "valuation_date": "2026-10-30",
+    "individual_quote_timestamps_preserved": true,
+    "historical_future_not_promoted_to_observed_fact": true,
+    "execution_not_relabelled_as_new_market_data": true,
+    "no_current_date_trading_claim_required_or_inferred": true
+  },
+  "account_numeric_crosscheck": {
+    "position_count": 3,
+    "quantities": [
+      "100",
+      "1000",
+      "1000"
+    ],
+    "recorded_unit_costs": [
+      "10.05",
+      "10.0051",
+      "2.505"
+    ],
+    "remaining_costs": [
+      "1005.00",
+      "10005.10",
+      "2505.00"
+    ],
+    "recorded_buy_fees": [
+      "5.00",
+      "5.10",
+      "5.00"
+    ],
+    "cash": "86484.90",
+    "securities_value": "10279.50",
+    "total_assets": "96764.40",
+    "unrealized_pnl": "-3235.60",
+    "realized_pnl": "0.00",
+    "fee_total": "15.10",
+    "matches_ledger_and_metrics": true,
+    "future_sale_fees_known": false
+  },
+  "security_reviews": [
+    {
+      "security_id": "SH:518880",
+      "status": "pass",
+      "action": "Maintain 100 units, no new buy, no exit solely from simulated booking loss; direction abstention.",
+      "basis": "Small total-asset exposure; gold-linked fund identity from qualified child excerpts; historical quote and correct negative cost-relative P&L.",
+      "alternative_comparison": "Adding lacks verified price path/actual tracking data; exiting removes the only clearly identified gold exposure and adds little cash.",
+      "counter_and_change_conditions": "Missing actual tracking/holdings evidence and later verified gold/ETF weakness or strategy deviation can alter the action.",
+      "source_locations": [
+        "input.metrics.positions[0]",
+        "input.reports[1].findings[0]",
+        "input.reports[1].findings[1]",
+        "input.reports[1].findings[5]"
+      ],
+      "calculation_ordinals_one_based": [
+        5,
+        6
+      ]
+    },
+    {
+      "security_id": "SZ:002354",
+      "status": "pass",
+      "action": "Maintain 1000 shares, do not add; reassess reduction/exit on stated adverse evidence; direction abstention.",
+      "basis": "Largest security-only concentration but limited total-asset exposure; weak historical close; unknown company fundamentals; unavailable sale at historical decision time.",
+      "alternative_comparison": "Cash availability is not an averaging-down reason; immediate exit is compared against reading disclosures and later observable trading, without treating unknown financials as proven failure.",
+      "counter_and_change_conditions": "The weak prior close and potential later losses are acknowledged; verified adverse statements/risk events can justify reduction, and stability plus non-continuation of the decline permits reassessment.",
+      "source_locations": [
+        "input.metrics.positions[1]",
+        "input.reports[0].summary",
+        "input.reports[0].findings",
+        "input.reports[0].open_questions"
+      ],
+      "calculation_ordinals_one_based": [
+        3,
+        7
+      ],
+      "wording_observation": "pnl_wording_requires_whole_paragraph"
+    },
+    {
+      "security_id": "SZ:159599",
+      "status": "pass",
+      "action": "Maintain 1000 units without addition or automatic replacement buying after selling the stock; direction abstention.",
+      "basis": "Small total-asset exposure, chip-index identity and qualified fund excerpts; historical decline and correct fee-inclusive cost comparison.",
+      "alternative_comparison": "Replacing an unknown stock with a known chip ETF changes exposure; it is not proven to reduce the same risk. No mismatched NAV/close return or premium is calculated.",
+      "counter_and_change_conditions": "Historical volatility, unverified actual tracking and future continued weakness/confirmed tracking failure can support reduction; IOPV comparisons require matched time.",
+      "source_locations": [
+        "input.metrics.positions[2]",
+        "input.reports[1].findings[2]",
+        "input.reports[1].findings[3]",
+        "input.reports[1].findings[4]",
+        "input.reports[1].findings[5]"
+      ],
+      "calculation_ordinals_one_based": [
+        4,
+        8
+      ],
+      "inference_observation": "beta_is_qualitative_not_estimated"
+    }
+  ],
+  "calculation_mapping": {
+    "visible_calculations": 21,
+    "account_ratios_explicitly_adopted_with_correct_ids_and_rounding": 9,
+    "mapped_account_ratios": [
+      {
+        "input_ordinal": 1,
+        "calculation_id": "calculation-9b85858782dc4fd894dc6e249c444c9a",
+        "meaning": "cash / total assets",
+        "arguments": [
+          "86484.90",
+          "96764.40"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "89.3768",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 2,
+        "calculation_id": "calculation-98247ac3a8614511baf1de484b42538a",
+        "meaning": "securities / total assets",
+        "arguments": [
+          "10279.50",
+          "96764.40"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "10.6232",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 3,
+        "calculation_id": "calculation-de98f1d7907340a4851c1fb1634b26bf",
+        "meaning": "SZ:002354 / total assets",
+        "arguments": [
+          "7520.00",
+          "96764.40"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "7.7715",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 4,
+        "calculation_id": "calculation-92415c5482ae455e9c10c318bfcf4b01",
+        "meaning": "SZ:159599 / total assets",
+        "arguments": [
+          "1948.00",
+          "96764.40"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "2.0131",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 5,
+        "calculation_id": "calculation-a0658e7bd99946b29c7d57f374d25065",
+        "meaning": "SH:518880 / total assets",
+        "arguments": [
+          "811.50",
+          "96764.40"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "0.8386",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 6,
+        "calculation_id": "calculation-02c84c730095415a8aafc3ea68a2e987",
+        "meaning": "SH:518880 unrealized P&L / fee-inclusive remaining cost",
+        "arguments": [
+          "-193.50",
+          "1005.00"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "-19.2537",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 7,
+        "calculation_id": "calculation-acf76b8692384f6693664e36befd53f1",
+        "meaning": "SZ:002354 unrealized P&L / fee-inclusive remaining cost",
+        "arguments": [
+          "-2485.10",
+          "10005.10"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "-24.8383",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 8,
+        "calculation_id": "calculation-01e3e2df9db247319e4b25f3876e3e5d",
+        "meaning": "SZ:159599 unrealized P&L / fee-inclusive remaining cost",
+        "arguments": [
+          "-557.00",
+          "2505.00"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "-22.2355",
+        "rounding_and_direction_match": true
+      },
+      {
+        "input_ordinal": 9,
+        "calculation_id": "calculation-d05d24688b2f49f992e417add8b8aeee",
+        "meaning": "recorded buy fees / total buy cash outflow",
+        "arguments": [
+          "15.10",
+          "13515.10"
+        ],
+        "operation": "a / b * 100",
+        "reported_percent": "0.1117",
+        "rounding_and_direction_match": true
+      }
+    ],
+    "unbound_arithmetic_not_promoted_to_financial_fact": 12,
+    "unbound_calculation_ids_explicitly_named_as_exclusions": [
+      "calculation-47f52e81105544af8a456df67b5caeec",
+      "calculation-f8d9a82a436541d7ac22a1f2782194cb",
+      "calculation-efcd7d069e2d4aa6a81fa83e3d638271"
+    ],
+    "all_body_calculation_ids_exist_in_input": true,
+    "unique_body_calculation_id_count": 12,
+    "same_units_and_denominators": true
+  },
+  "source_mapping": [
+    {
+      "url": "https://quote.eastmoney.com/sh518880.html",
+      "input_locations": [
+        "input.metrics.positions[0].quote.source_url",
+        "input.reports[1].findings[5].source_urls[2]"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-17/518880_20260317_QR4M.pdf",
+      "input_locations": [
+        "input.reports[1].findings[0].source_urls[0]",
+        "input.materials[6].url",
+        "input.materials[10].url",
+        "input.materials[20].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/518880_20261027_GQGW.pdf",
+      "input_locations": [
+        "input.reports[1].findings[0].source_urls[1]",
+        "input.reports[1].findings[1].source_urls[0]",
+        "input.materials[3].url",
+        "input.materials[11].url",
+        "input.materials[14].url",
+        "input.materials[22].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "https://fundf10.eastmoney.com/518880.html",
+      "input_locations": [
+        "input.reports[1].findings[0].source_urls[2]",
+        "input.reports[1].findings[1].source_urls[1]",
+        "input.materials[5].url",
+        "input.materials[9].url",
+        "input.materials[23].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "https://quote.eastmoney.com/sz002354.html",
+      "input_locations": [
+        "input.metrics.positions[1].quote.source_url",
+        "input.reports[0].findings[0].source_url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF",
+      "input_locations": [
+        "input.reports[0].findings[1].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-08-22/d406bfc9-4778-4a2a-a6e8-a1395b8f7b66.PDF",
+      "input_locations": [
+        "input.reports[0].findings[2].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "https://quote.eastmoney.com/sz159599.html",
+      "input_locations": [
+        "input.metrics.positions[2].quote.source_url",
+        "input.reports[1].findings[5].source_urls[3]"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/20231208180055-H30007_Index_Methodology_cn.pdf",
+      "input_locations": [
+        "input.reports[1].findings[2].source_urls[0]",
+        "input.materials[1].url",
+        "input.materials[12].url",
+        "input.materials[17].url",
+        "input.materials[37].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "http://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/738844303f6ade76b8717a4b78223771.pdf",
+      "input_locations": [
+        "input.reports[1].findings[2].source_urls[1]",
+        "input.reports[1].findings[3].source_urls[0]",
+        "input.reports[1].findings[4].source_urls[0]",
+        "input.materials[2].url",
+        "input.materials[8].url",
+        "input.materials[16].url",
+        "input.materials[38].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    },
+    {
+      "url": "http://basic.10jqka.com.cn/159599/asset.html",
+      "input_locations": [
+        "input.reports[1].findings[3].source_urls[1]",
+        "input.materials[4].url",
+        "input.materials[21].url",
+        "input.materials[34].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "saved_access_status": "source_link",
+      "original_text_read_by_this_review": false
+    }
+  ],
+  "reference_counts": {
+    "saved_application_summary": {
+      "resolved": 0,
+      "source_link": 11,
+      "unresolved": 0
+    },
+    "exact_source_urls_in_input_and_report": 11,
+    "malformed_persisted_url_targets": 0,
+    "both_child_report_ids_named": true,
+    "source_url_reachability_network_tested": false,
+    "source_links_are_not_full_text_reads": true
+  },
+  "application_state_separate_from_review": {
+    "summary_content_assessment": "not_evaluated",
+    "published_delivery_content_assessment": "not_evaluated",
+    "contract_accepted": true,
+    "published": true,
+    "publication_status": "current",
+    "published_report_matches_reviewed_body": true,
+    "delivery_application_counts": {
+      "suggestions": 0,
+      "suggestion_actions": 0,
+      "forecasts": 0
+    },
+    "no_saved_assessment_rewritten": true
+  },
+  "denominators": {
+    "v13_http_requests": 1,
+    "v13_valid_terminal_submissions": 1,
+    "v13_reports_published": 1,
+    "v13_first_attempt_submissions": 1,
+    "v13_corrections": 0,
+    "requested_securities": 3,
+    "securities_with_substantive_account_action": 3,
+    "narrative_direction_abstentions": 3,
+    "formal_forecast_targets": 0,
+    "formal_direction_predictions": 0,
+    "formal_abstentions": 0,
+    "formal_uncovered_samples": 0,
+    "new_naturally_matured_scores": 0,
+    "structured_recommendations_applied": 0,
+    "no_accuracy_rate_from_zero_targets": true
+  },
+  "immutability": {
+    "model_report_not_edited": true,
+    "private_export_byte_identical_to_report": true,
+    "v10_v11_reviews_not_edited": true,
+    "protected_file_hashes_unchanged": true,
+    "isolated_database_hash_unchanged": true,
+    "sqlite_access": "mode=ro; isolated v13 database only",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "public_review_copies_full_private_report": false
+  },
+  "remaining_limits": [
+    "The content acceptance is for a historical simulated-account synthesis; current market/account research is not inferred.",
+    "Original PDFs and media claims remain limited to the evidence actually received; no independent original-document verification was added.",
+    "Qualitative portfolio judgments are evaluated for accountable reasoning, not proven investment effectiveness.",
+    "Normal background account research, version-changing trades, cash-candidate tasks, restart behavior, mature forecast scores and continuous stability require their own evidence.",
+    "This review does not authorize another paid request and does not modify prior failures or assessments."
+  ]
+}

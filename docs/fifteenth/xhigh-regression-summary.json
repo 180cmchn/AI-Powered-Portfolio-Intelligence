@@ -1,0 +1,59 @@
+{
+  "kind": "final_guidance_and_output_control_regression_summary",
+  "recorded_at": "2026-11-02T20:10:47.657564+08:00",
+  "production_full_test_source_sha256": "b35b772fc4501303d17555cdc3785954861aacb9c7685570aefef7d3312a7346",
+  "current_verifier_source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+  "production_app_changed_after_full_tests": [],
+  "macos_full": {
+    "passed": 1238,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 126.17,
+    "evidence": "test-results/fifteenth/final-guidance-macos-full.json"
+  },
+  "linux_full": {
+    "passed": 1238,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 148.07,
+    "evidence": "test-results/fifteenth/python-linux-v8-b35.json"
+  },
+  "browser": {
+    "groups_passed": 11,
+    "groups_failed": 0,
+    "evidence": "test-results/fifteenth/final-guidance-browser-groups.json"
+  },
+  "subsequent_verifier_only_change": {
+    "files": [
+      "scripts/verify_fifteenth_aggregate.py",
+      "tests/test_fifteenth_context.py"
+    ],
+    "macos_targeted": {
+      "passed": 28,
+      "failed": 0,
+      "seconds": 2.48
+    },
+    "linux_targeted": {
+      "passed": 28,
+      "failed": 0,
+      "seconds": 3.86
+    },
+    "linux_evidence": "test-results/fifteenth/v9-output-verifier-linux-021.json",
+    "macos_evidence": "test-results/fifteenth/output-limit-verifier-offline-tests.txt",
+    "final_required_fields_policy": {
+      "macos_passed": 34,
+      "macos_seconds": 2.96,
+      "linux_passed": 34,
+      "linux_seconds": 4.76,
+      "macos_evidence": "test-results/fifteenth/required-fields-verifier-offline-tests.txt",
+      "linux_evidence": "test-results/fifteenth/v10-required-fields-linux-bed.json"
+    }
+  },
+  "file_sha256": {
+    "app/agents.py": "89407e3d93645d6c88c390e51f3e3f971e3864cfd1a51cf0fbb1dfe6f333169a",
+    "app/model.py": "085fc6ed66c1d8a604d3a051088a4a11d3ac74a2cb77971a83121b49ad7a2913",
+    "scripts/verify_fifteenth_aggregate.py": "e89864570038c12576f31e586f6193adadccb9f3e56f866abf3dc02c70c5e790",
+    "tests/test_fifteenth_context.py": "8be16a97fe2e4100b6c699555d13bcd2b2141926addbe0a7fd3a27cdbc94dfa3"
+  },
+  "remote_ci_not_claimed_green": true
+}

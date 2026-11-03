@@ -176,9 +176,9 @@ def test_legacy_migration_is_explicit_without_reinterpreting_frozen_snapshots():
     assert timeout_policy(old)['request_hard_seconds'] == 90
     assert timeout_policy(old, 'synthesis')['request_hard_seconds'] == 120
     assert old['analysis_timeout_seconds'] == 600
-    assert migrated['model_request_hard_timeout_seconds'] == 300
-    assert migrated['synthesis_request_hard_timeout_seconds'] == 360
-    assert migrated['agent_timeout_seconds'] == 600 and migrated['analysis_timeout_seconds'] == 1200
+    assert migrated['model_request_hard_timeout_seconds'] == 900
+    assert migrated['synthesis_request_hard_timeout_seconds'] == 900
+    assert migrated['agent_timeout_seconds'] == 1800 and migrated['analysis_timeout_seconds'] == 3600
     assert migrate_timeout_policy(migrated) == migrated
     custom = migrate_timeout_policy({**old, 'model_request_timeout_seconds': 180, 'agent_timeout_seconds': 90})
     assert custom['model_request_hard_timeout_seconds'] == 180 and custom['agent_timeout_seconds'] == 90
@@ -187,29 +187,77 @@ def test_legacy_migration_is_explicit_without_reinterpreting_frozen_snapshots():
 
 
 async def test_runtime_child_queue_and_execution_have_separate_observations(monkeypatch):
-    # Exercise the actual child semaphore and deadline, with actual ModelClient.
+    # Real semaphore, Runtime, ModelClient and timeout callbacks; coherent clocks
+    # and explicit fences define the queue/HTTP phases without host-speed sleeps.
     from test_agents import ResearchTools
-    transport = httpx.MockTransport(lambda request: httpx.Response(200, headers={'content-type': 'text/event-stream'},
-        stream=TimedStream([(.01, event('response.output_text.delta', delta='visible'))] * 30)))
+    from tests.test_fourteenth_deadlines import ControlledDeadlineClock, wait_for_stage
+    timeline = ControlledDeadlineClock(monkeypatch, before_seconds=1)
+    monkeypatch.setattr(time, 'perf_counter', timeline.monotonic)
+    queued, first_progress, next_chunk, second_progress = (asyncio.Event() for _ in range(4))
+    sent, cancelled = [], []
+
+    class ObservedSemaphore(asyncio.Semaphore):
+        async def acquire(self):
+            if self.locked():
+                queued.set()  # _run_child has reached the actual capacity wait.
+            return await super().acquire()
+
+    class ControlledStream(httpx.AsyncByteStream):
+        closed = False
+        async def __aiter__(self):
+            yield event('response.output_text.delta', delta='visible')
+            # The parser asks for another chunk only after consuming this one.
+            first_progress.set()
+            await next_chunk.wait()
+            yield event('response.output_text.delta', delta='still visible')
+            second_progress.set()
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                cancelled.append(True)
+                raise
+        async def aclose(self):
+            self.closed = True
+
+    stream = ControlledStream()
+    def handler(request):
+        sent.append(request)
+        return httpx.Response(200, headers={'content-type':'text/event-stream'}, stream=stream)
+    transport = httpx.MockTransport(handler)
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None: ModelClient(config, before_request, transport))
     events = []
     async def emit(value): events.append(value)
-    runtime = agents.ResearchRuntime({'job_id': 'controlled-child'},
+    # Preserve the original .09 child and 2-second parent allowances. Progress
+    # at .025 and .065 keeps the .06 idle cap later than the .09 child deadline.
+    runtime = agents.ResearchRuntime({'job_id':'controlled-child'},
         config(agent_timeout_seconds=.09, analysis_timeout_seconds=2, max_model_calls=20), ResearchTools(), emit)
+    runtime.semaphore = ObservedSemaphore(3)
     runtime.deadline = time.monotonic() + 2
     try:
         await runtime.semaphore.acquire()
         await runtime.semaphore.acquire()
         await runtime.semaphore.acquire()
-        result = await runtime._spawn({'task': 'bounded child'})
-        await asyncio.sleep(.025)
-        runtime.semaphore.release()
+        result = await runtime._spawn({'task':'bounded child'})
         child = runtime.children[result['agent_id']]
+        await wait_for_stage(child.task_handle, queued)
+        assert sent == [] and child.status == 'queued'
+        timeline.advance(.025)
+        runtime.semaphore.release()
+        await wait_for_stage(child.task_handle, first_progress)
+        assert len(sent) == 1 and child.session.queue_wait_ms == 25
+        timeline.advance(.04)
+        next_chunk.set()
+        await wait_for_stage(child.task_handle, second_progress)
+        timeline.advance(.026)  # Now .091: explicitly past child, before idle/parent/request.
         await child.task_handle
-        assert child.status == 'failed'
+        assert child.status == 'failed' and child.reports == []
+        assert len(sent) == 1 and cancelled == [True] and stream.closed
         row = child.session.requests[0]
-        assert row['error_code'] == 'child_budget_exhausted'
-        assert row['queue_wait_ms'] >= 20 and row['duration_ms'] < 90
+        assert row['effective_limit'] == row['error_code'] == row['cancelled_by'] == 'child_budget_exhausted'
+        assert row['deadline_remaining_ms']['child_budget_exhausted'] == 65
+        assert row['queue_wait_ms'] == 25 and row['duration_ms'] == 66
+        started = next(e for e in events if e['type'] == 'agent_started')
+        assert started['payload']['resource_limits']['queue_wait_ms'] == 25
         failure = next(e for e in events if e['type'] == 'agent_failed')
         assert failure['payload']['error_code'] == 'child_budget_exhausted'
     finally:
@@ -304,9 +352,9 @@ def test_new_job_freezes_migrated_policy_and_current_edits_do_not_change_old_sna
     account = store.save_account(AccountInput(name='frozen', cash='100000'))
     job = store.claim_jobs(account_id=account['id'])[0]
     frozen = job['config_snapshot']
-    assert frozen['model_request_hard_timeout_seconds'] == 300
-    assert frozen['synthesis_request_hard_timeout_seconds'] == 360
-    assert frozen['agent_timeout_seconds'] == 600
+    assert frozen['model_request_hard_timeout_seconds'] == 900
+    assert frozen['synthesis_request_hard_timeout_seconds'] == 900
+    assert frozen['agent_timeout_seconds'] == 1800
     store.set_meta('settings', {**store.settings(), 'synthesis_request_hard_timeout_seconds': 500})
     assert store.settings()['synthesis_request_hard_timeout_seconds'] == 500
     assert store.job(job['id'])['config_snapshot'] == frozen

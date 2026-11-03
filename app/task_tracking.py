@@ -107,6 +107,7 @@ class TaskTrackingStore:
             item['delivery'] = {'status': 'legacy', 'contract_verified': None,
                                 'content_assessment': 'not_evaluated'}
         item['error_code'] = (item['delivery'] or {}).get('error_code')
+        item['delivery_application'] = result.get('delivery_application')
         item['forecast_coverage'] = result.get('forecast_coverage')
         item['submission_outcome'] = result.get('submission_outcome')
         item['submission_corrections'] = result.get('submission_corrections')

@@ -1,0 +1,415 @@
+{
+  "kind": "independent_development_content_review",
+  "reviewed_at": "2026-11-02T20:25:23.680804+08:00",
+  "reviewer": {
+    "identity": "development_subtask:evidence_context",
+    "method": "Read the entire actual model report and compare with frozen input, two saved child reports, all 21 calculation summaries, and read-only isolated ledger/publication records.",
+    "human_sign_off": false,
+    "independent_model_research_performed": false,
+    "hidden_reasoning_read": false,
+    "external_source_documents_refetched": false
+  },
+  "identity": {
+    "job_id": "146ddaaf3bc54bc1bf27cae15b0dafb4",
+    "report_sha256": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+    "report_chars": 3059,
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+    "published_body_sha256": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+    "published_body_matches_model_body": true,
+    "private_model_result": "data/evaluations/fifteenth-historical-xhigh-v10/execution/model-result.json",
+    "execution_started_at": "2026-11-02T20:15:33.847316+08:00",
+    "execution_completed_at": "2026-11-02T20:17:30.207389+08:00"
+  },
+  "content_assessment": "evaluated",
+  "overall": "qualified",
+  "accepted": false,
+  "accepted_definition": "accepted=true would mean this independent review gives an unqualified content acceptance for the stated task. accepted=false here is a qualified review, not a denial that a real report was generated, contract-accepted and published. It does not change the saved application result.",
+  "acceptance_boundaries": {
+    "historical_simulated_report_obtained": true,
+    "historical_only_readable_with_disclosed_qualifications": true,
+    "substantive_three_security_account_analysis_present": true,
+    "unqualified_content_acceptance": false,
+    "current_account_or_current_market_guidance_accepted": false,
+    "investment_accuracy_or_profitability_validated": false,
+    "continuous_operation_validated": false,
+    "normal_business_matrix_validated": false
+  },
+  "application_state_separate_from_review": {
+    "execution_summary_content_assessment": "not_evaluated",
+    "persisted_delivery_content_assessment": "not_evaluated",
+    "contract_verified": true,
+    "delivery_status": "limited",
+    "published": true,
+    "stored_analysis_status": "current",
+    "review_does_not_update_application_assessment": true,
+    "note": "The application remains not_evaluated; this separate development review is evaluated/qualified. The model did not self-certify content correctness."
+  },
+  "checks": [
+    {
+      "id": "account_facts_and_cost_semantics",
+      "status": "pass",
+      "finding": "Cash, three quantities, simulated trade prices, fee-included costs, unrealized loss, zero realized profit and two weight denominators agree with frozen ledger and metrics. It correctly distinguishes simulated fill-price gap from market loss after booking and does not deduct fees twice.",
+      "evidence": [
+        "snapshot v4 ledger recent_entries/positions",
+        "input.metrics",
+        "input.calculations[1..9]"
+      ]
+    },
+    {
+      "id": "answers_complete_three_security_scope",
+      "status": "pass",
+      "finding": "All three securities receive account actions, reasons, alternatives, counter-factors and conditions. Aggregate alternatives include selling all versus retaining current exposure and using cash to add versus not adding. The limited scope does not reduce the task to cash-only.",
+      "evidence": [
+        "report: 本轮结论",
+        "report: 为何这样比主要替代方案合理",
+        "report: 什么条件会改变判断"
+      ]
+    },
+    {
+      "id": "basis_and_counter_factors",
+      "status": "pass",
+      "finding": "Uses known exposures, fee/cost arithmetic and appropriately qualified product facts; acknowledges daily declines and concentration. Declines to treat missing company filings or unbound arithmetic as verified fundamentals.",
+      "evidence": [
+        "two frozen child reports",
+        "calculation contexts and arguments",
+        "report: 已取得事实与计算/最重要的反向信息"
+      ]
+    },
+    {
+      "id": "conditions_and_alternatives",
+      "status": "pass",
+      "finding": "Conditions vary by security: adverse corporate disclosures, recovery/trend confirmation, chip index and fund-document checks, gold hedge need, and cash constraints. No invented precise execution price or target probability.",
+      "qualification": "These are model-authored conditional judgments, not independently validated investment recommendations."
+    },
+    {
+      "id": "localized_gaps",
+      "status": "pass",
+      "finding": "Failed price/relative-performance work limits 20/60-day trend and volume conclusions; unread company filings limit fundamentals; ETF excerpt/secondary-source gaps limit holdings, realized tracking error and premium/discount. These gaps do not erase cash/cost facts."
+    },
+    {
+      "id": "source_access_fidelity",
+      "status": "pass",
+      "finding": "Differentiates delegated report receipt, search excerpts, PDF metadata and media/aggregator claims; does not claim the final manager read every original PDF. Treats tracking-error limits as targets and declines unsupported financial arithmetic.",
+      "qualification": "Pass means fidelity to the provided evidence and access labels, not independent verification of every underlying market or issuer fact."
+    },
+    {
+      "id": "source_traceability_for_reader",
+      "status": "qualified",
+      "finding": "The report names sources, document periods and child-report roles, but contains no URL, material ID, child report ID or calculation ID. Automatic reference counts are all zero. An independent reviewer can map it to the private frozen input; the delivered report alone lacks clickable direct evidence links.",
+      "required_disclosure": "Describe provenance mapping as development evidence comparison, not original-document verification or a fully linked source chain."
+    },
+    {
+      "id": "historical_time_anchor",
+      "status": "qualified",
+      "finding": "It identifies the 2026-10-30 valuation and 2026-11-01 retrieval/simulated booking, but does not explicitly state that the decision clock is frozen to November 1. The phrase 下一交易日开盘尚未发生 has an ambiguous anchor at the actual November 2 20:15–20:17 execution time.",
+      "required_disclosure": "Read only as historical simulated-account analysis. Do not interpret it as asserting that November 2 market events or sellability have not occurred, or as an analysis of current holdings/prices."
+    },
+    {
+      "id": "formal_forecasts_and_tracking",
+      "status": "not_applicable",
+      "finding": "No forecast batch or bound sample target exists. The model narratively abstains from directions for all three, while still supplying portfolio actions. Structured suggestions were omitted under the isolated format control; zero tracking actions is not a tracking-chain success."
+    }
+  ],
+  "account_numeric_crosscheck": {
+    "cash": "86484.90",
+    "securities_value": "10279.50",
+    "total_assets": "96764.40",
+    "total_recorded_cost": "13515.10",
+    "total_recorded_buy_fees": "15.10",
+    "unrealized_pnl": "-3235.60",
+    "realized_pnl": "0.00",
+    "portfolio_preference_matches_frozen_snapshot": true,
+    "securities_only_weights_percent": {
+      "SH:518880": "7.89",
+      "SZ:002354": "73.16",
+      "SZ:159599": "18.95"
+    },
+    "total_asset_weights_percent": {
+      "SH:518880": "0.84",
+      "SZ:002354": "7.77",
+      "SZ:159599": "2.01"
+    },
+    "recorded_sellable_dates": {
+      "SH:518880": "2026-11-01",
+      "SZ:002354": "2026-11-02",
+      "SZ:159599": "2026-11-02"
+    },
+    "recorded_sellable_dates_are_not_current_execution_instructions": true
+  },
+  "security_reviews": [
+    {
+      "security_id": "SH:518880",
+      "status": "qualified",
+      "account_action_present": true,
+      "action_summary": "Retain/observe the small gold position; do not add or exit merely because of simulated cost loss.",
+      "alternative_comparison": "Holding versus loss-driven exit and cash-funded addition; larger allocation is conditional on an explicit hedging need.",
+      "basis_mapping": [
+        "input.metrics.positions[0]",
+        "calculation ordinals 5,6",
+        "ETF child report findings 0,1,5"
+      ],
+      "counter_factor_present": "Adverse gold trend or realized tracking-error evidence would weaken the holding case; low total-asset weight limits its portfolio effect.",
+      "change_condition_present": "Verified gold trend and comparable premium/discount data plus an explicit hedge need; cash constraints may also change allocation.",
+      "specific_gaps": [
+        "Unverified full quarter-end holdings and actual tracking error",
+        "No comparable current IOPV/price",
+        "No completed multi-period price research"
+      ],
+      "qualification": "Conditional historical portfolio judgment only; temporal anchor and direct-reference limitations apply."
+    },
+    {
+      "security_id": "SZ:002354",
+      "status": "qualified",
+      "account_action_present": true,
+      "action_summary": "Abstain from a directional forecast; do not add, and do not treat missing disclosures alone as an immediate-exit fact. Prioritize reduction if adverse company disclosures are verified.",
+      "alternative_comparison": "Retaining known exposure versus selling solely on simulated loss or adding after a rebound; identifies larger concentration within securities despite a modest share of total assets.",
+      "basis_mapping": [
+        "input.metrics.positions[1]",
+        "calculation ordinals 3,7",
+        "filing child report summary/findings/open_questions",
+        "failed price/relative-performance task"
+      ],
+      "counter_factor_present": "The observed daily decline and securities-sleeve concentration are adverse signals; actual limit-down/volume state and corporate risk remain unverified.",
+      "change_condition_present": "Verified company/legal/control risks or completed price and fundamental evidence; explicit cash need/position limits can change action.",
+      "specific_gaps": [
+        "PDF metadata only; revenue/profit/cash flow/business/legal risks unknown",
+        "No completed 20/60-day or relative-index study",
+        "No verified abnormal-volume result"
+      ],
+      "qualification": "The narrative abstention is not a formal forecast sample; delayed sellability wording must be interpreted under the historical clock."
+    },
+    {
+      "security_id": "SZ:159599",
+      "status": "qualified",
+      "account_action_present": true,
+      "action_summary": "Maintain small chip-index exposure without adding; do not exit solely on an unverified quarterly-loss commentary.",
+      "alternative_comparison": "Small hold versus adding cash or exiting on a media claim; conditions future reconsideration on verified fund/index evidence.",
+      "basis_mapping": [
+        "input.metrics.positions[2]",
+        "calculation ordinals 4,8",
+        "ETF child report findings 2,3,4,5"
+      ],
+      "counter_factor_present": "A verified substantial quarterly drawdown or adverse index/tracking evidence would weaken the holding case.",
+      "change_condition_present": "Verify fund holdings/fees/realized tracking error and relevant index trends before reconsidering exposure.",
+      "specific_gaps": [
+        "Fee and portfolio table originals not read",
+        "Realized tracking error unknown; stated limits are targets",
+        "NAV and market price not time-matched; no premium calculation"
+      ],
+      "qualification": "The plan to reassess whether to retain exposure is conditional; no future return performance is established."
+    }
+  ],
+  "calculation_mapping": {
+    "input_count": 21,
+    "account_metric_calculations_explicitly_adopted": 9,
+    "unbound_large_amount_calculations_not_used_as_verified_financial_facts": 12,
+    "adopted": [
+      {
+        "input_calculation_ordinal": 1,
+        "measure": "现金占含现金总资产比例",
+        "operation": "percent",
+        "input_values": [
+          "86484.90",
+          "96764.40"
+        ],
+        "exact_result": "89.37677492962287783523692598",
+        "report_rounded_percent": "89.38",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 2,
+        "measure": "证券市值占总资产比例",
+        "operation": "percent",
+        "input_values": [
+          "10279.50",
+          "96764.40"
+        ],
+        "exact_result": "10.62322507037712216476307402",
+        "report_rounded_percent": "10.62",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 3,
+        "measure": "002354占总资产比例",
+        "operation": "percent",
+        "input_values": [
+          "7520.00",
+          "96764.40"
+        ],
+        "exact_result": "7.771453137724204356147508795",
+        "report_rounded_percent": "7.77",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 4,
+        "measure": "159599占总资产比例",
+        "operation": "percent",
+        "input_values": [
+          "1948.00",
+          "96764.40"
+        ],
+        "exact_result": "2.013137062804089107150977012",
+        "report_rounded_percent": "2.01",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 5,
+        "measure": "518880占总资产比例",
+        "operation": "percent",
+        "input_values": [
+          "811.50",
+          "96764.40"
+        ],
+        "exact_result": "0.8386348698488287014645882163",
+        "report_rounded_percent": "0.84",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 6,
+        "measure": "518880相对含费成本收益率",
+        "operation": "percent",
+        "input_values": [
+          "-193.50",
+          "1005.00"
+        ],
+        "exact_result": "-19.25373134328358208955223881",
+        "report_rounded_percent": "-19.25",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 7,
+        "measure": "002354相对含费成本收益率",
+        "operation": "percent",
+        "input_values": [
+          "-2485.10",
+          "10005.10"
+        ],
+        "exact_result": "-24.83833245045027036211532119",
+        "report_rounded_percent": "-24.84",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 8,
+        "measure": "159599相对含费成本收益率",
+        "operation": "percent",
+        "input_values": [
+          "-557.00",
+          "2505.00"
+        ],
+        "exact_result": "-22.23552894211576846307385230",
+        "report_rounded_percent": "-22.24",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      },
+      {
+        "input_calculation_ordinal": 9,
+        "measure": "已记费用占买入现金支出比例",
+        "operation": "percent",
+        "input_values": [
+          "15.10",
+          "13515.10"
+        ],
+        "exact_result": "0.1117268832639048175744167635",
+        "report_rounded_percent": "0.11",
+        "rounded_number_present_in_report": true,
+        "assessment": "adopted_with_matching_account_metric_context"
+      }
+    ],
+    "scope_note": "Nine account-ratio calculations have arguments that match known ledger/metrics. The other twelve retain their arithmetic meaning but have no verified issuer/period/source binding; excluding them as company facts is appropriate, not tool failure."
+  },
+  "source_mapping": [
+    {
+      "report_claim_group": "Historical closing quotes and account valuation",
+      "input_location": "input.metrics.positions[0..2].quote; snapshot v4 ledger",
+      "access_boundary": "Original source quote timestamps are on 2026-10-30; retrieval and simulated booking are on 2026-11-01. Not live quotes or market execution prices.",
+      "status": "matched"
+    },
+    {
+      "report_claim_group": "Gold ETF product, fees, dated shares and unavailable original holdings",
+      "input_location": "input.reports[1].findings[0,1,5]",
+      "access_boundary": "Search excerpts and third-party product/profile statements, with unread PDF-body limitations retained.",
+      "status": "matched_with_access_qualification"
+    },
+    {
+      "report_claim_group": "Chip ETF index, dated shares, fee/holdings claims, tracking targets and liquidity gaps",
+      "input_location": "input.reports[1].findings[2,3,4,5]",
+      "access_boundary": "Search excerpts plus media/aggregator attribution; tracking-error goals are not realized outcomes, and quoted portfolio positions are not current holdings.",
+      "status": "matched_with_access_qualification"
+    },
+    {
+      "report_claim_group": "Company financial and legal facts remain unknown",
+      "input_location": "input.reports[0].summary/findings/open_questions; calculation ordinals 10..21",
+      "access_boundary": "PDF metadata is not document reading. Bare arithmetic is not issuer financial evidence.",
+      "status": "matched"
+    },
+    {
+      "report_claim_group": "No completed multi-period trend or relative-index conclusion",
+      "input_location": "input.unresolved_tasks[0]",
+      "access_boundary": "Failed delegated work remains a specific limitation; daily quote changes do not become a 20/60-day trend.",
+      "status": "matched"
+    }
+  ],
+  "reference_counts": {
+    "resolved": 0,
+    "source_link": 0,
+    "unresolved": 0
+  },
+  "narrative_citation_counts": {
+    "urls": 0,
+    "material_id_tokens": 0,
+    "calculation_id_tokens": 0
+  },
+  "time_review": {
+    "valuation_date": "2026-10-30",
+    "retrieval_and_simulated_booking_date": "2026-11-01",
+    "actual_execution_date": "2026-11-02",
+    "explicit_decision_clock_frozen_to_november_1": false,
+    "ambiguous_phrase": "下一交易日开盘尚未发生",
+    "possible_readings": [
+      "Under the November 1 historical snapshot, next trading day refers to November 2; that event was already in the past at execution.",
+      "Under the actual November 2 evening clock, next trading day could refer to November 3, but the report contains no fresh intervening market evidence."
+    ],
+    "limitation_scope_note": "The statement that dates after valuation are non-trading days is defensible for the October 31/November 1 weekend, but should not be generalized to November 2.",
+    "valid_until_supplied": false,
+    "review_did_not_rewrite_temporal_claims": true
+  },
+  "denominators": {
+    "v10_http_requests": 1,
+    "v10_valid_terminal_submissions": 1,
+    "v10_reports_published": 1,
+    "v10_jobs": 1,
+    "requested_securities": 3,
+    "securities_with_substantive_account_action": 3,
+    "narrative_direction_abstentions": 3,
+    "formal_forecast_targets": 0,
+    "formal_direction_predictions": 0,
+    "formal_abstentions": 0,
+    "formal_uncovered_samples": 0,
+    "new_naturally_matured_scores": 0,
+    "structured_recommendations_applied": 0,
+    "no_accuracy_rate_from_zero_targets": true
+  },
+  "immutability": {
+    "source_and_model_report_not_edited": true,
+    "published_report_not_edited": true,
+    "summary_assessment_not_edited": true,
+    "private_input_and_result_and_database_hashes_unchanged": true,
+    "sqlite_access": "mode=ro; only isolated v10 database",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "public_review_copies_full_private_report": false
+  },
+  "remaining_limits": [
+    "A single historical report does not establish continuous reliability, real current-account research or the normal business matrix.",
+    "This review compares delivered content to frozen evidence, not independent current market research, an investment approval or human signature.",
+    "No remainder of the paid authorization was consumed for this review."
+  ]
+}

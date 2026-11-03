@@ -1,0 +1,112 @@
+{
+  "checked_at_utc": "2026-11-02 10:21:34 UTC",
+  "remote_branch": "main",
+  "remote_head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "run": {
+    "id": 41413931460,
+    "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_attempt": 1,
+    "event": "push",
+    "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460",
+    "created_at": "2026-11-02T08:33:23Z",
+    "updated_at": "2026-11-02T08:37:04Z"
+  },
+  "jobs": [
+    {
+      "id": 125173106146,
+      "name": "python",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 125173106580,
+      "name": "browser (seventh)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106581,
+      "name": "browser (twelfth)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106648,
+      "name": "browser (thirteenth)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106685,
+      "name": "browser (iteration)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106690,
+      "name": "browser (eleventh)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106701,
+      "name": "browser (tenth)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106745,
+      "name": "browser (fourteenth)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106793,
+      "name": "browser (twelfth-select)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106810,
+      "name": "browser (thirteenth-correction)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106811,
+      "name": "browser (production)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125173106824,
+      "name": "browser (ninth)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 125174489557,
+      "name": "tests",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "browser_groups_success": 11,
+  "required_aggregate": "failure",
+  "new_worktree_code_pushed": false,
+  "source": "Read-only connected GitHub GET: main branch, latest workflow-run collection and current run jobs; no push or workflow rerun performed.",
+  "checked_at": "2026-11-02T18:21:34.000+08:00",
+  "previous_checked_at_utc": "2026-11-02 09:47:22 UTC",
+  "python": {
+    "passed": 1164,
+    "failed": 1,
+    "warnings": 1,
+    "job_id": 125173106146,
+    "counts_source": "Previously retrieved log of unchanged job/run attempt; current failure status rechecked via run jobs API"
+  },
+  "previous_checked_at": "2026-11-02T17:47:22+08:00",
+  "local_frozen_source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "local_frozen_source_is_remote_head": false
+}

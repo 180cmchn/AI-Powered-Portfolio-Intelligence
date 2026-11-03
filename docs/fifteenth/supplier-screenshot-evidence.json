@@ -1,0 +1,34 @@
+{
+  "recorded_at": "2026-11-02T18:02:36.271251+08:00",
+  "source": "User-provided supplier usage-log screenshot; user explicitly identified the red exclamation stream error as client_gone.",
+  "screenshot_sha256": "7c1ecd59e576020d256259c1448c96404e1e4e46c59051a605b893225d39d641",
+  "displayed_timestamp": "2026-11-02 17:35:15",
+  "timezone_context": "Asia/Shanghai",
+  "model_displayed": "grok-4.7",
+  "stream_error": "client_gone",
+  "stream_error_provenance": "User explanation; cropped screenshot itself shows the red exclamation icon, not its tooltip text.",
+  "token_pair_displayed": [
+    24833,
+    6463
+  ],
+  "token_pair_text": "24,833 / 6,463",
+  "token_count_semantics": "Preserved supplier display values; not substituted into missing client API usage.",
+  "displayed_charge_amount": "0.013266",
+  "currency_symbol": "$",
+  "currency_code_verified": false,
+  "displayed_first_token_seconds": "7.4",
+  "displayed_duration_seconds": 297,
+  "displayed_rate_tokens_per_second": 22,
+  "correlation": {
+    "status": "consistent_by_timestamp_model_and_duration",
+    "local_finished_at": "2026-11-02T17:35:15.884856+08:00",
+    "local_duration_seconds": "300.05374",
+    "local_response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+    "response_id_visible_in_screenshot": false,
+    "request_id_level_match_verified": false
+  },
+  "independent_invoice_reconciliation": false,
+  "terminal_payload_or_report_recovered": false,
+  "root_cause_determined": false,
+  "new_model_requests": 0
+}

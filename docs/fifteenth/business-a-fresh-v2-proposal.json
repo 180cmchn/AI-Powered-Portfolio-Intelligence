@@ -1,0 +1,100 @@
+{
+  "kind": "reviewable_fresh_A_retry_after_local_repairs",
+  "prepared_at": "2026-11-02T15:55:56.242220+00:00",
+  "authorization_granted": true,
+  "model_http_started": 0,
+  "external_network_started": false,
+  "prepared_manifest": "data/evaluations/fifteenth-business-a-fresh-v2/preparation.json",
+  "prepared_manifest_sha256": "09e3a7b60452bde07790e388610e1b0e560a249b762f335be4d11a3a5393ca4f",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "scope": "Fresh isolated A first business validation with the same three simulated buys; not restoration of the expired checkpoint. No A-after-sell or B stage authorized.",
+  "prior_A": {
+    "job_id": "ea36a754a353426693d015300b4e4422",
+    "requests_used": 10,
+    "original_maximum": 16,
+    "preserved_remaining": 6,
+    "old_unknown_stop_preserved": true,
+    "expired_checkpoint_not_reused": true
+  },
+  "proposed_cap_from_preserved_remaining": 6,
+  "final_submission_reserved_calls_inside_cap": 2,
+  "cap_difference": "Previous A allowed16 total; this proposed new execution uses at most the remaining6 after explicit authorization, including all roles and corrections. Fewer research calls may yield a limited report.",
+  "old_historical_pool_used": 10,
+  "old_historical_pool_maximum": 10,
+  "old40_transferred": 0,
+  "role_matrix": [
+    {
+      "role_id": "manager",
+      "model": "grok-4.7",
+      "effort": "xhigh"
+    },
+    {
+      "role_id": "filing_researcher",
+      "model": "grok-4.6",
+      "effort": "high"
+    },
+    {
+      "role_id": "market_researcher",
+      "model": "grok-4.7",
+      "effort": "medium"
+    },
+    {
+      "role_id": "industry_researcher",
+      "model": "grok-4.7",
+      "effort": "medium"
+    },
+    {
+      "role_id": "etf_researcher",
+      "model": "grok-4.7",
+      "effort": "medium"
+    },
+    {
+      "role_id": "portfolio_researcher",
+      "model": "grok-4.7",
+      "effort": "medium"
+    }
+  ],
+  "output_token_limit": 6000,
+  "production_final_schema_sha256": "424259775fcac4bbdecdbbf1580aef93a12f6a5bf396c29f110a26f7a0a633f3",
+  "production_final_field_count": 17,
+  "schema_change": "Full17-field production finish_analysis now explicitly caps research_records at100, matching shared validation; historical live schema hashes remain unchanged.",
+  "network": "Original environment route and TLS; no direct bypass or persistent configuration changes",
+  "listener": "http://127.0.0.1:18765",
+  "simulated_trades": [
+    {
+      "symbol": "SH:518880",
+      "quantity": "100",
+      "price": "10.000"
+    },
+    {
+      "symbol": "SZ:002354",
+      "quantity": "1000",
+      "price": "10.00"
+    },
+    {
+      "symbol": "SZ:159599",
+      "quantity": "1000",
+      "price": "2.500"
+    }
+  ],
+  "expected_cash": "86484.90",
+  "expected_total_cost": "13515.10",
+  "expected_fees": "15.10",
+  "input_times": "Use actual run-time Shanghai date/calendar; accounting prices are declared simulation inputs, never current quotes.",
+  "request_limits": {
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_stream_idle_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200
+  },
+  "stop_conditions": [
+    "first valid publication",
+    "first unknown execution outcome",
+    "first failed job",
+    "shared maximum6 HTTP including children and correction"
+  ],
+  "after_publication": "Observe persisted publication and restart same isolated service; no additional task model authorization. Independently review actual report afterward.",
+  "cost_boundary": "Supplier actual fees; no reliable pre-request monetary hard cap. Interrupted request usage may remain unknown.",
+  "fresh_permission_basis": "Original task2.4/8.2 and the previously authorized stage stop-on-unknown condition. Current goal continuation does not renew spending.",
+  "authorization_record": "business-a-fresh-v2-authorization.json"
+}

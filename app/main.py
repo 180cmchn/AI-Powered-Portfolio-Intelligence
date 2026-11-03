@@ -33,9 +33,10 @@ class Settings(BaseModel):
     model_allow_no_key: bool = False
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
     model_first_event_timeout_seconds: int = Field(default=90, ge=5, le=600)
-    model_stream_idle_timeout_seconds: int = Field(default=120, ge=5, le=600)
-    model_request_hard_timeout_seconds: int = Field(default=300, ge=5, le=1800)
-    synthesis_request_hard_timeout_seconds: int = Field(default=360, ge=5, le=1800)
+    model_stream_idle_timeout_seconds: int = Field(default=300, ge=5, le=600)
+    model_request_hard_timeout_seconds: int = Field(default=900, ge=5, le=1800)
+    synthesis_request_hard_timeout_seconds: int = Field(default=900, ge=5, le=1800)
+    timeout_defaults_revision: Literal[3] = 3
     model_responses_stream: bool = True
     model_native_search: bool = True
     reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
@@ -51,10 +52,10 @@ class Settings(BaseModel):
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
     max_model_calls: int = Field(default=40, ge=2, le=300)
     final_submission_reserved_calls: int = Field(default=2, ge=2, le=4)
-    agent_timeout_seconds: int = Field(default=600, ge=5, le=1800)
-    analysis_timeout_seconds: int = Field(default=1200, ge=10, le=3600)
+    agent_timeout_seconds: int = Field(default=1800, ge=5, le=1800)
+    analysis_timeout_seconds: int = Field(default=3600, ge=10, le=3600)
     max_agent_turns: int = Field(default=12, ge=2, le=60)
-    max_output_tokens: int = Field(default=4000, ge=256, le=32000)
+    max_output_tokens: int | None = Field(default=None, ge=256, le=32000)
     quote_interval_seconds: int = Field(default=60, ge=30, le=3600)
     scheduled_research_enabled: bool = True
     market_refresh_enabled: bool = True
@@ -521,7 +522,16 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         # Preserve deprecated values for audit; they are never exposed to runtime.
         # Missing fields are not explicit choices. In particular, do not write
         # medium over REASONING_EFFORT or an earlier explicitly saved value.
-        store.set_meta("settings", {**store.meta('settings', {}), **data.model_dump(exclude_unset=True)})
+        updates = data.model_dump(exclude_unset=True)
+        saved = store.meta('settings', {})
+        from .config import LONG_TASK_TIMEOUT_DEFAULTS
+        if set(updates) & set(LONG_TASK_TIMEOUT_DEFAULTS):
+            # Persist the currently effective profile before a partial edit.
+            # An explicit choice of the old numbers must not be re-migrated.
+            effective = store.settings()
+            saved = {**saved, **{key: effective[key] for key in LONG_TASK_TIMEOUT_DEFAULTS},
+                     'timeout_defaults_revision': 3}
+        store.set_meta("settings", {**saved, **updates})
         store.set_meta("model_probe", None)
         service.resume_waiting_config()
         for a in store.accounts():

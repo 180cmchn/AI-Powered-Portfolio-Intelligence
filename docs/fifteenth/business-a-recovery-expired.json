@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-11-02T22:58:01.731051+08:00",
+  "source_sha256": "803b3a64a2a65b3aa7f23020eac92b45e9ba849ccbaa94065e906ccf8ae64395",
+  "diagnostic": {
+    "checkpoint_job_id": "ea36a754a353426693d015300b4e4422",
+    "eligible": false,
+    "partial_research": true,
+    "state": "invalidated",
+    "reasons": [
+      "expired"
+    ],
+    "note": "检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+  },
+  "eligible_checkpoint_rejected": true,
+  "error": "Synthesis-only checkpoint is unavailable: invalidated",
+  "checkpoint": {
+    "created_at": "2026-11-02T22:23:43.746431+08:00",
+    "resume_count": 0
+  },
+  "configured_max_age_seconds": 1800,
+  "created_at_or_ttl_modified": false,
+  "prepared_execution_directory_exists": false,
+  "actual_recovery_http_requests": 0,
+  "recovery_authorization_requested_or_granted": false,
+  "original_stage_used": 10,
+  "original_stage_remaining_preserved": 6,
+  "new_shared_claim_created": false,
+  "no_service_or_ModelClient_constructed": true
+}

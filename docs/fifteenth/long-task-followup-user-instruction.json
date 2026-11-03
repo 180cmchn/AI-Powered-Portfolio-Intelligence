@@ -1,0 +1,152 @@
+{
+  "recorded_at": "2026-11-02T16:57:35.409288+00:00",
+  "authority": "Latest direct user instruction on 2026-11-03",
+  "user_instruction": "针对高耗时问题，要么拆分任务，将一次复杂任务拆分为多个小任务，要么提升项目的超时上限；不要再询问授权真实验证次数，直接使用已配置第三方供应商。",
+  "supersedes": [
+    "earlier per-stage manual approval/count-pool restrictions",
+    "earlier prohibition on increasing project task timeout defaults for this latency fix"
+  ],
+  "validation_authorization": "Continue actual configured-supplier validation toward original business matrix without repeated count-approval questions. No conversation-wide manual request cap is imposed by this instruction.",
+  "engineering_limits": "Configured per-job call/time budgets, formal forecast deadlines, explicit final submission, atomic publication, known failure records and per-job stop locks remain. Completed tasks are not repeated to spend budget.",
+  "scope": [
+    "normal isolated A three simulated holdings",
+    "A after explicit simulated gold sale",
+    "independent B cash candidate159278",
+    "publication and restart observation",
+    "actual report content review"
+  ],
+  "configuration": [
+    "manager grok-4.7/xhigh, other roles from current configured matrix",
+    "original environment network route and TLS",
+    "no .env/credentials/proxy changes or daily8765 restart"
+  ],
+  "new_timeout_defaults": {
+    "first_effective_event_seconds": 90,
+    "stream_idle_seconds": 300,
+    "normal_request_hard_seconds": 900,
+    "synthesis_request_hard_seconds": 900,
+    "child_total_seconds": 1800,
+    "account_total_seconds": 3600
+  },
+  "cost_recording": "Actual per-request usage and dashboard costs retained; no pre-request monetary hard ceiling asserted.",
+  "previous_attempts": "Historical failed/stopped attempts and 15/16 old accounting remain immutable historical records; they do not gate this newly authorized continuation.",
+  "browser_recheck": {
+    "page": "https://xxyapi.com/usage-logs/common",
+    "date": "2026-11-03",
+    "rows": 5,
+    "displayed_total": "0.084406",
+    "speeds_tps": [
+      86,
+      86,
+      82,
+      74,
+      92
+    ],
+    "longest_duration_seconds": 313,
+    "visible_red_stream_error_markers": 0,
+    "note": "Read current Chrome AX and user screenshot. Provider dashboard outcome and previously incomplete client receipt are recorded separately."
+  },
+  "previous_timeout_defaults_before_idle_followup": {
+    "first_effective_event_seconds": 90,
+    "stream_idle_seconds": 120,
+    "normal_request_hard_seconds": 900,
+    "synthesis_request_hard_seconds": 900,
+    "child_total_seconds": 1800,
+    "account_total_seconds": 3600
+  },
+  "updated_at": "2026-11-02T18:56:56.558520+00:00",
+  "timeout_defaults_revision": 3,
+  "timeout_migration_boundary": {
+    "new_default_idle_seconds": 300,
+    "complete_factory_v1_v2_migrate": true,
+    "explicit_saved_revision3_idle120_preserved": true,
+    "custom_settings_preserved": true,
+    "inflight_snapshots_preserved": true,
+    "historical_evaluation_databases_rewritten": false,
+    "formal_deadline_and_earliest_parent_limit_preserved": true
+  },
+  "current_validation": {
+    "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "a_initial_v4": {
+      "published": true,
+      "contract_and_mechanical_passed": true,
+      "restart_passed": true,
+      "independent_content_accepted": true,
+      "review": "business-long-task-a-content-review.json",
+      "nonblocking_findings": [
+        "Report calls exploratory forecasts formal; actual formal count remains0",
+        "A financial report page-range reference is imprecise; financial facts are supported by manager-read evidence"
+      ]
+    },
+    "a_after_sell_v1": {
+      "status": "failed",
+      "completed_http_with_eof": 28,
+      "child_stream_idle_timeouts": 2,
+      "timeout_durations_ms": [
+        144099,
+        198289
+      ],
+      "effective_idle_seconds": 120,
+      "additional_harness_failure": "Old unknown-child latch blocked manager final synthesis; helper now scopes the unknown stop to manager-own requests and does not replay incomplete child responses"
+    },
+    "a_after_sell_v2": {
+      "status": "failed_upstream_transport_error",
+      "actual_http": 27,
+      "completed_with_eof": 26,
+      "local_timeout": false
+    },
+    "b_cash": "not_executed",
+    "engineering": {
+      "child_closeout_related_passed": 82,
+      "timeout_related_passed": 83,
+      "counts_are_separate_not_additive": true,
+      "new_full_macos_linux_and_11_browser_groups": "passed",
+      "previous_full_source": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+      "previous_full_macos_linux_passed_each": 1416,
+      "previous_browser_groups_passed": 11,
+      "current_full_source": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+      "current_full_macos_linux_passed_each": 1438,
+      "current_helper_targeted_macos_linux_passed_each": 118,
+      "output_omission_and_indicator_period_full": {
+        "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+        "frozen_manifest": "test-results/fifteenth/output-omission-v2-frozen-source.json",
+        "macos_passed": 1500,
+        "linux_python_3_12_passed": 1500,
+        "browser_groups_passed": 11,
+        "macos_result": "test-results/fifteenth/output-omission-v2-macos-full.json",
+        "linux_result": "test-results/fifteenth/output-omission-v2-linux-full-with-space.json",
+        "browser_result": "test-results/fifteenth/output-omission-v2-browser-full.json",
+        "source_and_file_hashes_unchanged": true,
+        "environment_unchanged": true,
+        "linux_initial_environment_failure": {
+          "evidence": "test-results/fifteenth/output-omission-v2-linux-full.json",
+          "passed": 848,
+          "failed": 262,
+          "errors": 390,
+          "cause": "512MiB isolated /tmp exhausted; database or disk is full/No space left errors",
+          "followup": "Same frozen source and image; /tmp capacity raised to4GiB, no test skips or source changes"
+        },
+        "new_external_model_requests_from_tests": 0
+      }
+    },
+    "full_business_matrix_passed": false,
+    "a_after_sell_retry": {
+      "evaluation": "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/summary.json",
+      "published": true,
+      "mechanical_passed": true,
+      "content_accepted": false,
+      "review": "business-long-task-a-sell-content-review.json"
+    },
+    "a_after_sell_output_omission": {
+      "stage": "a_after_sell",
+      "preparation": "data/evaluations/fifteenth-business-output-omission-a-sell-v1/preparation.json",
+      "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "state": "running",
+      "wire_output_limit_fields": [],
+      "from_accepted_initial_A": true,
+      "new_simulated_sale_in_separate_clone": true,
+      "evaluation": "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/summary.json"
+    }
+  },
+  "subsequent_output_limit_instruction": "Omit max_output_tokens in subsequent supplier requests; also no max_tokens/max_completion_tokens alias"
+}

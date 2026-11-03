@@ -1,0 +1,262 @@
+{
+  "kind": "historical_three_security_final_preparation",
+  "input_organization": "fifteenth-exact-calculation-metadata-v1",
+  "source_sha256": "021619ebab1855f407e8ffd2beb52de671fd5a655129654f1b95a1c5a836142b",
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "package_sha256": "506f793a6bc2c25ec2e1cbd56dce798820bda36a55d7c9ebcbc34e1ccfcd457e",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "package_kind": "real_historical_visible_evidence",
+  "historical_version": 4,
+  "data_as_of": "2026-10-30T15:34:06+08:00",
+  "before_input_chars": 64356,
+  "input_chars": 42584,
+  "before_components": {
+    "kind": 34,
+    "historical_task_id": 34,
+    "historical_checkpoint_at": 34,
+    "data_as_of": 27,
+    "input_version": 1,
+    "account": 434,
+    "metrics": 4031,
+    "reports": 10675,
+    "materials": 10771,
+    "open_questions": 742,
+    "unresolved_tasks": 551,
+    "boundary": 331,
+    "calculations": 36329,
+    "source_access_note": 111
+  },
+  "components": {
+    "kind": 34,
+    "historical_task_id": 34,
+    "historical_checkpoint_at": 34,
+    "data_as_of": 27,
+    "input_version": 1,
+    "account": 434,
+    "metrics": 4031,
+    "reports": 10675,
+    "materials": 10771,
+    "open_questions": 742,
+    "unresolved_tasks": 551,
+    "boundary": 331,
+    "calculations": 13229,
+    "source_access_note": 111,
+    "calculation_contexts": 1013,
+    "input_organization": 41,
+    "retrieval_boundary": 200
+  },
+  "manager_prompt_chars": 4071,
+  "manager_prompt_sha256": "32ddc797668b30449336648791be23d6f51f87dfc7de38cee2e37c93271d060e",
+  "production_final_schema_chars": 3688,
+  "production_final_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+  "full_reports_count": 2,
+  "full_reports_unchanged": true,
+  "reports": [
+    {
+      "report_id": "cf6d2740d60643df8baa8f9f664a0d42",
+      "sha256": "4f6fe9e254b4f1def2aed85731c6ec1e342f431847568092b32a1bbd82867eae"
+    },
+    {
+      "report_id": "aa492bd0b37d47d78f961680f29a2b52",
+      "sha256": "f65bc302f841c783dfe28f9c5392f3fe043d419c17884ae982a1b74d8021be89"
+    }
+  ],
+  "calculation_count": 21,
+  "all_calculation_summaries_lossless": true,
+  "all_calculation_arguments_unchanged": true,
+  "material_index_count": 40,
+  "source_indexes_unchanged": true,
+  "account_metrics_gaps_unchanged": true,
+  "requested_configuration": {
+    "model_protocol": "responses",
+    "model_base_url": "https://api.xxyapi.com/v1",
+    "model_name": "grok-4.7",
+    "model_native_search": true,
+    "provider_id": "legacy-09a15ec53c70",
+    "provider_revision": 1,
+    "credential_revision": 1,
+    "role_id": "manager",
+    "role_version": 4,
+    "prompt_version": 3,
+    "tool_version": 1,
+    "team_id": "a2d188863b1a7767d074b277563842226f03ba29df24663d262a896c8e86fb4a",
+    "account_id": null,
+    "model_allow_no_key": false,
+    "model_responses_stream": true,
+    "reasoning_effort": "xhigh",
+    "fingerprint": "00d6ec14749da979e4fcd238d9127d9c0ab5b81e6f505d9a7a5120386ed0aa6c"
+  },
+  "isolated_overrides": {
+    "manager_reasoning_effort": "xhigh",
+    "max_output_tokens": 6000
+  },
+  "baseline_execution_policy": {
+    "model_protocol": "responses",
+    "model_responses_stream": true,
+    "model_native_search": true,
+    "model_first_event_timeout_seconds": 90,
+    "model_stream_idle_timeout_seconds": 120,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200,
+    "agent_timeout_seconds": 600,
+    "max_context_chars": null,
+    "max_tool_result_chars": null,
+    "max_output_tokens": 4000,
+    "chat_use_max_completion_tokens": null,
+    "reasoning": null,
+    "synthesis_max_calls": 4,
+    "manager_final_reserved_calls": null
+  },
+  "execution_policy": {
+    "model_protocol": "responses",
+    "model_responses_stream": true,
+    "model_native_search": true,
+    "model_first_event_timeout_seconds": 90,
+    "model_stream_idle_timeout_seconds": 120,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200,
+    "agent_timeout_seconds": 600,
+    "max_context_chars": null,
+    "max_tool_result_chars": null,
+    "max_output_tokens": 6000,
+    "chat_use_max_completion_tokens": null,
+    "reasoning": null,
+    "synthesis_max_calls": 4,
+    "manager_final_reserved_calls": null
+  },
+  "role_matrix": [
+    {
+      "role_id": "manager",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "xhigh",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    },
+    {
+      "role_id": "filing_researcher",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.6",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "high",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    },
+    {
+      "role_id": "market_researcher",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "medium",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    },
+    {
+      "role_id": "industry_researcher",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "medium",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    },
+    {
+      "role_id": "etf_researcher",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "medium",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    },
+    {
+      "role_id": "portfolio_researcher",
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "validation": "discovered",
+        "discovered_revision": 1,
+        "reasoning_effort": "medium",
+        "binding_source": "global_default",
+        "effort_source": "global_default",
+        "provider_revision": 1,
+        "credential_revision": 1,
+        "provider_display_name": "供应商 1（迁移）",
+        "protocol": "responses"
+      },
+      "config_error": null
+    }
+  ],
+  "request_policy": {
+    "maximum_http_attempts": 2,
+    "first_submission": 1,
+    "contract_correction_maximum": 1,
+    "automatic_http_retries": 0,
+    "new_search_or_children": false,
+    "new_authorization_required": true,
+    "max_output_tokens": 6000,
+    "analysis_timeout_seconds": 1200,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "route": "existing environment; TLS verification unchanged",
+    "stop": [
+      "first accepted explicit submission",
+      "unknown-outcome transport failure",
+      "budget/deadline exhaustion",
+      "second invalid submission",
+      "source/config/evidence changes"
+    ],
+    "spend_cap_supported": false,
+    "fee_amount": null,
+    "fee_note": "No verified endpoint currency/spend ceiling; request/output/time caps do not guarantee a monetary maximum."
+  },
+  "paid_requests": 0,
+  "content_assessment": "not_evaluated",
+  "account_report_obtained": false
+}

@@ -1,0 +1,171 @@
+{
+  "kind": "historical_aggregate_xhigh_v11_evidence",
+  "recorded_at": "2026-11-02T20:58:24.435026+08:00",
+  "source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "request_inputs": [
+    {
+      "payload_sha256": "9306d347da4b374584f7b154da157d7bf0fddae27478aaf793fbfce7352efa42",
+      "payload_bytes": 82225,
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "max_output_tokens_sent": 6000,
+      "output_limit_matches": true,
+      "time_context": {
+        "execution_time": "2026-11-02T20:50:45.012737+08:00",
+        "data_as_of": "2026-10-30T15:34:06+08:00",
+        "historical_replay": true,
+        "decision_as_of": "2026-11-01T23:14:23.530972+08:00",
+        "decision_time_basis": "historical_checkpoint_at",
+        "instruction": "execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。"
+      },
+      "task_instruction_sha256": "555f3fbd0721352db29996b148da12dee5c13ab7550159ae8c9357012d2ebfc3",
+      "task_instruction_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "started_at": "2026-11-02T20:50:44.967716+08:00",
+  "completed_at": "2026-11-02T20:54:45.264720+08:00",
+  "request": {
+    "attempt": 1,
+    "model": "grok-4.7",
+    "protocol": "responses",
+    "reasoning_effort_sent": "xhigh",
+    "reported_reasoning_effort": "xhigh",
+    "requested_max_output_tokens": 6000,
+    "status_code": 200,
+    "response_id": "3d59df85-e76d-9f2b-91f3-bf46c0008af3",
+    "request_id": null,
+    "duration_ms": 240197.54,
+    "started_at": "2026-11-02T12:50:45.023359+00:00",
+    "finished_at": "2026-11-02T12:54:45.219904+00:00",
+    "response_status": "completed",
+    "stream_terminal": "response.completed",
+    "http_body_complete": true,
+    "stream_close_reason": "http_eof",
+    "stream_first_byte_ms": 4067.0,
+    "stream_first_effective_event_ms": 4186.56,
+    "stream_first_text_delta_ms": 190310.62,
+    "stream_first_tool_event_ms": 239785.44,
+    "stream_last_progress_ms": 240196.34,
+    "stream_last_byte_ms": 240195.43,
+    "stream_max_idle_ms": 20266.43,
+    "stream_tail_drain_ms": 1.09,
+    "cancelled_by": null,
+    "error_code": null,
+    "usage": {
+      "input_tokens": 26819,
+      "input_tokens_details": {
+        "cached_tokens": 1152
+      },
+      "output_tokens": 19846,
+      "output_tokens_details": {
+        "reasoning_tokens": 13189
+      },
+      "total_tokens": 46665,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0,
+      "cost_in_usd_ticks": 581352400,
+      "context_details": {
+        "input_tokens": 26819,
+        "output_tokens": 19854
+      }
+    },
+    "tool_choice_satisfied": true,
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 3,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 258,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 3,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 3361,
+      "response.function_call_arguments.delta": 1,
+      "response.function_call_arguments.done": 1,
+      "response.output_text.done": 1,
+      "response.content_part.done": 1,
+      "response.completed": 1
+    },
+    "requested_tool_choice": {
+      "type": "function",
+      "name": "finish_analysis"
+    },
+    "timeout_policy": {
+      "policy_version": 2,
+      "first_event_seconds": 90.0,
+      "stream_idle_seconds": 120.0,
+      "request_hard_seconds": 360.0,
+      "connect_seconds": 15.0,
+      "pool_seconds": 15.0,
+      "write_seconds": 30.0,
+      "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+    },
+    "effective_limit": "request_hard_timeout",
+    "deadline_remaining_ms": {
+      "analysis_budget_exhausted": 1199982.41,
+      "request_hard_timeout": 360000.0
+    }
+  },
+  "actual_result": {
+    "contract_accepted": true,
+    "published": true,
+    "submission_outcome": "first_attempt",
+    "report_chars": 4694,
+    "report_sha256": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+    "private_report": "data/evaluations/fifteenth-historical-xhigh-v11/execution/historical-account-report.md",
+    "persisted_content_assessment": "not_evaluated",
+    "independent_review": "xhigh-v11-content-review.json",
+    "independent_review_status": "qualified",
+    "model_body_modified_by_developer": false,
+    "independent_content_accepted": false
+  },
+  "shared_attempt_budget": {
+    "maximum": 10,
+    "reserved_attempts": 8,
+    "stages": {
+      "final": {
+        "maximum": 10,
+        "reserved_attempts": 8
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "remaining": 2,
+  "normal_business_matrix_executed": false,
+  "formal_predictions": 0,
+  "source_unchanged_during_request": true,
+  "environment_unchanged": true,
+  "supplier_reconciliation": {
+    "method": "Read-only native browser usage-log row; matched time/model/input/output/cache, no response-ID-level invoice linkage",
+    "row_time": "2026-11-02 20:54:44 Asia/Shanghai",
+    "model": "grok-4.7",
+    "input_tokens": 26819,
+    "output_tokens": 19846,
+    "cached_tokens": 1152,
+    "amount_usd": "0.025648",
+    "first_token_display": "2.7s",
+    "duration_display": "3m 58s",
+    "stream_error_marker_observed": false,
+    "ten_attempt_cohort_known_total_usd": "0.159580",
+    "renewed_xhigh_series_known_total_usd": "0.110092",
+    "cost_ticks_not_converted": true
+  },
+  "limitations": [
+    "Full provider completed/EOF and publication do not imply independent content acceptance.",
+    "Gold counter-factor sentence reverses cost/close comparison direction; original visible text is retained.",
+    "Five server-generated reference URLs absorbed Chinese punctuation/prose; local parser defect under repair, not evidence that original model URLs were absent.",
+    "Old client_gone causal attribution remains unproven.",
+    "Production normal-business matrix, post-publish full worker restart and mature direction scoring are not covered by this final-only historical run."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "kind": "final_followup_regression_after_real_content_findings",
+  "recorded_at": "2026-11-02T21:32:16.505574+08:00",
+  "source_sha256": "75b0a784660e321c1deea29e0f63cef39d64c3751d582db60f2daa7fd33a8523",
+  "macos_python": {
+    "passed": 1311,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 129.14,
+    "evidence": "test-results/fifteenth/v12-macos-post-guard-full.json"
+  },
+  "linux_python_3_12": {
+    "passed": 1311,
+    "failed": 0,
+    "warnings": 1,
+    "seconds": 104.53,
+    "evidence": "test-results/fifteenth/v12-final-linux-full.json"
+  },
+  "browser": {
+    "passed_groups": 11,
+    "total_groups": 11,
+    "evidence": "test-results/fifteenth/v12-macos-full.json",
+    "tested_source_sha256": "81e45dd5e9438aa33736450a437b8cbf8b560da9df267fea615aacf22832e95b",
+    "production_app_and_browser_file_hashes_identical": true,
+    "identity_proof": "test-results/fifteenth/v12-macos-post-guard-full.json",
+    "later_differences": [
+      "scripts/verify_fifteenth_business.py",
+      "tests/test_fifteenth_business.py",
+      "tests/test_eleventh_timeouts.py"
+    ],
+    "rerun_without_change": false
+  },
+  "targeted": {
+    "references": {
+      "new_cases": 17,
+      "related_passed": 73,
+      "red_light": "test-results/fifteenth/reference-boundaries-before.txt",
+      "green": "test-results/fifteenth/reference-boundaries-targeted.txt"
+    },
+    "child_deadline": {
+      "related_cases_passed_each_platform": 41,
+      "linux_independent_repeats": 10,
+      "evidence": "test-results/fifteenth/child-timeout-clock-cause-and-verification.json"
+    },
+    "business_guard": {
+      "total_cases_passed": 31,
+      "unknown_outcome_boundary_cases": 11,
+      "failed_controls_before_fix": [
+        "test-results/fifteenth/business-cancel-stop-before.txt",
+        "test-results/fifteenth/business-unknown-stop-before.txt"
+      ],
+      "green": "test-results/fifteenth/business-unknown-stop-after.txt"
+    }
+  },
+  "retained_full_failure": {
+    "source_sha256": "81e45dd5e9438aa33736450a437b8cbf8b560da9df267fea615aacf22832e95b",
+    "linux_passed": 1299,
+    "linux_failed": 1,
+    "evidence": "test-results/fifteenth/v12-linux-full.json",
+    "cause_and_fix": "child-timeout-deterministic-followup.json"
+  },
+  "model_http_from_tests": 0,
+  "normal_business_real_execution": false,
+  "remote_ci_green": false,
+  "remote_ci_evidence": "final-remote-ci.json",
+  "isolated_direct_route_followup": {
+    "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+    "changes_from_full_tested_source": [
+      "scripts/verify_fifteenth_aggregate.py",
+      "tests/test_fifteenth_context.py"
+    ],
+    "production_app_unchanged": true,
+    "macos_passed": 91,
+    "linux_python_3_12_passed": 91,
+    "macos_evidence": "test-results/fifteenth/direct-route-business-offline-tests.json",
+    "linux_evidence": "test-results/fifteenth/v13-direct-linux-targeted.json",
+    "external_model_http_from_tests": 0
+  }
+}

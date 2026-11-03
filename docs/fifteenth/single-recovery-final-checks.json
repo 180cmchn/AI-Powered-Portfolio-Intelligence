@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-02T16:35:31.911583+00:00",
+  "source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+  "frozen_files_unchanged": 210,
+  "changed_files": [],
+  "json_documents_valid": 112,
+  "invalid_json": [],
+  "markdown_links_checked": 178,
+  "missing_links": [],
+  "git_diff_check_passed": true,
+  "daily_files_unchanged": {
+    "data/live.sqlite3": true,
+    "data/live.sqlite3-wal": true
+  },
+  "environment_stamp_unchanged": true,
+  "historical_report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+  "listeners": {
+    "8765": "",
+    "18765": ""
+  },
+  "parent_identity_unchanged": true,
+  "execution_source_unchanged": true,
+  "current_source_change_is_postexecution_helper_and_test_only": true,
+  "claim_and_stop_preserved": true,
+  "new_recovery_model_requests": 0,
+  "total_A_model_requests": 15,
+  "total_A_cap": 16,
+  "remaining_numeric_allowance": 1,
+  "current_further_authorization": false,
+  "checkpoint_expired": true,
+  "normal_A_published": false,
+  "whole_goal_completed": false,
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "pushed": false,
+  "remote_ci_evidence": "single-recovery-remote-ci.json",
+  "later_readonly_transport_review": {
+    "checked_at": "2026-11-02T16:42:51.351824+00:00",
+    "evidence": "fresh-a-local-lifecycle-route-review.json",
+    "source_and_tests_unchanged": true,
+    "new_model_HTTP": 0,
+    "json_valid": true,
+    "git_diff_check_passed": true,
+    "still_requires_new_valid_stage_authorization": true
+  }
+}

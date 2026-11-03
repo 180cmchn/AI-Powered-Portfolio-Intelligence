@@ -1,0 +1,235 @@
+{
+  "kind": "pre_send_visible_coverage_review",
+  "prepared_source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "note": "Coverage review by development assistant; no model output yet and no investment-content acceptance implied. First nine meanings are matched to exact account operands, not invented issuer financial provenance.",
+  "historical_version": 4,
+  "data_as_of": "2026-10-30T15:34:06+08:00",
+  "securities": [
+    "SH:518880",
+    "SZ:002354",
+    "SZ:159599"
+  ],
+  "visible_child_reports": [
+    {
+      "id": "cf6d2740d60643df8baa8f9f664a0d42",
+      "role": "filing_researcher",
+      "full_object_visible": true,
+      "body_reading_limit": "delegated historical report, not newly read original PDF"
+    },
+    {
+      "id": "aa492bd0b37d47d78f961680f29a2b52",
+      "role": "etf_researcher",
+      "full_object_visible": true,
+      "body_reading_limit": "delegated historical report, not newly read original PDF"
+    }
+  ],
+  "calculation_review": [
+    {
+      "index": 0,
+      "calculation_id": "calculation-9b85858782dc4fd894dc6e249c444c9a",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "现金/含现金总资产",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "86484.90",
+          "96764.40"
+        ]
+      },
+      "result": "89.37677492962287783523692598",
+      "unit": "percent"
+    },
+    {
+      "index": 1,
+      "calculation_id": "calculation-98247ac3a8614511baf1de484b42538a",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "证券市值/含现金总资产",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "10279.50",
+          "96764.40"
+        ]
+      },
+      "result": "10.62322507037712216476307402",
+      "unit": "percent"
+    },
+    {
+      "index": 2,
+      "calculation_id": "calculation-de98f1d7907340a4851c1fb1634b26bf",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "002354市值/含现金总资产",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "7520.00",
+          "96764.40"
+        ]
+      },
+      "result": "7.771453137724204356147508795",
+      "unit": "percent"
+    },
+    {
+      "index": 3,
+      "calculation_id": "calculation-92415c5482ae455e9c10c318bfcf4b01",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "159599市值/含现金总资产",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "1948.00",
+          "96764.40"
+        ]
+      },
+      "result": "2.013137062804089107150977012",
+      "unit": "percent"
+    },
+    {
+      "index": 4,
+      "calculation_id": "calculation-a0658e7bd99946b29c7d57f374d25065",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "518880市值/含现金总资产",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "811.50",
+          "96764.40"
+        ]
+      },
+      "result": "0.8386348698488287014645882163",
+      "unit": "percent"
+    },
+    {
+      "index": 5,
+      "calculation_id": "calculation-02c84c730095415a8aafc3ea68a2e987",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "518880未实现盈亏/含已记买费成本",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "-193.50",
+          "1005.00"
+        ]
+      },
+      "result": "-19.25373134328358208955223881",
+      "unit": "percent"
+    },
+    {
+      "index": 6,
+      "calculation_id": "calculation-acf76b8692384f6693664e36befd53f1",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "002354未实现盈亏/含已记买费成本",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "-2485.10",
+          "10005.10"
+        ]
+      },
+      "result": "-24.83833245045027036211532119",
+      "unit": "percent"
+    },
+    {
+      "index": 7,
+      "calculation_id": "calculation-01e3e2df9db247319e4b25f3876e3e5d",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "159599未实现盈亏/含已记买费成本",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "-557.00",
+          "2505.00"
+        ]
+      },
+      "result": "-22.23552894211576846307385230",
+      "unit": "percent"
+    },
+    {
+      "index": 8,
+      "calculation_id": "calculation-d05d24688b2f49f992e417add8b8aeee",
+      "attribution": "matched_to_frozen_account_operands",
+      "interpretation": "已记费用/剩余精确成本",
+      "arguments": {
+        "operation": "percent",
+        "values": [
+          "15.10",
+          "13515.10"
+        ]
+      },
+      "result": "0.1117268832639048175744167635",
+      "unit": "percent"
+    },
+    {
+      "index": 9,
+      "calculation_id": "calculation-47f52e81105544af8a456df67b5caeec",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 10,
+      "calculation_id": "calculation-eb60b4fef5e246cebb80c2c0333b2099",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 11,
+      "calculation_id": "calculation-75a53348027c4b4cb463e1988329a1c6",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 12,
+      "calculation_id": "calculation-70b55d606d95405c93323f981409a874",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 13,
+      "calculation_id": "calculation-c48f2cf2713b40ad96b692340d25f220",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 14,
+      "calculation_id": "calculation-481d4e33fbf64865aa4e993199f45890",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 15,
+      "calculation_id": "calculation-870b5790106343af8b85eda42d7534de",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 16,
+      "calculation_id": "calculation-80ee432ccd12493aa4e9a9bfe9554000",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 17,
+      "calculation_id": "calculation-27b3a8c6d14c46a9a73aa66a21667b5f",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 18,
+      "calculation_id": "calculation-61a71233d9b54af68f79f41857e32745",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 19,
+      "calculation_id": "calculation-f8d9a82a436541d7ac22a1f2782194cb",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    },
+    {
+      "index": 20,
+      "calculation_id": "calculation-efcd7d069e2d4aa6a81fa83e3d638271",
+      "attribution": "arithmetic_only_security_period_source_unknown"
+    }
+  ],
+  "material_indexes": 40,
+  "original_documents_newly_read": 0,
+  "missing_market_topic": "20/60 trading-day relative trend, benchmark-relative performance and volume anomaly not delivered",
+  "decision_questions": [
+    "现金、证券内部权重和含现金总资产分母",
+    "三证券分别的倾向/动作/合理替代方案",
+    "已取得支持与反向因素",
+    "改变观点的条件",
+    "缺口具体限制哪项判断"
+  ],
+  "content_assessment": "not_evaluated"
+}

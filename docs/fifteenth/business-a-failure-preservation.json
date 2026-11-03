@@ -1,0 +1,182 @@
+{
+  "kind": "business_a_initial_failure_preservation_readonly_audit",
+  "checked_at": "2026-11-02T22:33:35.909387+08:00",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "execution": "data/evaluations/fifteenth-business-a-initial-v1/execution",
+  "execution_completed_at": "2026-11-02T22:23:43.995182+08:00",
+  "published": false,
+  "contract_accepted": false,
+  "checks": {
+    "ledger_matches_committed_pre_research_snapshot": true,
+    "cash_quantity_cost_fees_preserved": true,
+    "no_report_suggestion_or_forecast_publication": true,
+    "failed_job_preserved": true,
+    "checkpoint_and_all_named_materials_preserved": true,
+    "one_unknown_request_then_stop": true,
+    "first_nine_known_completed_eof": true,
+    "unknown_stop_latch_retained": true,
+    "no_reservations_after_stop": true,
+    "two_readonly_reopens_identical": true,
+    "main_database_hash_unchanged": true,
+    "sqlite_quick_check_ok": true,
+    "source_still_frozen_at_a_failure_audit": true,
+    "environment_stamp_unchanged": true
+  },
+  "all_preservation_checks_passed": true,
+  "ledger": {
+    "cash": "86484.90",
+    "input_version": 4,
+    "positions": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "total_cost": "1005.00",
+        "cost_price": null,
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "100",
+            "sellable_on": "2026-11-02",
+            "source": "trade",
+            "traded_at": "2026-11-02T22:13:53.788971+08:00"
+          }
+        ]
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "total_cost": "10005.10",
+        "cost_price": null,
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-11-03",
+            "source": "trade",
+            "traded_at": "2026-11-02T22:13:53.814819+08:00"
+          }
+        ]
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "total_cost": "2505.00",
+        "cost_price": null,
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-11-03",
+            "source": "trade",
+            "traded_at": "2026-11-02T22:13:53.839442+08:00"
+          }
+        ]
+      }
+    ],
+    "total_fees": "15.10",
+    "entry_count": 4,
+    "operation_count": 3,
+    "prepared_facts_sha256": "1ab153b73235a591716363840d00ee87340a75cc738d904b835d11291bf08dfc",
+    "after_failure_facts_sha256": "1ab153b73235a591716363840d00ee87340a75cc738d904b835d11291bf08dfc"
+  },
+  "delivery": {
+    "rows_for_failed_job": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 1
+    },
+    "accepted_submission_count": 0,
+    "per_item_application_receipt_present": false,
+    "forecast_batch_kind": "exploratory",
+    "forecast_expected_targets": 9,
+    "forecast_sample_states": {
+      "failed": 9
+    },
+    "note": "One exploratory batch exists from normal task scheduling; it produced zero forecasts. No final submission payload exists, so absent receipts are not a successful empty delivery."
+  },
+  "saved_research": {
+    "material_count": 54,
+    "checkpoint_material_ids": 51,
+    "checkpoint_calculations": 22,
+    "completed_child_reports": 0,
+    "material_deliveries": 94,
+    "report_deliveries": 0,
+    "checkpoint_created_at": "2026-11-02T22:23:43.746431+08:00",
+    "checkpoint_resume_count": 0,
+    "checkpoint_recovery_state": "synthesis_ready",
+    "partial_research": true,
+    "checkpoint_body_sha256": "67aa523eb7f2d4076e799f758dbe773bd7c6f6471aa2f147ea52e08efa7f2bca",
+    "materials_table_sha256": "3372e3ad17f078d33515a9e40cbd77cbc926bd9709691bf80b3e8fafa56577f8",
+    "boundary": "Only completed visible calculations/material receipts are saved; the final timed-out HTTP stream is not a complete output and was not reconstructed."
+  },
+  "budget": {
+    "maximum": 16,
+    "reserved_attempts": 10,
+    "remaining_numeric_allowance": 6,
+    "stop_latch": [
+      {
+        "reason": "accepted_or_sent_request_outcome_unknown",
+        "at": "2026-11-02T22:23:43.693231+08:00"
+      }
+    ],
+    "last_reservation_at": "2026-11-02T22:18:43.685816+08:00",
+    "automatic_continuation_permitted": false,
+    "new_explicit_recovery_authorization_required": true
+  },
+  "transport": {
+    "completed_eof_requests": 9,
+    "unknown_terminal_requests": 1,
+    "last_request": {
+      "status_code": 200,
+      "request_accepted": true,
+      "duration_ms": 300002.89,
+      "stream_last_progress_ms": 299993.09,
+      "stream_last_byte_ms": 299993.01,
+      "stream_terminal": null,
+      "http_body_complete": false,
+      "usage": null,
+      "error_code": "request_hard_timeout",
+      "retry_suppressed": "upstream_execution_may_continue"
+    }
+  },
+  "process_check": {
+    "method": "Elevated readonly ps of saved child PIDs and lsof listening18765; both produced no rows and returned1. No service or environment introspection performed.",
+    "saved_child_pids": [
+      67666,
+      67669
+    ],
+    "saved_child_processes_found": 0,
+    "listeners_18765_found": 0,
+    "original_execution_reported_stopped": true
+  },
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "independent_reopens": 2,
+    "Store_initialized": false,
+    "ledger_projection": "Production LedgerStore with supplied readonly connections and minimal SELECT-only account projection",
+    "recovery_consumed": false,
+    "model_requests": 0,
+    "services_started": 0
+  },
+  "recovery_design": {
+    "production_endpoint": "POST /api/jobs/{failed_job_id}/retry",
+    "receipt": "New child job retains parent_job_id and operation_id idempotency; normal Service reconstructs context and checks checkpoint.",
+    "current_saved_candidate": "partial synthesis_ready; 22 calculations, no completed child reports; guard and freshness must be rechecked at actual retry",
+    "freshness_limit_seconds": 1800,
+    "expires_no_later_than": "2026-11-02T22:53:43.746431+08:00",
+    "required_fail_closed_boundary": "Before any model HTTP, actual session.phase must be synthesis, native_search false, actual pinned checkpoint must reference failed job and synthesis_only, and real Service synthesis_resuming event must agree.",
+    "old_artifact_protection": "Keep failed execution and its stopped16 ledger immutable; explicit recovery may clone this DB into a new isolated directory with an independent2 ledger bound to the parent10, never clear its latch.",
+    "maximum_after_new_two": 12,
+    "original_stage_maximum": 16,
+    "remaining_after_two": 4,
+    "authorized_now": false
+  },
+  "limitations": [
+    "This was a failed normal business attempt, not a published report or content pass.",
+    "Numeric six remaining does not override the unknown-result stop latch or authorize a retry.",
+    "Current saved recovery metadata is not a guarantee that full live Service guard will still admit synthesis-only after inputs or time change.",
+    "Readonly reopen is not a full application restart test."
+  ]
+}

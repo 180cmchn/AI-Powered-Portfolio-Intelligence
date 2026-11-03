@@ -1,0 +1,167 @@
+{
+  "kind": "fresh_A_supplier_readonly_reconciliation",
+  "recorded_at": "2026-11-02T16:11:21.513811+00:00",
+  "method": "Native Chrome accessibility usage-log rows plus screenshot; Nov3 date filter; no credentials or private report exported.",
+  "rows": [
+    {
+      "attempt": 1,
+      "response_id": "202444ee-6cfe-903d-8f8a-c3fa5197c80f",
+      "dashboard_time": "2026-11-03 00:00:34",
+      "dashboard_input": 18097,
+      "dashboard_output": 1381,
+      "dashboard_cached": 1152,
+      "dashboard_fee_display_dollars": "0.006412",
+      "dashboard_first": "4.4s",
+      "dashboard_duration": "15.0s",
+      "api_usage": {
+        "input_tokens": 18097,
+        "input_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "output_tokens": 1381,
+        "output_tokens_details": {
+          "reasoning_tokens": 1128
+        },
+        "total_tokens": 19478,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 0,
+        "cost_in_usd_ticks": 145356800,
+        "context_details": {
+          "input_tokens": 18097,
+          "output_tokens": 1387
+        }
+      },
+      "api_usage_matches_dashboard": true,
+      "red_stream_error_marker_visible": false
+    },
+    {
+      "attempt": 2,
+      "response_id": "773e7c4f-8ff8-9cd4-8a0b-ab4964eb007f",
+      "dashboard_time": "2026-11-03 00:01:01",
+      "dashboard_input": 35841,
+      "dashboard_output": 1923,
+      "dashboard_cached": 1152,
+      "dashboard_fee_display_dollars": "0.012224",
+      "dashboard_first": "5.6s",
+      "dashboard_duration": "26.0s",
+      "api_usage": {
+        "input_tokens": 35841,
+        "input_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "output_tokens": 1923,
+        "output_tokens_details": {
+          "reasoning_tokens": 1516
+        },
+        "total_tokens": 37764,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 0,
+        "cost_in_usd_ticks": 277072800,
+        "context_details": {
+          "input_tokens": 35841,
+          "output_tokens": 1929
+        }
+      },
+      "api_usage_matches_dashboard": true,
+      "red_stream_error_marker_visible": false
+    },
+    {
+      "attempt": 3,
+      "response_id": "60fdfccb-13a4-935c-8c67-88dfd172d7d3",
+      "dashboard_time": "2026-11-03 00:01:26",
+      "dashboard_input": 53678,
+      "dashboard_output": 1960,
+      "dashboard_cached": 17536,
+      "dashboard_fee_display_dollars": "0.021422",
+      "dashboard_first": "6.4s",
+      "dashboard_duration": "24.0s",
+      "api_usage": {
+        "input_tokens": 53678,
+        "input_tokens_details": {
+          "cached_tokens": 17536
+        },
+        "output_tokens": 1960,
+        "output_tokens_details": {
+          "reasoning_tokens": 1689
+        },
+        "total_tokens": 55638,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 5,
+        "cost_in_usd_ticks": 565560800,
+        "server_side_tool_usage_details": {
+          "web_search_calls": 5,
+          "x_search_calls": 0,
+          "x_posts_fetched": 0,
+          "x_users_fetched": 0,
+          "code_interpreter_calls": 0,
+          "file_search_calls": 0,
+          "mcp_calls": 0,
+          "document_search_calls": 0,
+          "image_generation_calls": 0
+        },
+        "context_details": {
+          "input_tokens": 53678,
+          "output_tokens": 1964
+        }
+      },
+      "api_usage_matches_dashboard": true,
+      "red_stream_error_marker_visible": false
+    },
+    {
+      "attempt": 4,
+      "response_id": "6e08d005-7ac7-9587-a065-09aa3918e226",
+      "dashboard_time": "2026-11-03 00:01:40",
+      "dashboard_input": 24482,
+      "dashboard_output": 1197,
+      "dashboard_cached": 17792,
+      "dashboard_fee_display_dollars": "0.004418",
+      "dashboard_first": "4.5s",
+      "dashboard_duration": "14.0s",
+      "api_usage": {
+        "input_tokens": 24482,
+        "input_tokens_details": {
+          "cached_tokens": 17792
+        },
+        "output_tokens": 1197,
+        "output_tokens_details": {
+          "reasoning_tokens": 1110
+        },
+        "total_tokens": 25679,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 0,
+        "cost_in_usd_ticks": 100157200,
+        "context_details": {
+          "input_tokens": 24482,
+          "output_tokens": 1204
+        }
+      },
+      "api_usage_matches_dashboard": true,
+      "red_stream_error_marker_visible": false
+    },
+    {
+      "attempt": 5,
+      "response_id": "63bffd45-7713-90df-9b67-b7d9474d9893",
+      "dashboard_time": "2026-11-03 00:06:54",
+      "dashboard_input": 53107,
+      "dashboard_output": 26952,
+      "dashboard_cached": 1152,
+      "dashboard_fee_display_dollars": "0.039930",
+      "dashboard_first": "5.5s",
+      "dashboard_duration": "5m13s",
+      "api_usage": null,
+      "api_usage_matches_dashboard": null,
+      "red_stream_error_marker_visible": false
+    }
+  ],
+  "dashboard_total": "0.084406",
+  "previous_all_recorded_total": "0.413692",
+  "combined_all_recorded_total": "0.498098",
+  "original_A_total": "0.124446",
+  "combined_A_total": "0.208852",
+  "last_request_api_usage_remains_unknown": true,
+  "last_dashboard_time_after_client_failure_seconds": 23.188,
+  "interpretation": "First4 rows associate by time/model/input/output/cache. Last row associates by time/model/sequence; API did not receive usage, terminal or EOF. Dashboard completed later with no visible red stream error marker; it does not prove client received a usable report or identify the interrupted hop.",
+  "invoice_or_response_id_level_reconciliation": false,
+  "cost_ticks_converted": false,
+  "currency": "Dashboard dollar symbol; not an invoice/currency-code verification"
+}

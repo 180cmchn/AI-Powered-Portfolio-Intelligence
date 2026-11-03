@@ -1,0 +1,209 @@
+{
+  "kind": "xhigh_v10_isolated_publication_readonly_check",
+  "checked_at": "2026-11-02T20:21:34.069114+08:00",
+  "execution": "data/evaluations/fifteenth-historical-xhigh-v10/execution",
+  "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+  "run_completed_at": "2026-11-02T20:17:30.207389+08:00",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "independent_reopen_passes": 2,
+    "store_initialized": false,
+    "migrations_run": false,
+    "recovery_called": false,
+    "server_started": false,
+    "daily_database_opened": false,
+    "external_requests_sent": 0
+  },
+  "checks": {
+    "one_new_current_report": true,
+    "job_completed_once": true,
+    "report_hashes_match": true,
+    "job_and_analysis_result_identical": true,
+    "five_required_fields_only": true,
+    "receipt_counts_reconcile": true,
+    "no_structured_rows_for_new_job": true,
+    "old_reports_retained_with_only_current_to_stale_transition": true,
+    "account_facts_unchanged": true,
+    "protected_tables_unchanged": true,
+    "second_readonly_reopen_identical": true,
+    "database_files_unchanged_by_checks": true,
+    "historical_source_matches_frozen_preparation": true,
+    "frozen_source_unchanged": true
+  },
+  "all_checks_passed": true,
+  "sqlite_quick_check": {
+    "historical": [
+      "ok"
+    ],
+    "execution": [
+      "ok"
+    ]
+  },
+  "publication": {
+    "summary_published": true,
+    "contract_accepted": true,
+    "submission_outcome": "first_attempt",
+    "http_requests": 1,
+    "job_state": "completed",
+    "job_stage": "published",
+    "job_attempts": 1,
+    "delivery_status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "rows_for_job": {
+      "analyses": 1,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "account_current_report_count": 1,
+    "total_analysis_count_before": 1,
+    "total_analysis_count_after": 2,
+    "report_sha256": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+    "report_hash_sources_agree": {
+      "model_result": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "analysis_column": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "analysis_result": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "job_result": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "terminal_arguments": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "summary": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1"
+    },
+    "job_and_analysis_application_receipts_equal": true,
+    "actual_terminal_function_count": 1,
+    "actual_terminal_argument_fields": [
+      "completion",
+      "decision_summary",
+      "limitations",
+      "report",
+      "scope"
+    ],
+    "receipt_counts": {
+      "suggestions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "suggestion_actions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "forecasts": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "not_applied_or_waiting": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      }
+    },
+    "request_terminals": [
+      {
+        "status_code": 200,
+        "response_status": "completed",
+        "stream_terminal": "response.completed",
+        "http_body_complete": true,
+        "stream_close_reason": "http_eof",
+        "tool_choice_satisfied": true
+      }
+    ]
+  },
+  "old_reports": [
+    {
+      "previous_status": "current",
+      "current_status": "stale",
+      "changed_columns": [
+        "status"
+      ],
+      "identity_and_content_preserved": true,
+      "prior_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44",
+      "retained_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44"
+    }
+  ],
+  "protected_state": {
+    "recommendations": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identical": true
+    },
+    "forecasts": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identical": true
+    },
+    "forecast_batches": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89",
+      "after_sha256": "31fc47bf2cc61efc66733f395821a8d23af9b1eb2df23c1db48fb6e7709e3b89",
+      "identical": true
+    },
+    "ledger_entries": {
+      "before_count": 4,
+      "after_count": 4,
+      "before_sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d",
+      "after_sha256": "57477906e290a6acef9895c9a2e0ca6ec87e839a25e6f6febb1f448f3b82f91d",
+      "identical": true
+    },
+    "ledger_operations": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732",
+      "after_sha256": "415459854d236fd38a032e960e12f67f5660e6c04c7bfaa54bc2800c84374732",
+      "identical": true
+    },
+    "ledger_accounts": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4",
+      "after_sha256": "68ca403454f12bc912eacc9d005c1a3e6bd92ea1c5614ec6b3e0128567927aa4",
+      "identical": true
+    },
+    "ledger_positions": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e",
+      "after_sha256": "6e541b655e387279c35dbea6197266650f7b191992d3d145c05739b55f38068e",
+      "identical": true
+    }
+  },
+  "account_facts": {
+    "compared_fields": [
+      "cash",
+      "holdings",
+      "preferences",
+      "version"
+    ],
+    "unchanged": true,
+    "account_latest_job_matches": true,
+    "analysis_state": "current",
+    "input_version_matches": true
+  },
+  "reopen_scope": {
+    "sqlite_persistence_reopened_twice": true,
+    "same_completed_job_and_single_report_after_reopen": true,
+    "job_matches_recover_running_selector": false,
+    "recover_rerun_performed": false,
+    "full_application_restart_verified": false,
+    "duplicate_publication_attempted": false,
+    "note": "Two read-only SQLite reopen passes retained one completed job and one new report. Store.recover, re-publication, worker and API restart were not exercised; this is persistence evidence, not a full service restart or retry-idempotency test."
+  },
+  "limitations": [
+    "model-result.json is saved before Store.publish and therefore lacks the transaction-generated delivery/application receipts; report text and hash match the persisted final job and analysis.",
+    "The visible terminal archive is marked not_accepted because it is captured before contract validation; acceptance/publication is established separately by the completed job and persisted delivery receipt.",
+    "Zero submitted structured suggestions/actions/forecasts means an empty denominator, not proof that a recommendation or formal prediction was applied.",
+    "Old current report is retained as stale (the storage status name), not overwritten or deleted.",
+    "Content assessment remains not_evaluated in the persisted delivery. This publication check does not assess investment content or claim continuous stability."
+  ]
+}

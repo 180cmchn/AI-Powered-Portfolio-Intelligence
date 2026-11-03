@@ -93,6 +93,9 @@ def test_citations_resolve_ranges_and_do_not_disclose_private_material(store):
 
 
 def test_publication_preserves_valid_parts_and_unknown_citation_gap(store):
+    # A missing citation is a visible evidence gap, not permission to add an
+    # unrelated security: establish the candidate before freezing the task.
+    store.save_universe({'watchlist': [], 'candidates': ['SH:600519']})
     a = store.save_account(AccountInput(name='A', holdings=[]))
     job = store.claim_jobs()[0]
     assert publish_fixture(store,job['id'], {'report': 'deliver with gap', 'material_ids': ['unknown'],

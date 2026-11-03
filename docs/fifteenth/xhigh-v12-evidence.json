@@ -1,0 +1,141 @@
+{
+  "kind": "historical_aggregate_xhigh_v12_unknown_outcome",
+  "recorded_at": "2026-11-02T21:45:08.291217+08:00",
+  "source_sha256": "75b0a784660e321c1deea29e0f63cef39d64c3751d582db60f2daa7fd33a8523",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "request_inputs": [
+    {
+      "payload_sha256": "0bd83ac288b45410cf6643d8014e50da5f700543df9be135c330c36d68f3a3af",
+      "payload_bytes": 82267,
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "max_output_tokens_sent": 6000,
+      "output_limit_matches": true,
+      "time_context": {
+        "execution_time": "2026-11-02T21:29:57.961794+08:00",
+        "data_as_of": "2026-10-30T15:34:06+08:00",
+        "historical_replay": true,
+        "decision_as_of": "2026-11-01T23:14:23.530972+08:00",
+        "decision_time_basis": "historical_checkpoint_at",
+        "instruction": "execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。"
+      },
+      "task_instruction_sha256": "b6b1a074bd7e4b6b8b7fde785de450f2a109236dc0652af8d77a1b231f56fbdc",
+      "task_instruction_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "started_at": "2026-11-02T21:29:57.927566+08:00",
+  "completed_at": "2026-11-02T21:34:38.013856+08:00",
+  "request": {
+    "attempt": 1,
+    "model": "grok-4.7",
+    "protocol": "responses",
+    "reasoning_effort_sent": "xhigh",
+    "reported_reasoning_effort": null,
+    "requested_max_output_tokens": 6000,
+    "status_code": 200,
+    "response_id": "8a1f500f-a3e0-9a36-8a11-8fa0fb6ac235",
+    "request_id": null,
+    "duration_ms": 280029.29,
+    "started_at": "2026-11-02T13:29:57.968758+00:00",
+    "finished_at": "2026-11-02T13:34:37.998492+00:00",
+    "response_status": null,
+    "stream_terminal": null,
+    "http_body_complete": false,
+    "stream_close_reason": "local_timeout",
+    "stream_first_byte_ms": 3873.17,
+    "stream_first_effective_event_ms": 4060.9,
+    "stream_first_text_delta_ms": 147193.88,
+    "stream_last_progress_ms": 160026.73,
+    "stream_last_byte_ms": 160026.59,
+    "stream_max_idle_ms": 120002.6,
+    "cancelled_by": "stream_idle_timeout",
+    "error_code": "stream_idle_timeout",
+    "usage": null,
+    "tool_choice_satisfied": null,
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 2,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 184,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 1,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 1196
+    },
+    "timeout_policy": {
+      "policy_version": 2,
+      "first_event_seconds": 90.0,
+      "stream_idle_seconds": 120.0,
+      "request_hard_seconds": 360.0,
+      "connect_seconds": 15.0,
+      "pool_seconds": 15.0,
+      "write_seconds": 30.0,
+      "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+    },
+    "effective_limit": "request_hard_timeout",
+    "deadline_remaining_ms": {
+      "analysis_budget_exhausted": 1199987.31,
+      "request_hard_timeout": 360000.0
+    },
+    "retry_suppressed": "upstream_execution_may_continue"
+  },
+  "published": false,
+  "contract_accepted": false,
+  "content_assessment": "not_evaluated_no_complete_body",
+  "body_obtained": false,
+  "visible_terminal_file_count": 0,
+  "shared_attempt_budget": {
+    "maximum": 10,
+    "reserved_attempts": 9,
+    "stages": {
+      "final": {
+        "maximum": 10,
+        "reserved_attempts": 9
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "remaining": 1,
+  "automatic_requests_after_failure": 0,
+  "failure_preservation": "xhigh-v12-publication-check.json",
+  "local_idle_investigation": "v12-local-idle-audit.json",
+  "supplier_reconciliation": {
+    "method": "Read-only usage-log row associated by request time/model and isolated single attempt; API usage is absent, so input/output/cache cannot be directly cross-matched to API usage; no response-ID-level linkage.",
+    "row_time": "2026-11-02 21:33:27 Asia/Shanghai",
+    "model": "grok-4.7",
+    "input_tokens": 26829,
+    "output_tokens": 18090,
+    "cached_tokens": 1152,
+    "amount_usd": "0.02407",
+    "first_token_display": "2.6s",
+    "duration_display": "3m 28s",
+    "red_stream_error_marker_visually_observed": false,
+    "client_usage_remains": null,
+    "ten_attempt_cohort_associated_displayed_total_usd": "0.183650",
+    "renewed_xhigh_series_associated_displayed_total_usd": "0.134162",
+    "invoice_verified": false
+  },
+  "interpretation": [
+    "The application last observed a decoded chunk at160026.59ms and semantic progress at160026.73ms; its120s progress-idle protection cancelled at280029.29ms.",
+    "Unlike v5, this request has an explicit local cancellation source:stream_idle_timeout. This does not reconstruct the older client_gone cause.",
+    "The supplier row looks normally completed at3m28s, while the client saw neither terminal nor EOF; dashboard completion does not supply missing report content.",
+    "No per-delta Agent emit or SQLite write lies in the current SSE receive path; local consumer/write-lock cause not evidenced.",
+    "No raw-wire/content-encoding/loop-lag trace was captured; the absent decoded chunks cannot locate the missing data to model service, relay, environment proxy, decoding or global scheduling."
+  ],
+  "next_step": "One separately prepared direct-route controlled comparison within remaining1 of original10; no automatic retry of this unknown-outcome request.",
+  "normal_business_matrix_executed": false,
+  "old_40_used": 0,
+  "source_unchanged_during_request": true,
+  "environment_unchanged": true
+}

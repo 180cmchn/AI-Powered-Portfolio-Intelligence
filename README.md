@@ -2,6 +2,20 @@
 
 运行在 Mac 本机的 A 股与场内 ETF 虚拟账户研究工作台。FastAPI + SQLite + asyncio 后台执行器 + 无构建依赖的原生 JavaScript 界面。主 Agent 和每个子 Agent 都有独立模型上下文及真实工具调用循环；模型原生联网与本地研究工具在同一 Agent 会话协作，不需要独立搜索密钥。
 
+**11月3日：最小正常业务矩阵的三阶段均已通过——初始A、实际卖出后的A、独立现金B。** 各阶段都取得真实报告、通过独立有限内容复核，并完成发表后及真实重启观察。[A卖出复核](docs/fifteenth/business-output-omission-a-sell-direct-content-review.json)为6项探索性弃权、正式0；[B复核](docs/fifteenth/business-output-omission-b-content-review.md)为1项watch建议、3项探索性弃权、正式0。初始A为2项down、7项abstain，亦全为探索记录。这不证明连续无人值守稳定、正式方向效果或自然成熟准确率；各阶段按自身源码和失败分母记录，未声称在同一最终源码重跑全矩阵。
+
+[B执行终态](data/evaluations/fifteenth-business-output-omission-b-v1/execution/summary.json)为03:42:00至03:51:11，11次HTTP全部completed+EOF、均省略输出cap且direct核验通过，2606字符有限报告已接受。B保持100000现金、零持仓/零交易；仅有实际读过的159278资料范围，不借用A结论。候选范围PUT合法触发A的v6 universe_changed排队任务，另一个global candidate_scan被隔离单任务guard拒绝，两者均0模型HTTP；不能报为无后续任务或自报告循环。此前[被拒的6000卖出报告](docs/fifteenth/business-long-task-a-sell-content-review.md)和省略后两次[无final失败](docs/fifteenth/business-output-omission-a-sell-content-review.md)继续保留，见[完整记录](docs/iteration-15.md)。
+
+[最终机器汇总](docs/fifteenth/output-omission-closeout.json)按各轮保留证据：四轮省略请求共78次，76次completed+EOF、2次传输未知；最后direct卖出及B共40/40完成。这些请求的任务和内容不同，不以最近成功倒推出代理或输出限制是旧失败唯一原因。日常DB/WAL/.env保全、源码身份和验证截止时的远端CI状态见[最终保全](docs/fifteenth/output-omission-final-preservation.json)；后续提交的CI以对应GitHub Actions记录为准。
+
+输出上限新默认留空；设置页清空该项并保存后，后续请求不发送 `max_output_tokens`、`max_completion_tokens` 或 `max_tokens`。旧显式数值（包括 4000）和在途任务快照保持原值，不自动修改日常配置。省略由供应商决定输出限制，不承诺任何第三方默认容量；此前提出的 16000 未执行，已由用户的省略要求取代。见 [输出设置与期间修复](docs/fifteenth/output-limit-followup.json)及 [Mac 升级说明](docs/mac-operations.md)。
+
+当前新默认首有效事件 90 秒、流空闲 300 秒、普通/汇总硬限各 900 秒、子任务 1800 秒、整轮 3600 秒；正式截止仍优先。完整旧 factory v1/v2 配置迁移到这些默认，显式保存的 revision3 idle=120、自定义设置及在途快照保留。隔离验证器已修复任一子任务未知结果便阻断整个经理任务的停止范围：不重放子任务半截响应，允许经理依据已完成的生产成果独立提交有限汇总；经理自身结果未知仍停止当前任务。明确 503 继续遵循有界重试，每任务 40 次工程上限不变，也不再逐次询问人工次数授权。
+
+生产源码 `7f8ef679…` 的 Mac/Linux 全套各 **1500 项通过**，**十一组浏览器全部通过**。当前 `728f3fd7…` 仅增加隔离模型路线 helper/测试，生产 app 与浏览器文件相同，Mac/Linux 相关各 **204 项通过**。Linux 首轮临时盘耗尽的失败保留，同源码仅扩大临时盘后重跑通过；输出设置 84 项、指标期间 47 项等定向结果不与全套累加。旧 `7fd2cb7e…` 的两端各 **1438 项/十一组浏览器**、`7c859112…` 的两端各 **118 项定向**保留原执行身份，不替代此次改动后的全套结果，见 [工程记录](docs/fifteenth/engineering-closeout.md)。
+
+第十五轮的历史三证券报告与正常初始 A v4 已通过各自的独立内容复核。[初始 A 复核](docs/fifteenth/business-long-task-a-content-review.md)仍保留“探索误称正式”和财报范围引用不精确两项非阻塞错误；其 9 项预测均为探索记录（2 down、7 abstain），正式为 0。旧失败、检查点到期和当时的次数授权保留在 [迭代记录](docs/iteration-15.md)。工程通过不替代后续阶段的内容验收或自然成熟预测效果。
+
 **第十轮提供六位代码录入、持久任务追踪与报告入口，修复弹窗/表单/引用交互，并补充真实日线与公开文档访问路径。逐项结果、原报告和限制见[第十轮交付](docs/iteration-10.md)、[现场诊断](docs/iteration-10-site.md)和[取数诊断](docs/iteration-10-research.md)。[第九轮](docs/iteration-9.md)、[第八轮](docs/iteration-8.md)及更早交付保留为历史证据。供应商与统一角色操作保持[原有方式](docs/sixth-provider-roles.md)，[预测评估口径](docs/forecast-evaluation.md)不变。**
 
 第三轮历史失败仍保留在 [验证记录](docs/verification.md)，不被新结果覆盖。
@@ -94,11 +108,11 @@ python3 -m venv .venv
 
 仓库默认日历仍覆盖已核对的沪深北 **2026 年**休市安排。`STOCK_CALENDAR_PATH` 可以指向单个已核实 JSON，或包含 `calendar_*.json` 的目录，逐年增加声明 `coverage` 的交易所日历。没有覆盖的日期保持未知，不只按周一至周五跨年推算；仅受影响的预测期限显示日历缺口，其他可确定期限继续。补齐后按原基准和期限解析目标日，不能选择有利日期。手动研究仍可使用，单证券停牌状态不由日历推断。
 
-运行设置展示首有效事件、流空闲、普通请求硬限、汇总硬限与父任务预算。默认分别为90/120/300/360秒，子研究600秒、整轮1200秒；旧设置映射、冲突提示与有限重试见[时间策略](docs/iteration-11-timeouts.md)。这仍是有界预算，心跳不充当持续有效生成。
+运行设置展示首有效事件、流空闲、普通请求硬限、汇总硬限与父任务预算。当前默认分别为 90/300/900/900 秒，子研究 1800 秒、整轮 3600 秒；完整旧 factory v1/v2 默认精确迁移到 idle=300，显式 revision3 idle=120、自定义值与在途快照保留，见[本轮修复与验证](docs/fifteenth/long-task-validation.json)。原分层机制与有限重试沿革见[时间策略](docs/iteration-11-timeouts.md)。这仍是有界预算，心跳不充当持续有效生成，正式截止仍取更早边界。
 
 ## 备份与恢复
 
-当前为 **schema 11 / API contract 12**。升级前先在页面执行“备份数据库”（或使用只读诊断及SQLite备份脚本），确认可以中断当前研究后再停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
+当前为 **schema 11 / API contract 13**。升级前先在页面执行“备份数据库”（或使用只读诊断及SQLite备份脚本），确认可以中断当前研究后再停止旧服务、更新依赖并重新启动，以保证运行进程加载最新代码：
 
 ```sh
 ./stop.command --mode live
@@ -162,3 +176,5 @@ CI 在 Linux 使用 `npx playwright install --with-deps chromium` 安装浏览�
 
 
 第十四轮交付契约、预算预留及分层验收见 [实施记录](docs/iteration-14.md)。部署前按 [Mac 操作说明](docs/mac-operations.md) 核对运行实例；开发验收不自动升级日常服务。
+
+第十五轮将提交前预检与事务发布共用结构/范围校验，逐项显示建议与预测的应用结果，并用受控时钟验证请求前、在途和正常完成边界。v13历史有限报告、后续正常A初始v4及direct卖出报告已分别通过内容复核；最初A超时未发表、检查点过期、旧卖出内容拒绝及断流失败仍保留。B现金候选阶段也已通过独立内容及机械/重启验收，选定最小矩阵三阶段完成。完整结果、费用与边界见 [第十五轮记录](docs/iteration-15.md)，不将此验收扩大为连续稳定或预测效果承诺。

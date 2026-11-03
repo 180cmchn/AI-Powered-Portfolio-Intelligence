@@ -33,25 +33,17 @@ def _earliest_formal_deadline(batches, *, at=None, monotonic_at=None):
 
 
 def _execution_forecast_batches(store, job):
-    """Use actual assigned scopes/attempts as well as the current batch owner."""
-    with store.connect() as db:
-        return [dict(row) for row in db.execute('''SELECT DISTINCT b.id,b.kind,b.deadline
-            FROM forecast_batches b WHERE b.account_id=? AND b.input_version=? AND (
-                b.job_id=? OR b.id IN (SELECT batch_id FROM forecast_research_scopes WHERE job_id=?)
-                OR b.id IN (SELECT batch_id FROM forecast_execution_attempts WHERE job_id=? AND attempt=?)
-                OR b.id IN (SELECT s.batch_id FROM forecast_research_scope_samples r
-                    JOIN forecast_samples s ON s.id=r.sample_id WHERE r.job_id=?)
-                OR b.id IN (SELECT s.batch_id FROM forecast_sample_attempts sa
-                    JOIN forecast_samples s ON s.id=sa.sample_id
-                    JOIN forecast_execution_attempts a ON a.id=sa.attempt_id WHERE a.job_id=? AND a.attempt=?))''',
-            (job['account_id'], job['input_version'], job['id'], job['id'], job['id'],
-             job.get('attempts', 0), job['id'], job['id'], job.get('attempts', 0)))]
+    """Use the same assigned-batch identity as the publication transaction."""
+    return store.execution_forecast_batches(job)
 
 
 class ResearchTools:
     def __init__(self, store: Store, job: dict, config: dict, context=None):
         self.store, self.job, self.config = store, job, {**config, '_research_failure_memory': {}}
         self.context = context
+
+    async def preflight_delivery(self, result):
+        return self.store.preflight_delivery(self.job, result)
 
     async def list_forecast_targets(self, limit=30, offset=0):
         return self.store.forecast_job_context(self.job['id'], limit=limit, offset=offset)
@@ -536,9 +528,10 @@ class Service:
                 recovery = {'state': 'unverified', 'eligible': False, 'note': '恢复资格尚未核实；不能保证仅汇总恢复，已保存记录可查看'}
             message += '；' + recovery['note']
             code = getattr(e, 'code', None) or ('analysis_budget_exhausted' if isinstance(e, TimeoutError) else type(e).__name__)
-            if isinstance(e, ReportPublicationError) and isinstance(locals().get('result'), dict) and isinstance(result.get('report'), str):
+            if isinstance(locals().get('result'), dict) and isinstance(result.get('report'), str):
+                self.store.retain_delivery_candidate(job['id'], result, code)
                 self.store.event(job['id'], {'type': 'delivery_candidate',
-                    'message': '最终候选文本未通过交付契约，未发布',
+                    'message': '最终候选未发布；保留正文与逐项未应用回执',
                     'payload': {'text': result['report'], 'error_code': code}})
             self.store.set_job_state(job["id"], "failed", message, error_code=code)
             self.store.event(job["id"], {"type": "failed", "message": message,

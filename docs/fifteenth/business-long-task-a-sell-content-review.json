@@ -1,0 +1,520 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-03T02:49:59.272879+08:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/delivery_validation",
+    "method": "Independent complete reading of the actual final report and structured delivery, checked against the actual two child reports, received material excerpts, stored calculation inputs/summaries, ledger, publication receipts and recorded real-process restart observations. SQLite mode=ro; no third-party network or model request; no hidden reasoning access.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "report_sha256": "1580e51575c4ccac38865fc0f5e973f6e573f1cd72a6154b0869273d753e5bb2",
+    "report_characters": 2772,
+    "job_id": "78f3d56ea165445f83e8f5d857b433f3",
+    "source_sha256": "7c8591121ec21f8dc427dda796aaf6c59cb4b6547aa58dcb02b9ddc09483fb2c",
+    "account_input_version": 5,
+    "parent_job_id": "141ed002046a48ed94aa905c235bc074",
+    "private_report_location": "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/account-report.md",
+    "model_result_location": "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/model-result.json"
+  },
+  "accepted": false,
+  "content_assessment": "evaluated",
+  "overall": "failed_content_acceptance",
+  "accepted_definition": "Mechanical publication and persistence succeeded. The actual report is not accepted as the A-after-sale content prerequisite because three material return figures are assigned the wrong time horizon, including a figure in the only directional forecast rationale. This review does not repair the authored result or replace application not_evaluated. It does not require a particular investment direction.",
+  "blocking_findings": [
+    {
+      "id": "full_range_return_mislabeled_as_twenty_day",
+      "severity": "blocking_content_error",
+      "finding": "All three securities call market_indicators.return a 20-day return. Actual saved inputs contain 60 closes from 2026-08-03 through 2026-11-02; the return is last_close/first_close-1 across 59 intervals. window=20 only sets the moving average. The successful request contained all three summaries including returned_range, valid_samples, return_samples and methods.",
+      "scope": [
+        "report: SH:518880 20日收益-5.66%",
+        "report: SZ:002354 20日收益+10.34%",
+        "report: SZ:159599 20日收益-21.38%",
+        "forecasts[1].reason",
+        "forecasts[4].reason",
+        "forecasts[5].reason",
+        "findings",
+        "research_records",
+        "limitations"
+      ],
+      "why_blocking": "This repeatedly changes the meaning of central numerical evidence, not merely an incomplete citation or a batch label. In particular the ETF five-day down rationale and twenty-day abstention rationale use -21.38% as a 20-day fact, although the supplied Sep28-to-Nov2 20-interval evidence is -24.1419%. Matching signs do not validate the wrong horizon. Existing source/calculation evidence was available, so no new network research is required to identify the defect.",
+      "minimum_resolution": "A genuine subsequent model report must state the actual Aug03–Nov02 period for these figures or use independently supported twenty-interval figures. Do not relabel/rewrite this saved report or forecasts in place; preserve their identity and results.",
+      "numeric_evidence": [
+        {
+          "security_id": "SZ:002354",
+          "calculation_id": "calculation-345f4303cb4c496987e0ff5a4236e041",
+          "material_id": "30e418b15d9a46b7a489d2883023a088",
+          "available_in_successful_request": true,
+          "authored_label": "20日收益",
+          "authored_value_percent": "10.34",
+          "actual_return_range": {
+            "start": "2026-08-03",
+            "end": "2026-11-02"
+          },
+          "valid_close_samples": 60,
+          "actual_return_intervals": 59,
+          "first_close": "7.16",
+          "last_close": "7.90",
+          "actual_full_range_return_percent": "10.33519553072625698324022350",
+          "moving_average_window": 20,
+          "return_method": "last_close / first_close - 1",
+          "moving_average_method": "mean(last window closes)",
+          "twenty_trading_intervals_range": {
+            "start": "2026-09-28",
+            "end": "2026-11-02"
+          },
+          "twenty_intervals_reference_close": "7.15",
+          "independently_recomputed_twenty_interval_return_percent": "10.48951048951048951048951050"
+        },
+        {
+          "security_id": "SZ:159599",
+          "calculation_id": "calculation-e2a928d373d342bb8c9c60cdded18415",
+          "material_id": "3423e591a4834e30bce1fb6808157dec",
+          "available_in_successful_request": true,
+          "authored_label": "20日收益",
+          "authored_value_percent": "-21.38",
+          "actual_return_range": {
+            "start": "2026-08-03",
+            "end": "2026-11-02"
+          },
+          "valid_close_samples": 60,
+          "actual_return_intervals": 59,
+          "first_close": "2.530",
+          "last_close": "1.989",
+          "actual_full_range_return_percent": "-21.38339920948616600790513834",
+          "moving_average_window": 20,
+          "return_method": "last_close / first_close - 1",
+          "moving_average_method": "mean(last window closes)",
+          "twenty_trading_intervals_range": {
+            "start": "2026-09-28",
+            "end": "2026-11-02"
+          },
+          "twenty_intervals_reference_close": "2.622",
+          "independently_recomputed_twenty_interval_return_percent": "-24.14187643020594965675057208"
+        },
+        {
+          "security_id": "SH:518880",
+          "calculation_id": "calculation-c8d00b0df7e34f7ea8b6b95d6f2209ed",
+          "material_id": "16dade8d425e48808a3c99f9eb7bfab1",
+          "available_in_successful_request": true,
+          "authored_label": "20日收益",
+          "authored_value_percent": "-5.66",
+          "actual_return_range": {
+            "start": "2026-08-03",
+            "end": "2026-11-02"
+          },
+          "valid_close_samples": 60,
+          "actual_return_intervals": 59,
+          "first_close": "8.417",
+          "last_close": "7.941",
+          "actual_full_range_return_percent": "-5.655221575383153142449803970",
+          "moving_average_window": 20,
+          "return_method": "last_close / first_close - 1",
+          "moving_average_method": "mean(last window closes)",
+          "twenty_trading_intervals_range": {
+            "start": "2026-09-28",
+            "end": "2026-11-02"
+          },
+          "twenty_intervals_reference_close": "8.568",
+          "independently_recomputed_twenty_interval_return_percent": "-7.317927170868347338935574230"
+        }
+      ]
+    }
+  ],
+  "nonblocking_observations": [
+    {
+      "id": "formal_label_does_not_match_system_batch",
+      "finding": "The report and decision summary call these formal directions. The actual batch and all six new forecast rows are exploratory; one down, five abstain, zero formal samples. Wording cannot override persisted classification.",
+      "classification_claim_accepted": false,
+      "formal_window_or_accuracy_verified": false
+    },
+    {
+      "id": "liquidity_inference_is_conditional",
+      "finding": "The phrase 退出无流动性障碍 relies on the small 1000-unit position relative to historical daily turnover. It is not a guarantee of future execution. The report explicitly preserves the Nov4 sellability restriction and says it does not represent an opening trade."
+    }
+  ],
+  "verified_content": [
+    {
+      "id": "account_and_single_sale",
+      "status": "pass",
+      "finding": "Cash 87479.90, quantities gold 0 / stock 1000 / ETF 1000, remaining cost 12510.10, total fees 20.10 and realized loss -10.00 match the actual version-5 ledger. The retry adds zero ledger rows. Exactly one gold sale exists: 100 units at simulated 10.000, fee 5.00, net cash +995.00. No real broker transaction is asserted."
+    },
+    {
+      "id": "valuation_and_pnl",
+      "status": "pass",
+      "finding": "Using Nov2 quotes 7.90 and 1.989 gives securities 9889.00, assets 97368.90 and unrealized P&L -2621.10. The increase of 200.90 from prior assets 97168.00 is the simulated net sale 995.00 replacing gold market value 794.10, not trading profit or a quote move. The body distinguishes simulated booking price from the market close and preserves realized -10.00."
+    },
+    {
+      "id": "financial_semantics",
+      "status": "pass",
+      "finding": "Q3 revenue/profit, year-on-year changes, YTD profit +19.11% and operating cash-flow +316.75% agree with actual received Q3 filing material. Equity increase 546916090.78 and capital-reserve increment 530025623.84 (about 96.9% of that increase) are not called operating profit. Goodwill about 501 million and 28.9% of parent equity agree; absence of impairment testing or segment detail stays qualified."
+    },
+    {
+      "id": "etf_semantics",
+      "status": "pass",
+      "finding": "The product summary supports H30007 and management/custody rates 0.50%/0.05%; fee date and unread contract limits remain explicit. Q3 NAV -37.09% versus benchmark -37.72% yields historical +0.63 percentage points, not future guaranteed excess return or company revenue. Sept30 holdings are not treated as current. Missing comparable Nov2 NAV/IOPV prevents a fabricated premium/discount."
+    },
+    {
+      "id": "actions_and_counterevidence",
+      "status": "pass_subject_to_numeric_blocker",
+      "finding": "The report covers the exited gold position and both remaining securities, high cash, alternatives, contrary evidence and conditions. It revokes the old gold hold and maintains stock hold/ETF watch. Directional and abstention labels agree with the six submitted rows; numerical return-period errors remain blocking."
+    }
+  ],
+  "account_numeric_crosscheck": {
+    "input_version": 5,
+    "cash": "87479.90",
+    "remaining_cost": "12510.10",
+    "securities_value": "9889.00",
+    "total_assets": "97368.90",
+    "unrealized_pnl": "-2621.10",
+    "realized_pnl": "-10.00",
+    "total_fees": "20.10",
+    "sale_count": 1,
+    "sale_entry_id": "0e4fe1e94c1540f4b650db64e940fdba",
+    "sale_net_cash": "995.00",
+    "trade_rows_added_by_retry": 0,
+    "prepared_final_reopened_and_failed_parent_ledger_facts_equal": true,
+    "sellable_on": "2026-11-04"
+  },
+  "context_visibility": {
+    "recovery_mode": "continue_research",
+    "checkpoint_source_job_id": "141ed002046a48ed94aa905c235bc074",
+    "completed_child_reports": 2,
+    "full_report_delivery_ids": [
+      11,
+      12
+    ],
+    "full_report_ids": [
+      "27a8ad862e2a43c3bd0c9035a6cdecd8",
+      "769e408824ce4774b4a326b3c59896bc"
+    ],
+    "summary_findings_material_ids_open_questions_equal_checkpoint": true,
+    "final_request_numbers": [
+      11,
+      12
+    ],
+    "successful_request_number": 12,
+    "full_reports_in_successful_request": 2,
+    "calculation_summaries_in_final_requests": [
+      {
+        "request_number": 11,
+        "summary_count": 65
+      },
+      {
+        "request_number": 12,
+        "summary_count": 65
+      }
+    ],
+    "calculation_count": 65,
+    "calculation_type_counts": {
+      "calculate": 62,
+      "market_indicators": 3
+    },
+    "arithmetic_review_boundary": "62 basic calculate operations were independently checked in parent-sale-v2 partial audit. Here the three market-indicator returns were reproduced from saved input_closes and compared with twenty-interval returns. Correct arithmetic does not make the report time-horizon labels correct.",
+    "checkpoint_material_indexes": 131,
+    "checkpoint_material_ids": 102,
+    "material_delivery_receipts": 173,
+    "receipt_count_is_not_full_text_document_count": true,
+    "child_report_access_does_not_imply_manager_read_all_originals": true
+  },
+  "source_visibility": {
+    "reference_summary": {
+      "resolved": 85,
+      "source_link": 2,
+      "unresolved": 0
+    },
+    "resolved_reference_material_permissions_checked": 12,
+    "all_checked_materials_accessible_to_bound_account": true,
+    "permission_check_ids": [
+      "0e0ad5be22ec4ab582ab9002b1140f58",
+      "16dade8d425e48808a3c99f9eb7bfab1",
+      "30e418b15d9a46b7a489d2883023a088",
+      "3423e591a4834e30bce1fb6808157dec",
+      "3dba851988734151a2f58367f3d42756",
+      "48b6c3efbf9246dcbca5ecc0e7cbb161",
+      "4e226c7c7fd141c7aca1640a46592858",
+      "5a8c26b2ad39443e96a9850e89d79003",
+      "6d7e7b8c9e0b48978081455d6a2be29b",
+      "812cdbb89e894933bf422c13661fcbe2",
+      "9b095a951d6843b0a7ef77292aded173",
+      "ea1edbbbafe94b0ba02aa7971ce45720"
+    ],
+    "source_links_do_not_imply_originals_read": true,
+    "network_reachability_tested": false,
+    "actual_originals_review_reused_from": "docs/fifteenth/business-long-task-a-sell-v2-partial-evidence.json"
+  },
+  "application_state_separate_from_review": {
+    "summary_content_assessment": "not_evaluated",
+    "published_delivery_content_assessment": "not_evaluated",
+    "application_assessment_rewritten": false,
+    "contract_accepted": true,
+    "published": true,
+    "mechanical_passed": true,
+    "submission_outcome": "recovered",
+    "submission_corrections": 1,
+    "suggestions_submitted": 2,
+    "suggestions_applied": 2,
+    "suggestion_actions_submitted": 1,
+    "suggestion_actions_applied": 1,
+    "forecasts_submitted": 6,
+    "forecasts_applied": 6,
+    "application_receipt": {
+      "suggestions": [
+        {
+          "index": 0,
+          "security_id": "SZ:002354",
+          "status": "applied",
+          "reason": "等待条件变化；定性条件由 Agent 复核",
+          "recommendation_id": "ee3e4b19299c45fcaa23dcdb55857c68"
+        },
+        {
+          "index": 1,
+          "security_id": "SZ:159599",
+          "status": "applied",
+          "reason": "等待条件变化；定性条件由 Agent 复核",
+          "recommendation_id": "3973c29cd5c44601aaf24d4ead015bfb"
+        }
+      ],
+      "suggestion_actions": [
+        {
+          "field": "revoked_suggestion_ids",
+          "id": "912cb959d4ee4fdbb37e525bca0dc49f",
+          "status": "applied",
+          "reason": "主 Agent 明确撤销"
+        }
+      ],
+      "forecasts": [
+        {
+          "index": 0,
+          "security_id": "SZ:002354",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 1,
+          "forecast_id": "a80f2fbd9ba846348b9eba6d94e233e5"
+        },
+        {
+          "index": 1,
+          "security_id": "SZ:002354",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 5,
+          "forecast_id": "7b25ac74a63e48acb46f515966ab6dc3"
+        },
+        {
+          "index": 2,
+          "security_id": "SZ:002354",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 20,
+          "forecast_id": "2a12a8a444784b2f90e77c551e2c8cc1"
+        },
+        {
+          "index": 3,
+          "security_id": "SZ:159599",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 1,
+          "forecast_id": "9f13d9cb17334462868ccd8c18c3a335"
+        },
+        {
+          "index": 4,
+          "security_id": "SZ:159599",
+          "status": "applied",
+          "reason": "已发布方向预测",
+          "horizon": 5,
+          "forecast_id": "9775b75448da428fb92b54c6a8159560"
+        },
+        {
+          "index": 5,
+          "security_id": "SZ:159599",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 20,
+          "forecast_id": "9123fa84a1ae464ea9d3292ec02e7043"
+        }
+      ]
+    },
+    "recommendation_rows": [
+      {
+        "id": "912cb959d4ee4fdbb37e525bca0dc49f",
+        "security_id": "SH:518880",
+        "state": "revoked",
+        "input_version": 4,
+        "job_id": "0fcc724b67af4629a883922e1f0731c2"
+      },
+      {
+        "id": "ee3e4b19299c45fcaa23dcdb55857c68",
+        "security_id": "SZ:002354",
+        "state": "watching",
+        "input_version": 5,
+        "job_id": "78f3d56ea165445f83e8f5d857b433f3"
+      },
+      {
+        "id": "3973c29cd5c44601aaf24d4ead015bfb",
+        "security_id": "SZ:159599",
+        "state": "watching",
+        "input_version": 5,
+        "job_id": "78f3d56ea165445f83e8f5d857b433f3"
+      }
+    ],
+    "forecast_coverage": {
+      "expected": 6,
+      "direction_published": 1,
+      "abstained": 5,
+      "uncovered": 0,
+      "waiting_data": 0,
+      "missed": 0,
+      "failed": 0
+    },
+    "batch": {
+      "id": "9f4645bee8ee4c2f97d6584ecee8d4fc",
+      "kind": "exploratory",
+      "base_date": "2026-11-02",
+      "deadline": "2026-11-04T02:29:17.724501+08:00",
+      "state": "published",
+      "expected_count": 6,
+      "input_version": 5
+    },
+    "forecast_rows": [
+      {
+        "id": "a80f2fbd9ba846348b9eba6d94e233e5",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 1,
+        "target_date": "2026-11-03",
+        "direction": "abstain",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      },
+      {
+        "id": "7b25ac74a63e48acb46f515966ab6dc3",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 5,
+        "target_date": "2026-11-09",
+        "direction": "abstain",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      },
+      {
+        "id": "2a12a8a444784b2f90e77c551e2c8cc1",
+        "kind": "exploratory",
+        "symbol": "SZ:002354",
+        "base_date": "2026-11-02",
+        "horizon": 20,
+        "target_date": "2026-11-30",
+        "direction": "abstain",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      },
+      {
+        "id": "9f13d9cb17334462868ccd8c18c3a335",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 1,
+        "target_date": "2026-11-03",
+        "direction": "abstain",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      },
+      {
+        "id": "9775b75448da428fb92b54c6a8159560",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 5,
+        "target_date": "2026-11-09",
+        "direction": "down",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      },
+      {
+        "id": "9123fa84a1ae464ea9d3292ec02e7043",
+        "kind": "exploratory",
+        "symbol": "SZ:159599",
+        "base_date": "2026-11-02",
+        "horizon": 20,
+        "target_date": "2026-11-30",
+        "direction": "abstain",
+        "published_at": "2026-11-03T02:42:45.625913+08:00"
+      }
+    ]
+  },
+  "publication_and_restart": {
+    "new_current_report_id": "dcd2149b2b014ac5ba536eadd1d419fa",
+    "new_current_report_version": 5,
+    "new_reports": 1,
+    "old_report_id": "576433dea9114d2b8b4fcd0a1460cc8c",
+    "old_report_version": 4,
+    "old_report_status": "stale",
+    "old_report_body_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "old_body_id_version_unchanged": true,
+    "old_forecast_rows_exactly_unchanged": 9,
+    "new_exploratory_forecast_rows": 6,
+    "new_directions": 1,
+    "new_abstentions": 5,
+    "formal_samples": 0,
+    "naturally_matured_evaluations": 0,
+    "after_publish_observations": 2,
+    "after_real_process_restart_observations": 2,
+    "all_four_views_equal": true,
+    "real_process_restart_pids": [
+      2029,
+      3645
+    ],
+    "restart_evidence_boundary": "Actual harness process IDs and four API observations; this independent audit reopened SQLite mode=ro and did not itself start or restart any service.",
+    "additional_tasks": 0,
+    "execution_stopped_reported": true,
+    "failed_parent_evidence_unchanged": true
+  },
+  "denominators": {
+    "actual_model_http_attempts": 12,
+    "response_completed_and_http_eof": 11,
+    "response_incomplete_and_http_eof": 1,
+    "final_request_11_duration_ms": 213269.68,
+    "successful_request_12_duration_ms": 252708.49,
+    "bounded_contract_corrections": 1,
+    "mechanically_published_reports": 1,
+    "independently_content_accepted_reports": 0,
+    "prior_nine_exploratory_samples_preserved": 9,
+    "new_suggestion_updates": 2,
+    "new_explicit_revocations": 1,
+    "new_exploratory_direction_predictions": 1,
+    "new_exploratory_abstentions": 5,
+    "new_formal_samples": 0
+  },
+  "immutability": {
+    "private_export_byte_identical_to_report": true,
+    "export_mode": "0o600",
+    "export_sha256": "1580e51575c4ccac38865fc0f5e973f6e573f1cd72a6154b0869273d753e5bb2",
+    "model_report_not_edited": true,
+    "public_review_copies_full_private_report": false,
+    "sqlite_access": "mode=ro + PRAGMA query_only; three isolated evaluation databases only",
+    "database_hashes_before": {
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/evaluation.sqlite3": "e54952aeca661c33ec8b07ac74feaa7352a48d62ac1260c60fea0df5f64591eb",
+      "data/evaluations/fifteenth-business-long-task-a-sell-v2/execution/evaluation.sqlite3": "2e087f49b837f310b7ede97645b9dc288f464cb1c5a5577907d19a3f872530a7",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451"
+    },
+    "protected_file_hashes_before": {
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/summary.json": "1ba66b5119c505ed52a7607481361a1bcc7d87e05b18ea8c8a1cde96be4f3e7a",
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/model-result.json": "b2623e20c2e110868c8b70fda18349c231db7072d23a7f820c26d1aec97a6dd4",
+      "data/evaluations/fifteenth-business-long-task-a-sell-v2/execution/summary.json": "45272131d28d49892ceee6221f1fed6b71c1ed8d82fcafd61e4163aae85d3758",
+      "docs/fifteenth/business-long-task-a-content-review.json": "07efb1cf317ffee930a3752d190b5681557408c8183d89102ccba60b70d10eec",
+      "docs/fifteenth/business-long-task-a-content-review.md": "b953f95c834fb957c54beb4614cee6b16aff304ac2f6af4f4037d21a9272b9f7"
+    },
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "source_sha256_at_review": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "database_hashes_after": {
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/evaluation.sqlite3": "e54952aeca661c33ec8b07ac74feaa7352a48d62ac1260c60fea0df5f64591eb",
+      "data/evaluations/fifteenth-business-long-task-a-sell-v2/execution/evaluation.sqlite3": "2e087f49b837f310b7ede97645b9dc288f464cb1c5a5577907d19a3f872530a7",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451"
+    },
+    "all_three_database_logical_hashes_unchanged": true,
+    "protected_file_hashes_unchanged": true
+  },
+  "remaining_limits": [
+    "This report fails the content prerequisite for B. It must not be passed to a later-stage gate as an accepted sale report.",
+    "Formal forecast-window/direction validation and natural forecast accuracy remain unverified.",
+    "The accepted initial-A review and all original model results, forecasts, failures and ledger rows remain untouched.",
+    "No inference about future investment performance or third-party source reachability is made."
+  ]
+}

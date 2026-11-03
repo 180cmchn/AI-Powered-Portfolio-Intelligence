@@ -1,0 +1,198 @@
+{
+  "at": "2026-11-02T20:21:19.933938+08:00",
+  "baseline_at": "2026-11-02T16:59:00.866566+08:00",
+  "git": {
+    "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "branch": "main",
+    "working_tree_clean": false,
+    "tracked_changed_entries": 22,
+    "untracked_entries": 6,
+    "new_worktree_code_pushed": false,
+    "remote_head_matches_local_head": true,
+    "local_uncommitted_validation_is_not_remote_ci": true
+  },
+  "source_sha256_before_check": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+  "source_sha256_after_check": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+  "matches_frozen_v10": true,
+  "app_matches_full_validated_b35": true,
+  "app_file_differences_from_b35": [],
+  "daily_files": {
+    "data/live.sqlite3": {
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904,
+      "mtime_ns": 1793525469929264343,
+      "stable_during_read": true
+    },
+    "data/live.sqlite3-wal": {
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632,
+      "mtime_ns": 1793542794634590748,
+      "stable_during_read": true
+    }
+  },
+  "daily_files_unchanged": {
+    "data/live.sqlite3": true,
+    "data/live.sqlite3-wal": true
+  },
+  "env_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "env_stamp_unchanged": true,
+  "env_contents_read": false,
+  "daily_8765_listener_observed": false,
+  "daily_8765_listener_pids": [],
+  "listener_check": {
+    "method": "lsof -nP -iTCP:8765 -sTCP:LISTEN -Fp",
+    "returncode": 1,
+    "stderr_present": false,
+    "observed_at_utc": "2026-11-02 12:20:14 UTC"
+  },
+  "listener_observation_unchanged": true,
+  "execution_terminal_context": {
+    "source": "Executing parent agent terminal notification; preservation check does not read private model bodies.",
+    "iteration": "v10",
+    "session_id": 84734,
+    "exit_code": 0,
+    "completed_at": "2026-11-02T20:17:30+08:00",
+    "contract_accepted": true,
+    "published": true,
+    "first_attempt": 1,
+    "terminal": "response.completed",
+    "http_body_complete": true,
+    "cumulative_aggregate_http_attempts": 7,
+    "authorized_aggregate_ceiling": 10,
+    "remaining_unspent_attempts": 3,
+    "execution_stopped": true
+  },
+  "validation_lineage": [
+    {
+      "scope": "Full Python suite, production app with final manager guidance; verifier before later isolated output/instruction overrides",
+      "source_sha256": "b35b772fc4501303d17555cdc3785954861aacb9c7685570aefef7d3312a7346",
+      "summary": "1238 passed, 1 warning in 148.07s (0:02:28)",
+      "source_unchanged": true,
+      "record": "test-results/fifteenth/python-linux-v8-b35.json"
+    },
+    {
+      "scope": "Final isolated verifier/context targeted regression; production app remains identical to full validated b35",
+      "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+      "summary": "34 passed in 4.76s",
+      "source_unchanged": true,
+      "file_sha256": {
+        "scripts/verify_fifteenth_aggregate.py": "e89864570038c12576f31e586f6193adadccb9f3e56f866abf3dc02c70c5e790",
+        "tests/test_fifteenth_context.py": "8be16a97fe2e4100b6c699555d13bcd2b2141926addbe0a7fd3a27cdbc94dfa3"
+      },
+      "record": "test-results/fifteenth/v10-required-fields-linux-bed.json"
+    }
+  ],
+  "changes_made_by_this_preservation_check": {
+    "model_http_requests": 0,
+    "daily_database_writes": 0,
+    "source_or_test_edits": 0,
+    "env_edits": 0,
+    "daily_model_configuration_edits": 0,
+    "proxy_configuration_edits": 0,
+    "service_starts_or_restarts": 0,
+    "git_pushes": 0
+  },
+  "scope_note": "Authorized xhigh/output/instruction experiments were confined to isolated verification. This record does not claim those isolated settings were unchanged; daily files and source freeze are checked separately.",
+  "method": "Filesystem byte reads only for SQLite/WAL hashes, without opening them as SQLite. Stat only for .env. Read-only process/Git/GitHub inspection. No model requests or service starts.",
+  "remote_ci": {
+    "checked_at_utc": "2026-11-02 12:20:24 UTC",
+    "branch": "main",
+    "remote_head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "run": {
+      "id": 41413931460,
+      "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_attempt": 1,
+      "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460"
+    },
+    "jobs": [
+      {
+        "id": 125173106146,
+        "name": "python",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 125173106580,
+        "name": "browser (seventh)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106581,
+        "name": "browser (twelfth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106648,
+        "name": "browser (thirteenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106685,
+        "name": "browser (iteration)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106690,
+        "name": "browser (eleventh)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106701,
+        "name": "browser (tenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106745,
+        "name": "browser (fourteenth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106793,
+        "name": "browser (twelfth-select)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106810,
+        "name": "browser (thirteenth-correction)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106811,
+        "name": "browser (production)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125173106824,
+        "name": "browser (ninth)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 125174489557,
+        "name": "tests",
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "browser_groups_success": 11,
+    "new_worktree_code_pushed": false,
+    "method": "Read-only connected GitHub GET: main branch, latest workflow run, current run jobs."
+  },
+  "only_document_written": "docs/fifteenth/xhigh-preservation-after.json"
+}

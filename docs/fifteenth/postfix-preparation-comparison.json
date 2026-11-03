@@ -1,0 +1,101 @@
+{
+  "kind": "offline_postfix_preparation_comparison",
+  "checked_at": "2026-11-02T18:24:53.138533+08:00",
+  "comparison": {
+    "before": "fifteenth-historical-verified-v5",
+    "after": "fifteenth-historical-postfix-prepared-v6",
+    "v5_public_manifest_exact_match": true,
+    "v6_public_manifest_exact_match": true,
+    "changed_manifest_top_level_fields": [
+      "source_sha256"
+    ],
+    "expected_source_only_change": true
+  },
+  "source": {
+    "v5": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+    "v6": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "v6_matches_current_frozen_source": true,
+    "head_unchanged": true,
+    "no_source_modified_by_comparison": true
+  },
+  "evidence": {
+    "package_sha256": "506f793a6bc2c25ec2e1cbd56dce798820bda36a55d7c9ebcbc34e1ccfcd457e",
+    "package_hash_unchanged": true,
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "input_hash_recomputed_matches_both": true,
+    "input_json_objects_equal": true,
+    "input_file_bytes_equal": true,
+    "input_chars": 42584,
+    "full_reports_count": 2,
+    "full_reports_exactly_equal": true,
+    "calculation_count": 21,
+    "calculations_exactly_equal": true,
+    "shared_calculation_contexts_equal": true,
+    "material_index_count": 40,
+    "material_indexes_equal": true,
+    "account_metrics_gaps_time_equal": true,
+    "historical_source_hash_unchanged": true
+  },
+  "configuration": {
+    "all_selected_bindings_equal": true,
+    "binding_equality_checks": {
+      "model_name": true,
+      "model_protocol": true,
+      "reasoning_effort": true,
+      "model_responses_stream": true,
+      "model_native_search": true,
+      "model_allow_no_key": true,
+      "model_base_url": true,
+      "provider_id": true,
+      "provider_revision": true,
+      "credential_revision": true,
+      "role_id": true,
+      "role_version": true,
+      "prompt_version": true,
+      "tool_version": true,
+      "team_id": true,
+      "fingerprint": true
+    },
+    "full_role_matrix_equal": true,
+    "effective_team_id_equal": true,
+    "effective_team_id": "15d02f2085ec504fb33e7a3003584c535f4a815a7d2c759db4ce720eaf8267bd",
+    "manager_prompt_hash_equal": true,
+    "production_full_schema_hash_equal": true,
+    "production_full_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "model_name": "grok-4.7",
+    "reasoning_effort": "max",
+    "protocol": "responses",
+    "max_output_tokens": 4000,
+    "execution_policy_equal": true,
+    "request_policy_equal": true,
+    "timeouts_seconds": {
+      "model_first_event_timeout_seconds": 90,
+      "model_stream_idle_timeout_seconds": 120,
+      "model_request_hard_timeout_seconds": 300,
+      "synthesis_request_hard_timeout_seconds": 360,
+      "model_request_timeout_seconds": 90,
+      "synthesis_request_timeout_seconds": 120,
+      "analysis_timeout_seconds": 1200,
+      "agent_timeout_seconds": 600
+    },
+    "environment_file_stamp_equal": true
+  },
+  "routing": {
+    "planned_route": "existing environment; TLS verification unchanged",
+    "route_policy_equal": true,
+    "direct_transport_override": false,
+    "actual_v6_route_observed": false,
+    "note": "Prepared for the existing HTTPX environment route, not the earlier direct-route proposal. No v6 HTTP request has run; comparison proves saved policy and environment-file stamp equality, not an unrecorded proxy-hop identity."
+  },
+  "authorization_boundary": {
+    "preparation_only": true,
+    "v6_paid_requests": 0,
+    "v6_execution_directory_exists": false,
+    "new_network_requests_by_comparison": 0,
+    "new_model_requests_by_comparison": 0,
+    "user_explicit_paid_resumption_received": false,
+    "unknown_outcome_stop_remains": true,
+    "preparation_does_not_authorize_send": true
+  },
+  "method": "Read prepared JSON/input file bytes and current source files only. No SQLite connection, daily database access, test run, secret/config value export, network request, or model request."
+}

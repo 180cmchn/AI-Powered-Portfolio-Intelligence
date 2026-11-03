@@ -1,0 +1,133 @@
+{
+  "kind": "isolated_failed_aggregate_reopen_check",
+  "checked_at": "2026-11-02T17:36:51.464795+08:00",
+  "job_id": "0b0ebfe079564bb096fb1bdb4267236c",
+  "before_reopen": {
+    "accounts": {
+      "rows": 1,
+      "sha256": "2d125a2b86d9e3c92ed9f2f6b452229f7db09b3affd251d0e8e0804a29e37483"
+    },
+    "snapshots": {
+      "rows": 4,
+      "sha256": "0d1b56ffdb07dc29bd8178fd203d3fd423f654a4db79b5da0871e6630afccb87"
+    },
+    "analyses": {
+      "rows": 1,
+      "sha256": "6337d3093204995172159abae46c8f64a28e42f286d44b617abc937f66403b2a"
+    },
+    "recommendations": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "forecasts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "ledger_entries": {
+      "rows": 4,
+      "sha256": "b9347153c60f9eb581c32254e968fb7b71340d94bb54dc9681aca7f4d1c24445"
+    },
+    "ledger_positions": {
+      "rows": 3,
+      "sha256": "c7b833b88f6cc8768a11a8f52b14eb396ee6a5a39a0d9bc2531ff22571b66f63"
+    },
+    "cash_entries": {
+      "rows": 4,
+      "sha256": "99fe25c8b7ecc777b6dfdbc8da4a677f707cebe90bb0f542af11215f7d91725c"
+    },
+    "ledger_operations": {
+      "rows": 3,
+      "sha256": "3440ff79e41366e4438fd53e3f32f12dc122758fb6ee9b6624c1239bdb4dbad7"
+    },
+    "new_job": {
+      "state": "failed",
+      "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+      "has_result": true,
+      "input_version": 4
+    },
+    "new_job_writes": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0
+    }
+  },
+  "after_reopen": {
+    "accounts": {
+      "rows": 1,
+      "sha256": "2d125a2b86d9e3c92ed9f2f6b452229f7db09b3affd251d0e8e0804a29e37483"
+    },
+    "snapshots": {
+      "rows": 4,
+      "sha256": "0d1b56ffdb07dc29bd8178fd203d3fd423f654a4db79b5da0871e6630afccb87"
+    },
+    "analyses": {
+      "rows": 1,
+      "sha256": "6337d3093204995172159abae46c8f64a28e42f286d44b617abc937f66403b2a"
+    },
+    "recommendations": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "forecasts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "ledger_entries": {
+      "rows": 4,
+      "sha256": "b9347153c60f9eb581c32254e968fb7b71340d94bb54dc9681aca7f4d1c24445"
+    },
+    "ledger_positions": {
+      "rows": 3,
+      "sha256": "c7b833b88f6cc8768a11a8f52b14eb396ee6a5a39a0d9bc2531ff22571b66f63"
+    },
+    "cash_entries": {
+      "rows": 4,
+      "sha256": "99fe25c8b7ecc777b6dfdbc8da4a677f707cebe90bb0f542af11215f7d91725c"
+    },
+    "ledger_operations": {
+      "rows": 3,
+      "sha256": "3440ff79e41366e4438fd53e3f32f12dc122758fb6ee9b6624c1239bdb4dbad7"
+    },
+    "new_job": {
+      "state": "failed",
+      "error": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响",
+      "has_result": true,
+      "input_version": 4
+    },
+    "new_job_writes": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0
+    }
+  },
+  "all_observed_state_unchanged_after_reopen": true,
+  "historical_business_tables_preserved": {
+    "accounts": false,
+    "snapshots": true,
+    "analyses": true,
+    "recommendations": true,
+    "forecasts": true,
+    "ledger_entries": true,
+    "ledger_positions": true,
+    "cash_entries": true,
+    "ledger_operations": true
+  },
+  "shared_reserved_attempts": 1,
+  "new_paid_requests_during_check": 0,
+  "worker_or_scheduler_started": false,
+  "normal_business_matrix_executed": false,
+  "successful_publication_restart_validation": "not_applicable_no_final_submission",
+  "initial_check_error": "One local check failed before opening any DB: incorrect import of now from app.clock; corrected to datetime/ZoneInfo. No source change or HTTP request.",
+  "note": "Only isolated Store reopen/read was performed. This is not a successful report restart acceptance or normal business run.",
+  "historical_account_differences": [
+    {
+      "changed_fields": [
+        "analysis_state",
+        "latest_job_id"
+      ],
+      "same_account_version": true
+    }
+  ],
+  "historical_account_business_facts_preserved": true,
+  "historical_account_tracking_changes": "Only analysis_state and latest_job_id differ after enqueue/failure; account version and all business fields are unchanged."
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "isolated_xhigh_verifier_validation",
+  "recorded_at": "2026-11-02T19:50:44.023442+08:00",
+  "source_sha256": "7814848e927972c46f9aa55332870210d492ab73e61e7bf6668baf3df542ad0e",
+  "changed_files": [
+    "scripts/verify_fifteenth_aggregate.py",
+    "tests/test_fifteenth_context.py"
+  ],
+  "file_sha256": {
+    "scripts/verify_fifteenth_aggregate.py": "28fc61f7abd475f331e74737fe0f272576764bac1df952cb810229040ddbfdc7",
+    "tests/test_fifteenth_context.py": "09dc3d59a134b015da136ca06ba26e05a0ea953d9540d70103a35fd1551e4a96"
+  },
+  "production_app_changed_since_a2c": [],
+  "prior_production_full_suite": "local-stream-fix-validation.json",
+  "macos": {
+    "passed": 19,
+    "failed": 0,
+    "seconds": 1.67,
+    "log": "test-results/fifteenth/xhigh-verifier-offline-tests.txt"
+  },
+  "linux_python_3_12": {
+    "passed": 19,
+    "failed": 0,
+    "seconds": 2.75,
+    "log": "test-results/fifteenth/xhigh-verifier-linux-781.txt"
+  },
+  "existing_effort_tests": {
+    "passed": 20,
+    "log": "test-results/fifteenth/xhigh-existing-offline-tests.txt"
+  },
+  "coverage": [
+    "isolated manager override frozen and sent as xhigh",
+    "source effective team checked before overriding",
+    "prepare/run override must match",
+    "wire payload effort mismatch rejected before transport",
+    "single-attempt incomplete cannot trigger a second request",
+    "only allowlisted known-terminal visible output retained privately; reasoning omitted",
+    "no publication from incomplete or ordinary text",
+    "source database/roles remain unchanged"
+  ],
+  "full_suites_not_rerun_for_verifier_only_change": true
+}

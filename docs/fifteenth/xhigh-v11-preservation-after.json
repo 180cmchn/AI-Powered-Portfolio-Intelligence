@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-11-02T21:02:45.190687+08:00",
+  "execution_source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+  "source_sha256_now": "c5cc25cf87871333787ef9c0eef5373d5bc4ee8546447692359ae9674a02a1dd",
+  "source_change_after_execution": "Documented reference parsing and business verifier work began after v11 completed; not attributed to the completed request.",
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "protected_files": {
+    "data/live.sqlite3": {
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904,
+      "mtime_ns": 1793525469929264343
+    },
+    "data/live.sqlite3-wal": {
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632,
+      "mtime_ns": 1793542794634590748
+    }
+  },
+  "daily_files_unchanged": true,
+  "environment_stamp_unchanged": true,
+  "listener_8765": ""
+}

@@ -1,0 +1,32 @@
+{
+  "kind": "postfix_goal_blocked_audit",
+  "recorded_at": "2026-11-02T18:27:09.126409+08:00",
+  "fresh_resumed_audit_consecutive_goal_turns": 3,
+  "previous_turn_classification": "progress: prepared current-source v6 isolation package and independently confirmed only source identity differs from v5; explicit recovery requested but not received",
+  "same_blocker": "Further actual report delivery requires a paid request; latest explicit user instruction is to not resume and retain the remaining nine attempts. Automatic goal continuations do not revoke that instruction.",
+  "authoritative_checks": {
+    "source_and_v6_match": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "v6_execution_exists": false,
+    "v5_task_terminal": "failed",
+    "v5_new_reports": 0,
+    "shared_budget_used": 1,
+    "shared_budget_maximum": 10,
+    "mac_full_passed": 1227,
+    "linux_full_passed": 1227,
+    "browser_groups_passed": 11
+  },
+  "completed_unblocked_work": [
+    "Two reproduced local stream receiver defects fixed",
+    "Controlled boundary regressions and full Mac/Linux/browser validation",
+    "Supplier screenshot reconciliation",
+    "Current-source isolated preparation and configuration/evidence comparison"
+  ],
+  "remaining_required": [
+    "Actual accepted historical three-security report and content review",
+    "Actual post-publication/restart observation",
+    "Separately authorized normal business matrix"
+  ],
+  "next_user_action": "Answer the pending original-route post-fix verification recovery question; maximum one initial request plus one contract correction, no blind replay.",
+  "new_paid_requests": 0,
+  "objective_completed": false
+}

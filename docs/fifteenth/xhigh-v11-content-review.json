@@ -1,0 +1,487 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-02T13:00:53.624836+00:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/evidence_context",
+    "method": "Independently read the entire actual v11 report and limitations, both frozen child reports including findings/open questions, all 21 calculations and their attribution context, the actual-request time_context, and read-only isolated publication/ledger evidence. No hidden reasoning or external source re-fetch.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "report_sha256": "c2fbd1f2c0a00a2809ba57eb3114e376e310891a43208e9fe423969cd697ce77",
+    "report_characters": 4694,
+    "job_id": "f405064514ed4f1ab0c64eda15ea94c4",
+    "source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "input_file_unchanged_from_v10": true,
+    "private_report_location": "data/evaluations/fifteenth-historical-xhigh-v11/execution/model-result.json",
+    "actual_request_payload_sha256": "9306d347da4b374584f7b154da157d7bf0fddae27478aaf793fbfce7352efa42"
+  },
+  "content_assessment": "evaluated",
+  "overall": "qualified",
+  "accepted": false,
+  "accepted_definition": "accepted=true means this independent development review accepts the actual authored historical three-security simulated-account report against the original content requirements. accepted=false here reflects a specific authored factual contradiction and a separate source-navigation defect. It does not deny the valid terminal tool submission/publication and does not alter the application saved not_evaluated state.",
+  "acceptance_boundaries": {
+    "historical_simulated_report_obtained": true,
+    "historical_only_readable_with_disclosed_qualifications": true,
+    "historical_time_semantics_accepted": true,
+    "substantive_three_security_analysis_present": true,
+    "unqualified_content_acceptance": false,
+    "normal_business_matrix_gate_satisfied_by_this_review": false,
+    "current_account_or_current_market_guidance_accepted": false,
+    "investment_accuracy_validated": false,
+    "continuous_operation_validated": false
+  },
+  "checks": [
+    {
+      "id": "account_numeric_values_and_cost_semantics",
+      "status": "pass",
+      "finding": "Cash, known asset values, recorded fee-inclusive costs, three unrealized P&L figures, zero realized P&L, nine percentages and the two weight denominators agree with input and ledger. Simulated booking prices are distinguished from earlier market quotes; future sale fees are not fabricated or deducted twice. This pass does not cover the contradictory gold counter-factor sentence listed separately."
+    },
+    {
+      "id": "historical_time_anchor",
+      "status": "pass",
+      "finding": "Report explicitly distinguishes decision_as_of on November 1 from execution_time on November 2 and the October 30 valuation. Sellability and future trading conditions are anchored to the historical decision time. It explicitly keeps intervening market outcomes unknown; no claim that November 2 had not occurred at execution."
+    },
+    {
+      "id": "three_security_actions_and_alternatives",
+      "status": "pass",
+      "finding": "All three securities have a position action, no-add alternative, exit alternative, reasons, counter-factors and conditions. The account section also compares cash deployment, switching from stock to ETFs and liquidating. Narrative direction abstention does not remove portfolio actions."
+    },
+    {
+      "id": "source_and_calculation_provenance",
+      "status": "pass",
+      "finding": "All nine intended source URLs occur exactly in the frozen input. Both child report IDs and all ten mentioned calculation IDs are real. Nine calculations support account ratios; the tenth is explicitly used as an example of arithmetic that cannot establish company financial facts. Product and company source access limitations are preserved."
+    },
+    {
+      "id": "localized_gaps_and_evidence_access",
+      "status": "pass",
+      "finding": "Failed price research limits trends, relative performance and volume conclusions. Company disclosures remain metadata/link-only; ETF quoted product facts remain excerpts and secondary claims are explicitly qualified. No invented financial statements, current holdings, realized tracking-error values, IOPV or directional sample."
+    },
+    {
+      "id": "gold_counter_factor_direction",
+      "status": "fail",
+      "finding": "The gold section states that cost is about one fifth below the last close, although recorded unit cost is 10.05 and last close is 8.115. Elsewhere the report correctly gives negative 19.25% and says simulated price exceeds the earlier close. This is an authored contradiction in a security-specific counter-factor, not a missing external fact or a calculation-tool error.",
+      "scope": "One sentence under SH:518880 counter-factors. It does not invalidate the other eight/remaining account metrics or erase the three-security coverage.",
+      "blocks_content_acceptance": true
+    },
+    {
+      "id": "mechanical_source_navigation",
+      "status": "fail",
+      "finding": "Five of nine persisted reference URLs include a fullwidth Chinese closing parenthesis, sometimes followed by prose. The intended nine URLs in the report are valid input strings, but the existing bare-URL extractor produces incorrect link targets. The stored 9 source_link count is not proof of 9 usable source links.",
+      "scope": "Local reference extraction/display; independent of model source invention. Fixing it without changing report text would address this item only.",
+      "blocks_unqualified_reader_delivery": true
+    },
+    {
+      "id": "formal_forecasts_tracking_and_trade_execution",
+      "status": "not_applicable",
+      "finding": "No forecast batch/targets; no structured suggestions were requested in this isolated final-only format. No trades are executed. These absent branches cannot be marked passed."
+    }
+  ],
+  "blocking_findings": [
+    {
+      "id": "gold_counter_factor_direction",
+      "kind": "model_authored_content",
+      "exact_short_quote": "成本相对最近收盘已低约两成",
+      "input_facts": {
+        "cost_per_unit_including_recorded_fee": "10.05",
+        "last_close": "8.115",
+        "market_value": "811.50",
+        "remaining_cost": "1005.00",
+        "unrealized_pnl": "-193.50",
+        "pnl_relative_to_cost_percent": "-19.25"
+      },
+      "scope": "The cost-versus-close direction in the gold counter-factor sentence is reversed. This review explains the discrepancy but does not replace or edit that sentence.",
+      "all_other_numeric_claims_not_rejected": true
+    },
+    {
+      "id": "source_url_boundary",
+      "kind": "local_mechanical_reference_extraction",
+      "persisted_reference_count": 9,
+      "exact_input_url_targets": 4,
+      "targets_with_chinese_suffix": 5,
+      "affected_references": [
+        {
+          "reference_index": 1,
+          "contains_fullwidth_closing_parenthesis": true,
+          "url_is_exact_input_url": false,
+          "expected_input_url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-17/518880_20260317_QR4M.pdf"
+        },
+        {
+          "reference_index": 2,
+          "contains_fullwidth_closing_parenthesis": true,
+          "url_is_exact_input_url": false,
+          "expected_input_url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/518880_20261027_GQGW.pdf"
+        },
+        {
+          "reference_index": 4,
+          "contains_fullwidth_closing_parenthesis": true,
+          "url_is_exact_input_url": false,
+          "expected_input_url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/20231208180055-H30007_Index_Methodology_cn.pdf"
+        },
+        {
+          "reference_index": 5,
+          "contains_fullwidth_closing_parenthesis": true,
+          "url_is_exact_input_url": false,
+          "expected_input_url": "http://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/738844303f6ade76b8717a4b78223771.pdf"
+        },
+        {
+          "reference_index": 8,
+          "contains_fullwidth_closing_parenthesis": true,
+          "url_is_exact_input_url": false,
+          "expected_input_url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-08-22/d406bfc9-4778-4a2a-a6e8-a1395b8f7b66.PDF"
+        }
+      ],
+      "report_intended_urls_exactly_match_input": true,
+      "no_network_link_availability_test_performed": true
+    }
+  ],
+  "time_review": {
+    "actual_request_time_context": {
+      "execution_time": "2026-11-02T20:50:45.012737+08:00",
+      "data_as_of": "2026-10-30T15:34:06+08:00",
+      "historical_replay": true,
+      "decision_as_of": "2026-11-01T23:14:23.530972+08:00",
+      "decision_time_basis": "historical_checkpoint_at",
+      "instruction": "execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。"
+    },
+    "body_decision_time": "2026-11-01T23:14:23+08:00",
+    "body_execution_time": "2026-11-02T20:50:45+08:00",
+    "timestamp_precision": "Body omits fractional seconds; date/time/zone agree with actual payload.",
+    "data_as_of": "2026-10-30T15:34:06+08:00",
+    "historical_checkpoint_authority": "Frozen input.historical_checkpoint_at, previously checked against original synthesis_checkpoints.created_at; ledger/snapshot precede this cutoff.",
+    "future_market_outcomes_remain_unknown": true,
+    "v10_ambiguous_clock_gap_resolved": true
+  },
+  "security_reviews": [
+    {
+      "security_id": "SH:518880",
+      "coverage": "Action, alternative, basis, counter-factors, change conditions and localized gaps are all present.",
+      "action": "Maintain existing quantity; no addition or exit at historical decision point.",
+      "basis_sources": [
+        "input.metrics.positions[0]",
+        "input.reports[1].findings[0,1,5]",
+        "input.calculations[5,6] (one-based ordinals)"
+      ],
+      "counter_and_conditions": "Trend and actual tracking/holdings evidence incomplete; future verified gold trend deterioration or strategy/tracking deviation may lead to reduction.",
+      "content_result": "qualified: the explicit cost/close counter-factor direction is wrong."
+    },
+    {
+      "security_id": "SZ:159599",
+      "coverage": "Action, add/exit alternatives, product/price basis, counter-evidence and change conditions are present.",
+      "action": "Maintain small existing exposure; do not add or exit at historical decision point.",
+      "basis_sources": [
+        "input.metrics.positions[2]",
+        "input.reports[1].findings[2,3,4,5]",
+        "input.calculations[4,8] (one-based ordinals)"
+      ],
+      "counter_and_conditions": "Recent fall and unverified quarter-return claims are qualified; tracking deviation, comparable premium/discount or further price/liquidity deterioration may change action.",
+      "content_result": "pass within limited historical scope; underlying PDFs not independently re-read."
+    },
+    {
+      "security_id": "SZ:002354",
+      "coverage": "Observe/hold, no-add and exit alternatives, concentration and price basis, adverse-disclosure conditions and specific missing fundamentals are present.",
+      "action": "Observe existing holding, no new buy; consider priority reduction/exit if the stated later evidence confirms adverse conditions.",
+      "basis_sources": [
+        "input.metrics.positions[1]",
+        "input.reports[0].summary/findings/open_questions",
+        "input.calculations[3,7] (one-based ordinals)"
+      ],
+      "counter_and_conditions": "Single-day decline and sleeve concentration acknowledged; no unsupported limit-down, business, financial or governance claims; no cumulative-to-single-quarter fabrication.",
+      "content_result": "pass within limited historical scope."
+    }
+  ],
+  "calculation_mapping": {
+    "visible_calculations": 21,
+    "account_ratios_with_exact_ids_and_correct_rounding": 9,
+    "mapped_account_ratios": [
+      {
+        "input_ordinal": 1,
+        "calculation_id": "calculation-9b85858782dc4fd894dc6e249c444c9a",
+        "meaning": "cash / total assets",
+        "operation": "a / b * 100",
+        "arguments": [
+          "86484.90",
+          "96764.40"
+        ],
+        "reported_percent": "89.38",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 2,
+        "calculation_id": "calculation-98247ac3a8614511baf1de484b42538a",
+        "meaning": "securities / total assets",
+        "operation": "a / b * 100",
+        "arguments": [
+          "10279.50",
+          "96764.40"
+        ],
+        "reported_percent": "10.62",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 3,
+        "calculation_id": "calculation-de98f1d7907340a4851c1fb1634b26bf",
+        "meaning": "SZ:002354 / total assets",
+        "operation": "a / b * 100",
+        "arguments": [
+          "7520.00",
+          "96764.40"
+        ],
+        "reported_percent": "7.77",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 4,
+        "calculation_id": "calculation-92415c5482ae455e9c10c318bfcf4b01",
+        "meaning": "SZ:159599 / total assets",
+        "operation": "a / b * 100",
+        "arguments": [
+          "1948.00",
+          "96764.40"
+        ],
+        "reported_percent": "2.01",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 5,
+        "calculation_id": "calculation-a0658e7bd99946b29c7d57f374d25065",
+        "meaning": "SH:518880 / total assets",
+        "operation": "a / b * 100",
+        "arguments": [
+          "811.50",
+          "96764.40"
+        ],
+        "reported_percent": "0.84",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 6,
+        "calculation_id": "calculation-02c84c730095415a8aafc3ea68a2e987",
+        "meaning": "SH:518880 unrealized P&L / recorded remaining cost",
+        "operation": "a / b * 100",
+        "arguments": [
+          "-193.50",
+          "1005.00"
+        ],
+        "reported_percent": "-19.25",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 7,
+        "calculation_id": "calculation-acf76b8692384f6693664e36befd53f1",
+        "meaning": "SZ:002354 unrealized P&L / recorded remaining cost",
+        "operation": "a / b * 100",
+        "arguments": [
+          "-2485.10",
+          "10005.10"
+        ],
+        "reported_percent": "-24.84",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 8,
+        "calculation_id": "calculation-01e3e2df9db247319e4b25f3876e3e5d",
+        "meaning": "SZ:159599 unrealized P&L / recorded remaining cost",
+        "operation": "a / b * 100",
+        "arguments": [
+          "-557.00",
+          "2505.00"
+        ],
+        "reported_percent": "-22.24",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      },
+      {
+        "input_ordinal": 9,
+        "calculation_id": "calculation-d05d24688b2f49f992e417add8b8aeee",
+        "meaning": "recorded buy fees / total buy cash outflow",
+        "operation": "a / b * 100",
+        "arguments": [
+          "15.10",
+          "13515.10"
+        ],
+        "reported_percent": "0.11",
+        "matches_saved_result": true,
+        "id_present_in_body": true
+      }
+    ],
+    "unbound_financial_looking_arithmetic": 12,
+    "treated_as_verified_company_facts": false,
+    "explicitly_excluded_example_id": "calculation-f8d9a82a436541d7ac22a1f2782194cb",
+    "all_body_calculation_ids_exist_in_input": true,
+    "body_calculation_id_count": 10
+  },
+  "source_mapping": [
+    {
+      "url": "https://quote.eastmoney.com/sh518880.html",
+      "input_locations": [
+        "input.metrics.positions[0].quote.source_url",
+        "input.reports[1].findings[5].source_urls[2]"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-17/518880_20260317_QR4M.pdf",
+      "input_locations": [
+        "input.reports[1].findings[0].source_urls[0]",
+        "input.materials[6].url",
+        "input.materials[10].url",
+        "input.materials[20].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": false,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "http://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-10-27/518880_20261027_GQGW.pdf",
+      "input_locations": [
+        "input.reports[1].findings[0].source_urls[1]",
+        "input.reports[1].findings[1].source_urls[0]",
+        "input.materials[3].url",
+        "input.materials[11].url",
+        "input.materials[14].url",
+        "input.materials[22].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": false,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "https://quote.eastmoney.com/sz159599.html",
+      "input_locations": [
+        "input.metrics.positions[2].quote.source_url",
+        "input.reports[1].findings[5].source_urls[3]"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/20231208180055-H30007_Index_Methodology_cn.pdf",
+      "input_locations": [
+        "input.reports[1].findings[2].source_urls[0]",
+        "input.materials[1].url",
+        "input.materials[12].url",
+        "input.materials[17].url",
+        "input.materials[37].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": false,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "http://dataclouds.cninfo.com.cn/sjother2/fund/2026/20261026/738844303f6ade76b8717a4b78223771.pdf",
+      "input_locations": [
+        "input.reports[1].findings[2].source_urls[1]",
+        "input.reports[1].findings[3].source_urls[0]",
+        "input.reports[1].findings[4].source_urls[0]",
+        "input.materials[2].url",
+        "input.materials[8].url",
+        "input.materials[16].url",
+        "input.materials[38].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": false,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "https://quote.eastmoney.com/sz002354.html",
+      "input_locations": [
+        "input.metrics.positions[1].quote.source_url",
+        "input.reports[0].findings[0].source_url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF",
+      "input_locations": [
+        "input.reports[0].findings[1].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": true,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    },
+    {
+      "url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-08-22/d406bfc9-4778-4a2a-a6e8-a1395b8f7b66.PDF",
+      "input_locations": [
+        "input.reports[0].findings[2].url"
+      ],
+      "exact_url_in_authored_body": true,
+      "persisted_reference_exact_match": false,
+      "access_boundary": "Use actual input access labels; a source URL is not a new full-text read."
+    }
+  ],
+  "reference_counts": {
+    "saved_application_summary": {
+      "resolved": 0,
+      "source_link": 9,
+      "unresolved": 0
+    },
+    "intended_body_urls": 9,
+    "intended_body_urls_matching_input": 9,
+    "persisted_exact_url_targets_matching_input": 4,
+    "persisted_malformed_url_targets": 5,
+    "both_real_child_report_ids_named": true
+  },
+  "application_state_separate_from_review": {
+    "summary_content_assessment": "not_evaluated",
+    "published_delivery_content_assessment": "not_evaluated",
+    "contract_accepted": true,
+    "published": true,
+    "publication_status": "current",
+    "published_report_matches_reviewed_body": true,
+    "delivery_application_counts": {
+      "suggestions": 0,
+      "suggestion_actions": 0,
+      "forecasts": 0
+    },
+    "no_saved_assessment_rewritten": true
+  },
+  "denominators": {
+    "v11_http_requests": 1,
+    "v11_valid_terminal_submissions": 1,
+    "v11_reports_published": 1,
+    "v11_first_attempt_submissions": 1,
+    "v11_corrections": 0,
+    "requested_securities": 3,
+    "securities_with_substantive_account_action": 3,
+    "narrative_direction_abstentions": 3,
+    "formal_forecast_targets": 0,
+    "formal_direction_predictions": 0,
+    "formal_abstentions": 0,
+    "formal_uncovered_samples": 0,
+    "new_naturally_matured_scores": 0,
+    "structured_recommendations_applied": 0,
+    "no_accuracy_rate_from_zero_targets": true
+  },
+  "immutability": {
+    "model_report_not_edited": true,
+    "private_export_not_edited": true,
+    "v10_review_not_edited": true,
+    "private_input_result_summary_export_and_v10_review_hashes_unchanged": true,
+    "isolated_database_hash_unchanged": true,
+    "sqlite_access": "mode=ro; only isolated v11 database",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "public_review_copies_full_private_report": false
+  },
+  "remaining_limits": [
+    "This is developer evidence comparison, not human investment sign-off.",
+    "Underlying source-document claims were not independently re-fetched or read beyond saved evidence.",
+    "The actual submitted report remains unchanged; no corrected prose was substituted.",
+    "URL extraction repair alone cannot fix the authored cost-direction contradiction.",
+    "Current-account research, version-changing normal business tasks, cash-candidate workflow, mature forecast accuracy and continuous stability remain separate stages."
+  ]
+}

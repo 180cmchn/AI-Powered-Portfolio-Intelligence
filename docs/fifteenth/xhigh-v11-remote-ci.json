@@ -1,0 +1,17 @@
+{
+  "kind": "github_readonly_verification",
+  "checked_at": "2026-11-02 12:44:35 UTC",
+  "repository": "180cmchn/AI-Powered-Portfolio-Intelligence",
+  "main_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "run": {
+    "id": 41413931460,
+    "head_sha": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_attempt": 1,
+    "updated_at": "2026-11-02T08:37:04Z",
+    "html_url": "https://github.com/180cmchn/AI-Powered-Portfolio-Intelligence/actions/runs/41413931460"
+  },
+  "local_changes_pushed": false,
+  "remote_rerun_requested": false
+}

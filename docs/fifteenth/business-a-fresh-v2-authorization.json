@@ -1,0 +1,29 @@
+{
+  "kind": "fresh_A_explicit_resume_authorization",
+  "recorded_at": "2026-11-02T16:00:09.071603+00:00",
+  "user_answer": "授权启用保留的 6 次",
+  "maximum_new_model_http": 6,
+  "reserved_final_calls_inside_six": 2,
+  "original_A_used": 10,
+  "combined_A_http_maximum": 16,
+  "historical_pool_used": 10,
+  "historical_pool_remaining": 0,
+  "old40_transferred": 0,
+  "stage": "a_initial",
+  "prepared_manifest": "data/evaluations/fifteenth-business-a-fresh-v2/preparation.json",
+  "prepared_manifest_sha256": "09e3a7b60452bde07790e388610e1b0e560a249b762f335be4d11a3a5393ca4f",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "scope": "Fresh isolated A; three simulated trade API operations; full production schema, managergrok4.7/xhigh, output6000, otherroles unchanged; original environment route and TLS; publish/restart checks. Old checkpoint not reused.",
+  "stop_conditions": [
+    "first_valid_publication",
+    "unknown_outcome",
+    "failed_job",
+    "six_total_model_HTTP"
+  ],
+  "fee_boundary": "Supplier actual charges, no reliable pre-request monetary ceiling",
+  "unapproved_stages": [
+    "a_after_sell",
+    "b_cash"
+  ],
+  "pre_execution_identity_checks": "source/env/prepared DB/current source configuration/accepted historical body all matched"
+}

@@ -1,0 +1,296 @@
+{
+  "started_at": "2026-11-02T21:54:00.627175+08:00",
+  "completed_at": "2026-11-02T21:58:53.590954+08:00",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "job_id": "7523b2ae0f144d399a1410628f256caf",
+  "request_inputs": [
+    {
+      "payload_sha256": "5d5281605b5df74831b6df2ec7fced3a3427d9f36991f14bee463a7f0347f15e",
+      "payload_bytes": 82267,
+      "network_route": "direct",
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "max_output_tokens_sent": 6000,
+      "output_limit_matches": true,
+      "time_context": {
+        "execution_time": "2026-11-02T21:54:00.675316+08:00",
+        "data_as_of": "2026-10-30T15:34:06+08:00",
+        "historical_replay": true,
+        "decision_as_of": "2026-11-01T23:14:23.530972+08:00",
+        "decision_time_basis": "historical_checkpoint_at",
+        "instruction": "execution_time 是本次执行时间，data_as_of 是资料/估值时点，decision_as_of 是本轮判断的时间基准。今天、下一交易日、尚未开盘等相对日期必须说明所依据的时点；历史行情与历史判断不能冒充当前状态。"
+      },
+      "task_instruction_sha256": "b6b1a074bd7e4b6b8b7fde785de450f2a109236dc0652af8d77a1b231f56fbdc",
+      "task_instruction_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "isolated_overrides": {
+    "manager_reasoning_effort": "xhigh",
+    "max_output_tokens": 6000,
+    "required_fields_only": true,
+    "network_route": "direct"
+  },
+  "network_route": "direct",
+  "routing": "explicit AsyncHTTPTransport; no environment proxy mounts; TLS verification and environment CA retained",
+  "published": true,
+  "contract_accepted": true,
+  "report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+  "submission_outcome": "first_attempt",
+  "shared_attempt_budget": {
+    "maximum": 10,
+    "reserved_attempts": 10,
+    "stages": {
+      "final": {
+        "maximum": 10,
+        "reserved_attempts": 10
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "forecast_rows_by_kind": {},
+  "formal_predictions": 0,
+  "kind": "historical_aggregate_xhigh_v13_accepted",
+  "recorded_at": "2026-11-02T22:13:37.346130+08:00",
+  "request": {
+    "attempt": 1,
+    "endpoint": "responses",
+    "model": "grok-4.7",
+    "base_url": "https://api.xxyapi.com/v1",
+    "protocol": "responses",
+    "task_id": "7523b2ae0f144d399a1410628f256caf",
+    "reasoning_effort": "xhigh",
+    "reasoning_effort_path": "reasoning.effort",
+    "reasoning_effort_sent": "xhigh",
+    "request_accepted": true,
+    "reported_reasoning_effort": "xhigh",
+    "agent_id": "manager",
+    "stage": "synthesis",
+    "input_chars": 67186,
+    "input_items": 1,
+    "requested_max_output_tokens": 6000,
+    "requested_tool_choice": {
+      "type": "function",
+      "name": "finish_analysis"
+    },
+    "tool_choice_status": "observed",
+    "tool_choice_satisfied": true,
+    "output_bytes": 1251068,
+    "request_id": null,
+    "http_version": "HTTP/1.1",
+    "stream_requested": true,
+    "native_search_requested": false,
+    "status_code": 200,
+    "usage": {
+      "input_tokens": 26829,
+      "input_tokens_details": {
+        "cached_tokens": 1152
+      },
+      "output_tokens": 24014,
+      "output_tokens_details": {
+        "reasoning_tokens": 15838
+      },
+      "total_tokens": 50843,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0,
+      "cost_in_usd_ticks": 666447600,
+      "context_details": {
+        "input_tokens": 26829,
+        "output_tokens": 24020
+      }
+    },
+    "error": null,
+    "error_code": null,
+    "cancelled_by": null,
+    "started_at": "2026-11-02T13:54:00.682524+00:00",
+    "timeout_policy": {
+      "policy_version": 2,
+      "first_event_seconds": 90.0,
+      "stream_idle_seconds": 120.0,
+      "request_hard_seconds": 360.0,
+      "connect_seconds": 15.0,
+      "pool_seconds": 15.0,
+      "write_seconds": 30.0,
+      "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+    },
+    "queue_wait_ms": 6.43,
+    "deadline_remaining_ms": {
+      "analysis_budget_exhausted": 1199988.53,
+      "request_hard_timeout": 360000.0
+    },
+    "effective_limit": "request_hard_timeout",
+    "stream_first_effective_event_ms": 3991.96,
+    "stream_last_progress_ms": 292859.61,
+    "stream_max_idle_ms": 30211.55,
+    "stream_first_byte_ms": 3816.64,
+    "cost_known": false,
+    "transport_phase": "response_received",
+    "transport_events": [
+      {
+        "event": "connection.connect_tcp.started",
+        "scope": "origin",
+        "elapsed_ms": 2.39
+      },
+      {
+        "event": "connection.connect_tcp.complete",
+        "scope": "origin",
+        "elapsed_ms": 216.9
+      },
+      {
+        "event": "connection.start_tls.started",
+        "scope": "origin",
+        "elapsed_ms": 216.95
+      },
+      {
+        "event": "connection.start_tls.complete",
+        "scope": "origin",
+        "elapsed_ms": 361.68
+      },
+      {
+        "event": "http11.send_request_headers.started",
+        "scope": "origin",
+        "elapsed_ms": 362.03
+      },
+      {
+        "event": "http11.send_request_headers.complete",
+        "scope": "origin",
+        "elapsed_ms": 362.31
+      },
+      {
+        "event": "http11.send_request_body.started",
+        "scope": "origin",
+        "elapsed_ms": 362.32
+      },
+      {
+        "event": "http11.send_request_body.complete",
+        "scope": "origin",
+        "elapsed_ms": 362.51
+      },
+      {
+        "event": "http11.receive_response_headers.started",
+        "scope": "origin",
+        "elapsed_ms": 362.52
+      },
+      {
+        "event": "http11.receive_response_headers.complete",
+        "scope": "origin",
+        "elapsed_ms": 3815.19
+      },
+      {
+        "event": "http11.receive_response_body.started",
+        "scope": "origin",
+        "elapsed_ms": 3816.52
+      },
+      {
+        "event": "http11.receive_response_body.complete",
+        "scope": "origin",
+        "elapsed_ms": 292860.54
+      }
+    ],
+    "response_headers_received": true,
+    "response_body_received": true,
+    "http_body_complete": true,
+    "stream_close_reason": "http_eof",
+    "proxy_tunnel": {
+      "observed": false,
+      "status_code": null,
+      "response_headers_received": false,
+      "established": null
+    },
+    "environment_proxy_present": true,
+    "provider_id": "legacy-09a15ec53c70",
+    "provider_revision": 1,
+    "credential_revision": 1,
+    "role_id": "manager",
+    "role_version": 4,
+    "prompt_version": 3,
+    "tool_version": 1,
+    "team_id": "a2d188863b1a7767d074b277563842226f03ba29df24663d262a896c8e86fb4a",
+    "account_id": "8ebc3078d56c45259c97aab5925319bf",
+    "request_timeout_seconds": 360.0,
+    "response_headers_ms": 3816.37,
+    "response_format": "sse",
+    "stream_event_count": 3787,
+    "stream_terminal": "response.completed",
+    "stream_first_event_ms": 3982.61,
+    "stream_last_byte_ms": 292857.41,
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 3,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 214,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 3,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 3556,
+      "response.function_call_arguments.delta": 1,
+      "response.function_call_arguments.done": 1,
+      "response.output_text.done": 1,
+      "response.content_part.done": 1,
+      "response.completed": 1
+    },
+    "response_id": "ac5ffadf-bd32-9052-bbd5-825d874b4ea0",
+    "stream_first_reasoning_event_ms": 3991.92,
+    "stream_last_progress_kind": "response.completed",
+    "stream_heartbeat_count": 4,
+    "stream_first_text_delta_ms": 229959.58,
+    "stream_first_tool_event_ms": 292175.49,
+    "stream_tail_drain_ms": 2.43,
+    "duration_ms": 292862.27,
+    "finished_at": "2026-11-02T13:58:53.543567+00:00",
+    "reported_model": "grok-4.7",
+    "reported_output_exceeds_requested": true,
+    "response_status": "completed",
+    "protocol_terminal": "responses.completed"
+  },
+  "remaining": 0,
+  "http_attempts_this_run": 1,
+  "report_characters": 5109,
+  "content_assessment": "independently_accepted_limited_historical_scope",
+  "independent_review": "xhigh-v13-content-review.json",
+  "publication_audit": "xhigh-v13-publication-check.json",
+  "source_unchanged": true,
+  "environment_unchanged": true,
+  "normal_business_matrix_executed": false,
+  "old_40_used": 0,
+  "automatic_requests_after_completion": 0,
+  "model_result_unchanged": true,
+  "supplier_reconciliation": {
+    "method": "Read-only supplier usage row matched by time/model/isolated single attempt and exact API input/output/cache tokens; no response-ID-level invoice linkage.",
+    "row_time": "2026-11-02 21:58:52 Asia/Shanghai",
+    "model": "grok-4.7",
+    "input_tokens": 26829,
+    "output_tokens": 24014,
+    "cached_tokens": 1152,
+    "amount_usd": "0.029402",
+    "currency_symbol": "$",
+    "currency_code_independently_verified": false,
+    "first_token_display": "2.6s",
+    "duration_display": "4m 51s",
+    "red_stream_error_marker_visually_observed": false,
+    "ten_attempt_cohort_associated_displayed_total_usd": "0.213052",
+    "renewed_xhigh_series_associated_displayed_total_usd": "0.163564",
+    "earlier_six_associated_displayed_total_usd": "0.076194",
+    "combined_displayed_total_usd": "0.289246",
+    "supplier_page_total_matches": true,
+    "invoice_verified": false
+  },
+  "interpretation": [
+    "Actual completed terminal, HTTP EOF, provider tool call, shared preflight and transaction publication all succeeded.",
+    "Independent content acceptance is limited to this historical three-security simulated account report; two nonblocking wording observations remain in review.",
+    "Direct-route trace has origin TCP/TLS/HTTP and no proxy tunnel; environment proxy variables still exist. TLS default verification and environment CA support retained; live trace does not contain certificate evidence.",
+    "V12 and V13 share substantive evidence/model/schema/output/prompt but regenerated task IDs, execution clocks and nondeterministic model output; one successful direct run does not prove proxy was sole cause or reconstruct original client_gone.",
+    "Requested output6000 and reported output24014/reasoning15838/context output24020 remain unmodified; no invented output-cap semantics or cost-tick conversion."
+  ]
+}

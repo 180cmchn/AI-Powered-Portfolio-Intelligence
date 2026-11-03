@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-11-02T16:34:35.523999+00:00",
+  "source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+  "changes_since_latest_full_regression": [
+    "scripts/verify_fifteenth_recovery.py",
+    "tests/test_fifteenth_recovery.py"
+  ],
+  "all_production_app_files_unchanged": true,
+  "latest_full_regression_source": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "latest_full_macos": 1367,
+  "latest_full_linux": 1367,
+  "latest_full_browser_groups": 11,
+  "full_regression_evidence": "post-a-regression.json",
+  "current_targeted": {
+    "macos": {
+      "passed": 124,
+      "seconds": 28.56,
+      "evidence": "test-results/fifteenth/recovery-quote-drift-macos-targeted.json"
+    },
+    "linux_py312": {
+      "passed": 124,
+      "seconds": 19.85,
+      "evidence": "test-results/fifteenth/recovery-quote-drift-linux-targeted.json"
+    },
+    "scope": [
+      "tests/test_fifteenth_recovery.py",
+      "tests/test_fifteenth_business.py",
+      "tests/test_fifteenth_context.py",
+      "tests/test_fifteenth_checkpoint_materials.py"
+    ],
+    "recovery_cases": 23
+  },
+  "before_execution_targeted": {
+    "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "macos_passed": 123,
+    "linux_passed": 123,
+    "evidence": "business-a-single-recovery-preparation.json"
+  },
+  "new_case": "Actual retry API/Service quote refresh changes source/as_of, guard rejects checkpoint, zero model HTTP/reservations, original body/time/guard/resume unchanged, claim retained",
+  "diagnostic_change": "Missing runtime checkpoint now includes readonly parent checkpoint state/reasons, including research_inputs_changed",
+  "production_guard_or_deadline_changes": false,
+  "new_paid_model_requests": 0,
+  "counts_are_separate_not_additive": true
+}

@@ -1,0 +1,263 @@
+{
+  "kind": "failed_business_stage_partial_evidence",
+  "reviewed_at": "2026-11-03T02:18:31.971829+08:00",
+  "reviewer": "Codex development subtask /root/delivery_validation; independent read-only review of actual v2 ledger, both completed child reports, completed calculations and received source ranges",
+  "identity": {
+    "execution": "data/evaluations/fifteenth-business-long-task-a-sell-v2/execution",
+    "stage": "a_after_sell",
+    "job_id": "141ed002046a48ed94aa905c235bc074",
+    "account_id": "682f422e795a4259b0c477cd4d45f91c",
+    "input_version": 5,
+    "source_sha256_at_execution": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+    "started_at": "2026-11-03T01:58:56.094979+08:00",
+    "completed_at": "2026-11-03T02:12:21.700587+08:00"
+  },
+  "status": "not_evaluated",
+  "content_assessment": "not_evaluated",
+  "accepted": null,
+  "published": false,
+  "contract_accepted": false,
+  "mechanical_passed": false,
+  "execution_stopped": true,
+  "final_report": {
+    "exists": false,
+    "model_result_exists": false,
+    "report_sha256": null,
+    "reason": "No accepted or persisted final report. Complete child reports and calculations are partial research, not a substitute final account delivery. No partial transport output was joined, repaired, or authored by the reviewer."
+  },
+  "actual_requests": {
+    "total": 27,
+    "completed_with_http_eof": 26,
+    "accepted_unknown_without_terminal_or_eof": 1,
+    "last_request": {
+      "duration_ms": 414076.76,
+      "request_accepted": true,
+      "stream_terminal": null,
+      "http_body_complete": false,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_last_progress_ms": 319906.48,
+      "stream_last_byte_ms": 364022.23
+    },
+    "failure_interpretation": "The last manager request failed after 414076.76 ms with RemoteProtocolError/upstream_transport_error; no local timeout/cancellation is recorded. Its accepted result remains unknown, and the original stop latch is retained. This record does not assert the external transport root cause.",
+    "ledger_maximum": 40,
+    "reserved_attempts": 27,
+    "stops": [
+      {
+        "reason": "accepted_or_sent_request_outcome_unknown",
+        "at": "2026-11-03T02:12:21.219898+08:00"
+      }
+    ]
+  },
+  "ledger": {
+    "version": 5,
+    "cash": "87479.90",
+    "remaining_positions": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "0",
+        "total_cost": "0",
+        "available_quantity": "0"
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "total_cost": "10005.10",
+        "available_quantity": "0"
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "total_cost": "2505.00",
+        "available_quantity": "0"
+      }
+    ],
+    "remaining_total_cost": "12510.10",
+    "total_fees": "20.10",
+    "realized_pnl": "-10.00",
+    "new_simulated_sale": {
+      "symbol": "SH:518880",
+      "quantity": "100",
+      "price": "10.000",
+      "gross": "1000.00",
+      "fee": "5.00",
+      "cash_increase": "995.00",
+      "cost_relieved": "1005.00",
+      "realized_pnl": "-10.00"
+    },
+    "post_sale_valuation": {
+      "cash": "87479.90",
+      "securities_value": "9889.00",
+      "total_assets": "97368.90",
+      "unrealized_pnl": "-2621.10",
+      "asset_difference_from_v4": "200.90",
+      "difference_basis": "995.00 simulated net sale proceeds replace 794.10 prior market valuation; 200.90 is not market appreciation or realized profit. The actual ledger realized loss is -10.00."
+    },
+    "prepared_and_reopened_ledger_facts_equal": true,
+    "no_additional_trade_from_model": true
+  },
+  "previous_results_preserved": {
+    "v4_report_id": "576433dea9114d2b8b4fcd0a1460cc8c",
+    "v4_report_status": "stale",
+    "v4_report_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "v4_report_identity_and_body_equal_to_original": true,
+    "v4_forecast_count": 9,
+    "v4_forecast_rows_all_fields_equal_to_original": true,
+    "v4_forecasts_kind": "exploratory",
+    "old_results_not_promoted_to_v5_success": true
+  },
+  "new_output_denominators": {
+    "analyses": 0,
+    "recommendations": 0,
+    "forecasts": 0,
+    "new_batch_count": 1,
+    "batches": [
+      {
+        "id": "97035cae1b62437e872288daa9bdc5d3",
+        "kind": "exploratory",
+        "input_version": 5,
+        "expected_count": 6,
+        "symbols": "[\"SZ:002354\", \"SZ:159599\"]",
+        "state": "open"
+      }
+    ],
+    "suggestions_submitted_in_valid_final": 0,
+    "forecast_targets_submitted_in_valid_final": 0,
+    "formal_published_samples": 0,
+    "content_reviewed_final_reports": 0,
+    "note": "The six-target exploratory batch remains open; an open batch is not six new predictions or a final publication."
+  },
+  "scope": {
+    "actual_research_target_symbols": [
+      "SZ:002354",
+      "SZ:159599"
+    ],
+    "delivery_scope": {
+      "allowed": [
+        "SH:518880",
+        "SZ:002354",
+        "SZ:159599",
+        "account"
+      ],
+      "required": [
+        "SH:518880",
+        "SZ:002354",
+        "SZ:159599"
+      ]
+    },
+    "meaning": "Research targets are the two remaining holdings. Delivery scope also includes sold gold to review its old suggestion; gold is not a target of the new six-sample forecast batch."
+  },
+  "checkpoint": {
+    "created_at": "2026-11-03T02:05:27.081811+08:00",
+    "body_created_at": "2026-11-03T02:05:27.039988+08:00",
+    "resume_count": 0,
+    "saved_recovery_state": "needs_research",
+    "reports": 2,
+    "calculations": 65,
+    "materials_indexed": 129,
+    "material_ids": 100,
+    "material_receipts": 161,
+    "report_receipts": 2,
+    "default_max_age_seconds": 1800,
+    "eligibility_now_asserted": false,
+    "recovery_boundary": "Saved state is needs_research, not eligible synthesis-only. Any retry must use the normal API/Service selection and recheck actual account/version, quotes, events, material guards and age. No forced mode, edited timestamp, changed resume count or fabricated full context."
+  },
+  "completed_child_reports": [
+    {
+      "report_id": "27a8ad862e2a43c3bd0c9035a6cdecd8",
+      "role": "etf_researcher",
+      "title": "159599跟踪与费用",
+      "actual_content_read_by_reviewer": true,
+      "new_supported_facts": [
+        "2025-09-18 product summary actual full text pages 1–5 supports H30007, 0.50% management fee and 0.05% custody fee; not proof that no later fee amendment exists.",
+        "Q3 actual excerpts pages 1–4 and 8–11 support September 30 disclosure holdings/NAV and the quarterly -37.09% fund / -37.72% benchmark comparison (+0.63 percentage point). Holdings and NAV are not current-time values.",
+        "The actual 21-row unadjusted history range September 28–November 2 supports the compared closes and November 2 amount 140374653.60 CNY."
+      ],
+      "remaining_limits": [
+        "No matched November 2 official NAV/IOPV; no premium/discount inference.",
+        "Historical daily turnover supports only limited liquidity reasoning; it does not prove opening-book execution, spread or impact cost. Ledger sellability starts November 4.",
+        "Latest full contract/prospectus and current index weights remain unverified."
+      ],
+      "material_ids": [
+        "812cdbb89e894933bf422c13661fcbe2",
+        "3dba851988734151a2f58367f3d42756",
+        "0e0ad5be22ec4ab582ab9002b1140f58",
+        "9b095a951d6843b0a7ef77292aded173"
+      ]
+    },
+    {
+      "report_id": "769e408824ce4774b4a326b3c59896bc",
+      "role": "filing_researcher",
+      "title": "002354三季报口径",
+      "actual_content_read_by_reviewer": true,
+      "new_supported_facts": [
+        "The child records actual reading through the 11-page Q3 report, preserving unaudited status and quarter-versus-YTD distinction.",
+        "Parent equity increase 546916090.78; capital reserve increase 530025623.84 (96.91% of the equity increment); undistributed profit increase 18040576.30. These are not equivalent to operating profit growth.",
+        "Goodwill 500967184.56 / parent equity is 28.88%; minority profit share is 44.74%.",
+        "Counter-evidence is explicit: YTD parent net income and deducted income still grew; operating cash flow increased and the company attributes it to data-flow receivable collections."
+      ],
+      "remaining_limits": [
+        "Capital reserve change and reorganization share disposal are not fully reconciled item by item.",
+        "Main-business segment revenue remains unreported in the read quarter document.",
+        "No shareholder-equity-change table or explanation fully reconciles retained earnings with YTD parent net income."
+      ],
+      "source_url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF"
+    }
+  ],
+  "calculation_review": {
+    "total_saved": 65,
+    "all_saved_statuses": {
+      "ok": 65
+    },
+    "basic_operations_independently_reproduced": 62,
+    "arithmetic_mismatches": [],
+    "market_indicator_records": 3,
+    "indicator_boundary": "The three market_indicators summaries use 60 valid samples and window=20 for moving averages. Their return is last-close/first-close across the entire returned August 3–November 2 range, not automatically a 20-trading-day return; volatility is sample standard deviation of close returns, not annualized.",
+    "account_cash_weight_pct": "89.84377968735397031290278518",
+    "stock_security_subportfolio_weight_pct": "79.88674284558600465163312772",
+    "no_assertion_of_final_model_adoption": true
+  },
+  "actual_visibility": {
+    "manager_report_receipts": [
+      {
+        "report_id": "27a8ad862e2a43c3bd0c9035a6cdecd8",
+        "access": "report_summary",
+        "source_agent_id": "research-8c3e3dbec5b8"
+      },
+      {
+        "report_id": "769e408824ce4774b4a326b3c59896bc",
+        "access": "report_summary",
+        "source_agent_id": "research-4d6dced2e67b"
+      }
+    ],
+    "manager_full_report_receipts": 0,
+    "manager_summary_receipts": 2,
+    "material_content_receipts": 36,
+    "material_metadata_only_receipts": 120,
+    "other_receipts": 5,
+    "source_coverage": {
+      "index_only": 76,
+      "needs_research": 3,
+      "covered": 11
+    },
+    "boundary": "Two complete child outputs are persisted, but the manager receipts observed here are report_summary. Do not claim all child findings were in the failed manager request. A future retry rebuilds bounded context; saved receipts/indexes do not equal full documents or byte-identical replay."
+  },
+  "immutability": {
+    "source_at_execution_preserved": true,
+    "environment_at_execution_preserved": true,
+    "summary_sha256_before": "45272131d28d49892ceee6221f1fed6b71c1ed8d82fcafd61e4163aae85d3758",
+    "database_logical_sha256_before": "2e087f49b837f310b7ede97645b9dc288f464cb1c5a5577907d19a3f872530a7",
+    "sqlite_access": "mode=ro + PRAGMA query_only",
+    "daily_database_accessed": false,
+    "model_http_requests_by_reviewer": 0,
+    "new_third_party_fetches": 0,
+    "model_body_created_or_modified": false,
+    "source_code_modified": false,
+    "database_logical_sha256_after": "2e087f49b837f310b7ede97645b9dc288f464cb1c5a5577907d19a3f872530a7",
+    "database_unchanged": true,
+    "summary_unchanged": true
+  },
+  "not_a_success_claim": "This partial-evidence record cannot satisfy approved_report/previous_stage_identity or unlock B. Only an actual later accepted and published version-5 result with independent content review can do so."
+}

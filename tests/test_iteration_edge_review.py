@@ -10,10 +10,11 @@ def test_candidate_suggestion_is_monitored_until_expiry(tmp_path):
     store = Store(tmp_path / 'candidate.sqlite3')
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
     account = store.save_account(AccountInput(name='新候选', holdings=[]))
+    store.enqueue(account['id'], 'manual_security:SZ:000002')
     job = store.claim_jobs()[0]
     stamp = datetime.now(TZ)
     publish_fixture(store,job['id'], {'report': '在板块研究中发现的新证券', 'suggestions': [{
-        'security_id': 'SZ:000002', 'action': 'buy_candidate',
+        'security_id': 'SZ:000002', 'action': 'buy_candidate', 'basis': '受控候选研究依据',
         'valid_until': (stamp + timedelta(hours=1)).isoformat(),
         'price_conditions': [{'operator': 'lte', 'value': '10'}],
         'agent_conditions': ['最新公告与研究依据仍一致'],
@@ -45,6 +46,7 @@ def test_optional_or_targeted_suggestions_do_not_implicitly_revoke_other_symbols
     store = Store(tmp_path / 'suggestion-preservation.sqlite3')
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
     account = store.save_account(AccountInput(name='独立建议', holdings=[]))
+    store.enqueue(account['id'], 'manual_security:SH:600519')
     first_job = store.claim_jobs()[0]
     publish_fixture(store,first_job['id'], {'report': '证券 A 建议', 'suggestions': [{
         'security_id': 'SH:600519', 'action': 'watch', 'basis': '持续观察的依据',

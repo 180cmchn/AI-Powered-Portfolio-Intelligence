@@ -1,0 +1,41 @@
+{
+  "kind": "time_context_source_locator_regression",
+  "recorded_at": "2026-11-02T20:51:23.108416+08:00",
+  "source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+  "macos": {
+    "passed": 1263,
+    "warning": 1,
+    "browser_groups_passed": 11,
+    "browser_groups_total": 11,
+    "evidence": "test-results/fifteenth/time-context-macos-full.json"
+  },
+  "linux": {
+    "passed": 1263,
+    "warning": 1,
+    "python": "3.12.3",
+    "evidence": "test-results/fifteenth/time-context-linux-full-corrected.json"
+  },
+  "retained_initial_failures": [
+    {
+      "evidence": "test-results/fifteenth/v11-context-targeted.txt",
+      "failed": 4,
+      "passed": 44,
+      "cause": "Exact instruction expectations still used previous reviewed wording; corrected expectations, no production rollback."
+    },
+    {
+      "evidence": "test-results/fifteenth/time-context-macos-before-expectation-fix-full.json",
+      "failed": 4,
+      "passed": 1259,
+      "cause": "Same four old verifier instruction expectations loaded before their update."
+    },
+    {
+      "evidence": "test-results/fifteenth/time-context-linux-full.json",
+      "failed": 43,
+      "passed": 957,
+      "errors": 263,
+      "cause": "Isolated /tmp 512 MiB exhausted; only container temporary capacity changed to 4 GiB; observed corrected usage about 803 MiB."
+    }
+  ],
+  "real_model_requests_by_tests": 0,
+  "remote_ci_changed": false
+}

@@ -557,6 +557,8 @@ class ForecastStore(ForecastIdentityStore):
     def publish_forecasts(self, db, job, result, analysis_id, published_at=None):
         """Called only inside the successful current-report publication transaction."""
         at = _local(published_at)
+        from .delivery import unapplied_delivery, validate_structured_delivery
+        receipt = result.setdefault('delivery_application', unapplied_delivery(result, '当前任务没有预测批次'))
         batch_row = db.execute("SELECT id FROM forecast_batches WHERE job_id=?", (job["id"],)).fetchone()
         if not batch_row:
             return []
@@ -564,9 +566,13 @@ class ForecastStore(ForecastIdentityStore):
         if at.isoformat() >= batch["deadline"]:
             db.execute("UPDATE forecast_samples SET state='missed',reason='超过固定批次截止' WHERE batch_id=? AND state IN ('uncovered','waiting_data')", (batch["id"],))
             db.execute("UPDATE forecast_batches SET state='closed' WHERE id=?", (batch["id"],))
+            for item in receipt['forecasts']:
+                item.update(status='missed', reason='超过固定批次截止，未发布')
             return []
         if batch["input_version"] != job["input_version"]:
             raise ValueError("预测批次输入版本过时")
+        validate_structured_delivery({**result, 'scope': result.get('scope', ['account'])},
+            contract_context=self.delivery_contract_context(job, db))
         config = _load(job.get("config_snapshot"), {}) if isinstance(job.get("config_snapshot"), str) else job.get("config_snapshot", {})
         team = _safe_team(config)
         # Actual called instances retain their own role/model provenance.
@@ -580,7 +586,7 @@ class ForecastStore(ForecastIdentityStore):
         if not isinstance(submitted, list) or len(submitted) > 10000:
             raise ValueError("forecasts 必须是有限列表")
         saved, seen = [], set()
-        for item in submitted:
+        for index, item in enumerate(submitted):
             if isinstance(item, dict):
                 item = dict(item)
                 resolved_references = item.pop("references", None)
@@ -608,6 +614,7 @@ class ForecastStore(ForecastIdentityStore):
                 raise ValueError("预测须提供有效方向和非空理由")
             prior = db.execute("SELECT id FROM forecasts WHERE sample_id=? AND (kind IN ('formal','test') OR job_id=?)", (sample["id"], job["id"])).fetchone()
             if prior:
+                receipt['forecasts'][index].update(status='already_published', reason='该目标已有不可改写预测，保留原值', forecast_id=prior[0])
                 saved.append(prior[0]); continue
             restricted = db.execute("SELECT 1 FROM forecast_research_scopes WHERE job_id=? AND purpose='explicit_subset'", (job['id'],)).fetchone()
             if restricted and not db.execute('SELECT 1 FROM forecast_research_scope_samples WHERE job_id=? AND sample_id=?', (job['id'], sample['id'])).fetchone():
@@ -621,6 +628,7 @@ class ForecastStore(ForecastIdentityStore):
             if batch["kind"] == "formal" and direction != "abstain":
                 if not _valid_direction_baseline(batch, symbol):
                     db.execute("UPDATE forecast_samples SET state='waiting_data',reason='未取得本证券基准日精确收盘证据，方向预测未发布' WHERE id=?", (sample["id"],))
+                    receipt['forecasts'][index].update(status='waiting_data', reason='未取得本证券基准日精确收盘证据，方向预测未发布')
                     continue
             forecast_id = uuid.uuid4().hex
             revises_id = item.get("revises_id")
@@ -642,6 +650,7 @@ class ForecastStore(ForecastIdentityStore):
             if direction != "abstain":
                 due = (sample["target_date"] or batch["base_date"]) + "T15:30:00+08:00"
                 db.execute("INSERT OR IGNORE INTO forecast_evaluation_tasks VALUES(?,'pending',0,?,NULL,?)", (forecast_id, due, at.isoformat()))
+            receipt['forecasts'][index].update(status='applied', reason='已发布弃权' if direction == 'abstain' else '已发布方向预测', forecast_id=forecast_id)
             saved.append(forecast_id)
         db.execute("UPDATE forecast_batches SET state='published',team_snapshot=? WHERE id=?", (_dump(team), batch["id"]))
         db.execute("UPDATE forecast_execution_attempts SET published_at=?,state='published' WHERE job_id=? AND attempt=(SELECT max(attempt) FROM forecast_execution_attempts WHERE job_id=?)", (at.isoformat(), job["id"], job["id"]))

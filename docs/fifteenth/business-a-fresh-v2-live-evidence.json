@@ -1,0 +1,614 @@
+{
+  "kind": "independent_readonly_fresh_A_live_evidence",
+  "checked_at": "2026-11-03T00:07:47.387196+08:00",
+  "execution": "data/evaluations/fifteenth-business-a-fresh-v2/execution",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "started_at": "2026-11-03T00:00:16.671132+08:00",
+  "completed_at": "2026-11-03T00:06:31.137630+08:00",
+  "job": {
+    "id": "c6a170d23e1443a4bc3161dbf42e1233",
+    "state": "failed",
+    "stage": "synthesizing",
+    "input_version": 4,
+    "attempts": 1,
+    "completed_at": "2026-11-03T00:06:30.859382+08:00",
+    "parent_job_id": null
+  },
+  "execution_stopped": true,
+  "published": false,
+  "contract_accepted": false,
+  "mechanical_passed": false,
+  "error": {
+    "type": "ValueError",
+    "message": "Business research did not deliver; preserve the first failure and stop"
+  },
+  "checks": {
+    "fresh_six_cap_matches_ledger": true,
+    "combined_A_at_most_sixteen": true,
+    "request_observations_match_reservations": true,
+    "no_request_after_first_stop": true,
+    "three_buys_actual_run_date": true,
+    "account_version_cash_cost_fees_exact": true,
+    "quantities_exact": true,
+    "initial_superseded_jobs_used_zero_attempts": true,
+    "main_database_unchanged_by_readonly_audit": true,
+    "sqlite_quick_check_ok": true,
+    "source_still_matches_execution": true,
+    "daily_database_WAL_unchanged": true,
+    "environment_metadata_unchanged": true,
+    "original_failed_A_artifacts_unchanged_since_inflight_check": true,
+    "original_unknown_latch_still_present": true,
+    "old_checkpoint_not_reused": true,
+    "committed_entries_preserved_after_failure": true,
+    "committed_positions_preserved_after_failure": true
+  },
+  "all_checked_boundaries_passed": true,
+  "requests": [
+    {
+      "number": 1,
+      "task_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "response_id": "202444ee-6cfe-903d-8f8a-c3fa5197c80f",
+      "request_id": null,
+      "started_at": "2026-11-02T16:00:18.185336+00:00",
+      "finished_at": "2026-11-02T16:00:34.636692+00:00",
+      "duration_ms": 16451.63,
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "requested_max_output_tokens": 6000,
+      "status_code": 200,
+      "request_accepted": true,
+      "protocol_terminal": "responses.completed",
+      "stream_terminal": "response.completed",
+      "response_status": "completed",
+      "http_body_complete": true,
+      "stream_close_reason": "http_eof",
+      "error": null,
+      "error_code": null,
+      "cancelled_by": null,
+      "effective_limit": "request_hard_timeout",
+      "request_timeout_seconds": 300.0,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1199712.59,
+        "request_hard_timeout": 300000.0
+      },
+      "stream_event_count": 113,
+      "stream_event_types": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 8,
+        "response.reasoning_summary_part.added": 1,
+        "response.reasoning_summary_text.delta": 10,
+        "response.reasoning_summary_text.done": 1,
+        "response.reasoning_summary_part.done": 1,
+        "response.output_item.done": 8,
+        "response.content_part.added": 1,
+        "response.output_text.delta": 66,
+        "response.function_call_arguments.delta": 6,
+        "response.function_call_arguments.done": 6,
+        "response.output_text.done": 1,
+        "response.content_part.done": 1,
+        "response.completed": 1
+      },
+      "stream_first_byte_ms": 5711.8,
+      "stream_first_effective_event_ms": 5876.46,
+      "stream_first_text_delta_ms": 14314.18,
+      "stream_last_byte_ms": 16449.81,
+      "stream_last_progress_ms": 16450.71,
+      "stream_last_progress_kind": "response.completed",
+      "stream_max_idle_ms": 5876.46,
+      "native_search_requested": true,
+      "reported_usage": {
+        "input_tokens": 18097,
+        "output_tokens": 1381,
+        "total_tokens": 19478,
+        "input_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 1128
+        },
+        "num_server_side_tools_used": 0
+      }
+    },
+    {
+      "number": 2,
+      "task_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "response_id": "773e7c4f-8ff8-9cd4-8a0b-ab4964eb007f",
+      "request_id": null,
+      "started_at": "2026-11-02T16:00:35.108430+00:00",
+      "finished_at": "2026-11-02T16:01:01.811035+00:00",
+      "duration_ms": 26703.08,
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "requested_max_output_tokens": 6000,
+      "status_code": 200,
+      "request_accepted": true,
+      "protocol_terminal": "responses.completed",
+      "stream_terminal": "response.completed",
+      "response_status": "completed",
+      "http_body_complete": true,
+      "stream_close_reason": "http_eof",
+      "error": null,
+      "error_code": null,
+      "cancelled_by": null,
+      "effective_limit": "request_hard_timeout",
+      "request_timeout_seconds": 300.0,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1182789.62,
+        "request_hard_timeout": 300000.0
+      },
+      "stream_event_count": 144,
+      "stream_event_types": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 12,
+        "response.reasoning_summary_part.added": 1,
+        "response.reasoning_summary_text.delta": 41,
+        "response.reasoning_summary_text.done": 1,
+        "response.reasoning_summary_part.done": 1,
+        "response.output_item.done": 12,
+        "response.content_part.added": 1,
+        "response.output_text.delta": 50,
+        "response.function_call_arguments.delta": 10,
+        "response.function_call_arguments.done": 10,
+        "response.output_text.done": 1,
+        "response.content_part.done": 1,
+        "response.completed": 1
+      },
+      "stream_first_byte_ms": 6628.11,
+      "stream_first_effective_event_ms": 6836.65,
+      "stream_first_text_delta_ms": 24079.87,
+      "stream_last_byte_ms": 26701.09,
+      "stream_last_progress_ms": 26702.1,
+      "stream_last_progress_kind": "response.completed",
+      "stream_max_idle_ms": 6836.65,
+      "native_search_requested": true,
+      "reported_usage": {
+        "input_tokens": 35841,
+        "output_tokens": 1923,
+        "total_tokens": 37764,
+        "input_tokens_details": {
+          "cached_tokens": 1152
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 1516
+        },
+        "num_server_side_tools_used": 0
+      }
+    },
+    {
+      "number": 3,
+      "task_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "response_id": "60fdfccb-13a4-935c-8c67-88dfd172d7d3",
+      "request_id": null,
+      "started_at": "2026-11-02T16:01:01.904174+00:00",
+      "finished_at": "2026-11-02T16:01:26.300569+00:00",
+      "duration_ms": 24396.89,
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "requested_max_output_tokens": 6000,
+      "status_code": 200,
+      "request_accepted": true,
+      "protocol_terminal": "responses.completed",
+      "stream_terminal": "response.completed",
+      "response_status": "completed",
+      "http_body_complete": true,
+      "stream_close_reason": "http_eof",
+      "error": null,
+      "error_code": null,
+      "cancelled_by": null,
+      "effective_limit": "request_hard_timeout",
+      "request_timeout_seconds": 300.0,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1155993.83,
+        "request_hard_timeout": 300000.0
+      },
+      "stream_event_count": 72,
+      "stream_event_types": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 16,
+        "response.reasoning_summary_part.added": 1,
+        "response.reasoning_summary_text.delta": 9,
+        "response.reasoning_summary_text.done": 1,
+        "response.reasoning_summary_part.done": 1,
+        "response.output_item.done": 16,
+        "response.web_search_call.in_progress": 5,
+        "response.web_search_call.searching": 5,
+        "response.web_search_call.completed": 5,
+        "response.function_call_arguments.delta": 5,
+        "response.function_call_arguments.done": 5,
+        "response.completed": 1
+      },
+      "stream_first_byte_ms": 7397.77,
+      "stream_first_effective_event_ms": 7576.69,
+      "stream_last_byte_ms": 24394.61,
+      "stream_last_progress_ms": 24396.15,
+      "stream_last_progress_kind": "response.completed",
+      "stream_max_idle_ms": 7576.69,
+      "native_search_requested": true,
+      "reported_usage": {
+        "input_tokens": 53678,
+        "output_tokens": 1960,
+        "total_tokens": 55638,
+        "input_tokens_details": {
+          "cached_tokens": 17536
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 1689
+        },
+        "num_server_side_tools_used": 5,
+        "server_side_tool_usage_details": {
+          "web_search_calls": 5,
+          "x_search_calls": 0,
+          "x_posts_fetched": 0,
+          "x_users_fetched": 0,
+          "code_interpreter_calls": 0,
+          "file_search_calls": 0,
+          "mcp_calls": 0,
+          "document_search_calls": 0,
+          "image_generation_calls": 0
+        }
+      }
+    },
+    {
+      "number": 4,
+      "task_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "response_id": "6e08d005-7ac7-9587-a065-09aa3918e226",
+      "request_id": null,
+      "started_at": "2026-11-02T16:01:26.469958+00:00",
+      "finished_at": "2026-11-02T16:01:40.609187+00:00",
+      "duration_ms": 14139.51,
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "requested_max_output_tokens": 6000,
+      "status_code": 200,
+      "request_accepted": true,
+      "protocol_terminal": "responses.completed",
+      "stream_terminal": "response.completed",
+      "response_status": "completed",
+      "http_body_complete": true,
+      "stream_close_reason": "http_eof",
+      "error": null,
+      "error_code": null,
+      "cancelled_by": null,
+      "effective_limit": "request_hard_timeout",
+      "request_timeout_seconds": 300.0,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1131427.79,
+        "request_hard_timeout": 300000.0
+      },
+      "stream_event_count": 66,
+      "stream_event_types": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 5,
+        "response.reasoning_summary_part.added": 1,
+        "response.reasoning_summary_text.delta": 7,
+        "response.reasoning_summary_text.done": 1,
+        "response.reasoning_summary_part.done": 1,
+        "response.output_item.done": 5,
+        "response.content_part.added": 1,
+        "response.output_text.delta": 34,
+        "response.function_call_arguments.delta": 3,
+        "response.function_call_arguments.done": 3,
+        "response.output_text.done": 1,
+        "response.content_part.done": 1,
+        "response.completed": 1
+      },
+      "stream_first_byte_ms": 4877.32,
+      "stream_first_effective_event_ms": 5085.56,
+      "stream_first_text_delta_ms": 13456.83,
+      "stream_last_byte_ms": 14136.86,
+      "stream_last_progress_ms": 14138.53,
+      "stream_last_progress_kind": "response.completed",
+      "stream_max_idle_ms": 5085.56,
+      "native_search_requested": true,
+      "reported_usage": {
+        "input_tokens": 24482,
+        "output_tokens": 1197,
+        "total_tokens": 25679,
+        "input_tokens_details": {
+          "cached_tokens": 17792
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 1110
+        },
+        "num_server_side_tools_used": 0
+      }
+    },
+    {
+      "number": 5,
+      "task_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "synthesis",
+      "response_id": "63bffd45-7713-90df-9b67-b7d9474d9893",
+      "request_id": null,
+      "started_at": "2026-11-02T16:01:40.690146+00:00",
+      "finished_at": "2026-11-02T16:06:30.812028+00:00",
+      "duration_ms": 290123.09,
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "requested_max_output_tokens": 6000,
+      "status_code": 200,
+      "request_accepted": true,
+      "stream_terminal": null,
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "effective_limit": "request_hard_timeout",
+      "request_timeout_seconds": 360.0,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1117207.71,
+        "request_hard_timeout": 360000.0
+      },
+      "stream_event_count": 3173,
+      "stream_event_types": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 2,
+        "response.reasoning_summary_part.added": 1,
+        "response.reasoning_summary_text.delta": 219,
+        "response.reasoning_summary_text.done": 1,
+        "response.reasoning_summary_part.done": 1,
+        "response.output_item.done": 1,
+        "response.content_part.added": 1,
+        "response.output_text.delta": 2945
+      },
+      "stream_first_byte_ms": 6129.82,
+      "stream_first_effective_event_ms": 6236.4,
+      "stream_first_text_delta_ms": 264847.66,
+      "stream_last_byte_ms": 289848.17,
+      "stream_last_progress_ms": 289848.19,
+      "stream_last_progress_kind": "response.output_text.delta",
+      "stream_max_idle_ms": 6236.4,
+      "native_search_requested": false,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "reported_usage": {}
+    }
+  ],
+  "transport_summary": {
+    "total": 5,
+    "completed_and_EOF": 4,
+    "errors": 1
+  },
+  "budget": {
+    "new": {
+      "maximum": 6,
+      "reserved_attempts": 5,
+      "reservations": [
+        "2026-11-03T00:00:18.184811+08:00",
+        "2026-11-03T00:00:35.107682+08:00",
+        "2026-11-03T00:01:01.903469+08:00",
+        "2026-11-03T00:01:26.469531+08:00",
+        "2026-11-03T00:01:40.689566+08:00"
+      ],
+      "stops": [
+        {
+          "reason": "accepted_or_sent_request_outcome_unknown",
+          "at": "2026-11-03T00:06:30.812670+08:00"
+        }
+      ],
+      "admitted_jobs": [
+        "c6a170d23e1443a4bc3161dbf42e1233"
+      ]
+    },
+    "original_A_used": 10,
+    "combined_used": 15,
+    "combined_maximum": 16,
+    "historical_used": 10,
+    "historical_maximum": 10,
+    "old40_transferred": 0,
+    "new_automatic_authorization": false,
+    "historical_ledger_readonly_count": 10,
+    "historical_ledger": "data/evaluations/fifteenth-20261102/authorized-aggregate-attempts.sqlite3"
+  },
+  "ledger": {
+    "cash": "86484.90",
+    "input_version": 4,
+    "total_position_cost": "13515.10",
+    "total_fees": "15.10",
+    "entry_count": 4,
+    "trade_count": 3,
+    "positions": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "total_cost": "1005.00",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "100",
+            "sellable_on": "2026-11-03",
+            "source": "trade",
+            "traded_at": "2026-11-03T00:00:17.342385+08:00"
+          }
+        ]
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "total_cost": "10005.10",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-11-04",
+            "source": "trade",
+            "traded_at": "2026-11-03T00:00:17.373994+08:00"
+          }
+        ]
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "total_cost": "2505.00",
+        "fees_included_in_cost": true,
+        "lots": [
+          {
+            "quantity": "1000",
+            "sellable_on": "2026-11-04",
+            "source": "trade",
+            "traded_at": "2026-11-03T00:00:17.400786+08:00"
+          }
+        ]
+      }
+    ],
+    "trades": [
+      {
+        "symbol": "SH:518880",
+        "traded_at": "2026-11-03T00:00:17.342385+08:00",
+        "recorded_at": "2026-11-03T00:00:17.367734+08:00",
+        "account_version": 2,
+        "side": "buy",
+        "quantity": "100",
+        "price": "10.000",
+        "gross": "1000.00",
+        "cash_before": "100000",
+        "cash_after": "98995.00",
+        "mode": "simulated",
+        "fees": "5.00"
+      },
+      {
+        "symbol": "SZ:002354",
+        "traded_at": "2026-11-03T00:00:17.373994+08:00",
+        "recorded_at": "2026-11-03T00:00:17.394721+08:00",
+        "account_version": 3,
+        "side": "buy",
+        "quantity": "1000",
+        "price": "10.00",
+        "gross": "10000.00",
+        "cash_before": "98995.00",
+        "cash_after": "88989.90",
+        "mode": "simulated",
+        "fees": "5.10"
+      },
+      {
+        "symbol": "SZ:159599",
+        "traded_at": "2026-11-03T00:00:17.400786+08:00",
+        "recorded_at": "2026-11-03T00:00:17.418939+08:00",
+        "account_version": 4,
+        "side": "buy",
+        "quantity": "1000",
+        "price": "2.500",
+        "gross": "2500.00",
+        "cash_before": "88989.90",
+        "cash_after": "86484.90",
+        "mode": "simulated",
+        "fees": "5.00"
+      }
+    ]
+  },
+  "publication": {
+    "rows": [],
+    "counts": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 1
+    },
+    "observations": [],
+    "instances": [
+      {
+        "name": "prepare-api-no-worker",
+        "pid": 81440,
+        "worker": false,
+        "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44"
+      },
+      {
+        "name": "research-worker",
+        "pid": 81444,
+        "worker": true,
+        "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44"
+      }
+    ],
+    "restart_check_status": "not_reached: no report was published, so no post-publication or restart acceptance was executed"
+  },
+  "old_data_preservation": {
+    "baseline_record": "docs/fifteenth/post-a-preservation.json",
+    "daily_files": {
+      "data/live.sqlite3": {
+        "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+        "size": 33787904,
+        "mtime_ns": 1793525469929264343
+      },
+      "data/live.sqlite3-wal": {
+        "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+        "size": 741632,
+        "mtime_ns": 1793542794634590748
+      }
+    },
+    "environment_stamp": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "old_A_inflight_baseline_at": "2026-11-03T00:02:24.612915+08:00",
+    "old_A_files": {
+      "data/evaluations/fifteenth-business-a-initial-v1/execution/evaluation.sqlite3": {
+        "sha256": "a48cde602da4b2aef1e59aa60f184aaafd555c0c05be59275373230fc198e55c",
+        "size": 2506752,
+        "mtime_ns": 1793629423781853021
+      },
+      "data/evaluations/fifteenth-business-a-initial-v1/execution/business-attempts.sqlite3": {
+        "sha256": "3e27aa166d2b2e29c256b8185d0433f616f1b1602d147fb9f8949bfc01dfccfb",
+        "size": 32768,
+        "mtime_ns": 1793629423694298208
+      },
+      "data/evaluations/fifteenth-business-a-initial-v1/execution/summary.json": {
+        "sha256": "465bbb2c6bcc6d1637cfa111065f2d48c79afdc9dd0ea98c9efe749b886415bb",
+        "size": 281101,
+        "mtime_ns": 1793629423997452604
+      }
+    }
+  },
+  "content_review": "Separate independent body review pending; this audit does not certify semantic content or the full live matrix.",
+  "fee_boundary": "Supplier actual charges are reconciled separately by root; API usage counters are not an invoice.",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "Store_initialized": false,
+    "new_model_requests": 0,
+    "network_requests": 0,
+    "services_started_or_restarted": 0,
+    "source_or_database_writes": 0,
+    "raw_stream_or_hidden_reasoning_read": false
+  },
+  "check_scope": "all_checked_boundaries_passed describes accounting/isolation/authorization/stop preservation only. Business research failed; it is not a successful report, transport, semantic or matrix verdict.",
+  "process_check": {
+    "checked_at": "2026-11-03T00:08:52.566633+08:00",
+    "method": "Elevated read-only lsof listening checks and ps for saved isolated PIDs; no rows, exit1.",
+    "listeners_8765": 0,
+    "listeners_18765": 0,
+    "saved_child_pids": [
+      81440,
+      81444
+    ],
+    "saved_child_processes_found": 0
+  },
+  "last_request_interpretation": {
+    "observation": "Accepted synthesis response failed with RemoteProtocolError before a validated terminal/HTTP EOF; stream text progress continued until approximately275ms before failure.",
+    "local_cancellation_recorded": false,
+    "request_hard_limit_seconds": 360,
+    "observed_duration_seconds": 290.12309,
+    "causal_limit": "This trace is not evidence of the earlier A300s local hard cancellation. RemoteProtocolError alone does not locate the failing server/proxy/network hop or establish the cause of earlier client_gone records.",
+    "remaining_numeric_A_allowance": 1,
+    "automatic_continuation_allowed": false
+  },
+  "later_readonly_lifecycle_route_review": "fresh-a-local-lifecycle-route-review.json"
+}

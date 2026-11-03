@@ -1,0 +1,459 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-03T03:54:35.568656+08:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/delivery_validation",
+    "method": "Complete independent reading of actual B report, structured claims, conditions, three abstentions and limitations; actual PDF pages 1–3 and cited price rows inspected; six basic calculations and two indicator return/MA periods reproduced; read-only source permissions, B ledger, all old A report/forecast rows, application receipts and real worker-restart observations checked. No third-party/model requests, no hidden reasoning or service startup.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "report_sha256": "195ad2c191d4f9bf095befe584741ef25d05c7214f8d77186d7d9c9ecd8c7a8f",
+    "report_characters": 2606,
+    "job_id": "1f30a8dc2cb646ebad33b79d0215c930",
+    "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "account_id": "518c98b4484d41d390c5e980f1c98ea2",
+    "account_input_version": 1,
+    "private_report_location": "data/evaluations/fifteenth-business-output-omission-b-v1/execution/account-report.md",
+    "model_result_location": "data/evaluations/fifteenth-business-output-omission-b-v1/execution/model-result.json"
+  },
+  "accepted": true,
+  "content_assessment": "evaluated",
+  "overall": "pass_with_nonblocking_period_naming_observation",
+  "accepted_definition": "Accepts the actual limited B cash/candidate report as an independent decision: correct cash-only account, specific 159278 market/product evidence, support and contrary evidence, an explicit no-buy decision and re-evaluation conditions. Exact stated source ranges govern historical figures. This is not a full ETF due-diligence dossier, formal prediction, investment accuracy or human sign-off; application not_evaluated is unchanged.",
+  "acceptance_boundaries": {
+    "b_cash_candidate_limited_content_accepted": true,
+    "candidate_security": "SZ:159278",
+    "cash_and_zero_holdings_verified": true,
+    "other_account_conclusion_reused": false,
+    "blocking_findings": 0,
+    "exploratory_direction_samples": 0,
+    "exploratory_abstentions": 3,
+    "formal_forecast_samples": 0,
+    "naturally_matured_accuracy_verified": false,
+    "application_assessment_rewritten": false
+  },
+  "blocking_findings": [],
+  "nonblocking_observations": [
+    {
+      "id": "observation_window_vs_return_intervals",
+      "finding": "The body calls Sep29–Nov02 近20个交易日 and the summary calls Aug03–Nov02 a 60日 return. These are 20 and 60 observed closes, respectively, giving 19 and 59 daily-return intervals. The explicitly stated dates and +0.0033/-0.0522 values match the actual stored calculation inputs; they are not strict 20/60 return-interval calculations.",
+      "authoritative_ranges": [
+        {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "close_samples": 20,
+          "return_intervals": 19,
+          "return_ratio": "0.003318584070796460176991150",
+          "relative_return_ratio": "0.0788707438053087162014410615"
+        },
+        {
+          "start": "2026-08-03",
+          "end": "2026-11-02",
+          "close_samples": 60,
+          "return_intervals": 59,
+          "return_ratio": "-0.0522466039707419017763845350"
+        }
+      ],
+      "why_nonblocking": "The main body itself supplies the matching start/end dates, unlike the earlier rejected report that assigned a 59-interval value to a different 20-day period. Here the issue is naming the close-observation window without stating interval count, not inventing a figure for another dated period. Accepted under the explicit dates only; do not export these as strict 20/60-interval returns.",
+      "report_not_rewritten": true
+    }
+  ],
+  "content_checks": [
+    {
+      "id": "account_and_action",
+      "status": "pass",
+      "finding": "B version1 has simulated available cash100000, zero holdings, zero market value, total assets100000, zero realized P&L and fees. Balanced risk is the actual preference; no hard allocation limits are invented. Proposed investment is explicitly zero, so no fictional executable share count or fee-funded trade is constructed. Ending cash remains100000."
+    },
+    {
+      "id": "specific_candidate_analysis",
+      "status": "pass_limited",
+      "finding": "The report specifically studies 159278, not merely cash. It discusses actual unadjusted closes/volatility/MA, relative CSI300 performance and turnover; contrasts no-buy with exposure to a concentrated theme; includes contrary momentum and missed-upside risk; conditions use verified Oct28 high0.969, Nov2 low0.852 and an explicitly updating MA."
+    },
+    {
+      "id": "numeric_and_periods",
+      "status": "pass_with_naming_observation",
+      "finding": "The exact stated historical ranges match calculations. 0.907/0.8732=1.0387; Aug03 close0.957 to Nov2 close0.907 yields-5.2247%; Sep29–Nov2 yields+0.3319%. Same-date aligned CSI300 return-7.5552% gives+7.8871 percentage points, with different fetch times disclosed. Nov2 amount186781960, Oct13–Nov2 observed amounts55428313.50 to259014237.26, and cited high/low/close rows agree."
+    },
+    {
+      "id": "source_fidelity",
+      "status": "pass_limited",
+      "finding": "Actual read was only Q3 PDF physical pages1–3 of15. It supports code159278/name, inception2025-07-30, Sep30 shares1963545853, manager/custodian, report period/delivery date, full-replication strategy and target deviation0.2%/error2%. These are explicitly targets, not achieved tracking. Fees, realized tracking, top holdings, index code and contemporaneous NAV/IOPV stay unknown. Empty PDF search is not treated as proof of absent content; native source links are explicitly unread and media narratives excluded."
+    },
+    {
+      "id": "forecast_and_receipts",
+      "status": "pass",
+      "finding": "Three 1/5/20 horizons are explicit abstentions with reasons, matching the body and actual three-target exploratory batch. One watch suggestion is applied. Conditions trigger review rather than automatic trades. No directional skill or future performance is inferred."
+    },
+    {
+      "id": "account_separation",
+      "status": "pass_observed_boundary",
+      "finding": "B material IDs and receipts do not include A private extraction IDs; all actually used/resolved materials are accessible to B. All12 A-private materials test inaccessible to B and accessible to A under the actual Store permission function. The actual result has empty shared_research_used and report_access, zero child reports, and B-specific cash/action reasoning. No claim is made that every private HTTP request byte was independently archived."
+    }
+  ],
+  "calculation_mapping": {
+    "basic_checked": 6,
+    "arithmetic_mismatches": [],
+    "indicators": [
+      {
+        "calculation_id": "calculation-fce6bfb73c8347388082addb2beed6f0",
+        "symbol": "SZ:159278",
+        "return_period": {
+          "start": "2026-08-03",
+          "end": "2026-11-02",
+          "return_intervals": 59
+        },
+        "return": "-0.0522466039707419017763845350",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "moving_average": "0.8732",
+        "relative_return": null,
+        "aligned_asset_return": null,
+        "aligned_benchmark_return": null,
+        "aligned_samples": null,
+        "same_fetch_snapshot": null,
+        "volatility": 0.026369376472346308
+      },
+      {
+        "calculation_id": "calculation-55c03423833443f7ae0da908e10ca628",
+        "symbol": "SZ:159278",
+        "return_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "return_intervals": 19
+        },
+        "return": "0.003318584070796460176991150",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "moving_average": "0.8732",
+        "relative_return": "0.0788707438053087162014410615",
+        "aligned_asset_return": "0.003318584070796460176991150",
+        "aligned_benchmark_return": "-0.0755521597345122560244499115",
+        "aligned_samples": 20,
+        "same_fetch_snapshot": false,
+        "volatility": 0.03552575378492248
+      }
+    ]
+  },
+  "source_visibility": {
+    "material_indexes": 60,
+    "material_ids": 53,
+    "material_receipts": 65,
+    "receipts_not_full_text_document_count": true,
+    "completed_child_reports": 0,
+    "actual_original_pdf_material_id": "b07f5a625d5e49d7bfc48ebc6802b639",
+    "actual_original_pdf_physical_pages": [
+      1,
+      2,
+      3
+    ],
+    "pdf_total_pages": 15,
+    "actual_original_pdf_url": "http://static.cninfo.com.cn/finalpage/2026-10-26/1225621727.PDF",
+    "history_material_id": "87074351f7074058af03284f713339b9",
+    "benchmark_material_id": "12a0c27cbe624d37b70155922dbaad72",
+    "reference_summary": {
+      "resolved": 18,
+      "source_link": 62,
+      "unresolved": 0
+    },
+    "resolved_unique_material_ids": [
+      "12a0c27cbe624d37b70155922dbaad72",
+      "87074351f7074058af03284f713339b9",
+      "b07f5a625d5e49d7bfc48ebc6802b639"
+    ],
+    "all_used_and_resolved_materials_authorized_for_b": true,
+    "a_private_material_permissions": {
+      "94a7fed9ef884723a11ff68003895090": {
+        "account_a": true,
+        "account_b": false
+      },
+      "8cac6278b97c4ad9aa918acb9ac5ab68": {
+        "account_a": true,
+        "account_b": false
+      },
+      "31e7b586bf6d423ab3532c5c1dcb2895": {
+        "account_a": true,
+        "account_b": false
+      },
+      "769fb053923046f8967d13933121058c": {
+        "account_a": true,
+        "account_b": false
+      },
+      "12e9981c79ef4059b6e20c2159b2ec19": {
+        "account_a": true,
+        "account_b": false
+      },
+      "e0070af2b7924ecdb8a684393c295c5a": {
+        "account_a": true,
+        "account_b": false
+      },
+      "1c5eccd1f2f64b32b9e5e506b80abea9": {
+        "account_a": true,
+        "account_b": false
+      },
+      "bb6ff1f85a1d4a8f8ed3840752ff81b3": {
+        "account_a": true,
+        "account_b": false
+      },
+      "454e7ce040c34b718bfb489b51924b0c": {
+        "account_a": true,
+        "account_b": false
+      },
+      "a828be960d144dab9cc2cc2915f3a6c2": {
+        "account_a": true,
+        "account_b": false
+      },
+      "ce7d604f234346da9c371ba52dd0ffcc": {
+        "account_a": true,
+        "account_b": false
+      },
+      "ca96c0fe26114d589780367f06e65e72": {
+        "account_a": true,
+        "account_b": false
+      }
+    },
+    "a_private_material_ids_in_b_context_or_references": [],
+    "shared_research_used": [],
+    "report_access": [],
+    "network_reachability_tested": false
+  },
+  "application_state_separate_from_review": {
+    "summary_content_assessment": "not_evaluated",
+    "delivery_content_assessment": "not_evaluated",
+    "contract_accepted": true,
+    "published": true,
+    "mechanical_passed": true,
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0,
+    "suggestions_submitted": 1,
+    "suggestions_applied": 1,
+    "forecasts_submitted": 3,
+    "forecasts_applied": 3,
+    "receipt": {
+      "suggestions": [
+        {
+          "index": 0,
+          "security_id": "SZ:159278",
+          "status": "applied",
+          "reason": "等待条件变化；定性条件由 Agent 复核",
+          "recommendation_id": "2e6b19d9f6c3482c9e87dd41c391c1fb"
+        }
+      ],
+      "suggestion_actions": [],
+      "forecasts": [
+        {
+          "index": 0,
+          "security_id": "SZ:159278",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 1,
+          "forecast_id": "0f30c420a8fc4f4e934bc79030ca9307"
+        },
+        {
+          "index": 1,
+          "security_id": "SZ:159278",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 5,
+          "forecast_id": "c002a43a80714269b868c60e5f42d00d"
+        },
+        {
+          "index": 2,
+          "security_id": "SZ:159278",
+          "status": "applied",
+          "reason": "已发布弃权",
+          "horizon": 20,
+          "forecast_id": "376031d51256412789696c6511ad3d92"
+        }
+      ]
+    },
+    "recommendation_rows": [
+      {
+        "id": "2e6b19d9f6c3482c9e87dd41c391c1fb",
+        "security_id": "SZ:159278",
+        "state": "watching",
+        "input_version": 1
+      }
+    ],
+    "forecast_coverage": {
+      "expected": 3,
+      "direction_published": 0,
+      "abstained": 3,
+      "uncovered": 0,
+      "waiting_data": 0,
+      "missed": 0,
+      "failed": 0
+    },
+    "batch": {
+      "id": "f421acc05ff3488293b94a536229441f",
+      "kind": "exploratory",
+      "state": "published",
+      "expected_count": 3
+    },
+    "forecasts": [
+      {
+        "id": "0f30c420a8fc4f4e934bc79030ca9307",
+        "kind": "exploratory",
+        "symbol": "SZ:159278",
+        "horizon": 1,
+        "direction": "abstain",
+        "base_date": "2026-11-02",
+        "target_date": "2026-11-03"
+      },
+      {
+        "id": "c002a43a80714269b868c60e5f42d00d",
+        "kind": "exploratory",
+        "symbol": "SZ:159278",
+        "horizon": 5,
+        "direction": "abstain",
+        "base_date": "2026-11-02",
+        "target_date": "2026-11-09"
+      },
+      {
+        "id": "376031d51256412789696c6511ad3d92",
+        "kind": "exploratory",
+        "symbol": "SZ:159278",
+        "horizon": 20,
+        "direction": "abstain",
+        "base_date": "2026-11-02",
+        "target_date": "2026-11-30"
+      }
+    ],
+    "no_application_assessment_rewritten": true
+  },
+  "publication_and_account_protection": {
+    "b_report_id": "1a66120bd4f248098ca3dc89763d715e",
+    "b_report_input_version": 1,
+    "b_current_report_count": 1,
+    "b_cash": "100000",
+    "b_holdings": [],
+    "b_trade_rows": 0,
+    "b_final_ledger_equal_prepared_and_reopened": true,
+    "a_account_version_before_b_candidate_update": 5,
+    "a_account_version_after_b_candidate_update": 6,
+    "a_version_change_reason": "Actual PUT universe candidate addition legitimately changes input scope and queues a version6 A task; it is not a repeated sale or report-triggered self-loop.",
+    "a_cash": "87479.90",
+    "a_ledger_cash_entries_and_positions_exactly_unchanged": true,
+    "a_reports": [
+      {
+        "id": "576433dea9114d2b8b4fcd0a1460cc8c",
+        "input_version": 4,
+        "current_clone_status": "stale",
+        "report_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b"
+      },
+      {
+        "id": "7729157dd3ca44249c3948f6977a65d1",
+        "input_version": 5,
+        "current_clone_status": "stale",
+        "report_sha256": "be5881cc5c72e9934a44d7c2b7f95c71bcb1d2b9cc7f6f27402860d0cb9f33fa"
+      }
+    ],
+    "a_report_fields_except_legal_status_exactly_unchanged": true,
+    "a_report_status_boundary": "Both old reports are stale in the B clone after scope change; their body/result/identity/version remain intact, while the source sale database/review are unchanged.",
+    "a_forecast_rows_exactly_unchanged": 15,
+    "after_publish_observations": 2,
+    "after_real_process_restart_observations": 2,
+    "all_four_b_views_equal": true,
+    "actual_worker_pids": [
+      13558,
+      14745
+    ],
+    "restart_evidence": "Actual harness process IDs and API observations, not a claim that this audit restarted a service.",
+    "additional_tasks": [
+      {
+        "id": "8998f23cc55a4f7689d6758f18ba3248",
+        "account_id": "682f422e795a4259b0c477cd4d45f91c",
+        "state": "queued",
+        "reason": "universe_changed",
+        "scope": "account",
+        "input_version": 6,
+        "attempts": 0,
+        "created_at": "2026-11-03T03:42:00.595051+08:00",
+        "actual_model_http_requests": 0
+      },
+      {
+        "id": "df5552f372ea421d8812d4713670481a",
+        "account_id": null,
+        "state": "failed",
+        "reason": null,
+        "scope": "global",
+        "input_version": null,
+        "attempts": 1,
+        "created_at": "2026-11-03T03:42:01.267258+08:00",
+        "actual_model_http_requests": 0
+      }
+    ],
+    "additional_task_count": 2,
+    "additional_task_model_http_count": 0,
+    "global_task_denied_before_http": [
+      "df5552f372ea421d8812d4713670481a"
+    ],
+    "execution_stopped": true
+  },
+  "actual_request_evidence": {
+    "model_http_attempts": 11,
+    "completed_and_http_eof": 11,
+    "final_duration_ms": 342856.76,
+    "all_direct_route_verified": true,
+    "proxy_tunnel_observed": false,
+    "all_output_limit_fields_absent": true,
+    "configured_per_job_maximum": 40,
+    "reserved": 11,
+    "first_valid_publication_stop": [
+      {
+        "reason": "first_valid_publication_stop",
+        "at": "2026-11-03T03:50:49.801380+08:00"
+      }
+    ],
+    "post_publication_extra_model_requests": 0,
+    "no_network_cause_claim": true
+  },
+  "immutability": {
+    "report_not_edited": true,
+    "export_byte_identical": true,
+    "export_mode": "0o600",
+    "export_sha256": "195ad2c191d4f9bf095befe584741ef25d05c7214f8d77186d7d9c9ecd8c7a8f",
+    "public_review_copies_full_private_report": false,
+    "database_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-b-v1/execution/evaluation.sqlite3": "50fac86ee3ecf01789dae4d683e0d8f43494637dc8208ecce6cd5da5d13128e8",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/evaluation.sqlite3": "fe279219552deda97f1636e3049bc4bb185ff5eddefdbdcd6f43659890836a09"
+    },
+    "protected_file_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-b-v1/execution/summary.json": "1d1fc9d704269633c551f6cc4ebaea3fb3d809c4a5d28752c14385b94c84628b",
+      "data/evaluations/fifteenth-business-output-omission-b-v1/execution/model-result.json": "4032b26a76e1b28c8d5976936711a7113913ba2598902043ce84e4c20c726d67",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/summary.json": "663330c722d7afcfb04e649beacd59bae55686e093331d07560a2c6530d1c97e",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/model-result.json": "3bb9d4567f4139bb9cdfe41a7b512783d4decdd3b1d03482934f69cd9cb1bce8",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/account-report.md": "be5881cc5c72e9934a44d7c2b7f95c71bcb1d2b9cc7f6f27402860d0cb9f33fa",
+      "docs/fifteenth/business-output-omission-a-sell-direct-content-review.json": "acefaedc069c846b8b8435cd9e44d9e0894b379237f2ef38eaeea99be45d89b1",
+      "docs/fifteenth/business-output-omission-a-sell-direct-content-review.md": "54918da27faa8c3f006039002b183f7b5729613e02d3e26b01192e04299669b8",
+      "docs/fifteenth/business-long-task-a-sell-content-review.json": "a2dc5cfaeaa18120bb8a181f33db360c54d49f1da9dc5b812066245eb97086d4",
+      "docs/fifteenth/business-output-omission-a-sell-content-review.json": "f652e68f74537a7439107266c85ebcc53bdef66bf0a563aa3b9c4b5f03aa3af5",
+      "docs/fifteenth/business-output-omission-a-sell-resume-content-review.json": "683992974190ab7f63c15481197e9d77d20b7038c1e4a2ebbc82279f34229dd6"
+    },
+    "source_sha256_at_execution": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "source_at_execution_preserved": true,
+    "environment_at_execution_preserved": true,
+    "source_sha256_at_review": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "sqlite_access": "mode=ro + PRAGMA query_only; two isolated databases only",
+    "daily_database_accessed": false,
+    "new_model_or_external_requests": 0,
+    "accepted_sale_review_not_modified": true,
+    "database_hashes_after": {
+      "data/evaluations/fifteenth-business-output-omission-b-v1/execution/evaluation.sqlite3": "50fac86ee3ecf01789dae4d683e0d8f43494637dc8208ecce6cd5da5d13128e8",
+      "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/evaluation.sqlite3": "fe279219552deda97f1636e3049bc4bb185ff5eddefdbdcd6f43659890836a09"
+    },
+    "database_logical_hashes_unchanged": true,
+    "protected_file_hashes_unchanged": true
+  },
+  "remaining_limits": [
+    "This is a limited no-buy/hold-cash decision with explicit gaps, not completed fund due diligence or a requirement that all future research also abstain.",
+    "No formal direction/window validation or naturally matured predictive accuracy is established by these three exploratory abstentions.",
+    "Historical-period naming should retain the exact dates and 19/59 interval counts when reused."
+  ]
+}

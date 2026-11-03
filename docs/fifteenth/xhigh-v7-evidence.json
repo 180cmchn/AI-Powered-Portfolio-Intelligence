@@ -1,0 +1,126 @@
+{
+  "kind": "xhigh_same_input_single_variable_run",
+  "run": "v7",
+  "recorded_at": "2026-11-02T19:56:57.964167+08:00",
+  "source_sha256": "7814848e927972c46f9aa55332870210d492ab73e61e7bf6668baf3df542ad0e",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "prepared_directory": "data/evaluations/fifteenth-historical-xhigh-v7",
+  "started_at": "2026-11-02T19:49:14.215198+08:00",
+  "completed_at": "2026-11-02T19:53:25.184591+08:00",
+  "change_from_v6": "isolated manager reasoning effort max -> xhigh; same prompt, evidence, full schema, output 4000 and environment route",
+  "request": {
+    "status_code": 200,
+    "response_id": "b314c33a-ae1c-93b0-93cf-a4c183c1cb2e",
+    "request_id": null,
+    "started_at": "2026-11-02T11:49:14.252622+00:00",
+    "finished_at": "2026-11-02T11:53:25.166770+00:00",
+    "duration_ms": 250915.04,
+    "stream_terminal": "response.incomplete",
+    "http_body_complete": true,
+    "stream_close_reason": "http_eof",
+    "response_incomplete_reason": "max_output_tokens",
+    "reasoning_effort_sent": "xhigh",
+    "reported_reasoning_effort": "xhigh",
+    "requested_max_output_tokens": 4000,
+    "usage": {
+      "input_tokens": 26379,
+      "input_tokens_details": {
+        "cached_tokens": 1152
+      },
+      "output_tokens": 19785,
+      "output_tokens_details": {
+        "reasoning_tokens": 15785
+      },
+      "total_tokens": 46164,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0,
+      "cost_in_usd_ticks": 577116000,
+      "context_details": {
+        "input_tokens": 26379,
+        "output_tokens": 19785
+      }
+    },
+    "stream_event_types": {
+      "response.created": 1,
+      "response.in_progress": 1,
+      "response.output_item.added": 2,
+      "response.reasoning_summary_part.added": 1,
+      "response.reasoning_summary_text.delta": 201,
+      "response.reasoning_summary_text.done": 1,
+      "response.reasoning_summary_part.done": 1,
+      "response.output_item.done": 1,
+      "response.content_part.added": 1,
+      "response.output_text.delta": 4000,
+      "response.incomplete": 1
+    },
+    "cancelled_by": null,
+    "error_code": null,
+    "stream_tail_drain_ms": 3.08,
+    "stream_first_byte_ms": 8408.66,
+    "stream_last_byte_ms": 250909.87,
+    "stream_last_progress_ms": 250911.7,
+    "stream_max_idle_ms": 8741.72
+  },
+  "request_inputs": [
+    {
+      "payload_sha256": "cebbb24e0bb7ba13bb096405d6c6b5fbc18f6167bb81dba6e9072aa1cf60a419",
+      "payload_bytes": 80517,
+      "full_historical_evidence_visible": true,
+      "report_count": 2,
+      "calculation_count": 21,
+      "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+      "production_schema_matches": true,
+      "reasoning_effort_sent": "xhigh",
+      "reasoning_effort_matches": true,
+      "transport_not_entered_reason": null
+    }
+  ],
+  "outcome": {
+    "http_requests": 1,
+    "contract_accepted": false,
+    "published": false,
+    "error_code": "delivery_contract_failed",
+    "content_assessment": "not_evaluated",
+    "formal_predictions": 0,
+    "source_unchanged": true,
+    "environment_unchanged": true
+  },
+  "visible_output_diagnostic": {
+    "artifact": "execution/visible-terminal-01.json",
+    "sha256": "9d018e442db0c7698b608289837971f0a6d99ec13b391dca26437a17efdc297e",
+    "private": true,
+    "not_accepted": true,
+    "types": [
+      "message"
+    ],
+    "text_chars": 6658,
+    "json_complete": false,
+    "parse_error": {
+      "type": "JSONDecodeError",
+      "position": 6641,
+      "reason": "Unterminated string starting at"
+    },
+    "observation": "Visible text is unfinished JSON: report and required sections followed by repeated optional findings/material IDs/uncertainties. No fragment was repaired or published.",
+    "interpretation_limit": "Text deltas alone do not prove a wrong output channel: an earlier successful short environment probe also had text deltas followed by a complete function item. The prior Markdown-draft hypothesis is not supported by this JSON."
+  },
+  "billing": {
+    "supplier_displayed_at": "2026-11-02 19:53:24",
+    "displayed_amount": "0.025462",
+    "currency_symbol": "$",
+    "input_tokens": 26379,
+    "output_tokens": 19785,
+    "cached_tokens": 1152,
+    "duration_seconds": 246,
+    "first_token_seconds": 3.8,
+    "matched_by": "time/model/input/output/cache counts",
+    "invoice_verified": false,
+    "cost_ticks_converted": false
+  },
+  "budget": {
+    "shared_maximum": 10,
+    "used_total": 4,
+    "remaining": 6,
+    "renewed_investigation_used": 1
+  },
+  "next_hypothesis": "Only manager final-round instruction: concise complete required result, optional structures only when useful without repeating report; keep complete evidence/scope/schema/xhigh/4000/route/deadlines."
+}

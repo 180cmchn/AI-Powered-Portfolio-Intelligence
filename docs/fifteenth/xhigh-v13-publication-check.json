@@ -1,0 +1,691 @@
+{
+  "kind": "xhigh_v13_isolated_publication_readonly_check",
+  "checked_at": "2026-11-02T22:02:32.995901+08:00",
+  "execution": "data/evaluations/fifteenth-historical-xhigh-v13-direct/execution",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "run_completed_at": "2026-11-02T21:58:53.590954+08:00",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "independent_reopen_passes": 2,
+    "store_initialized": false,
+    "migrations_run": false,
+    "recovery_called": false,
+    "server_started": false,
+    "daily_database_opened": false,
+    "external_requests_sent": 0,
+    "reference_resolver": "Production ReferenceStore and MaterialStore permission checks using supplied readonly SQLite; no HTTP fetch.",
+    "connections_explicitly_closed": true
+  },
+  "checks": {
+    "one_new_current_report": true,
+    "exactly_one_new_analysis_row": true,
+    "job_completed_once": true,
+    "report_hashes_match": true,
+    "job_and_analysis_result_identical": true,
+    "receipt_counts_reconcile": true,
+    "old_reports_retained_with_only_legal_status_transitions": true,
+    "account_facts_unchanged": true,
+    "protected_tables_unchanged": true,
+    "reference_permissions_preserved": true,
+    "saved_reference_locators_account_scoped": true,
+    "reference_summary_matches_recount_and_readonly_resolution": true,
+    "reference_projection_matches_readonly_resolver": true,
+    "no_known_malformed_url_references": true,
+    "all_reference_urls_map_to_actual_input": true,
+    "second_readonly_reopen_identical": true,
+    "historical_source_matches_frozen_preparation": true,
+    "frozen_source_unchanged": true,
+    "main_database_files_unchanged": true,
+    "report_matches_announced_sha256": true,
+    "direct_route_frozen_and_recorded": true,
+    "wire_hook_records_direct_and_full_input": true,
+    "frozen_input_digest_matches": true,
+    "no_proxy_tunnel_observed": true,
+    "origin_tls_handshake_completed": true,
+    "default_tls_verification_preserved_in_frozen_source": true,
+    "environment_file_stamp_matches_preparation": true,
+    "source_matches_before_during_after_run": true,
+    "one_request_one_local_reservation": true,
+    "aggregate_ledger_exhausted_at_ten": true,
+    "budget_database_matches_terminal_summary": true
+  },
+  "all_checks_passed": true,
+  "sqlite_quick_check": {
+    "historical": [
+      "ok"
+    ],
+    "execution_first": [
+      "ok"
+    ],
+    "execution_second": [
+      "ok"
+    ]
+  },
+  "publication": {
+    "published": true,
+    "contract_accepted": true,
+    "submission_outcome": "first_attempt",
+    "http_requests": 1,
+    "job_state": "completed",
+    "job_stage": "published",
+    "job_attempts": 1,
+    "delivery_status": "limited",
+    "content_assessment": "not_evaluated",
+    "rows_for_job": {
+      "analyses": 1,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "account_current_report_count": 1,
+    "report_chars": 5109,
+    "report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+    "report_hash_sources_agree": {
+      "model_result": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+      "analysis_column": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+      "analysis_result": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+      "job_result": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+      "terminal_arguments": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+      "summary": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60"
+    },
+    "actual_terminal_argument_fields": [
+      "completion",
+      "decision_summary",
+      "limitations",
+      "report",
+      "scope"
+    ],
+    "receipt_counts": {
+      "suggestions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "suggestion_actions": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      },
+      "forecasts": {
+        "submitted": 0,
+        "receipt_rows": 0,
+        "applied": 0,
+        "statuses": {},
+        "denominator_reconciles": true
+      }
+    },
+    "request_terminals": [
+      {
+        "status_code": 200,
+        "response_status": "completed",
+        "stream_terminal": "response.completed",
+        "http_body_complete": true,
+        "stream_close_reason": "http_eof",
+        "tool_choice_satisfied": true
+      }
+    ]
+  },
+  "references": {
+    "occurrence_count": 11,
+    "persisted_reference_summary": {
+      "resolved": 0,
+      "source_link": 11,
+      "unresolved": 0
+    },
+    "status_counts": {
+      "source_link": 11
+    },
+    "material_backed_occurrences": 8,
+    "permission_failure_indexes": [],
+    "locator_account_mismatch_indexes": [],
+    "actual_input_unique_url_count": 28,
+    "url_mapping_counts": {
+      "exact": 11
+    },
+    "url_checks": [
+      {
+        "reference_index": 0,
+        "status": "source_link",
+        "url_sha256": "1023e49316c0e1a0586912623b09b6f282287fd9d6804ac094bd5e71a3645581",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": false
+      },
+      {
+        "reference_index": 1,
+        "status": "source_link",
+        "url_sha256": "e4466c0f462fc2ae5a2b2895a3c582fdceb6ddf8ff767ecffd278aea9f6d1121",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 2,
+        "status": "source_link",
+        "url_sha256": "71cd20d61707a693fa9a167c0d75affb3a823c40bee60a43b5e1d30311213f73",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 3,
+        "status": "source_link",
+        "url_sha256": "4800b1a1de08a99143c762481ae26972588e801b0b298b72ff70d276c1a8a5eb",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 4,
+        "status": "source_link",
+        "url_sha256": "d77f4001977a5d1949acffd9ec6b1051060596b8bc15b1aca02788a36f795a32",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": false
+      },
+      {
+        "reference_index": 5,
+        "status": "source_link",
+        "url_sha256": "6b8eb0abdb5d2deb2486e7316ef5b2821419a31f540132ed2b4f4f9f682e61a4",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 6,
+        "status": "source_link",
+        "url_sha256": "af64a36ef1b48e4a144aaa41e28d91459efd3bcc63c9b3d23b439ab642ef664d",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 7,
+        "status": "source_link",
+        "url_sha256": "4320dff0590d0a5f9acf00951648eb9861684d31517b48837b2c34ec10424559",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": false
+      },
+      {
+        "reference_index": 8,
+        "status": "source_link",
+        "url_sha256": "c6f7c133f4aff624a81befbeb16b1de691f938206706507ff4534fa1e040f73b",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 9,
+        "status": "source_link",
+        "url_sha256": "589833b957a504664e52b4e5dbec2ed1390980b7e37df0bd0f59142c1a139b31",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      },
+      {
+        "reference_index": 10,
+        "status": "source_link",
+        "url_sha256": "b2e4b032614d93440ad3789f49e61e3891127d2119672b3e9aba8bcf52a0dc56",
+        "url_syntax_valid": true,
+        "has_surrounding_delimiter_or_whitespace": false,
+        "input_mapping": "exact",
+        "material_backed": true
+      }
+    ],
+    "note": "Input mapping proves provenance of the URL string, not external reachability, source correctness, or full-document reading. source_link remains link-only. No URL was fetched.",
+    "full_frozen_input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "full_frozen_input_present_in_actual_http_payload": true,
+    "all_eleven_exact_input_urls": true
+  },
+  "old_reports": [
+    {
+      "previous_status": "current",
+      "current_status": "stale",
+      "changed_columns": [
+        "status"
+      ],
+      "expected_transition": true,
+      "identity_and_content_preserved": true,
+      "prior_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44",
+      "retained_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44"
+    }
+  ],
+  "protected_state": {
+    "recommendations": {
+      "before": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "identical": true
+    },
+    "forecasts": {
+      "before": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "identical": true
+    },
+    "forecast_batches": {
+      "before": {
+        "count": 1,
+        "sha256": "99771a57875a7c26a7fdef9039276bb57ea824d855a55b954e4f55564ee9b6a8"
+      },
+      "after": {
+        "count": 1,
+        "sha256": "99771a57875a7c26a7fdef9039276bb57ea824d855a55b954e4f55564ee9b6a8"
+      },
+      "identical": true
+    },
+    "ledger_accounts": {
+      "before": {
+        "count": 1,
+        "sha256": "7a1b72bb0a5e25aa4b844163c893785af99392bb91354fcfe58c35c7d9435180"
+      },
+      "after": {
+        "count": 1,
+        "sha256": "7a1b72bb0a5e25aa4b844163c893785af99392bb91354fcfe58c35c7d9435180"
+      },
+      "identical": true
+    },
+    "ledger_entries": {
+      "before": {
+        "count": 4,
+        "sha256": "c4c928daff5fac36e5a4833a8de26a4c6b6f9c13be26cc321a036618146ef13d"
+      },
+      "after": {
+        "count": 4,
+        "sha256": "c4c928daff5fac36e5a4833a8de26a4c6b6f9c13be26cc321a036618146ef13d"
+      },
+      "identical": true
+    },
+    "ledger_operations": {
+      "before": {
+        "count": 3,
+        "sha256": "fb8fff9ddeb465543f4f8e3ef66abbd926102d7c19f4a1b3b51fe7a7871f446c"
+      },
+      "after": {
+        "count": 3,
+        "sha256": "fb8fff9ddeb465543f4f8e3ef66abbd926102d7c19f4a1b3b51fe7a7871f446c"
+      },
+      "identical": true
+    },
+    "ledger_positions": {
+      "before": {
+        "count": 3,
+        "sha256": "7138034856e3abb111c0fd7c9684f9063076b90743db2c7fba82060ef2326764"
+      },
+      "after": {
+        "count": 3,
+        "sha256": "7138034856e3abb111c0fd7c9684f9063076b90743db2c7fba82060ef2326764"
+      },
+      "identical": true
+    },
+    "material_catalog": {
+      "before": {
+        "count": 212,
+        "sha256": "4bb5bc83a595052db53a04096be66ff3120f8961ad8668c645de1341e066a0a9"
+      },
+      "after": {
+        "count": 212,
+        "sha256": "4bb5bc83a595052db53a04096be66ff3120f8961ad8668c645de1341e066a0a9"
+      },
+      "identical": true
+    },
+    "material_document_versions": {
+      "before": {
+        "count": 203,
+        "sha256": "52b5b2dd66b574177974172ab33d5ef1de74eb5093112f968fed5f4d0d10b7f1"
+      },
+      "after": {
+        "count": 203,
+        "sha256": "52b5b2dd66b574177974172ab33d5ef1de74eb5093112f968fed5f4d0d10b7f1"
+      },
+      "identical": true
+    },
+    "material_notifications": {
+      "before": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "identical": true
+    },
+    "material_observation_bindings": {
+      "before": {
+        "count": 5,
+        "sha256": "376b28ef9286069012d87bdf38457edb53c73a40ac19453dc8210d9ca1fde68a"
+      },
+      "after": {
+        "count": 5,
+        "sha256": "376b28ef9286069012d87bdf38457edb53c73a40ac19453dc8210d9ca1fde68a"
+      },
+      "identical": true
+    },
+    "material_observations": {
+      "before": {
+        "count": 10,
+        "sha256": "9a055e254949233860abda21724b6c838d3c15ec48ef8c067a7b815ce17a6cf3"
+      },
+      "after": {
+        "count": 10,
+        "sha256": "9a055e254949233860abda21724b6c838d3c15ec48ef8c067a7b815ce17a6cf3"
+      },
+      "identical": true
+    },
+    "material_representations": {
+      "before": {
+        "count": 212,
+        "sha256": "6191ba50e5ea967b8ec96ca54a44772f51a4d1ab94cc3817d68454d548896a41"
+      },
+      "after": {
+        "count": 212,
+        "sha256": "6191ba50e5ea967b8ec96ca54a44772f51a4d1ab94cc3817d68454d548896a41"
+      },
+      "identical": true
+    },
+    "material_stream_heads": {
+      "before": {
+        "count": 5,
+        "sha256": "bf6e311dde6717753e1c2f17c2bbbcaf9c950cf0fe2706c0de6f48d70a720976"
+      },
+      "after": {
+        "count": 5,
+        "sha256": "bf6e311dde6717753e1c2f17c2bbbcaf9c950cf0fe2706c0de6f48d70a720976"
+      },
+      "identical": true
+    },
+    "material_uses": {
+      "before": {
+        "count": 212,
+        "sha256": "f8deff66afff76c1bad4dd30fb5fc942e2818203ddf8934137e1992af4accf61"
+      },
+      "after": {
+        "count": 212,
+        "sha256": "f8deff66afff76c1bad4dd30fb5fc942e2818203ddf8934137e1992af4accf61"
+      },
+      "identical": true
+    },
+    "materials": {
+      "before": {
+        "count": 212,
+        "sha256": "8ebd6a15e700a19827d71dc9b3b5c60d41341c0890ebdc931f7784ecc73ac041"
+      },
+      "after": {
+        "count": 212,
+        "sha256": "8ebd6a15e700a19827d71dc9b3b5c60d41341c0890ebdc931f7784ecc73ac041"
+      },
+      "identical": true
+    }
+  },
+  "account_facts": {
+    "compared_fields": [
+      "cash",
+      "holdings",
+      "preferences",
+      "version"
+    ],
+    "unchanged": true,
+    "account_latest_job_matches": true,
+    "analysis_state": "current",
+    "input_version_matches": true
+  },
+  "file_recheck": {
+    "before": {
+      "historical": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "exists": true,
+        "size": 10059776,
+        "sha256": "326e2170361d240ba9f5b4b2b82929e4d3936958967a5ecb9cf6d925ead594c5"
+      },
+      "execution-wal": {
+        "exists": false
+      },
+      "execution-shm": {
+        "exists": false
+      }
+    },
+    "after": {
+      "historical": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "exists": true,
+        "size": 10059776,
+        "sha256": "326e2170361d240ba9f5b4b2b82929e4d3936958967a5ecb9cf6d925ead594c5"
+      },
+      "execution-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      }
+    },
+    "all_database_and_sidecar_files_unchanged": false,
+    "initial_inventory_changes": {
+      "execution-wal": {
+        "before": {
+          "exists": false
+        },
+        "after": {
+          "exists": true,
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "execution-shm": {
+        "before": {
+          "exists": false
+        },
+        "after": {
+          "exists": true,
+          "size": 32768,
+          "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+        }
+      }
+    },
+    "note": "Initial read-only access created an empty execution WAL and SQLite shared-memory sidecar. Both main database hashes and the two logical snapshots remained identical; do not claim all sidecar files were initially unchanged."
+  },
+  "reopen_scope": {
+    "sqlite_persistence_reopened_twice": true,
+    "same_completed_job_and_single_report_after_reopen": true,
+    "recover_rerun_performed": false,
+    "full_application_restart_verified": false,
+    "duplicate_publication_attempted": false
+  },
+  "limitations": [
+    "Zero submitted suggestions/actions/forecasts is an empty denominator, not successful tracking or formal prediction.",
+    "Read-only SQLite reopening is not a full service restart or a duplicate-publication/idempotency test.",
+    "Mechanical persistence and source access do not establish investment quality, current market accuracy, or continuous reliability.",
+    "All 11 citations are source_link entries, not resolved/read original documents. Exact input URL matching and account permission checks do not prove internet reachability or factual correctness.",
+    "Direct success in this one run does not isolate the environment proxy as the historical failure cause or establish comparative reliability.",
+    "TLS verification preservation is supported by the frozen constructor and offline SSLContext assertions; no live peer certificate or runtime SSLContext was archived.",
+    "The independent aggregate authorization ledger is exhausted at 10/10. This audit neither authorizes nor executes normal business stage A."
+  ],
+  "routing_and_tls": {
+    "network_route": "direct",
+    "routing_policy": "explicit AsyncHTTPTransport; no environment proxy mounts; TLS verification and environment CA retained",
+    "observed_transport": {
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "origin_tls_handshake_completed": true,
+      "transport_events": [
+        {
+          "event": "connection.connect_tcp.started",
+          "scope": "origin",
+          "elapsed_ms": 2.39
+        },
+        {
+          "event": "connection.connect_tcp.complete",
+          "scope": "origin",
+          "elapsed_ms": 216.9
+        },
+        {
+          "event": "connection.start_tls.started",
+          "scope": "origin",
+          "elapsed_ms": 216.95
+        },
+        {
+          "event": "connection.start_tls.complete",
+          "scope": "origin",
+          "elapsed_ms": 361.68
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 362.03
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 362.31
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 362.32
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 362.51
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 362.52
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3815.19
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3816.52
+        },
+        {
+          "event": "http11.receive_response_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 292860.54
+        }
+      ],
+      "environment_proxy_present": true,
+      "interpretation": "The explicit transport and origin-scoped TCP/TLS/HTTP trace show no application HTTP CONNECT proxy tunnel. Environment proxy variables remained present; their presence does not mean this request used those proxies. The bounded trace does not independently reveal every external network intermediary."
+    },
+    "tls_configuration": {
+      "frozen_constructor": "httpx.AsyncHTTPTransport()",
+      "verify_default": true,
+      "trust_env_default": true,
+      "httpx_version": "0.28.1",
+      "environment_ca_file_and_directory_preserved": true,
+      "offline_ssl_context_assertions": [
+        "verify_mode == ssl.CERT_REQUIRED",
+        "check_hostname is True",
+        "SSL_CERT_FILE/SSL_CERT_DIR select the same environment CA",
+        "explicit transport leaves no automatic environment proxy mounts"
+      ],
+      "evidence_kind": "Frozen implementation plus passing offline construction tests; live trace confirms TLS handshake but does not archive peer certificates or the runtime SSLContext.",
+      "implementation_sha256": "0abc105986ecf8aaf8a00fbe50501a9903aa0ea4e1902521e9820c14409c49c7",
+      "test_file_sha256": "4f32c113a5d173c5d188731cacf46528c4b6814f2090428e466b32dbc41064bb",
+      "offline_evidence": [
+        "test-results/fifteenth/direct-route-business-offline-tests.json",
+        "test-results/fifteenth/v13-direct-linux-targeted.json"
+      ],
+      "mac_targeted_passed": 91,
+      "linux_targeted_passed": 91,
+      "test_source_hashes_match_current": true
+    },
+    "environment_preservation": {
+      "prepared_dotenv_stamp": {
+        "exists": true,
+        "mtime_ns": 1793291266379543661,
+        "size": 951
+      },
+      "current_dotenv_stamp": {
+        "exists": true,
+        "mtime_ns": 1793291266379543661,
+        "size": 951
+      },
+      "execution_recorded_environment_unchanged": true,
+      "execution_recorded_source_unchanged": true,
+      "scope": "Frozen .env metadata and source identity were checked before request and at completion. The audit does not print credentials or proxy endpoint values."
+    }
+  },
+  "authorization_ledger": {
+    "method": "Independent SQLite mode=ro/query_only reads; no reservation or replay invoked",
+    "local_maximum": 1,
+    "local_reserved_attempts": 1,
+    "observed_http_requests": 1,
+    "global_maximum": 10,
+    "global_reserved_attempts": 10,
+    "global_remaining_attempts": 0,
+    "global_stage_maximums": {
+      "final": 10,
+      "full": 0
+    },
+    "new_business_stage_authorized_or_started": false,
+    "further_model_requests_sent_by_audit": 0
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "aggregate_verifier_effective_team_identity_fix",
+  "recorded_at": "2026-11-02T17:29:12.553996+08:00",
+  "rejected_execution": "fifteenth-historical-verified-v4",
+  "preflight_outcome": {
+    "model_client_created": false,
+    "http_attempts_reserved": 0,
+    "paid_requests_sent": 0,
+    "shared_authorization_consumed": 0
+  },
+  "observed_difference": {
+    "role_list_fields": [
+      "six role updated_at fields only"
+    ],
+    "prepared_migration_time": "2026-11-02T17:19:01.485xxx+08:00",
+    "execution_migration_time": "2026-11-02T17:25:17.981xxx+08:00",
+    "role_order_prompts_tools_versions_bindings_errors_and_warnings_identical": true,
+    "prepared_catalog_version": 2,
+    "execution_catalog_version": 3,
+    "effective_team_ids_equal": true
+  },
+  "cause": "Each isolated configure step copies old built-ins and performs the same exact-hash prompt migration; migration observation timestamps differ.",
+  "fix": "Reuse production freeze_agent_team().team_id for prepared effective configuration identity; no custom field-deletion identity rule, no production guard relaxed.",
+  "changed_files": [
+    "scripts/verify_fifteenth_aggregate.py",
+    "tests/test_fifteenth_context.py"
+  ],
+  "production_app_files_changed": [],
+  "engineering_full_suite_source_sha256": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+  "post_fix_source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+  "regression": {
+    "command": ".venv/bin/python -m pytest -q tests/test_fifteenth_context.py tests/test_fourteenth_chain.py tests/test_fourteenth_transport_probe.py",
+    "log": "test-results/fifteenth/aggregate-team-identity-targeted.txt",
+    "log_sha256": "4fba52a39ffc1e5ff6dda0000008a0dd965db5df03beb1d2ed09279fc4fab384",
+    "passed": 43,
+    "failed": 0,
+    "warnings": 0,
+    "seconds": 4.37,
+    "new_scenarios": [
+      "Same exact old builtin migrated at two distinct times, real Agent/HTTP fixture/Store publication succeeds once",
+      "Custom prompt modification rejected before ModelClient",
+      "Discovered model modification rejected before ModelClient",
+      "Effort modification rejected before ModelClient"
+    ]
+  },
+  "full_suite_and_browser_scope": "The 1208-case Mac/Linux passes and eleven groups apply to unchanged production app at engineering source 5355...; they were not rerun or relabelled as full validation of the later verifier-only patch."
+}

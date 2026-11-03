@@ -1,0 +1,187 @@
+{
+  "checked_at": "2026-11-02T18:09:47+08:00",
+  "scope": "Read-only v5 launch/code/frozen-policy audit plus five local fixture reproductions; no provider HTTP; no production source, .env, proxy, daily DB or server changes.",
+  "conclusion": "未发现 v5 实际调用链存在启用的 300 秒主动超时；受控生产 Runtime/ModelClient 能越过 300 秒并在 310 秒接受 finish_analysis。真实请求的 RemoteProtocolError 仍不能凭此归因供应商，也不能排除流解析等其他本地缺陷。",
+  "v5_frozen_policy": {
+    "model_request_timeout_seconds": 90,
+    "synthesis_request_timeout_seconds": 120,
+    "model_request_hard_timeout_seconds": 300,
+    "synthesis_request_hard_timeout_seconds": 360,
+    "model_first_event_timeout_seconds": 90,
+    "model_stream_idle_timeout_seconds": 120,
+    "analysis_timeout_seconds": 1200,
+    "agent_timeout_seconds": 600,
+    "max_model_calls": 2,
+    "max_agent_turns": 2,
+    "model_retries": 0,
+    "model_responses_stream": true
+  },
+  "v5_request": {
+    "started_at": "2026-11-02T09:30:15.830666+00:00",
+    "finished_at": "2026-11-02T09:35:15.884856+00:00",
+    "duration_ms": 300053.74,
+    "stage": "synthesis",
+    "request_timeout_seconds": 360.0,
+    "timeout_policy": {
+      "policy_version": 2,
+      "first_event_seconds": 90.0,
+      "stream_idle_seconds": 120.0,
+      "request_hard_seconds": 360.0,
+      "connect_seconds": 15.0,
+      "pool_seconds": 15.0,
+      "write_seconds": 30.0,
+      "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+    },
+    "deadline_remaining_ms": {
+      "analysis_budget_exhausted": 1199989.31,
+      "request_hard_timeout": 360000.0
+    },
+    "effective_limit": "request_hard_timeout",
+    "cancelled_by": null,
+    "error": "RemoteProtocolError",
+    "error_code": "upstream_transport_error",
+    "stream_last_byte_ms": 250339.11,
+    "stream_last_progress_ms": 212559.53,
+    "stream_terminal": null,
+    "http_body_complete": false,
+    "transport_failure_kind": "incomplete_response_body",
+    "exception_types": [
+      "RemoteProtocolError",
+      "RemoteProtocolError"
+    ],
+    "stream_close_reason": "transport_error_before_terminal"
+  },
+  "v5_remaining_at_failure_seconds": {
+    "request_hard_limit": 59.94626,
+    "stream_idle_limit": 32.50579
+  },
+  "launch_review": {
+    "launcher": "python scripts/verify_fifteenth_aggregate.py --run-real with prepared isolated v5 directory and bounded shared attempt ledger",
+    "authorized_http_attempts": 2,
+    "actual_attempts": 1,
+    "reported_by_executing_parent": "exec_command yielded session 10448; only empty stdin polls; no shell timeout, Ctrl-C, kill or terminate; process returned exit 2; functions.exec yield did not stop session"
+  },
+  "boundaries": [
+    {
+      "file": "scripts/verify_fifteenth_aggregate.py",
+      "lines": [
+        240,
+        248,
+        249,
+        285,
+        298,
+        304
+      ],
+      "finding": "Direct ResearchRuntime.run; pre-request durable attempt reservation contains no timer; finally closes runtime only after run result/error. No Service worker is launched."
+    },
+    {
+      "file": "app/agents.py",
+      "lines": [
+        517,
+        540,
+        549,
+        666,
+        693,
+        762,
+        804,
+        817,
+        1652
+      ],
+      "finding": "Manager has analysis 1200s and synthesis request phase. Ordinary 300s is used by closeout planning only. agent_timeout 600s applies child runners; v5 has no children. No inherited formal/analysis deadline in verifier context."
+    },
+    {
+      "file": "app/model.py",
+      "lines": [
+        536,
+        774,
+        900,
+        904,
+        909,
+        917,
+        939
+      ],
+      "finding": "Policy selected from synthesis phase; explicit HTTPX timeout connect15/pool15/write30/readNone. Hard timeout and parent cancellation have separate handlers from HTTP RequestError."
+    },
+    {
+      "file": "app/config.py",
+      "lines": [
+        75
+      ],
+      "finding": "Synthesis hard field 360 wins over legacy synthesis120 and ordinary300."
+    },
+    {
+      "file": "installed httpx/httpcore/h11",
+      "finding": "Read-only source inspection: explicit read=None reaches receive-body network read. Cancellation is BaseException, excluded from HTTPX Exception mapping; HTTP/1.1 body and pool cleanup re-raise original exception. Incomplete chunk EOF is h11 RemoteProtocolError. No hidden total300 timer found in inspected path."
+    }
+  ],
+  "local_reproduction": {
+    "script": "/tmp/guanlan-v5-local-timeout-audit.py",
+    "script_sha256": "60c3b8b24659e0c2257f65031a6b3581b00991f39e1e55338dd7aa5d1158eaa6",
+    "result_file": "test-results/fifteenth/v5-local-timeout-audit.json",
+    "cases_passed": 5,
+    "method": "Real ResearchRuntime, ModelClient, ResearchTools and isolated SQLite; only transport and coherent monotonic/asyncio/perf clock controlled. Same safe v5 timeout values; semantic progress at10/80/150/212.55953s, heartbeat250.33911s. Request extension confirms read=None; one request, no children in every case. Source snapshot hash was not independently captured at reproduction start; this is scoped diagnostic evidence, not a new full-suite identity."
+  },
+  "case_results": [
+    {
+      "case": "complete_after_300",
+      "outcome": {
+        "type": "success",
+        "submission_action": "finish_analysis"
+      },
+      "pending_at_300_05374": true,
+      "cancelled_by": null,
+      "stream_close_reason": "http_eof",
+      "stream_cancelled": false
+    },
+    {
+      "case": "remote_close_300",
+      "outcome": {
+        "type": "ModelError",
+        "code": "upstream_transport_error"
+      },
+      "pending_at_300_05374": true,
+      "cancelled_by": null,
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_cancelled": false
+    },
+    {
+      "case": "hard_360",
+      "outcome": {
+        "type": "ModelTimeoutError",
+        "code": "request_hard_timeout"
+      },
+      "pending_at_300_05374": true,
+      "cancelled_by": "request_hard_timeout",
+      "stream_close_reason": "local_timeout",
+      "stream_cancelled": true
+    },
+    {
+      "case": "explicit_cancel_300",
+      "outcome": {
+        "type": "CancelledError",
+        "code": null
+      },
+      "pending_at_300_05374": true,
+      "cancelled_by": "parent_or_user_cancelled",
+      "stream_close_reason": "local_cancellation",
+      "stream_cancelled": true
+    },
+    {
+      "case": "outer_300",
+      "outcome": {
+        "type": "TimeoutError",
+        "code": null
+      },
+      "pending_at_300_05374": false,
+      "cancelled_by": "parent_or_user_cancelled",
+      "stream_close_reason": "local_cancellation",
+      "stream_cancelled": true
+    }
+  ],
+  "limits": [
+    "MockTransport controls the exception; this suite proves application timer/cancellation behavior, not actual upstream or intermediary failure origin.",
+    "No raw stream is retained; v5 cannot be retrospectively replayed to prove whether terminal framing or progress events were misparsed.",
+    "Supplier client_gone identifies that endpoint's observed disconnect, not which component initiated it.",
+    "Pending local stream parser fixes are reviewed separately; no paid retry was authorized by this audit."
+  ]
+}

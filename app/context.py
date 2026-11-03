@@ -6,12 +6,47 @@ never indexed or exposed. Compaction runs only at a resolved tool boundary.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from typing import Any
 
 
 def serialized(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str, allow_nan=False)
+
+
+def compact_calculation_metadata(summaries: list[dict]) -> tuple[list[dict], dict]:
+    """Factor exact repeated explanations, never calculation values or evidence.
+
+    The table is included in the same request. Per-result attribution, units,
+    periods, inputs and retrieval records remain on each summary; its context_ref
+    explicitly supplies the factored fields. Stored originals are not changed.
+    """
+    fields = ('model_config', 'method', 'visibility', 'security',
+              'date_range', 'source_material_version')
+    groups: dict[str, list[int]] = {}
+    metadata: dict[str, dict] = {}
+    result = copy.deepcopy(summaries)
+    for index, summary in enumerate(result):
+        context = {key: summary[key] for key in fields if key in summary}
+        if not context:
+            continue
+        canonical = json.dumps(context, ensure_ascii=False, sort_keys=True, default=str)
+        identity = 'calculation-context-' + hashlib.sha256(canonical.encode()).hexdigest()[:16]
+        groups.setdefault(identity, []).append(index)
+        metadata[identity] = context
+    contexts = {}
+    for identity, indexes in groups.items():
+        context = metadata[identity]
+        # A table/ref has overhead. Keep singleton or very small metadata inline.
+        if len(indexes) < 2 or len(serialized(context)) * (len(indexes) - 1) <= len(identity) * (len(indexes) + 1) + 100:
+            continue
+        contexts[identity] = context
+        for index in indexes:
+            for key in context:
+                result[index].pop(key)
+            result[index]['context_ref'] = identity
+    return result, contexts
 
 
 def references(value: Any) -> list[dict]:

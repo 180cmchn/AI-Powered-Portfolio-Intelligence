@@ -1,0 +1,244 @@
+{
+  "kind": "offline_actual_request_structure_audit",
+  "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "actual_network_requests": 0,
+  "actual_model_requests": 0,
+  "actual_payload_sha256": "c62388600a12777e00924ac0a3042bd6f9f622e2397eb93f0ce21063c3efaf7b",
+  "short_probe_reconstructed_sha256": "444e749843f00a49a7f77dac9d1fdc98060524f725430a9df5e80688987a96df",
+  "both_short_probe_digests_matched": true,
+  "top_level_fields_equal": true,
+  "identical_top_level_fields": {
+    "model": "grok-4.7",
+    "store": false,
+    "max_output_tokens": 4000,
+    "include": [
+      "reasoning.encrypted_content"
+    ],
+    "reasoning": {
+      "effort": "max"
+    },
+    "tool_choice": {
+      "type": "function",
+      "name": "finish_analysis"
+    },
+    "stream": true
+  },
+  "different_top_level_fields": [
+    "instructions",
+    "input",
+    "tools"
+  ],
+  "tools": {
+    "production_exact_match": true,
+    "full_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "full_schema_chars": 3688,
+    "short_schema_chars": 696,
+    "top_level_properties": 17,
+    "required": [
+      "report",
+      "completion",
+      "scope",
+      "decision_summary",
+      "limitations"
+    ],
+    "schema_node_count": 74,
+    "static_schema_consistency": "pass for every emitted keyword/type/required/enum; no external metaschema validator available",
+    "constraints": [
+      {
+        "path": "$.properties.covered_demand_ids.items",
+        "types": [
+          "integer"
+        ],
+        "required": [],
+        "property_count": 0,
+        "minimum": 1
+      },
+      {
+        "path": "$.properties.forecasts.items.properties.horizon",
+        "types": [
+          "integer"
+        ],
+        "required": [],
+        "property_count": 0,
+        "minimum": 1
+      },
+      {
+        "path": "$.properties.suggestions",
+        "types": [
+          "array"
+        ],
+        "required": [],
+        "property_count": 0,
+        "maxItems": 100
+      }
+    ],
+    "all_five_required_fields_equal_short_schema": true,
+    "synthetic_minimal_three_scope_contract_satisfiable": true,
+    "synthetic_minimal_bytes": 247,
+    "empty_optional_arrays_satisfiable": true,
+    "strict": false,
+    "provider_full_schema_support": "not_established",
+    "actual_wire_tool_chars": 3725,
+    "keywords_actually_used": [
+      "additionalProperties",
+      "description",
+      "enum",
+      "items",
+      "maxItems",
+      "minimum",
+      "properties",
+      "required",
+      "type"
+    ],
+    "actual_wire_tools_array_chars": 3727,
+    "constraint_keys_observed": [
+      "additionalProperties",
+      "maxItems",
+      "minimum"
+    ]
+  },
+  "context": {
+    "history_items": 1,
+    "history_roles": [
+      "user"
+    ],
+    "history_content_chars": 53218,
+    "system_prompt_chars": 4071,
+    "current_manager_prompt_exact_match": true,
+    "component_chars": {
+      "job_id": 34,
+      "task_id": 34,
+      "account": 3601,
+      "input_version": 1,
+      "metrics": 4031,
+      "data_as_of": 27,
+      "allowed_delivery_scope": 50,
+      "required_delivery_scope": 39,
+      "scope": 9,
+      "historical_evidence": 38093,
+      "reason": 149,
+      "recommendations": 209,
+      "model_config": 602,
+      "agent_roles": 5571,
+      "team_id": 66,
+      "synthesis_transition": 134,
+      "runtime_status": 262
+    },
+    "runtime_status": {
+      "agent_id": "manager",
+      "model_calls_used": 0,
+      "remaining_shared_model_calls": 2,
+      "remaining_agent_turns": 2,
+      "closing": true,
+      "children": [],
+      "instruction": "这是当前运行状态。已有子任务不要重复创建；旧报告不代表后续补查已完成，阶段进展不等于最终报告。 当前只提交已有证据支持的报告；明确列出未完成任务、资料缺口及其影响，未知数字或分类保持未知，不再扩展研究。"
+    },
+    "synthesis_transition": {
+      "reason": "bounded_final_request",
+      "archive_count": 0,
+      "instruction": "仅基于已经交付的可见研究结果汇总。保留未决问题和资料范围；索引及截断部分不等于新阅读。只提交一次最终报告，不再扩展研究。"
+    },
+    "long_repeated_leaf_count": 4,
+    "long_repeated_leaf_excess_chars": 1022,
+    "duplicate_leaf_sizes_only": [
+      {
+        "chars": 138,
+        "occurrences": 5,
+        "excess_chars": 552
+      },
+      {
+        "chars": 161,
+        "occurrences": 2,
+        "excess_chars": 161
+      },
+      {
+        "chars": 157,
+        "occurrences": 2,
+        "excess_chars": 157
+      },
+      {
+        "chars": 152,
+        "occurrences": 2,
+        "excess_chars": 152
+      }
+    ],
+    "replayed_assistant_items": 0,
+    "replayed_function_items": 0,
+    "encrypted_reasoning_input_items": 0,
+    "reports": 2,
+    "calculations": 21,
+    "historical_account_metrics_not_duplicated_inside_evidence": true,
+    "historical_reports_exactly_equal_prepared_seed": true,
+    "historical_calculations_exactly_equal_prepared_seed": true,
+    "historical_metadata_table_exactly_equal_prepared_seed": true,
+    "historical_indexes_exactly_equal_prepared_seed": true,
+    "prepared_metrics_exactly_preserved_once": true,
+    "redundant_capability_metadata": {
+      "role_catalog_chars": 5571,
+      "role_count": 6,
+      "role_tool_name_entries": 141,
+      "tool_definition_count": 1,
+      "causal_conclusion": "Catalog describes configured roles while final request exposes one function. It is non-evidence overhead, not proof of missing forced choice or transport failure."
+    },
+    "possible_nonprotocol_prompt_load": {
+      "manager_prompt_has_research_instructions": true,
+      "manager_prompt_explicit_closing_override": true,
+      "closing_instructions_in_payload": true,
+      "tool_choice_still_forced": true,
+      "evidence_of_causation": false
+    }
+  },
+  "offline_production_parser_controls": [
+    {
+      "fixture": "complete_function",
+      "exact_v5_payload_hash_matches": true,
+      "tool_choice_status": "observed",
+      "parsed_function_count": 1,
+      "ordinary_text_is_function": false
+    },
+    {
+      "fixture": "complete_text_only",
+      "exact_v5_payload_hash_matches": true,
+      "tool_choice_status": "missing",
+      "parsed_function_count": 0,
+      "ordinary_text_is_function": false
+    }
+  ],
+  "source_unchanged": true,
+  "limitations": [
+    "No external network, provider compatibility test, new financial conclusion, or real replay was performed.",
+    "JSON Schema static consistency and controlled local parsing do not certify upstream behavior.",
+    "Canonical digest proves structured request equality; original raw-byte digest was not recorded."
+  ],
+  "targeted_controls": {
+    "command": ".venv/bin/pytest -q tests/test_fifteenth_context.py::test_prepared_aggregate_uses_real_agent_preflight_and_bounded_publication tests/test_fourteenth_runtime.py::test_concurrent_children_cannot_take_two_final_http_attempts",
+    "passed": 4,
+    "failed": 0,
+    "seconds": 0.42,
+    "scenarios": [
+      "full production schema accepted",
+      "one invalid submission corrected with second full-schema request",
+      "unknown transport stops after one request",
+      "concurrent child budgets preserve manager first submission plus correction"
+    ]
+  },
+  "source_scope_note": "This offline audit ran after the separately authorized SSE CR parser fix began; source_sha256 identifies audit code. The exact v5 request hash and production schema hash still match their saved pre-fix observations. No source was edited by this audit.",
+  "conclusions": {
+    "confirmed_local_request_generation_defect": null,
+    "excluded": [
+      "forced function choice omitted or chat-shaped",
+      "production schema replaced by shortened probe schema",
+      "different reasoning/include/output cap from successful short probes",
+      "unpaired tool history or replayed assistant reasoning in initial v5 input",
+      "required optional prediction batch or advice fields",
+      "report/calculation/source-index loss through context projection",
+      "closing round disables finish_analysis or enables extra research tools"
+    ],
+    "not_excluded": [
+      "Upstream compatibility or enforcement of the larger complete schema",
+      "Behavioral effects of research instructions or capability metadata despite final closing instructions",
+      "How the 4000 output budget was divided internally; no terminal usage was received",
+      "Which transport hop ended the response before terminal"
+    ]
+  }
+}

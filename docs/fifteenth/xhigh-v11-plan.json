@@ -1,0 +1,41 @@
+{
+  "kind": "historical_content_repair_controlled_verification",
+  "recorded_at": "2026-11-02T20:43:47.623472+08:00",
+  "source_sha256": "ab4297f0e2853ee40ba43619d8d535d0849222fb6efbadde097991bff72c28fa",
+  "previous_evidence": "xhigh-v10-evidence.json",
+  "previous_content_review": "xhigh-v10-content-review.json",
+  "previous_content_accepted": false,
+  "authorization_basis": "Latest user instruction: 将思考强度改为xhigh，大胆重试，直到找出失败原因并修复; bounded by original ten aggregate attempts. The earlier stop was assistant administrative state, not a new user cancellation.",
+  "shared_attempts_used_before": 7,
+  "shared_attempts_maximum": 10,
+  "http_attempts_this_execution_maximum": 1,
+  "automatic_retries": 0,
+  "normal_business_matrix_authorized": false,
+  "change_from_v10": [
+    "Model-visible execution/data/decision clocks with a checkpoint-backed historical decision time; no clock/deadline modification.",
+    "Final request specifies inline existing source URL/material ID and calculation basis; all required account questions remain."
+  ],
+  "purpose": "Repair the independently identified temporal ambiguity and absent source locators in actual model output. This is not a causal test of the old client_gone.",
+  "held_constant": {
+    "model": "grok-4.7",
+    "reasoning_effort": "xhigh",
+    "output_limit": 6000,
+    "production_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "full_child_reports": 2,
+    "calculations": 21,
+    "source_indexes": 40,
+    "route": "existing environment with TLS verification"
+  },
+  "stop_conditions": [
+    "one request ends",
+    "unknown-outcome failure",
+    "source/config drift",
+    "parent/request deadline"
+  ],
+  "content_gate": "Independent review of the new actual report; no local rewriting of model text or v10 review.",
+  "cost_cap": null,
+  "cost_note": "Actual supplier charge remains to be reconciled; unknown is not zero.",
+  "prepared": "data/evaluations/fifteenth-historical-xhigh-v11",
+  "manifest": "docs/fifteenth/xhigh-input-manifest-v11.json"
+}

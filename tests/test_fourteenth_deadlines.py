@@ -22,11 +22,49 @@ def bind_batch(store, account, *, kind='formal', at=None):
     return batch
 
 
-def moving_clock(monkeypatch, before_seconds):
-    start = time.monotonic()
-    wall_start = CUTOFF - timedelta(seconds=before_seconds)
-    monkeypatch.setattr(clock, '_utc_now', lambda: (
-        wall_start + timedelta(seconds=time.monotonic() - start)).astimezone(timezone.utc))
+class ControlledDeadlineClock:
+    """One explicitly advanced timeline for wall, production and asyncio clocks.
+
+    No time passes during DB/client preparation. asyncio still owns, schedules
+    and fires the real timeout callbacks: only its time source is controlled.
+    Never move just datetime while leaving monotonic/event-loop timers behind.
+    """
+    def __init__(self, monkeypatch, before_seconds):
+        self.start = time.monotonic()
+        self.elapsed = 0.0
+        self.wall_start = CUTOFF - timedelta(seconds=before_seconds)
+        monkeypatch.setattr(time, 'monotonic', self.monotonic)
+        monkeypatch.setattr(asyncio.get_running_loop(), 'time', self.monotonic)
+        monkeypatch.setattr(clock, '_utc_now', self.wall_time)
+
+    def monotonic(self):
+        return self.start + self.elapsed
+
+    def wall_time(self):
+        return (self.wall_start + timedelta(seconds=self.elapsed)).astimezone(timezone.utc)
+
+    def advance(self, seconds):
+        self.elapsed += seconds
+        assert asyncio.get_running_loop().time() == time.monotonic() == self.monotonic()
+
+
+def deadline_limits(earliest):
+    # Virtual seconds, not extra production allowances or machine-speed margins.
+    return {'analysis_timeout_seconds': 20 if earliest == 'analysis' else 40,
+            'model_request_hard_timeout_seconds': 20 if earliest == 'request' else 30,
+            'synthesis_request_hard_timeout_seconds': 20 if earliest == 'request' else 30}
+
+
+async def wait_for_stage(task, entered):
+    """A completed/failed Service task cannot be mistaken for entry into HTTP."""
+    stage = asyncio.create_task(entered.wait())
+    try:
+        done, _ = await asyncio.wait({task, stage}, return_when=asyncio.FIRST_COMPLETED)
+        assert stage in done and entered.is_set(), 'Service finished before reaching the asserted stage'
+    finally:
+        if not stage.done():
+            stage.cancel()
+            await asyncio.gather(stage, return_exceptions=True)
 
 
 def test_earliest_formal_limit_ignores_exploration_and_uses_controlled_wall_clock():
@@ -86,43 +124,88 @@ async def test_multiple_assigned_formal_batches_use_the_earliest_deadline(tmp_pa
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('earliest', ['formal', 'analysis', 'request'])
-async def test_inflight_request_honors_the_earliest_cap_and_keeps_saved_material(tmp_path, monkeypatch, earliest):
-    moving_clock(monkeypatch, .45)
+@pytest.mark.parametrize('stage', ['before_http', 'inflight', 'complete'])
+async def test_request_deadline_boundaries_keep_saved_material(tmp_path, monkeypatch, earliest, stage):
+    timeline = ControlledDeadlineClock(monkeypatch, 20 if earliest == 'formal' else 60)
+    entered, release = asyncio.Event(), asyncio.Event()
     sent, cancelled = [], []
+
     async def handler(request):
         sent.append(json.loads(request.content))
+        entered.set()  # The real ModelClient/HTTP transport has entered its handler.
         try:
-            await asyncio.sleep(2)
+            await release.wait()
         except asyncio.CancelledError:
             cancelled.append(True)
             raise
-        return response(call('finish_analysis', final('Late output must not publish')))
-    options = {'analysis_timeout_seconds': .04} if earliest == 'analysis' else (
-        {'model_request_hard_timeout_seconds': .04, 'synthesis_request_hard_timeout_seconds': .04}
-        if earliest == 'request' else {})
+        return response(call('finish_analysis', final()))
+
+    if stage == 'before_http':
+        from app.model import ModelClient
+        receive_stream = ModelClient._receive_stream
+
+        async def before_transport(self, *args, **kwargs):
+            # Hold the actual request path before HTTP is sent, with its real
+            # timer already armed. This is explicitly NOT an in-flight test.
+            entered.set()
+            await release.wait()
+            return await receive_stream(self, *args, **kwargs)
+
+        monkeypatch.setattr(ModelClient, '_receive_stream', before_transport)
+
     app, store, account = setup_app(tmp_path, monkeypatch, handler,
-        max_model_calls=2, max_agent_turns=2, **options)
-    bind_batch(store, account)
+        max_model_calls=2, max_agent_turns=2, **deadline_limits(earliest))
+    batch = bind_batch(store, account)
     material = store.save_material({'scope': 'public', 'access': 'full_text',
         'url': 'https://fixture.invalid/saved', 'content': 'Previously completed visible material'})
-    saved, reports = await execute(app, store, account)
-    assert saved['state'] == 'failed' and not reports
+    execution = asyncio.create_task(execute(app, store, account))
+    try:
+        await wait_for_stage(execution, entered)
+        assert len(sent) == (0 if stage == 'before_http' else 1)
+        if stage == 'complete':
+            timeline.advance(1)  # All three bounded deadlines are still open.
+            release.set()
+        else:
+            # Only the selected 20-second boundary expires. The barrier proves
+            # exactly where it happens, regardless of host/SQLite/client speed.
+            timeline.advance(21)
+        saved, reports = await execution
+    finally:
+        if not execution.done():
+            execution.cancel()
+            await asyncio.gather(execution, return_exceptions=True)
+
     expected = {'formal': 'forecast_deadline_exceeded', 'analysis': 'analysis_budget_exhausted',
                 'request': 'request_hard_timeout'}[earliest]
-    assert saved['error_code'] == expected, saved.get('error')
-    assert len(sent) == 1 and cancelled == [True]
+    events = store.job(saved['id'], events=True)['events']
+    observations = [request for event in events for request in event.get('payload', {}).get('requests', [])]
+    assert observations and observations[0]['effective_limit'] == expected
+    assert observations[0]['deadline_remaining_ms'][expected] == 20000
     assert store.material(material['id'])['content'] == 'Previously completed visible material'
     assert store.claim_jobs(account_id=account['id']) == []
-    events = store.job(saved['id'], events=True)['events']
+    with store.connect() as db:
+        assert db.execute('SELECT count(*) FROM forecasts WHERE batch_id=?', (batch['id'],)).fetchone()[0] == 0
+    if stage == 'complete':
+        assert saved['state'] == 'completed', saved.get('error')
+        assert len(sent) == len(reports) == 1 and cancelled == []
+        assert sum(event['type'] == 'published' for event in events) == 1
+        assert store.forecast_job_context(saved['id'])['state'] != 'closed'
+        return
+
+    assert saved['state'] == 'failed' and not reports
+    assert saved['error_code'] == expected, saved.get('error')
+    assert len(sent) == (0 if stage == 'before_http' else 1)
+    assert cancelled == ([] if stage == 'before_http' else [True])
     assert not any(event['type'] == 'published' for event in events)
     if earliest == 'formal':
         context = store.forecast_job_context(saved['id'])
         assert context['state'] == 'closed'
         assert {sample['state'] for sample in context['items']} == {'missed'}
-        observations = [request for event in events for request in event.get('payload', {}).get('requests', [])]
-        assert observations and observations[0]['effective_limit'] == 'forecast_deadline_exceeded'
-        assert 'forecast_deadline_exceeded' in observations[0]['deadline_remaining_ms']
         assert not store.forecasts_page(kind='formal')['items'][0].get('forecast_id')
+        with store.connect() as db:
+            assert store.publish_forecasts(db, saved, {'forecasts': [{
+                'security_id': 'SZ:159278', 'horizon': 1, 'direction': 'abstain',
+                'reason': 'late result must not backfill'}]}, 'not-a-published-report') == []
     else:
         assert store.forecast_job_context(saved['id'])['state'] != 'closed'
 

@@ -1,0 +1,536 @@
+{
+  "kind": "evidence_content_review",
+  "reviewed_at": "2026-11-03T03:13:23.886488+08:00",
+  "reviewer": {
+    "identity": "Codex development subtask /root/delivery_validation",
+    "method": "Read-only verification of final failed job, saved two child reports, 68 calculation records, selected actually delivered source excerpts, ledger and unchanged prior outcomes. No model or third-party network requests; no hidden reasoning accessed.",
+    "human_signoff": false,
+    "model_self_evaluation": false
+  },
+  "identity": {
+    "job_id": "467cfca197234476ab538d4c96a6b667",
+    "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "account_input_version": 5,
+    "private_execution_location": "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution",
+    "report_sha256": null
+  },
+  "accepted": null,
+  "content_assessment": "not_evaluated",
+  "overall": "failed_before_final_delivery",
+  "acceptance_boundary": "No actual final report exists. Completed child research and successful arithmetic are not a substitute for a final model report. This file cannot satisfy the accepted-report prerequisite for B.",
+  "execution_outcome": {
+    "started_at": "2026-11-03T02:56:00.240646+08:00",
+    "completed_at": "2026-11-03T03:10:36.174692+08:00",
+    "job_state": "failed",
+    "published": false,
+    "contract_accepted": false,
+    "mechanical_passed": false,
+    "execution_stopped": true,
+    "model_result_exists": false,
+    "private_report_export_created": false,
+    "application_content_assessment": "not_evaluated",
+    "application_assessment_not_rewritten": true,
+    "failure_stage": "synthesizing",
+    "error_code": "upstream_transport_error",
+    "local_failure_message": "RemoteProtocolError before a verified terminal event; no final delivery."
+  },
+  "last_request": {
+    "error": "RemoteProtocolError",
+    "error_code": "upstream_transport_error",
+    "cancelled_by": null,
+    "request_accepted": true,
+    "status_code": 200,
+    "duration_ms": 357739.51,
+    "stream_terminal": null,
+    "response_status": null,
+    "http_body_complete": false,
+    "protocol_terminal": null,
+    "requested_max_output_tokens": null,
+    "requested_tool_choice": {
+      "type": "function",
+      "name": "finish_analysis"
+    },
+    "stream_last_progress_ms": 278737.75,
+    "stream_last_byte_ms": 307426.7,
+    "stream_close_reason": "transport_error_before_terminal",
+    "retry_suppressed": "accepted_or_sent_request_outcome_unknown"
+  },
+  "request_boundary": {
+    "output_cap_policy": "omitted; requested_max_output_tokens is null in actual observations",
+    "actual_http_attempts": 35,
+    "completed_with_http_eof": 34,
+    "accepted_request_with_unknown_outcome": 1,
+    "last_request_number": 35,
+    "visible_text_delta_event_count": 7580,
+    "visible_text_event_count_is_not_character_or_token_count": true,
+    "no_verified_final_function": true,
+    "no_automatic_replay_after_unknown_outcome": true,
+    "unknown_stop_record": [
+      {
+        "reason": "accepted_or_sent_request_outcome_unknown",
+        "at": "2026-11-03T03:10:35.447068+08:00"
+      }
+    ],
+    "configured_per_job_engineering_maximum": 40,
+    "reserved": 35,
+    "wire_failure_not_a_local_hard_timeout": true,
+    "cause_not_proven": "This proves failure before terminal despite the omitted request output cap. It does not identify the remote close cause, prove a provider default cap, or show that omission generally succeeds or fails."
+  },
+  "partial_research_review": {
+    "accepted_as_final_report": false,
+    "checkpoint_created_at": "2026-11-03T03:04:37.600297+08:00",
+    "completed_reports": [
+      {
+        "report_id": "81aee698729e418092f2231213fc37a4",
+        "title": "159599跟踪与费用",
+        "role_id": "etf_researcher",
+        "findings": 8,
+        "open_questions": 6
+      },
+      {
+        "report_id": "487a64fe0de3450cbd89303bb2c256f1",
+        "title": "三证券价格路径",
+        "role_id": "market_researcher",
+        "findings": 6,
+        "open_questions": 6
+      }
+    ],
+    "final_request_numbers": [
+      35
+    ],
+    "final_full_report_count": 2,
+    "saved_calculations": 68,
+    "basic_decimal_operations_checked": 52,
+    "basic_arithmetic_mismatches": 0,
+    "market_indicator_successes": 11,
+    "market_indicator_insufficient_data": 4,
+    "market_indicator_tool_errors": 1,
+    "indicator_checks": [
+      {
+        "symbol": "SZ:002354",
+        "status": "ok",
+        "return": "0.104895104895104895104895105",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "7.6465",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.046953934057318895,
+        "relative_return": "0.1794995520426090188067353357",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-d66b0147cfe840a6b0dad19f8e15a379",
+        "agent_id": "manager",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "ok",
+        "return": "-0.2414187643020594965675057208",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "2.25575",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.026079219915866446,
+        "relative_return": "-0.1668143171545553728656654901",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-1618743c62f54eedadafb6a9f3a5b06b",
+        "agent_id": "manager",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SH:518880",
+        "status": "ok",
+        "return": "-0.0731792717086834733893557423",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "8.38965",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.010428638815496655,
+        "relative_return": "0.0014251754388206503124844884",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-02dcdbd9dd9e432695966dd90f5c8336",
+        "agent_id": "manager",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:002354",
+        "status": "ok",
+        "return": "-0.0306748466257668711656441718",
+        "return_period": {
+          "start": "2026-10-26",
+          "end": "2026-11-02",
+          "return_intervals": 5
+        },
+        "moving_average": "8.04",
+        "moving_average_period": {
+          "start": "2026-10-27",
+          "end": "2026-11-02",
+          "window": 5
+        },
+        "valid_samples": 6,
+        "volatility": 0.05742743867360811,
+        "relative_return": null,
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-6fd6cb7a68254a488512095733ea138a",
+        "agent_id": "manager",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": null,
+        "status": null,
+        "return": null,
+        "return_period": null,
+        "moving_average": null,
+        "moving_average_period": null,
+        "valid_samples": null,
+        "volatility": null,
+        "relative_return": null,
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-677557a8f6074f0dbb640bf2eeee0687",
+        "agent_id": "manager"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "ok",
+        "return": "-0.0778859527121001390820584145",
+        "return_period": {
+          "start": "2026-10-26",
+          "end": "2026-11-02",
+          "return_intervals": 5
+        },
+        "moving_average": "2.040",
+        "moving_average_period": {
+          "start": "2026-10-27",
+          "end": "2026-11-02",
+          "window": 5
+        },
+        "valid_samples": 6,
+        "volatility": 0.042589716131462604,
+        "relative_return": "-0.0567773489212268930554569923",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-93ed4827c48d4054a585a686a1cd76bb",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "ok",
+        "return": "-0.2414187643020594965675057208",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "2.25575",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.026079219915866446,
+        "relative_return": "-0.1668143171545553728656654901",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-10e43d7d54bc452f940b03ccab9fa9b7",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SH:518880",
+        "status": "ok",
+        "return": "-0.0298106291997556505803298717",
+        "return_period": {
+          "start": "2026-10-26",
+          "end": "2026-11-02",
+          "return_intervals": 5
+        },
+        "moving_average": "8.1346",
+        "moving_average_period": {
+          "start": "2026-10-27",
+          "end": "2026-11-02",
+          "window": 5
+        },
+        "valid_samples": 6,
+        "volatility": 0.011330635611410836,
+        "relative_return": "-0.0087020254088824045537284495",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-77a84f8137f14bc2bbb8d6ce7c2aded6",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SH:518880",
+        "status": "ok",
+        "return": "-0.0731792717086834733893557423",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "8.38965",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.010428638815496655,
+        "relative_return": "0.0014251754388206503124844884",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-d14d775e7a7444b184281175b03027c4",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:002354",
+        "status": "ok",
+        "return": "-0.0306748466257668711656441718",
+        "return_period": {
+          "start": "2026-10-26",
+          "end": "2026-11-02",
+          "return_intervals": 5
+        },
+        "moving_average": "8.04",
+        "moving_average_period": {
+          "start": "2026-10-27",
+          "end": "2026-11-02",
+          "window": 5
+        },
+        "valid_samples": 6,
+        "volatility": 0.05742743867360811,
+        "relative_return": "-0.0095662428348936251390427496",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-86929d3915064d8892dbca5ce6120a5f",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:002354",
+        "status": "ok",
+        "return": "0.104895104895104895104895105",
+        "return_period": {
+          "start": "2026-09-28",
+          "end": "2026-11-02",
+          "return_intervals": 20
+        },
+        "moving_average": "7.6465",
+        "moving_average_period": {
+          "start": "2026-09-29",
+          "end": "2026-11-02",
+          "window": 20
+        },
+        "valid_samples": 21,
+        "volatility": 0.046953934057318895,
+        "relative_return": "0.1794995520426090188067353357",
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-719aa03651d048a4b4ba7c112602819a",
+        "agent_id": "research-3f71205512fe",
+        "independent_return_and_ma_check": "pass"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "insufficient_data",
+        "return": null,
+        "return_period": null,
+        "moving_average": null,
+        "moving_average_period": null,
+        "valid_samples": null,
+        "volatility": null,
+        "relative_return": null,
+        "reason": "input_exceeds_response_budget",
+        "matched_rows": 61,
+        "calculation_id": "calculation-f4057ca7a01f4eb78261097d766cf38c",
+        "agent_id": "research-3f71205512fe"
+      },
+      {
+        "symbol": "SH:518880",
+        "status": "insufficient_data",
+        "return": null,
+        "return_period": null,
+        "moving_average": null,
+        "moving_average_period": null,
+        "valid_samples": null,
+        "volatility": null,
+        "relative_return": null,
+        "reason": "input_exceeds_response_budget",
+        "matched_rows": 61,
+        "calculation_id": "calculation-3861cd66faa844e9a220939af588d0f4",
+        "agent_id": "research-3f71205512fe"
+      },
+      {
+        "symbol": "SZ:002354",
+        "status": "insufficient_data",
+        "return": null,
+        "return_period": null,
+        "moving_average": null,
+        "moving_average_period": null,
+        "valid_samples": null,
+        "volatility": null,
+        "relative_return": null,
+        "reason": "input_exceeds_response_budget",
+        "matched_rows": 60,
+        "calculation_id": "calculation-da99dfee0b2e4b088e8e31cc7f117161",
+        "agent_id": "manager"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "insufficient_data",
+        "return": null,
+        "return_period": null,
+        "moving_average": null,
+        "moving_average_period": null,
+        "valid_samples": null,
+        "volatility": null,
+        "relative_return": null,
+        "reason": "input_exceeds_response_budget",
+        "matched_rows": 60,
+        "calculation_id": "calculation-745b2d7286dc4fd3adb3cec224ebab0b",
+        "agent_id": "manager"
+      },
+      {
+        "symbol": "SZ:159599",
+        "status": "ok",
+        "return": "-0.0778859527121001390820584145",
+        "return_period": {
+          "start": "2026-10-26",
+          "end": "2026-11-02",
+          "return_intervals": 5
+        },
+        "moving_average": "2.040",
+        "moving_average_period": {
+          "start": "2026-10-27",
+          "end": "2026-11-02",
+          "window": 5
+        },
+        "valid_samples": 6,
+        "volatility": 0.042589716131462604,
+        "relative_return": null,
+        "reason": null,
+        "matched_rows": null,
+        "calculation_id": "calculation-2c733231ec9f49678461b0843f5a2e38",
+        "agent_id": "manager",
+        "independent_return_and_ma_check": "pass"
+      }
+    ],
+    "period_check": "Successful five/twenty-interval returns match their actual first/last closes and 6/21 samples. MA periods are distinct. The price child explicitly respects these periods and treats unavailable longer windows as missing. No final report exists to verify final adoption.",
+    "material_indexes": 110,
+    "material_ids": 93,
+    "material_receipts": 185,
+    "material_receipts_not_full_text_document_count": true,
+    "all_child_cited_materials_accessible_to_account": true,
+    "source_semantics": "ETF child distinguishes prospectus excerpts, PDF creation metadata, historical index-method document, incomplete top holdings and third-party snippets. No simultaneous NAV/IOPV or primary turnover is invented. Manager received structured cumulative 002354 fundamentals; these are not original filing full text.",
+    "no_checkpoint_reuse_or_freshness_promised": true
+  },
+  "preservation": {
+    "account_input_version": 5,
+    "cash": "87479.90",
+    "remaining_quantities": {
+      "SH:518880": "0",
+      "SZ:002354": "1000",
+      "SZ:159599": "1000"
+    },
+    "remaining_cost": "12510.10",
+    "realized_pnl": "-10.00",
+    "total_fees": "20.10",
+    "sale_count_in_this_fresh_clone": 1,
+    "sale_entry_id": "4f4647b887f14be08561a3a5122a1b34",
+    "sale_net_cash": "995.00",
+    "prepared_and_reopened_ledger_facts_equal": true,
+    "old_report_id": "576433dea9114d2b8b4fcd0a1460cc8c",
+    "old_report_version": 4,
+    "old_report_status": "stale",
+    "old_report_body_sha256": "174e9739c8e106503371a9ed8fd7eaee52530e33c3628b15d8017cabcf775e9b",
+    "old_report_body_id_version_unchanged": true,
+    "old_forecast_rows_exactly_unchanged": 9,
+    "new_rows": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0
+    },
+    "new_delivery_application": null,
+    "new_forecasts_submitted": 0,
+    "new_forecasts_applied": 0,
+    "new_suggestions_submitted": 0,
+    "new_suggestions_applied": 0,
+    "new_batch": {
+      "id": "a0b7e2d9d7844d9390d1166f1e32bc69",
+      "kind": "exploratory",
+      "state": "open",
+      "expected_count": 6,
+      "input_version": 5
+    },
+    "old_recommendation_state_boundary": "Input version change may legitimately mark old recommendations for review; zero new report-authored recommendations or actions were published.",
+    "postpublication_restart_observations": 0,
+    "restart_acceptance": "not_evaluated because no new report was published",
+    "additional_tasks": 0
+  },
+  "immutability": {
+    "sqlite_access": "mode=ro + PRAGMA query_only",
+    "database_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/evaluation.sqlite3": "7cc48d1a08b6ca145aff19273c5685dd89a28f92b8a5dcb7ae0f1d6aa2ef1339",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451",
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/evaluation.sqlite3": "e54952aeca661c33ec8b07ac74feaa7352a48d62ac1260c60fea0df5f64591eb"
+    },
+    "protected_file_hashes_before": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/summary.json": "981117f9f0aae102309c9327a696db5fc67b311c62db418458fc31512a7a4c2c",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/model-result.json": "04b0724f81d719692d3a485d36518e1bac8ddff618751c54190efa8f9560d550",
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/model-result.json": "b2623e20c2e110868c8b70fda18349c231db7072d23a7f820c26d1aec97a6dd4",
+      "docs/fifteenth/business-long-task-a-sell-content-review.json": "a2dc5cfaeaa18120bb8a181f33db360c54d49f1da9dc5b812066245eb97086d4",
+      "docs/fifteenth/business-long-task-a-sell-content-review.md": "d01ff2d6c78f383a7da914a225e8478ec519a2ea9028451a08e0b629974af4b8",
+      "docs/fifteenth/business-long-task-a-content-review.json": "07efb1cf317ffee930a3752d190b5681557408c8183d89102ccba60b70d10eec"
+    },
+    "source_at_execution_preserved": true,
+    "environment_at_execution_preserved": true,
+    "current_source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "daily_database_accessed": false,
+    "new_model_requests": 0,
+    "original_rejected_report_and_review_not_modified": true,
+    "private_report_not_fabricated": true,
+    "database_hashes_after": {
+      "data/evaluations/fifteenth-business-output-omission-a-sell-v1/execution/evaluation.sqlite3": "7cc48d1a08b6ca145aff19273c5685dd89a28f92b8a5dcb7ae0f1d6aa2ef1339",
+      "data/evaluations/fifteenth-business-long-task-a-v4/execution/evaluation.sqlite3": "842166fe7a0b1c11dbe076c047859929f1768f07e65e7a4105c2b36735442451",
+      "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/evaluation.sqlite3": "e54952aeca661c33ec8b07ac74feaa7352a48d62ac1260c60fea0df5f64591eb"
+    },
+    "database_logical_hashes_unchanged": true,
+    "protected_file_hashes_unchanged": true
+  },
+  "remaining_limits": [
+    "Actual A-after-sale final content remains unaccepted. B is not unlocked by partial child reports.",
+    "The historical rejected sale report and its accepted=false review remain immutable.",
+    "No statement is made about final numerical accuracy because no final report exists."
+  ]
+}

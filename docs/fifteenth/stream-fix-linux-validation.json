@@ -1,0 +1,17 @@
+{
+  "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+  "source_unchanged": true,
+  "test_sha256": {
+    "tests/test_fifteenth_stream_boundaries.py": "7ae7d04c5bc1836edc6ae8acfec16a1041a0a78a4bdd0eda521c67782e9144f0",
+    "tests/test_fourteenth_deadlines.py": "f4c550a6dc7457093be8716b3a94a55435f2c18f06bc66fa747e01a5c06ac680"
+  },
+  "test_files_unchanged": true,
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+  "image": "guanlan-iteration15-ci:local",
+  "isolation": "network none; read-only source snapshot copied to private container tmpfs /work",
+  "returncode": 0,
+  "elapsed_seconds": 133.86,
+  "summary": "1227 passed, 1 warning in 132.99s (0:02:12)",
+  "log": "test-results/fifteenth/python-linux-stream-fix-a2c.txt"
+}

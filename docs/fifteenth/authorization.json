@@ -1,0 +1,213 @@
+{
+  "kind": "fifteenth_explicit_aggregate_authorization",
+  "recorded_at": "2026-11-02T17:09:12.122366+08:00",
+  "user_answer": "授权十次",
+  "source": "User message in the current Codex conversation, relayed by primary agent",
+  "maximum_http_attempts": 10,
+  "scope": "Historical three-security final aggregate; existing provider/protocol/model/effort/output limit and route",
+  "per_execution_maximum": 2,
+  "initial_submission_maximum": 1,
+  "contract_correction_maximum": 1,
+  "automatic_http_retries": 0,
+  "unknown_outcome_automatic_replay": false,
+  "automatic_comparison_loop": false,
+  "comparison_control": "Primary agent chooses and documents one variable before any later bounded execution",
+  "stop_conditions": [
+    "first accepted valid submission",
+    "unknown-outcome transport failure",
+    "execution or shared cap exhausted",
+    "deadline",
+    "second invalid submission",
+    "frozen source/config/evidence change"
+  ],
+  "normal_business_matrix_authorized": false,
+  "old_fixed_attempts": {
+    "maximum": 4,
+    "used": 4
+  },
+  "old_transport_attempts": {
+    "maximum": 2,
+    "used": 2
+  },
+  "old_conditional_full_attempts": {
+    "maximum": 40,
+    "used": 0,
+    "transfer_authorized": false
+  },
+  "currency_spend_cap": null,
+  "cost_note": "No independently verified endpoint monetary ceiling; preserve reported usage and known supplier charges; unknown is not zero.",
+  "ledger_status_at_recording": {
+    "maximum": 10,
+    "reserved_attempts": 0,
+    "stages": {
+      "final": {
+        "maximum": 10,
+        "reserved_attempts": 0
+      },
+      "full": {
+        "maximum": 0,
+        "reserved_attempts": 0
+      }
+    }
+  },
+  "latest_recovery_decision": {
+    "recorded_at": "2026-11-02T19:45:00.076372+08:00",
+    "user_answer": "将思考强度改为xhigh，大胆重试，直到找出失败原因并修复",
+    "explicit_recovery_authorized": true,
+    "reasoning_effort_override": "xhigh",
+    "override_scope": "Historical isolated manager verification only; daily role/model matrix unchanged",
+    "additional_model_requests_authorized_now": 7,
+    "shared_maximum": 10,
+    "previously_used": 3,
+    "maximum_used_after_this_execution_series": 10,
+    "first_comparison": "Only max -> xhigh; same evidence, production schema, output 4000, original route and deadlines",
+    "adaptive_experiments_authorized": true,
+    "automatic_http_retries": 0,
+    "unknown_outcome_policy": "Preserve failure and review evidence before a separately launched bounded attempt under this renewed investigation authorization; no blind transport replay",
+    "stop_on_valid_content_reviewed_delivery": true,
+    "normal_business_matrix_authorized": false,
+    "old_conditional_40_used": 0,
+    "fee_note": "Existing acceptance of supplier actual charges continues; no enforceable monetary ceiling known."
+  },
+  "recovery_decision_history": [
+    {
+      "recorded_at": "2026-11-02T17:56:10.616349+08:00",
+      "user_answer": "暂不恢复，保留剩余 9 次",
+      "explicit_recovery_authorized": false,
+      "additional_model_requests_authorized_now": 0,
+      "previously_used": 1,
+      "remaining_preserved": 9,
+      "next_action": "No paid request or direct-route comparison until a later explicit user recovery instruction."
+    },
+    {
+      "recorded_at": "2026-11-02T18:31:47.096466+08:00",
+      "user_answer": "明确恢复，最多 2 次修复验证",
+      "explicit_recovery_authorized": true,
+      "additional_model_requests_authorized_now": 2,
+      "initial_submission_maximum": 1,
+      "contract_correction_maximum": 1,
+      "route": "existing environment; no direct-route override",
+      "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+      "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+      "prepared_directory": "data/evaluations/fifteenth-historical-postfix-prepared-v6",
+      "previously_used": 1,
+      "shared_maximum": 10,
+      "maximum_used_after_this_execution": 3,
+      "automatic_retries": 0,
+      "stop_on_first_success": true,
+      "stop_on_unknown_outcome": true,
+      "normal_business_matrix_authorized": false,
+      "cost_cap": null,
+      "fee_note": "Actual supplier charge; no reliably enforceable pre-request monetary ceiling."
+    }
+  ],
+  "latest_execution_outcome": {
+    "recorded_at": "2026-11-02T22:13:37.346130+08:00",
+    "evidence": "xhigh-v13-evidence.json",
+    "http_attempts_this_run": 1,
+    "http_attempts_renewed_investigation": 7,
+    "shared_attempts_used": 10,
+    "shared_attempts_remaining": 0,
+    "renewed_investigation_active": false,
+    "additional_requests_currently_authorized": 0,
+    "stopped": true,
+    "stop_reason": "First independently content-accepted historical report; original10 aggregate ceiling also exhausted. No aggregate replay.",
+    "supplier_associated_displayed_amount_ten_attempt_cohort": "0.213052",
+    "supplier_associated_displayed_amount_xhigh_series": "0.163564",
+    "normal_business_matrix_authorized_by_this_record": false
+  },
+  "execution_outcome_history": [
+    {
+      "recorded_at": "2026-11-02T18:44:35.276394+08:00",
+      "evidence": "postfix-live-evidence.json",
+      "http_attempts_this_recovery": 2,
+      "shared_attempts_used": 3,
+      "shared_attempts_remaining": 7,
+      "recovery_authorization_exhausted": true,
+      "additional_requests_currently_authorized": 0,
+      "stopped": true,
+      "stop_reason": "Second invalid terminal submission; explicit two-request recovery cap exhausted",
+      "superseded_by_recovery_at": "2026-11-02T19:45:00.076372+08:00"
+    },
+    {
+      "recorded_at": "2026-11-02T19:56:57.964167+08:00",
+      "evidence": "xhigh-v7-evidence.json",
+      "http_attempts_this_run": 1,
+      "shared_attempts_used": 4,
+      "shared_attempts_remaining": 6,
+      "renewed_investigation_active": true,
+      "additional_requests_currently_authorized": 6
+    },
+    {
+      "recorded_at": "2026-11-02T20:04:28.171355+08:00",
+      "evidence": "xhigh-v8-evidence.json",
+      "http_attempts_this_run": 1,
+      "shared_attempts_used": 5,
+      "shared_attempts_remaining": 5,
+      "renewed_investigation_active": true,
+      "additional_requests_currently_authorized": 5
+    },
+    {
+      "recorded_at": "2026-11-02T20:14:26.600419+08:00",
+      "evidence": "xhigh-v9-evidence.json",
+      "http_attempts_this_run": 1,
+      "shared_attempts_used": 6,
+      "shared_attempts_remaining": 4,
+      "renewed_investigation_active": true,
+      "additional_requests_currently_authorized": 4
+    },
+    {
+      "recorded_at": "2026-11-02T20:23:49.566117+08:00",
+      "evidence": "xhigh-v10-evidence.json",
+      "http_attempts_this_run": 1,
+      "http_attempts_renewed_investigation": 4,
+      "shared_attempts_used": 7,
+      "shared_attempts_remaining": 3,
+      "renewed_investigation_active": false,
+      "additional_requests_currently_authorized": 0,
+      "remaining_preserved": 3,
+      "stopped": true,
+      "stop_reason": "First valid submitted and published historical report; remaining allowance not automatically consumed",
+      "supplier_displayed_amount_this_investigation": "0.084444",
+      "supplier_displayed_amount_ten_attempt_cohort": "0.133932"
+    },
+    {
+      "recorded_at": "2026-11-02T20:59:01.355987+08:00",
+      "evidence": "xhigh-v11-evidence.json",
+      "http_attempts_this_run": 1,
+      "http_attempts_renewed_investigation": 5,
+      "shared_attempts_used": 8,
+      "shared_attempts_remaining": 2,
+      "renewed_investigation_active": true,
+      "additional_requests_currently_authorized": 2,
+      "stopped": true,
+      "stop_reason": "This one-request execution ended. Published historical content remains qualified; independent review found one reversed cost comparison and local reference parser defect. No automatic replay.",
+      "supplier_displayed_amount_this_investigation": "0.110092",
+      "supplier_displayed_amount_ten_attempt_cohort": "0.159580",
+      "next_execution_requires_documented_fix_and_frozen_regression": true
+    },
+    {
+      "recorded_at": "2026-11-02T21:45:08.292175+08:00",
+      "evidence": "xhigh-v12-evidence.json",
+      "http_attempts_this_run": 1,
+      "shared_attempts_used": 9,
+      "shared_attempts_remaining": 1,
+      "renewed_investigation_active": true,
+      "additional_requests_currently_authorized": 1,
+      "stopped": true,
+      "stop_reason": "Known local idle cancellation, unknown provider result; no automatic replay. Local receive-path audit completed; final one-attempt route control must be explicitly prepared and frozen.",
+      "supplier_associated_displayed_amount_ten_attempt_cohort": "0.183650",
+      "supplier_associated_displayed_amount_xhigh_series": "0.134162",
+      "normal_business_matrix_authorized": false
+    }
+  ],
+  "content_repair_execution_plan": {
+    "recorded_at": "2026-11-02T20:43:47.623472+08:00",
+    "authorization_basis": "Latest user instruction: 将思考强度改为xhigh，大胆重试，直到找出失败原因并修复; bounded by original ten aggregate attempts. The earlier stop was assistant administrative state, not a new user cancellation.",
+    "shared_attempts_used_before": 7,
+    "shared_attempts_maximum": 10,
+    "http_attempts_this_execution_maximum": 1,
+    "normal_business_matrix_authorized": false,
+    "evidence": "xhigh-v11-plan.json"
+  }
+}

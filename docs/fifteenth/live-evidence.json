@@ -1,0 +1,311 @@
+{
+  "kind": "fifteenth_real_historical_aggregate_evidence",
+  "reviewed_at": "2026-11-02T17:39:07.632538+08:00",
+  "review_method": "Independent development evidence review: safe summary fields and SQLite mode=ro; no raw stream, hidden reasoning, partial text reconstruction or model-authored replacement.",
+  "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "package_sha256": "506f793a6bc2c25ec2e1cbd56dce798820bda36a55d7c9ebcbc34e1ccfcd457e",
+  "input_organization": "fifteenth-exact-calculation-metadata-v1",
+  "job_id": "0b0ebfe079564bb096fb1bdb4267236c",
+  "started_at_shanghai": "2026-11-02T17:30:15.802760+08:00",
+  "completed_at_shanghai": "2026-11-02T17:35:15.896838+08:00",
+  "historical_data_as_of": "2026-10-30T15:34:06+08:00",
+  "historical_input_version": 4,
+  "input": {
+    "previous_same_measure_evidence_seed_chars": 64356,
+    "compact_evidence_seed_chars": 42584,
+    "actual_protocol_payload_chars": 66258,
+    "actual_http_payload_bytes": 80511,
+    "actual_payload_sha256": "c62388600a12777e00924ac0a3042bd6f9f622e2397eb93f0ce21063c3efaf7b",
+    "full_historical_evidence_visible": true,
+    "reports_count": 2,
+    "calculation_count": 21,
+    "source_index_count": 40,
+    "production_schema_matches": true,
+    "actual_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "raw_source_text_reading_inferred": false,
+    "content_adoption_evidence": false
+  },
+  "requests": [
+    {
+      "attempt": 1,
+      "protocol": "responses",
+      "model": "grok-4.7",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "reasoning_effort_path": "reasoning.effort",
+      "reasoning_effort_sent": "max",
+      "reported_reasoning_effort": null,
+      "request_accepted": true,
+      "input_chars": 66258,
+      "input_items": 1,
+      "requested_max_output_tokens": 4000,
+      "requested_tool_choice": {
+        "type": "function",
+        "name": "finish_analysis"
+      },
+      "tool_choice_status": "requested",
+      "tool_choice_satisfied": null,
+      "output_bytes": 242767,
+      "request_id": null,
+      "http_version": "HTTP/1.1",
+      "stream_requested": true,
+      "native_search_requested": false,
+      "status_code": 200,
+      "usage": null,
+      "cost_known": false,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "started_at": "2026-11-02T09:30:15.830666+00:00",
+      "finished_at": "2026-11-02T09:35:15.884856+00:00",
+      "duration_ms": 300053.74,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 120.0,
+        "request_hard_seconds": 360.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "queue_wait_ms": 5.77,
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 1199989.31,
+        "request_hard_timeout": 360000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "stream_first_byte_ms": 10307.99,
+      "stream_first_event_ms": 10418.42,
+      "stream_first_effective_event_ms": 10547.14,
+      "stream_last_byte_ms": 250339.11,
+      "stream_last_progress_ms": 212559.53,
+      "stream_max_idle_ms": 87494.25,
+      "stream_event_count": 304,
+      "stream_heartbeat_count": 4,
+      "stream_first_text_delta_ms": 212558.82,
+      "stream_last_progress_kind": "response.output_text.delta",
+      "transport_phase": "receiving_body",
+      "response_headers_received": true,
+      "response_body_received": false,
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal",
+      "environment_proxy_present": true,
+      "request_timeout_seconds": 360.0,
+      "response_headers_ms": 10307.83,
+      "response_format": "sse",
+      "stream_terminal": null,
+      "response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "incomplete_details_reason": null,
+      "stream_tail_drain_ms": null,
+      "stream_tail_drain_status": "not_entered_no_complete_protocol_terminal",
+      "application_job_id": "0b0ebfe079564bb096fb1bdb4267236c",
+      "input_chars_definition": "len(app.model.encode(entire protocol payload)); not evidence seed length or token count"
+    }
+  ],
+  "local_preflight_non_http_failures": [
+    {
+      "prepared_version": "v4",
+      "reason": "Isolated role migration observation timestamps differed; effective production team identity matched. Verifier fixed separately.",
+      "http_attempts": 0,
+      "reserved_attempts": 0,
+      "evidence": "aggregate-preflight-fix.json"
+    }
+  ],
+  "layer_results": {
+    "transport": {
+      "http_attempts": 1,
+      "http_200": 1,
+      "complete_terminal": 0,
+      "http_eof": 0,
+      "unknown_outcome_preterminal_failure": 1,
+      "automatic_resend": 0
+    },
+    "final_contract": {
+      "valid_submissions": 0,
+      "tool_choice_requested": true,
+      "tool_choice_satisfied": null,
+      "accepted_first_attempt": 0,
+      "accepted_after_correction": 0,
+      "corrections_attempted": 0,
+      "final_failures": 1
+    },
+    "publication": {
+      "reports": 0,
+      "recommendations_created": 0,
+      "forecasts": 0
+    },
+    "content": {
+      "status": "not_evaluated",
+      "accepted": null,
+      "complete_body_available": false,
+      "reason": "No completed finish_analysis payload or published report; no program-written substitute."
+    },
+    "research_scope_delivery": {
+      "requested_securities": [
+        "SH:518880",
+        "SZ:002354",
+        "SZ:159599"
+      ],
+      "requested_count": 3,
+      "securities_with_accepted_final_account_report": 0,
+      "pending_delivery_count": 3,
+      "meaning": "Delivery of the requested account judgment; not prediction samples or inferred investment abstentions."
+    },
+    "forecast": {
+      "batch_count": 0,
+      "expected_target_samples": 0,
+      "direction_samples": 0,
+      "abstention_samples": 0,
+      "uncovered_sample_rows": 0,
+      "declared_uncovered_final_targets": null,
+      "status": "not_applicable_no_batch",
+      "explanation": "No final submission and no prediction batch. Do not invent nine 1/5/20-day targets or classify transport failure as investment abstention."
+    },
+    "matured_scoring": {
+      "new_naturally_matured_samples": 0,
+      "accuracy": null,
+      "status": "not_evaluated"
+    },
+    "normal_business_matrix": {
+      "executed": false,
+      "account_trade_new_version_cash_candidate_and_restart_live_matrix": "not_verified"
+    }
+  },
+  "usage_and_cost": {
+    "reported_usage": null,
+    "requested_effort": "max",
+    "reported_effort": null,
+    "requested_output_limit": 4000,
+    "known_charge_amount": null,
+    "currency": null,
+    "note": "Client usage/effort remain null. User screenshot later supplied a displayed charge and token pair; keep these separate from API usage and from verified invoice totals.",
+    "supplier_displayed_charge_amount": "0.013266",
+    "supplier_currency_symbol": "$",
+    "supplier_token_pair_displayed": [
+      24833,
+      6463
+    ],
+    "supplier_stream_error": "client_gone",
+    "invoice_verified": false
+  },
+  "authorization": {
+    "new_total_maximum": 10,
+    "shared_reserved_attempts": 1,
+    "remaining_aggregate_allowance": 9,
+    "this_execution_maximum": 2,
+    "this_execution_reserved_attempts": 1,
+    "unknown_outcome_retry_suppressed": true,
+    "full_research_allowance_transferred": false,
+    "unspent_attempts_do_not_imply_completed_business_validation": true
+  },
+  "database_readonly_check": {
+    "job_id": "0b0ebfe079564bb096fb1bdb4267236c",
+    "job_state": "failed",
+    "stage": "synthesizing",
+    "input_version": 4,
+    "job_attempts": 1,
+    "result_keys": [
+      "delivery"
+    ],
+    "delivery": {
+      "status": "incomplete",
+      "contract_verified": false,
+      "content_assessment": "not_evaluated",
+      "error_code": "upstream_transport_error"
+    },
+    "current_job_counts": {
+      "analyses": 0,
+      "recommendations_created": 0,
+      "forecasts": 0,
+      "forecast_batches": 0,
+      "forecast_samples": 0,
+      "historical_evidence_delivery_events": 1,
+      "terminal_submission_started_events": 0,
+      "published_events": 0
+    },
+    "all_database_analyses_including_copied_history": 1,
+    "historical_analyses_not_counted_as_current_success": true,
+    "event_counts": {
+      "agent_failed": 1,
+      "agent_started": 1,
+      "budget_closeout": 1,
+      "budget_closeout_finished": 1,
+      "final_calculation_coverage": 1,
+      "historical_evidence_delivery": 1,
+      "model_configuration_bound": 1,
+      "model_error": 1,
+      "research_context_delivery": 1,
+      "synthesis_context_projected": 1
+    },
+    "model_result_file_exists": false,
+    "database_sha256_before": "714391aed3508f0a4b6f58e323a90d2666f1acadbf201101eee64b195065353d",
+    "database_sha256_after": "714391aed3508f0a4b6f58e323a90d2666f1acadbf201101eee64b195065353d",
+    "unchanged_during_review": true
+  },
+  "source_unchanged_during_request": true,
+  "environment_unchanged_during_request": true,
+  "cohorts_not_combined": [
+    {
+      "label": "iteration14 historical aggregate before transport followup",
+      "http_attempts": 4,
+      "valid_final_submissions": 0,
+      "content_assessment": "not_evaluated"
+    },
+    {
+      "label": "iteration14 independent 100-unit cash probes after transport followup",
+      "http_attempts": 2,
+      "valid_final_submissions": 2,
+      "http_eof": 2,
+      "scope": "no holdings, 100 simulated cash; not three-security research"
+    },
+    {
+      "label": "iteration15 current compact historical aggregate, full production schema",
+      "http_attempts": 1,
+      "valid_final_submissions": 0,
+      "content_assessment": "not_evaluated"
+    }
+  ],
+  "privacy": "Endpoint URL, provider/account identifiers, credential references, proxy addresses/authentication, hidden reasoning, raw SSE and private account/report bodies omitted.",
+  "supplier_followup": {
+    "recorded_at": "2026-11-02T18:02:36.271251+08:00",
+    "source": "User-provided supplier usage-log screenshot; user explicitly identified the red exclamation stream error as client_gone.",
+    "screenshot_sha256": "7c1ecd59e576020d256259c1448c96404e1e4e46c59051a605b893225d39d641",
+    "displayed_timestamp": "2026-11-02 17:35:15",
+    "timezone_context": "Asia/Shanghai",
+    "model_displayed": "grok-4.7",
+    "stream_error": "client_gone",
+    "stream_error_provenance": "User explanation; cropped screenshot itself shows the red exclamation icon, not its tooltip text.",
+    "token_pair_displayed": [
+      24833,
+      6463
+    ],
+    "token_pair_text": "24,833 / 6,463",
+    "token_count_semantics": "Preserved supplier display values; not substituted into missing client API usage.",
+    "displayed_charge_amount": "0.013266",
+    "currency_symbol": "$",
+    "currency_code_verified": false,
+    "displayed_first_token_seconds": "7.4",
+    "displayed_duration_seconds": 297,
+    "displayed_rate_tokens_per_second": 22,
+    "correlation": {
+      "status": "consistent_by_timestamp_model_and_duration",
+      "local_finished_at": "2026-11-02T17:35:15.884856+08:00",
+      "local_duration_seconds": "300.05374",
+      "local_response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+      "response_id_visible_in_screenshot": false,
+      "request_id_level_match_verified": false
+    },
+    "independent_invoice_reconciliation": false,
+    "terminal_payload_or_report_recovered": false,
+    "root_cause_determined": false,
+    "new_model_requests": 0
+  }
+}

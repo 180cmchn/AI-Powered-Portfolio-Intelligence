@@ -324,9 +324,33 @@ class AgentConfigStore:
         db.execute("INSERT INTO meta VALUES('tenth_delivery_prompt_migration',?)", (_dumps({'at': now(), 'updated_roles': changed,
             'note': 'Exact initial tenth built-in only; more concise delivery, no change to binding, effort or request deadlines.'}),))
 
+    def migrate_fifteenth_synthesis_prompt(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='fifteenth_synthesis_prompt_migration'").fetchone():
+            return
+        changed, preserved = [], []
+        row = db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()
+        if row:
+            role = _loads(row[0])
+            prompt = (PROMPTS / 'manager.txt').read_text()
+            previous = '32ddc797668b30449336648791be23d6f51f87dfc7de38cee2e37c93271d060e'
+            if role.get('system_prompt') != prompt:
+                if not role.get('custom') and hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() == previous:
+                    role.update(system_prompt=prompt, version=role['version'] + 1,
+                                prompt_version=role['prompt_version'] + 1, updated_at=now())
+                    db.execute("UPDATE agent_definitions SET version=?,body=? WHERE role_id='manager'", (role['version'], _dumps(role)))
+                    version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+                    db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+                    changed.append('manager')
+                else:
+                    preserved.append('manager')
+        db.execute("INSERT INTO meta VALUES('fifteenth_synthesis_prompt_migration',?)", (_dumps({
+            'at': now(), 'updated_roles': changed, 'preserved_custom_roles': preserved,
+            'note': 'Exact prior built-in manager prompt only; independent research may run in parallel. Custom prompts, model bindings and frozen teams unchanged.'}),))
+
     def migrate_fourteenth_roles(self, db):
         """Only byte-identical prior built-ins can be updated without a user edit."""
         if db.execute("SELECT 1 FROM meta WHERE key='fourteenth_role_migration'").fetchone():
+            self.migrate_fifteenth_synthesis_prompt(db)
             return
         changed, preserved = [], []
         for role_id, expected_hash in FOURTEENTH_PREVIOUS_PROMPTS.items():
@@ -352,6 +376,7 @@ class AgentConfigStore:
         db.execute("INSERT INTO meta VALUES('fourteenth_role_migration',?)", (_dumps({
             'at': now(), 'updated_roles': changed, 'preserved_custom_roles': preserved,
             'note': 'Exact thirteenth built-ins only. Custom prompt differences require explicit role save; frozen teams and model bindings unchanged.'}),))
+        self.migrate_fifteenth_synthesis_prompt(db)
 
     def _public_provider(self, provider, db):
         body = {k: v for k, v in provider.items() if k != 'credential_reference'}

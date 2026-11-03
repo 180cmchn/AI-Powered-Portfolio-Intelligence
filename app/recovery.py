@@ -1,6 +1,7 @@
 """Durable visible research checkpoints, never opaque model continuation state."""
 from .clock import now_datetime
 from datetime import datetime
+import copy
 import hashlib
 import json
 
@@ -16,6 +17,57 @@ def report_identity(report):
     """Immutable visible child report identity; never a model-provided receipt."""
     return hashlib.sha256(json.dumps({key: report[key] for key in REPORT_FIELDS if key in report},
         sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+
+
+def manager_material_deliveries(deliveries):
+    """Actual manager content deliveries, not discovered IDs or child reads."""
+    return [item for item in deliveries if isinstance(item, dict)
+            and item.get('agent_id') == 'manager' and isinstance(item.get('material_id'), str)
+            and item.get('body', {}).get('delivered_content')
+            and not item.get('body', {}).get('metadata_only')]
+
+
+def checkpoint_material_evidence_issues(body):
+    """Legacy omitted reads must not bypass source-version protection."""
+    verified = body.get('verified_material_versions', {})
+    issues = set()
+    for item in manager_material_deliveries(body.get('material_deliveries', [])):
+        proof = item['body']
+        guard = verified.get(item['material_id'])
+        if not guard:
+            issues.add('manager_material_guard_incomplete')
+            continue
+        if any(proof.get(key) != guard.get(key) for key in
+               ('source_stream', 'read_document_version_id', 'representation_hash')):
+            issues.add('manager_material_receipt_mismatch')
+        if 'visible_result' in proof:
+            visible = proof['visible_result']
+            digest = hashlib.sha256(json.dumps(visible, ensure_ascii=False, default=str).encode()).hexdigest()
+            if (proof.get('visible_result_version') != 1 or not isinstance(visible, dict)
+                    or visible.get('truncated_for_context') or visible.get('failed')
+                    or digest != proof.get('visible_result_hash')):
+                issues.add('manager_material_visible_result_invalid')
+    return sorted(issues)
+
+
+def restored_manager_material_evidence(body):
+    """Return only saved bounded outputs; never reconstruct from material bodies."""
+    if checkpoint_material_evidence_issues(body):
+        return []
+    result, seen = [], set()
+    for item in manager_material_deliveries(body.get('material_deliveries', [])):
+        proof = item['body']
+        if proof.get('visible_result_version') != 1 or not isinstance(proof.get('visible_result'), dict):
+            continue  # Legacy receipts prove the old read, not its exact payload.
+        identity = (item['material_id'], proof['visible_result_hash'])
+        if identity in seen:
+            continue
+        seen.add(identity)
+        result.append({'tool': item['tool'], 'result': copy.deepcopy(proof['visible_result']),
+            'material_id': item['material_id'], 'source_task_id': item['job_id'],
+            'source_agent_id': item['agent_id'], 'source_delivery_id': item['id'],
+            'delivered_range': copy.deepcopy(proof.get('delivered_range', {}))})
+    return result
 
 
 class RecoveryStore:
@@ -175,6 +227,10 @@ class RecoveryStore:
                 'page_range', 'pages_read', 'truncated', 'source_truncated', 'requested_range', 'actual_range',
                 'returned_range', 'returned_count', 'row_count', 'next_offset', 'order', 'fields', 'adjust') if key in result},
             'visible_result_hash': hashlib.sha256(dumps(result).encode()).hexdigest()}
+        if proof['delivered_content'] and not metadata_only:
+            # The caller passes the post-ModelClient bounded object. Keep that
+            # exact delivery, not the larger stored source or session archive.
+            proof.update(visible_result_version=1, visible_result=copy.deepcopy(result))
         # The source's available range and this delivery's range are separate.
         with self.connect() as db:
             row = db.execute('INSERT INTO research_material_deliveries(job_id,account_id,agent_id,material_id,tool,body,delivered_at) VALUES(?,?,?,?,?,?,?)',
@@ -186,6 +242,21 @@ class RecoveryStore:
         with self.connect() as db:
             return [{**dict(row), 'body': loads(row['body'])} for row in db.execute(
                 'SELECT * FROM research_material_deliveries WHERE job_id=? ORDER BY id', (job_id,))]
+
+    def include_manager_materials(self, body, deliveries, account_id):
+        """Index completed direct reads without turning indexes into reads."""
+        direct = manager_material_deliveries(deliveries)
+        mids = {item['material_id'] for item in direct if item.get('account_id') == (account_id or '')}
+        ids = set(body.get('material_ids', [])) | mids
+        materials = copy.deepcopy(body.get('materials', []))
+        indexed = {item.get('id') for item in materials}
+        for mid in sorted(mids - indexed):
+            if self.material_accessible(mid, account_id):
+                material = self.material(mid)
+                materials.append({key: copy.deepcopy(material[key]) for key in
+                    ('id', 'url', 'source_title', 'symbol', 'source', 'classification', 'access', 'fetched_at')
+                    if key in material})
+        return {**body, 'material_ids': sorted(ids), 'materials': materials}
 
     def checkpoint_source_coverage(self, body, verified, deliveries, report_deliveries=()):
         """Describe visible treatment of corrections, without judging research truth."""
@@ -381,6 +452,7 @@ class RecoveryStore:
         # Original receipts retain their source task/actor. They are provenance
         # for restored reports, never invented current-manager source reads.
         deliveries = list({item['id']: item for item in [*body.get('restored_material_deliveries', []), *deliveries]}.values())
+        body = self.include_manager_materials(body, deliveries, job.get('account_id'))
         verified = self.checkpoint_material_guard(body.get('material_ids', []), job.get('account_id'))
         report_deliveries = self.checkpoint_report_deliveries(job['id'])
         coverage = self.checkpoint_source_coverage(body, verified, deliveries, report_deliveries)
@@ -425,6 +497,8 @@ class RecoveryStore:
                 if row['resume_count'] >= 2:
                     continue
                 body = loads(row['body'])
+                if checkpoint_material_evidence_issues(body):
+                    continue  # Missing legacy protection cannot be invented at read time.
                 verified = body.get('verified_material_versions', {})
                 # Older checkpoints lack per-actor delivery and processing proof.
                 # Their evidence is preserved, but cannot establish it retroactively.
@@ -461,6 +535,11 @@ class RecoveryStore:
 
     def reassess_checkpoint_coverage(self, body):
         """Read-only correction of unused-link metadata coverage; no new evidence."""
+        issues = checkpoint_material_evidence_issues(body)
+        if issues:
+            return {**body, 'recovery_state': 'needs_research', 'recovery_assessment': {
+                'stored_state': body.get('recovery_state'), 'basis': issues[0], 'reasons': issues,
+                'note': '已交付材料缺少完整版本保护或可见结果证明；原记录不改写，不能据此恢复汇总。'}}
         if body.get('material_guard_version') != 3 or body.get('recovery_state') != 'needs_research' or body.get('unknown_material_ids'):
             return body
         verified = body.get('verified_material_versions', {})
@@ -487,6 +566,7 @@ class RecoveryStore:
         config = self._checkpoint_config(job, context or {})
         age = (now_datetime(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
         invalid = []
+        invalid.extend(checkpoint_material_evidence_issues(body))
         if not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
             invalid.append('expired')
         if row['resume_count'] >= 2:

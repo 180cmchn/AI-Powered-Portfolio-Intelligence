@@ -1,0 +1,97 @@
+Selected original failure excerpts; temporary local paths redacted. Complete logs remain in test-results/fifteenth.
+
+browser-fourteenth-integration.txt
+Single browser group timed out waiting for the expected current report. The second fixture publication made the selected old report no longer the expected current row; isolated fixture order corrected.
+locator.waitFor: Timeout 30000ms exceeded.
+No successful test completion.
+
+delivery-review-regressions-macos.log
+23 third-iteration recommendation fixtures submitted securities outside their frozen empty-account scope. Explicit candidate scope setup corrected; no production scope permission was broadened.
+E           app.delivery.DeliveryContractError: suggestions[0].security_id: 超出本次服务端冻结的研究范围
+FAILED tests/test_third_recommendations.py::test_plain_report_keeps_observing_and_deduplicates_followup
+FAILED tests/test_third_recommendations.py::test_active_pagination_is_not_crowded_out_by_history
+FAILED tests/test_third_recommendations.py::test_maintain_and_update_bind_verified_current_account_version
+FAILED tests/test_third_recommendations.py::test_local_scope_expiry_and_account_isolation
+FAILED tests/test_third_recommendations.py::test_active_pages_and_direct_event_context_cover_beyond_first_page
+FAILED tests/test_third_recommendations.py::test_restart_and_repeated_omissions_do_not_create_new_review_work
+FAILED tests/test_third_recommendations.py::test_material_event_replay_cannot_undo_explicit_review
+FAILED tests/test_third_recommendations.py::test_material_event_deduplication_survives_changed_notification_batches
+23 failed, 73 passed, 1 warning in 16.47s
+
+delivery-targeted-final-macos.log
+Forecast fixture changed universe after creating batch, incrementing account version and correctly failing batch binding. Moved explicit universe setup before batch creation.
+E               ValueError: 批次与任务账户/输入版本不一致
+FAILED tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline
+1 failed, 68 passed in 7.30s
+
+python-deadline-transport.txt
+Sandbox denied localhost bind for eight real HTTP/1.1 socket tests. Product deadlines not weakened; authorized socket-capable rerun passed all 34.
+E                       PermissionError: [Errno 1] error while attempting to bind on address ('127.0.0.1', 0): [errno 1] operation not permitted
+FAILED tests/test_fourteenth_transport_close.py::test_peer_closes_mid_body_is_remote_error_without_local_cancel_or_retry
+FAILED tests/test_fourteenth_transport_close.py::test_complete_terminal_waits_for_short_delayed_http_terminator
+FAILED tests/test_fourteenth_transport_close.py::test_stalled_tail_is_bounded_without_repeating_accepted_response
+FAILED tests/test_fourteenth_transport_close.py::test_tail_drain_finishes_before_earliest_parent_deadline
+FAILED tests/test_fourteenth_transport_close.py::test_clean_http_eof_without_response_terminal_still_cannot_publish
+FAILED tests/test_fourteenth_transport_close.py::test_truncated_http_tail_does_not_discard_already_complete_terminal
+FAILED tests/test_fourteenth_transport_close.py::test_incomplete_terminal_keeps_safe_reason_and_http_completion_distinct
+FAILED tests/test_fourteenth_transport_close.py::test_local_first_event_timeout_is_explicitly_not_peer_close
+8 failed, 26 passed in 3.18s
+
+python-legacy-scope-fixed.txt
+A historical malformed-condition fixture remained readable and watching, while assertion expected needs_review; fixture expectation corrected, new malformed submissions remain rejected.
+E       AssertionError: assert 'watching' == 'needs_review'
+E
+E         - needs_review
+E         + watching
+FAILED tests/test_iteration.py::test_legacy_malformed_tracking_metadata_remains_readable_but_new_output_is_rejected
+1 failed, 39 passed in 5.22s
+
+python-linux-integration.txt
+Eight shared fixture/scope/legacy cases plus lifecycle check could not verify legacy PID without lsof. lsof was installed in the isolated Linux test environment; no lifecycle safety bypass.
+E           app.delivery.DeliveryContractError: suggestions[0].security_id: 超出本次服务端冻结的研究范围
+E                       app.delivery.DeliveryContractError: suggestions[0].price_conditions[0]: 价格条件格式或数值无效；定性条件请放 agent_conditions
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/opt/guanlan-venv/bin/python', '/tmp/pytest-of-root/pytest-0/test_legacy_pidfile_stop_requi0/c...manage.py', 'stop', '--mode', 'live'], returncode=1, stdout='', stderr='停止目标未核实：FileNotFoundError。保留 pidfile，请检查诊断。\n').returncode
+E        +    where CompletedProcess(args=['/opt/guanlan-venv/bin/python', '/tmp/pytest-of-root/pytest-0/test_legacy_pidfile_stop_requi0/c...manage.py', 'stop', '--mode', 'live'], returncode=1, stdout='', stderr='停止目标未核实：FileNotFoundError。保留 pidfile，请检查诊断。\n') = control((PosixPath('/tmp/pytest-of-root/pytest-0/test_legacy_pidfile_stop_requi0/copy with spaces'), {'PATH': '/opt/node-v22.2...in:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'HOME': '/root', 'LANG': 'C.UTF-8', 'APP_PORT': '56711', ...}, 56711), 'stop')
+E           app.delivery.DeliveryContractError: forecasts[3].security_id: 超出本次服务端冻结的研究范围
+FAILED tests/test_fifth_candidate_events.py::test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts
+FAILED tests/test_iteration.py::test_malformed_tracking_metadata_keeps_report_and_does_not_break_worker
+FAILED tests/test_iteration_edge_review.py::test_candidate_suggestion_is_monitored_until_expiry
+FAILED tests/test_iteration_edge_review.py::test_optional_or_targeted_suggestions_do_not_implicitly_revoke_other_symbols
+FAILED tests/test_ninth_lifecycle.py::test_legacy_pidfile_stop_requires_mode_and_database_evidence
+FAILED tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline
+FAILED tests/test_third_consistency.py::test_publication_preserves_valid_parts_and_unknown_citation_gap
+FAILED tests/test_third_review.py::test_targeted_research_does_not_complete_unrelated_recommendation_demand
+9 failed, 1188 passed, 1 warning in 145.09s
+
+python-macos-integration.txt
+Integration failures: six old fixture scopes omitted candidate securities; one legacy-invalid-condition test used new submission instead of injecting historical row; one forecast fixture scope; one new account-CAS fixture omitted correction preview token; one verifier source guard fired while source was being edited. Original failures retained.
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([<Request('POST', 'https://fixture.invalid/v1/responses')>, <Request('POST', 'https://fixture.invalid/v1/responses')>])
+E           app.delivery.DeliveryContractError: suggestions[0].security_id: 超出本次服务端冻结的研究范围
+E                       app.delivery.DeliveryContractError: suggestions[0].price_conditions[0]: 价格条件格式或数值无效；定性条件请放 agent_conditions
+E           app.delivery.DeliveryContractError: forecasts[3].security_id: 超出本次服务端冻结的研究范围
+E           assert False is True
+FAILED tests/test_fifteenth_delivery.py::test_real_state_change_after_preflight_cannot_apply_and_retains_candidate[account_version]
+FAILED tests/test_fifth_candidate_events.py::test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts
+FAILED tests/test_iteration.py::test_malformed_tracking_metadata_keeps_report_and_does_not_break_worker
+FAILED tests/test_iteration_edge_review.py::test_candidate_suggestion_is_monitored_until_expiry
+FAILED tests/test_iteration_edge_review.py::test_optional_or_targeted_suggestions_do_not_implicitly_revoke_other_symbols
+FAILED tests/test_seventh_identity.py::test_formal_direction_requires_each_symbols_exact_baseline
+FAILED tests/test_third_consistency.py::test_publication_preserves_valid_parts_and_unknown_citation_gap
+FAILED tests/test_third_review.py::test_targeted_research_does_not_complete_unrelated_recommendation_demand
+10 failed, 1187 passed, 1 warning in 117.62s
+
+python-targeted-integration.txt
+Command referenced nonexistent tests/test_fourteenth_transport.py; zero tests collected. Correct existing transport files used subsequently.
+ERROR: file or directory not found: tests/test_fourteenth_transport.py
+No successful test completion.
+
+deadline-linux-missing-calendar-failure.json
+Initial Linux fixture packaging omitted committed calendar JSON; all sixteen outcomes retained.
+E       FileNotFoundError: [Errno 2] No such file or directory: '/workspace/data/calendar_2026.json'
+14 failed, 2 passed in 2.09s
+
+Review finding after the 1203-case pass: conflicting suggestion identity/actions remained possible; previous green suites do not validate the later fix.
+
+Real aggregate v4 preflight rejection (zero HTTP, zero reserved attempts): Role definitions or effective bindings changed after preparation. Read-only comparison found only independently generated migration updated_at observations differed; production freeze_agent_team team_id was identical. Verifier now reuses that production identity. Targeted 43 passed; original rejected execution preserved.

@@ -1,0 +1,120 @@
+{
+  "kind": "independent_business_a_initial_readonly_preflight_review",
+  "checked_at": "2026-11-02T22:15:47.056342+08:00",
+  "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+  "preparation": "data/evaluations/fifteenth-business-a-initial-v1/preparation.json",
+  "preparation_sha256": "885840f17761a529277d944119d54c2bf59ec6a0d2f1e882cb37add595faacd8",
+  "authorization": "docs/fifteenth/business-a-initial-authorization.json",
+  "conclusion": "No concrete blocking issue found in the actual frozen preparation or the reviewed execution guards.",
+  "blocking_findings": [],
+  "checks": {
+    "source_match": true,
+    "environment_match": true,
+    "manifest_hash_match": true,
+    "prepared_hash_match": true,
+    "source_config_match": true,
+    "approved_report_binding_matches": true,
+    "v13_body_match": true,
+    "schema_intact": true,
+    "schema_hash_match": true,
+    "prepared_policy_match": true,
+    "caps": true,
+    "no_automatic_retry": true,
+    "periodic_work_disabled": true,
+    "fresh_no_business_rows": true,
+    "no_role_config_errors": true,
+    "manager_xhigh": true,
+    "output6000": true,
+    "no_replay_output_policy_forced": true,
+    "port18765": true,
+    "isolated_database": true,
+    "one_stage_only": true,
+    "explicit_a_initial_authorization_matches": true,
+    "public_and_private_preparation_identical": true,
+    "authorization_bound_to_preparation": true,
+    "source_still_frozen": true,
+    "environment_stamp_still_frozen": true
+  },
+  "all_checked_conditions_passed": true,
+  "approved_report_gate": {
+    "report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+    "expected_run": "v13-direct",
+    "review_accepted": true,
+    "review_bound_to_actual_model_body_and_unique_completed_database_report": true,
+    "review_is_independent_agent_content_review_not_human_signoff": true
+  },
+  "budget_and_scope": {
+    "new_independent_stage_ledger": true,
+    "maximum_model_http_attempts": 16,
+    "final_submission_reserve_included": 2,
+    "model_retries": 0,
+    "max_job_attempts": 1,
+    "admitted_job_only": true,
+    "periodic_research_market_refresh_forecast_evaluation_disabled": true,
+    "other_stages_authorized": false,
+    "old_aggregate_or_40_call_allowance_transferred": false,
+    "boundary": "Model-provider HTTP reservations include manager, children and corrections. Quote/material HTTP and provider-native tool charges are separate; this is not a currency ceiling."
+  },
+  "route_tls_port": {
+    "network_route": "original environment route",
+    "isolated_model_direct_override": false,
+    "model_client_uses_standard_AsyncClient_with_default_TLS_verification": true,
+    "proxy_or_CA_environment_modified": false,
+    "listener": "127.0.0.1:18765",
+    "exact_port_atomically_bound_and_descriptor_passed": true,
+    "occupied_port_rejects_without_fallback": true,
+    "daily8765_untouched": true,
+    "listener_at_review": "The parent reported session48500 had already started the authorized unique flow; lsof observed its local18765 listener. This is not a second launch or a preflight blocker.",
+    "local_api_trust_env_false_scope": "Only loopback API calls bypass proxy environment; provider ModelClient retains the original route."
+  },
+  "stop_guard_review": {
+    "unknown_accepted_or_sent_outcome_latches_durably": true,
+    "covered_boundaries": [
+      "accepted cancellation/child deadline",
+      "accepted SSE EOF without terminal",
+      "invalid terminal/protocol parse failure",
+      "origin request sent without response headers"
+    ],
+    "known_completed_incomplete_failed_cancelled_terminals_not_unknown": true,
+    "explicit_HTTP_rejection_or_no_request_does_not_false_latch": true,
+    "latch_checked_again_atomically_before_each_reservation": true,
+    "first_accepted_manager_submission_exits_agent_loop": true,
+    "first_valid_publication_sets_persistent_stop_before_restart_observation": true,
+    "new_followup_jobs_are_not_admitted_for_model_HTTP": true,
+    "scope": "The latch blocks subsequent HTTP reservations; it cannot revoke already accepted upstream work or guarantee zero provider charge for interrupted requests."
+  },
+  "data_isolation": {
+    "prepared_account_job_analysis_ledger_counts": {
+      "accounts": 0,
+      "jobs": 0,
+      "analyses": 0,
+      "ledger_entries": 0
+    },
+    "execution_database_is_new_evaluation_path": true,
+    "daily_source_configuration_read_mode": "SQLite mode=ro",
+    "application_process_APP_DB_PATH_overridden_only_for_isolated_child": true,
+    "source_env_model_matrix_not_modified": true,
+    "full_final_schema_preserved": true,
+    "required_fields_only_replay_policy_not_applied_to_normal_business": true
+  },
+  "offline_evidence": [
+    "test-results/fifteenth/business-unknown-stop-before.txt",
+    "test-results/fifteenth/business-unknown-stop-after.txt",
+    "test-results/fifteenth/v12-macos-post-guard-full.json",
+    "test-results/fifteenth/direct-route-business-offline-tests.json",
+    "test-results/fifteenth/v13-direct-linux-targeted.json"
+  ],
+  "review_actions": {
+    "mode": "readonly",
+    "Store_initialized": false,
+    "service_or_model_started_by_reviewer": false,
+    "source_modified": false,
+    "private_credentials_or_proxy_endpoints_published": false,
+    "source_configuration_writes": 0
+  },
+  "limits": [
+    "Preflight checks do not predict model quality or successful delivery. The first real outcome must be preserved and reviewed.",
+    "This review covers only A initial; later buy/sell/cash stages and additional allowances are not authorized by it.",
+    "The authorized flow started while this readonly review was finishing; the reviewer did not start or duplicate that execution."
+  ]
+}

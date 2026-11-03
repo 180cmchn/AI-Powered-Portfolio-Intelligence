@@ -102,7 +102,7 @@ async def test_responses_preserves_opaque_items_and_probe_continuation(config):
 
 @pytest.mark.asyncio
 async def test_chat_completions_tool_messages(config):
-    config = {**config, "model_protocol": "chat_completions", "chat_use_max_completion_tokens": True}
+    config = {**config, "model_protocol": "chat_completions", "chat_use_max_completion_tokens": True, "max_output_tokens": 4000}
     seen = []
 
     async def handler(request):

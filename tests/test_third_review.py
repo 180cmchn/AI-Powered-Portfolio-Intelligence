@@ -25,6 +25,9 @@ def test_fresh_universe_does_not_inherit_old_scope_retry_exhaustion(tmp_path):
 def test_targeted_research_does_not_complete_unrelated_recommendation_demand(tmp_path):
     store = Store(tmp_path / 'review-target.sqlite3')
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
+    # Both initial recommendations belong to the frozen candidate scope;
+    # the later manual-security job must still cover only its own target.
+    store.save_universe({'watchlist': [], 'candidates': ['SH:600519', 'SZ:000001']})
     account = store.save_account(AccountInput(name='受控单证券研究', holdings=[]))
     initial = store.claim_jobs()[0]
     publish_fixture(store,initial['id'], {'report': '受控初始建议', 'suggestions': [
@@ -47,6 +50,9 @@ def test_targeted_research_does_not_complete_unrelated_recommendation_demand(tmp
 def test_local_completion_retains_only_in_scope_demands_and_full_followup_is_bounded(tmp_path):
     store = Store(tmp_path / 'review-target-wide.sqlite3')
     store.set_meta('settings', {'debounce_seconds': 0, 'quote_provider': 'manual'})
+    # Both initial recommendations belong to the frozen candidate scope;
+    # the later manual-security job must still cover only its own target.
+    store.save_universe({'watchlist': [], 'candidates': ['SH:600519', 'SZ:000001']})
     account = store.save_account(AccountInput(name='受控多轮范围', holdings=[]))
     initial = store.claim_jobs()[0]
     publish_fixture(store,initial['id'], {'report': '受控初始建议', 'suggestions': [

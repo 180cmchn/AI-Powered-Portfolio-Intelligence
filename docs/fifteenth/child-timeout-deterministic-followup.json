@@ -1,0 +1,57 @@
+{
+  "kind": "deterministic_child_timeout_followup",
+  "recorded_at": "2026-11-02T21:17:19.893628+08:00",
+  "trigger": "Full Linux source81e:1299passed1failed; Mac1300passed.",
+  "original_failure": "tests/test_eleventh_timeouts.py::test_runtime_child_queue_and_execution_have_separate_observations",
+  "diagnosis": {
+    "runs": 30,
+    "passed": 29,
+    "failed": 1,
+    "evidence": "test-results/fifteenth/child-timeout-baseline-diagnostic-linux.json",
+    "clock_resolution_seconds": 0.001,
+    "failure_observation": {
+      "effective_limit": "child_budget_exhausted",
+      "error_code": "cancelled",
+      "cancelled_by": "parent_or_user_cancelled",
+      "request_accepted": true,
+      "queue_wait_ms": 28.17,
+      "duration_ms": 60.31,
+      "deadline_remaining_ms": {
+        "child_budget_exhausted": 60.89,
+        "analysis_budget_exhausted": 1970.67,
+        "request_hard_timeout": 600.0
+      }
+    },
+    "child_deadline": 288.64938238099995,
+    "observed_monotonic_after_completion": 288.649280089,
+    "microseconds_still_before_absolute_deadline": 102.292,
+    "interpretation": "The outer asyncio timeout had fired within the event loop 1ms lookahead while monotonic was still 102us short of the absolute deadline; ModelClient did not find an already elapsed absolute deadline and recorded generic cancellation. Request had entered HTTP; no report was published."
+  },
+  "fix": {
+    "production_source_changed": false,
+    "production_deadlines_changed": false,
+    "file": "tests/test_eleventh_timeouts.py",
+    "method": "Reuse coherent wall/monotonic/loop clock plus actual semaphore and two parser-progress fences. Preserve child .09s, idle .06s, parent2s; advance to .091s after queue25ms and stream progress, before other deadlines.",
+    "strict_assertions": [
+      "exactly one HTTP",
+      "stream actually cancelled and closed",
+      "no child report",
+      "queue25ms",
+      "request66ms",
+      "child_budget_exhausted across row/effective limit/cancelled_by/event"
+    ]
+  },
+  "targeted_macos": {
+    "passed": 41,
+    "evidence": "test-results/fifteenth/child-timeout-clock-related-macos.txt"
+  },
+  "full_rerun_pending_business_guard_fix": true,
+  "real_model_requests": 0,
+  "targeted_linux": {
+    "passed": 41,
+    "independent_repetitions_passed": 10,
+    "independent_repetitions_total": 10,
+    "evidence": "test-results/fifteenth/child-timeout-clock-linux.json",
+    "diagnostic_and_test_identity": "test-results/fifteenth/child-timeout-clock-cause-and-verification.json"
+  }
+}

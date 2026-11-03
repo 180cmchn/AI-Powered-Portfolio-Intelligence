@@ -1,0 +1,1216 @@
+{
+  "kind": "fifteenth_acceptance_summary",
+  "status": "required_limited_business_matrix_accepted",
+  "git": {
+    "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+    "initial_worktree_clean": true,
+    "changes_uncommitted": true,
+    "pushed": false
+  },
+  "source_identities": {
+    "full_engineering": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d",
+    "live_execution": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+    "production_app_identical_between_them": true,
+    "difference": "Isolated verification script now reuses production effective team identity; corresponding verifier regression tests added.",
+    "manifests": [
+      "final-source.json",
+      "real-run-source.json",
+      "local-stream-fix-source.json"
+    ],
+    "post_local_stream_fix": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "latest_full_engineering": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "latest_real_execution": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "latest_identity_mapping": "test-results/fifteenth/business-model-route-frozen-source.json",
+    "latest_engineering_source": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+    "historical_v10": {
+      "final_guidance_production_full": "b35b772fc4501303d17555cdc3785954861aacb9c7685570aefef7d3312a7346",
+      "final_real_execution": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+      "app_identical_between_final_full_and_real_execution": true
+    },
+    "latest_actual_model_http": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "initial_identity_pair_is_historical": true,
+    "latest_production_app_identical_to_full_engineering": true,
+    "latest_changes_since_full_engineering": [
+      "scripts/verify_fifteenth_business.py",
+      "tests/test_fifteenth_business.py"
+    ],
+    "under_validation_source": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+    "current_source_not_yet_full_verified": true,
+    "current_validation_complete_by_full_app_plus_targeted_helper": true,
+    "identity_boundary": "Full1500/11 ran at7f8; current728 only helper/tests differ and204 target tests passed on each OS; no full-suite execution is relabelled as728."
+  },
+  "engineering": {
+    "macos_python": {
+      "passed": 1500,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1,
+      "seconds": 197.85,
+      "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "evidence": "test-results/fifteenth/output-omission-v2-macos-full.json"
+    },
+    "linux_python_3_12": {
+      "passed": 1500,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1,
+      "seconds": 146.75,
+      "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "evidence": "test-results/fifteenth/output-omission-v2-linux-full-with-space.json"
+    },
+    "browser": {
+      "passed_groups": 11,
+      "total_groups": 11,
+      "seconds": 287.03,
+      "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "evidence": "test-results/fifteenth/output-omission-v2-browser-full.json"
+    },
+    "targeted": {
+      "references": {
+        "new_cases": 17,
+        "related_passed": 73,
+        "red_light": "test-results/fifteenth/reference-boundaries-before.txt",
+        "green": "test-results/fifteenth/reference-boundaries-targeted.txt"
+      },
+      "child_deadline": {
+        "related_cases_passed_each_platform": 41,
+        "linux_independent_repeats": 10,
+        "evidence": "test-results/fifteenth/child-timeout-clock-cause-and-verification.json"
+      },
+      "business_guard": {
+        "total_cases_passed": 31,
+        "unknown_outcome_boundary_cases": 11,
+        "failed_controls_before_fix": [
+          "test-results/fifteenth/business-cancel-stop-before.txt",
+          "test-results/fifteenth/business-unknown-stop-before.txt"
+        ],
+        "green": "test-results/fifteenth/business-unknown-stop-after.txt"
+      }
+    },
+    "isolated_direct_route_followup": {
+      "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+      "changes_from_full_tested_source": [
+        "scripts/verify_fifteenth_aggregate.py",
+        "tests/test_fifteenth_context.py"
+      ],
+      "production_app_unchanged": true,
+      "macos_passed": 91,
+      "linux_python_3_12_passed": 91,
+      "macos_evidence": "test-results/fifteenth/direct-route-business-offline-tests.json",
+      "linux_evidence": "test-results/fifteenth/v13-direct-linux-targeted.json",
+      "external_model_http_from_tests": 0
+    },
+    "retained_full_failure": {
+      "source_sha256": "81e45dd5e9438aa33736450a437b8cbf8b560da9df267fea615aacf22832e95b",
+      "linux_passed": 1299,
+      "linux_failed": 1,
+      "evidence": "test-results/fifteenth/v12-linux-full.json",
+      "cause_and_fix": "child-timeout-deterministic-followup.json"
+    },
+    "evidence": "final-followup-regression.json",
+    "denominator": "Full-suite, repeated and targeted counts are separate; not summed as unique coverage.",
+    "normal_checkpoint_recovery": {
+      "macos_passed": 62,
+      "linux_passed": 62,
+      "source_sha256": "803b3a64a2a65b3aa7f23020eac92b45e9ba849ccbaa94065e906ccf8ae64395",
+      "evidence": "business-a-recovery-regression.json",
+      "production_app_unchanged": true
+    },
+    "post_a_repairs": {
+      "kind": "post_a_frozen_engineering_regression",
+      "recorded_at": "2026-11-02T15:57:23.575742+00:00",
+      "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+      "frozen_files": 210,
+      "macos": {
+        "counts": {
+          "passed": 1367,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 1
+        },
+        "elapsed_seconds": 147.64,
+        "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+        "source_unchanged": true,
+        "file_hashes_unchanged": true
+      },
+      "linux": {
+        "counts": {
+          "passed": 1367,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 1
+        },
+        "elapsed_seconds": 116.65,
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "platform": "Linux-6.12.76-linuxkit-aarch64-with-glibc2.39",
+        "source_unchanged": true,
+        "file_hashes_unchanged": true,
+        "image_id": "sha256:f9d7abbf1311067e4ede1943a2b495be13b56094824fff16f9189d6804ac47a4"
+      },
+      "browser": {
+        "passed_groups": 11,
+        "total_groups": 11,
+        "elapsed_seconds": 282.61,
+        "source_unchanged": true,
+        "file_hashes_unchanged": true
+      },
+      "evidence": {
+        "frozen": "test-results/fifteenth/post-a-frozen-source.json",
+        "macos": "test-results/fifteenth/post-a-macos-full.json",
+        "linux": "test-results/fifteenth/post-a-linux-full.json",
+        "browser": "test-results/fifteenth/post-a-browser-full.json"
+      },
+      "production_fixes": [
+        "durable bounded manager-visible material recovery with source guards",
+        "keep newly completed materials after interrupted research continuation",
+        "reject oversized research_records before acceptance and persistence"
+      ],
+      "new_paid_model_requests": 0,
+      "normal_business_live_passed": false,
+      "whole_goal_completed": false,
+      "old_live_evidence_preserved": true,
+      "remote_ci": "Original unpushed commit remains failure; see post-a-remote-ci.json",
+      "browser_fixture_identity": "test-results/fifteenth/post-a-fixture-identity.json",
+      "first_full_failures_preserved": [
+        "test-results/fifteenth/post-a-macos-full-before-fixture.json",
+        "test-results/fifteenth/post-a-linux-before-fixture.json"
+      ]
+    },
+    "single_recovery_followup": {
+      "checked_at": "2026-11-02T16:34:35.523999+00:00",
+      "source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+      "changes_since_latest_full_regression": [
+        "scripts/verify_fifteenth_recovery.py",
+        "tests/test_fifteenth_recovery.py"
+      ],
+      "all_production_app_files_unchanged": true,
+      "latest_full_regression_source": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+      "latest_full_macos": 1367,
+      "latest_full_linux": 1367,
+      "latest_full_browser_groups": 11,
+      "full_regression_evidence": "post-a-regression.json",
+      "current_targeted": {
+        "macos": {
+          "passed": 124,
+          "seconds": 28.56,
+          "evidence": "test-results/fifteenth/recovery-quote-drift-macos-targeted.json"
+        },
+        "linux_py312": {
+          "passed": 124,
+          "seconds": 19.85,
+          "evidence": "test-results/fifteenth/recovery-quote-drift-linux-targeted.json"
+        },
+        "scope": [
+          "tests/test_fifteenth_recovery.py",
+          "tests/test_fifteenth_business.py",
+          "tests/test_fifteenth_context.py",
+          "tests/test_fifteenth_checkpoint_materials.py"
+        ],
+        "recovery_cases": 23
+      },
+      "before_execution_targeted": {
+        "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+        "macos_passed": 123,
+        "linux_passed": 123,
+        "evidence": "business-a-single-recovery-preparation.json"
+      },
+      "new_case": "Actual retry API/Service quote refresh changes source/as_of, guard rejects checkpoint, zero model HTTP/reservations, original body/time/guard/resume unchanged, claim retained",
+      "diagnostic_change": "Missing runtime checkpoint now includes readonly parent checkpoint state/reasons, including research_inputs_changed",
+      "production_guard_or_deadline_changes": false,
+      "new_paid_model_requests": 0,
+      "counts_are_separate_not_additive": true
+    },
+    "long_task_defaults_and_latency": {
+      "full_source": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+      "macos_passed": 1416,
+      "linux_passed": 1416,
+      "browser_groups": 11,
+      "evidence": "long-task-validation.json",
+      "timeout_defaults": {
+        "first_effective_event_seconds": 90,
+        "stream_idle_seconds": 120,
+        "request_hard_seconds": 900,
+        "synthesis_request_hard_seconds": 900,
+        "child_budget_seconds": 1800,
+        "analysis_budget_seconds": 3600
+      },
+      "custom_values_running_snapshots_and_formal_deadlines_preserved": true
+    },
+    "long_task_helper_followup": {
+      "helper_source": "1e0369a6c7af441e95deaa01bdc291538d10c8de29065d8a6c6122fdc8e65ea4",
+      "helper_changes": [
+        "scripts/verify_fourteenth_live.py",
+        "tests/test_fifteenth_synthesis_latency.py"
+      ],
+      "helper_targeted_macos_passed": 94,
+      "helper_targeted_macos_evidence": "Agent tool execution output: 94 passed in 8.12s; no standalone log retained.",
+      "helper_targeted_linux_passed": 94,
+      "helper_targeted_linux_evidence": "test-results/fifteenth/long-task-helper-linux.json"
+    },
+    "long_task_retry_followup": {
+      "source_sha256": "be9223ff6c60958362d2e39edd5dde47d8eeff901cc19bc9e80377559b77a361",
+      "frozen_manifest": "test-results/fifteenth/long-task-retry-frozen-source.json",
+      "changes_since_full_source": [
+        "scripts/verify_fifteenth_business.py",
+        "scripts/verify_fourteenth_live.py",
+        "tests/test_fifteenth_business.py",
+        "tests/test_fifteenth_synthesis_latency.py"
+      ],
+      "full_source_sha256": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+      "production_app_files_identical": true,
+      "macos": {
+        "passed": 57,
+        "seconds": 15.72,
+        "scope": "tests/test_fifteenth_business.py",
+        "evidence": "test-results/fifteenth/long-task-retry-macos.txt"
+      },
+      "linux_python_3_12": {
+        "passed": 151,
+        "seconds": 18.27,
+        "scope": [
+          "tests/test_fifteenth_business.py",
+          "tests/test_fifteenth_synthesis_latency.py",
+          "tests/test_fifteenth_context.py",
+          "tests/test_fourteenth_transport_probe.py",
+          "tests/test_fourteenth_chain.py"
+        ],
+        "evidence": "test-results/fifteenth/long-task-retry-linux.json",
+        "source_unchanged": true,
+        "file_hashes_unchanged": true
+      },
+      "preserved_sandbox_failure": {
+        "passed": 56,
+        "failed": 1,
+        "cause": "EPERM binding local socket in sandbox; retained as environment failure, not skipped",
+        "evidence": "test-results/fifteenth/long-task-retry-macos-sandbox-first.txt"
+      },
+      "behavior": "Isolated business verifier retains the configured production model_retries, defaulting to1 only when absent. Explicit HTTP503 can retry within that bounded production policy and the same per-job budget; an accepted/interrupted HTTP200 of unknown outcome is not retried.",
+      "new_external_model_requests_from_tests": 0,
+      "counts_are_separate_not_additive": true
+    },
+    "normal_retry_helper_followup": {
+      "source_sha256": "7c8591121ec21f8dc427dda796aaf6c59cb4b6547aa58dcb02b9ddc09483fb2c",
+      "production_full_source": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+      "production_app_and_browser_files_identical": true,
+      "changed_files": [
+        "scripts/verify_fifteenth_business.py",
+        "tests/test_fifteenth_business.py"
+      ],
+      "macos_passed": 118,
+      "linux_python_3_12_passed": 118,
+      "macos_evidence": "test-results/fifteenth/business-sale-retry-macos.txt",
+      "linux_evidence": "test-results/fifteenth/business-sale-retry-linux.json",
+      "frozen_manifest": "test-results/fifteenth/business-sale-retry-frozen-source.json",
+      "counts_are_separate_not_additive": true
+    },
+    "output_omission_and_indicator_period_full": {
+      "source_sha256": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "frozen_manifest": "test-results/fifteenth/output-omission-v2-frozen-source.json",
+      "macos_passed": 1500,
+      "linux_python_3_12_passed": 1500,
+      "browser_groups_passed": 11,
+      "macos_result": "test-results/fifteenth/output-omission-v2-macos-full.json",
+      "linux_result": "test-results/fifteenth/output-omission-v2-linux-full-with-space.json",
+      "browser_result": "test-results/fifteenth/output-omission-v2-browser-full.json",
+      "source_and_file_hashes_unchanged": true,
+      "environment_unchanged": true,
+      "linux_initial_environment_failure": {
+        "evidence": "test-results/fifteenth/output-omission-v2-linux-full.json",
+        "passed": 848,
+        "failed": 262,
+        "errors": 390,
+        "cause": "512MiB isolated /tmp exhausted; database or disk is full/No space left errors",
+        "followup": "Same frozen source and image; /tmp capacity raised to4GiB, no test skips or source changes"
+      },
+      "new_external_model_requests_from_tests": 0
+    },
+    "business_model_route_helper_followup": {
+      "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+      "production_full_source": "7f8ef6795e22983a7a59a5605c5c719a9fd8d1efac275b98b738a9bd638cdcd3",
+      "production_app_and_browser_files_identical": true,
+      "changed_files": [
+        "scripts/verify_fifteenth_business.py",
+        "tests/test_fifteenth_business.py"
+      ],
+      "macos_passed": 204,
+      "linux_python_3_12_passed": 204,
+      "macos_evidence": "test-results/fifteenth/business-model-route-macos.txt",
+      "linux_evidence": "test-results/fifteenth/business-model-route-linux.json",
+      "frozen_manifest": "test-results/fifteenth/business-model-route-frozen-source.json",
+      "counts_are_separate_not_additive": true,
+      "behavior": "Optional explicit isolated model-only direct diagnostic with TLS and environment CA retained; frozen route checks each HTTP; failed retry chain guards; default environment route unchanged."
+    }
+  },
+  "remote_ci": {
+    "run_id": 41413931460,
+    "conclusion": "failure",
+    "python_passed": 1164,
+    "python_failed": 1,
+    "browser_groups_success": 11,
+    "local_fixes_not_pushed": true,
+    "evidence": "remote-ci-after.json",
+    "latest_check": "final-remote-ci.json"
+  },
+  "delivery_contract": {
+    "shared_readonly_preflight_and_transaction_validation": true,
+    "same_agent_bounded_correction": true,
+    "transaction_rechecks_cas_scope_state_and_deadline": true,
+    "deadline_checked_before_and_after_transaction_mutations": true,
+    "per_item_application_receipts_visible_in_report_and_job": true,
+    "silent_suggestion_drop_removed": true,
+    "historical_rows_not_rewritten": true,
+    "database_schema": 11,
+    "api_contract": 13,
+    "migration_required": false
+  },
+  "prior_live_evidence": {
+    "historical_aggregate": {
+      "http_attempts": 4,
+      "published_reports": 0,
+      "pre_terminal_disconnects": 3,
+      "incomplete": 1,
+      "old_incomplete_reason": null
+    },
+    "short_cash_protocol_probes": {
+      "http_attempts": 2,
+      "valid_submissions": 2,
+      "http_eof": 2,
+      "three_security_reports": 0
+    },
+    "independent_invoice_reconciliation": false,
+    "not_combined_with_new_attempt_denominator": true,
+    "supplier_displayed_total_amount": "0.076194",
+    "supplier_displayed_probe_amount": "0.001274",
+    "currency_symbol": "$",
+    "currency_code_verified": false
+  },
+  "new_authorization": {
+    "maximum_http_attempts": 10,
+    "stage": "historical_three_security_aggregate",
+    "per_execution_maximum": 2,
+    "http_retries": 0,
+    "normal_business_matrix_authorized": false,
+    "old_conditional_40_attempt_budget_used": 0,
+    "evidence": "authorization.json",
+    "used": 10,
+    "remaining": 0,
+    "stopped": true,
+    "current_recovery_authorization_remaining": 0,
+    "latest_recovery": "Seven xhigh adaptive requests within original10; v13 independently accepted historical report and aggregate cap exhausted. Normal A has a separate16-request stage authorization.",
+    "status_scope": "Historical stage/pool observation at its recorded time; superseded as current authorization/status by current_user_instruction and normal_business."
+  },
+  "live_aggregate": {
+    "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+    "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+    "http_attempts": 1,
+    "shared_attempts_reserved": 1,
+    "shared_attempts_remaining": 9,
+    "first_submission_successes": 0,
+    "contract_correction_attempts": 0,
+    "final_failures": 1,
+    "pre_http_verifier_rejections": 1,
+    "pre_http_rejection_http_attempts": 0,
+    "compact_evidence_chars": 42584,
+    "complete_payload_chars": 66258,
+    "complete_payload_bytes": 80511,
+    "production_schema_matches": true,
+    "full_historical_evidence_visible": true,
+    "http_status": 200,
+    "stream_terminal": null,
+    "http_eof": false,
+    "duration_ms": 300053.74,
+    "error_code": "upstream_transport_error",
+    "exception_types": [
+      "RemoteProtocolError",
+      "RemoteProtocolError"
+    ],
+    "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+    "cancelled_by": null,
+    "contract_accepted": false,
+    "transaction_published": false,
+    "content_assessment": "not_evaluated",
+    "model_report_obtained": false,
+    "formal_predictions": 0,
+    "forecast_target_denominator": 0,
+    "abstentions_submitted": 0,
+    "direction_quality": "not_evaluated",
+    "matured_scores": 0,
+    "requested_effort": "max",
+    "reported_effort": null,
+    "requested_max_output_tokens": 4000,
+    "reported_usage": null,
+    "cost_amount": null,
+    "provider_result_unknown": true,
+    "automatic_retry_performed": false,
+    "evidence": "live-evidence.json",
+    "content_review": "live-content-review.md",
+    "supplier_reproduction": "supplier-reproduction.json",
+    "isolated_reopen_check": "isolated-reopen-check.json",
+    "normal_business_matrix_executed": false,
+    "stopped_under_user_rule": "Unknown accepted/sent outcome must not be automatically replayed; explicit recovery needed.",
+    "content_assessment_reason": "No final model report or accepted finish_analysis received.",
+    "billing_reconciliation": "supplier-dashboard-reconciliation.json",
+    "supplier_displayed_cost_amount": "0.013266",
+    "supplier_currency_symbol": "$",
+    "supplier_token_pair_displayed": [
+      24833,
+      6463
+    ],
+    "supplier_stream_error": "client_gone",
+    "supplier_evidence": "supplier-screenshot-evidence.json",
+    "invoice_verified": false,
+    "cohort": "First v5 execution only; later v6 is separate"
+  },
+  "unverified": [
+    "Continuous unattended stability",
+    "Formal live-window forecasts or naturally matured accuracy",
+    "Unique cause of previous remote transport failures",
+    "Third-party unlimited/default128000 output guarantee",
+    "Invoice-level fee verification",
+    "Deployment or pushed/green remote CI"
+  ],
+  "preservation": {
+    "daily_sqlite_and_wal_unchanged": true,
+    "environment_file_stat_unchanged": true,
+    "daily_port_8765_no_listener": true,
+    "evidence": "preservation-after.json",
+    "latest_check": "output-omission-final-preservation.json",
+    "isolated_port_18765_closed": true
+  },
+  "recorded_at": "2026-11-02T17:38:53.477991+08:00",
+  "final_document_checks": {
+    "checked_at": "2026-11-02T20:01:38.028891+00:00",
+    "json_files_parsed": 131,
+    "markdown_local_links_verified": 215,
+    "audit_evidence_paths_verified": 152,
+    "requirements_preserved": 38,
+    "frozen_source_files_unchanged": 217,
+    "independent_document_checker": "/root/deadline_tests",
+    "git_diff_check_passed": true
+  },
+  "recovery_preparation": {
+    "status": "not_authorized_user_declined_for_now",
+    "offline_request_reconstruction_matches": true,
+    "proof": "payload-reconstruction.json",
+    "proposal": "recovery-proposal.json",
+    "actual_additional_model_requests": 0,
+    "source_modified": false,
+    "private_database_modified": false,
+    "global_attempt_ledger_modified": false,
+    "user_decision": {
+      "recorded_at": "2026-11-02T17:56:10.616349+08:00",
+      "user_answer": "暂不恢复，保留剩余 9 次",
+      "explicit_recovery_authorized": false,
+      "additional_model_requests_authorized_now": 0,
+      "previously_used": 1,
+      "remaining_preserved": 9,
+      "next_action": "No paid request or direct-route comparison until a later explicit user recovery instruction."
+    },
+    "status_scope": "Historical stage/pool observation at its recorded time; superseded as current authorization/status by current_user_instruction and normal_business."
+  },
+  "post_local_stream_fix": {
+    "status": "all_full_regressions_passed",
+    "changed_production_files": [
+      "app/model.py"
+    ],
+    "targeted_154_passed": true,
+    "deterministic_stream_and_deadline_32_passed": true,
+    "additional_model_http_requests": 2,
+    "historical_failure_root_cause_confirmed": false,
+    "evidence": "local-stream-fix-validation.json",
+    "macos": {
+      "passed": 1227,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 118.88
+    },
+    "linux": {
+      "passed": 1227,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 132.99
+    },
+    "browser_groups": {
+      "passed": 11,
+      "failed": 0
+    },
+    "report": "local-project-followup.md",
+    "real_execution_evidence": "postfix-live-evidence.json"
+  },
+  "postfix_real_verification": {
+    "status": "executed_stopped_two_known_incomplete",
+    "preparation": "postfix-input-manifest.json",
+    "comparison": "postfix-preparation-comparison.json",
+    "proposal": "postfix-verification-proposal.json",
+    "prepared_source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "additional_model_requests": 2,
+    "requested_maximum_if_authorized": 2,
+    "route": "existing environment",
+    "authorization_currently_granted": false,
+    "user_authorization": {
+      "recorded_at": "2026-11-02T18:31:47.096466+08:00",
+      "user_answer": "明确恢复，最多 2 次修复验证",
+      "explicit_recovery_authorized": true,
+      "additional_model_requests_authorized_now": 2,
+      "initial_submission_maximum": 1,
+      "contract_correction_maximum": 1,
+      "route": "existing environment; no direct-route override",
+      "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+      "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+      "prepared_directory": "data/evaluations/fifteenth-historical-postfix-prepared-v6",
+      "previously_used": 1,
+      "shared_maximum": 10,
+      "maximum_used_after_this_execution": 3,
+      "automatic_retries": 0,
+      "stop_on_first_success": true,
+      "stop_on_unknown_outcome": true,
+      "normal_business_matrix_authorized": false,
+      "cost_cap": null,
+      "fee_note": "Actual supplier charge; no reliably enforceable pre-request monetary ceiling."
+    },
+    "evidence": "postfix-live-evidence.json",
+    "content_review": "postfix-content-review.md",
+    "supplier_reconciliation": "postfix-supplier-reconciliation.json",
+    "isolated_reopen_check": "postfix-isolated-reopen-check.json",
+    "source_unchanged": true,
+    "environment_unchanged": true,
+    "acceptance": {
+      "http_200": 2,
+      "recognized_protocol_terminals": 2,
+      "response_completed": 0,
+      "response_incomplete_max_output_tokens": 2,
+      "http_eof": 2,
+      "pre_terminal_transport_disconnects": 0,
+      "effective_finish_analysis": 0,
+      "contract_accepted": false,
+      "published": false,
+      "report_obtained": false,
+      "content_assessment": "not_evaluated",
+      "visible_incomplete_text_archived": false,
+      "visible_text_note": "Incomplete responses raise before ModelTurn assembly; text deltas are not retained as candidate prose. Existing historical evidence remains available. No raw SSE or hidden reasoning was exported.",
+      "formal_predictions": 0,
+      "forecast_target_denominator": 0,
+      "abstentions": 0,
+      "matured_scores": 0,
+      "normal_business_matrix_executed": false,
+      "service_restart_after_success_verified": false
+    }
+  },
+  "updated_at": "2026-11-02T20:01:38.028891+00:00",
+  "xhigh_investigation": {
+    "evidence": "xhigh-investigation.md",
+    "runs": [
+      "xhigh-v7-evidence.json",
+      "xhigh-v8-evidence.json",
+      "xhigh-v9-evidence.json",
+      "xhigh-v10-evidence.json",
+      "xhigh-v11-evidence.json",
+      "xhigh-v12-evidence.json",
+      "xhigh-v13-evidence.json"
+    ],
+    "additional_http_attempts": 7,
+    "known_incomplete": 3,
+    "unknown_outcome": 1,
+    "completed": 3,
+    "http_eof": 6,
+    "valid_submissions": 3,
+    "published_reports": 3,
+    "independently_content_accepted": 1,
+    "latest_content_review_status": "pass_limited_historical_scope",
+    "content_accepted": true,
+    "current_account_or_current_market_content_accepted": false,
+    "report_chars": 5109,
+    "report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+    "content_review": "xhigh-v13-content-review.json",
+    "publication_check": "xhigh-v13-publication-check.json",
+    "supplier_displayed_amount": "0.163564",
+    "ten_attempt_cohort_displayed_amount": "0.213052",
+    "currency_symbol": "$",
+    "invoice_verified": false,
+    "structured_suggestions_submitted": 0,
+    "structured_suggestions_applied": 0,
+    "formal_predictions": 0,
+    "forecast_target_denominator": 0,
+    "matured_scores": 0,
+    "normal_business_matrix_executed": false,
+    "further_aggregate_requests_stopped": true
+  },
+  "historical_snapshots": {
+    "engineering": {
+      "macos_python": {
+        "passed": 1208,
+        "failed": 0,
+        "warnings": 1,
+        "seconds": 123.75
+      },
+      "linux_python_3_12": {
+        "passed": 1208,
+        "failed": 0,
+        "warnings": 1,
+        "seconds": 154.85
+      },
+      "browser_groups": {
+        "passed": 11,
+        "failed": 0
+      },
+      "deadline_repetitions": {
+        "platforms": 2,
+        "runs_each": 10,
+        "cases_per_run": 16,
+        "failed": 0
+      },
+      "later_verifier_fix_macos": {
+        "passed": 43,
+        "failed": 0
+      },
+      "denominator": "Full suites, repeated cases and targeted runs are separate; counts are not added as unique coverage.",
+      "evidence": "engineering-summary.json",
+      "preserved_failures": "engineering-failures.txt",
+      "later_verifier_fix_linux": {
+        "passed": 43,
+        "failed": 0,
+        "warnings": 0,
+        "seconds": 5.4,
+        "evidence": "verifier-fix-linux.json"
+      },
+      "most_recent_validation": "xhigh-regression-summary.json",
+      "earlier_full_suite_source_preserved": "5355f025ad9dafb2d1c8f7bf17cdf5adcd3d976a4c514cf5a07701e6b67e876d"
+    },
+    "xhigh_investigation": {
+      "evidence": "xhigh-investigation.md",
+      "runs": [
+        "xhigh-v7-evidence.json",
+        "xhigh-v8-evidence.json",
+        "xhigh-v9-evidence.json",
+        "xhigh-v10-evidence.json"
+      ],
+      "additional_http_attempts": 4,
+      "known_incomplete": 3,
+      "completed": 1,
+      "http_eof": 4,
+      "valid_submissions": 1,
+      "published_reports": 1,
+      "content_review_status": "qualified",
+      "unqualified_content_acceptance": false,
+      "historical_only_readable": true,
+      "current_account_or_current_market_content_accepted": false,
+      "report_chars": 3059,
+      "report_sha256": "b3fecb85978f71631082244ff4f2ce7cc4e9bd194c98d9fdcba055edac28f2c1",
+      "content_review": "xhigh-v10-content-review.json",
+      "publication_check": "xhigh-v10-publication-check.json",
+      "supplier_displayed_amount": "0.084444",
+      "ten_attempt_cohort_displayed_amount": "0.133932",
+      "currency_symbol": "$",
+      "invoice_verified": false,
+      "structured_suggestions_submitted": 0,
+      "structured_suggestions_applied": 0,
+      "formal_predictions": 0,
+      "forecast_target_denominator": 0,
+      "matured_scores": 0,
+      "normal_business_matrix_executed": false,
+      "further_requests_stopped": true
+    },
+    "final_document_checks": {
+      "json_documents_valid": 51,
+      "missing_iteration_links": [],
+      "source_sha256": "bed4e4be949722c6fa4af88b56a377f82aa8282a501b27865ac741722c35716f",
+      "source_matches_real_execution": true,
+      "app_files_compared": 49,
+      "changed_frozen_source_files": [],
+      "report_hash_matches": true,
+      "attempt_budget_consistent": true,
+      "git_diff_check": "passed"
+    },
+    "as_of": "2026-11-02T20:27:37.541189+08:00",
+    "blocker_audit_before_long_task_continuation": {
+      "checked_at": "2026-11-02T16:47:29.758768+00:00",
+      "blocking_condition": "No currently valid stage execution authorization after the single-checkpoint recovery stopped; checkpoint expired. Numeric remaining1 cannot be used to start a new stage automatically.",
+      "consecutive_goal_turns_with_condition": 3,
+      "terminal_attempt_counts": [
+        10,
+        5,
+        0
+      ],
+      "active_paid_execution": false,
+      "checkpoint_revalidated": "invalidated/expired",
+      "nonpaid_implementation_gap_found": false,
+      "documentation_sync": "A after-sell and B are implemented/offline verified, not yet live-executed",
+      "unfinished_scope": [
+        "normal A actual report with content acceptance",
+        "normal A publication/restart observation",
+        "A after-sell new version live delivery",
+        "B cash candidate live delivery"
+      ],
+      "goal_completion_proven": false,
+      "authority": "Original task2.4/8.2 plus explicit last authorization valid-time-only/anyfailurestop"
+    },
+    "normal_business_initial_v1": {
+      "stage": "a_initial",
+      "status": "failed_unknown_outcome_stopped",
+      "authorized_model_http": 16,
+      "includes_final_reserved": 2,
+      "preparation": "business-a-initial-preparation.json",
+      "authorization": "business-a-initial-authorization.json",
+      "source_sha256": "851a647e9e0380519fd3b84ad8d7ec9d33b81b6058e2712ae6784565c9850d70",
+      "job_id": "ea36a754a353426693d015300b4e4422",
+      "network_route": "environment",
+      "accepted": false,
+      "other_stages_authorized": false,
+      "used": 10,
+      "remaining": 6,
+      "additional_requests_currently_authorized": 0,
+      "evidence": "business-a-live-evidence.json",
+      "supplier_displayed_total_usd": "0.124446",
+      "recovery": {
+        "prepared": true,
+        "engineering_passed": true,
+        "model_requests": 0,
+        "authorized": false,
+        "checkpoint_now_expired": true,
+        "evidence": "business-a-recovery-expired.json"
+      }
+    },
+    "long_task_initial_1416_full_and_A_v4_running": {
+      "engineering": {
+        "macos_python": {
+          "passed": 1416,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 1,
+          "seconds": 163.26,
+          "source_sha256": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+          "evidence": "test-results/fifteenth/long-task-macos-full.json"
+        },
+        "linux_python_3_12": {
+          "passed": 1416,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 1,
+          "seconds": 128.81,
+          "source_sha256": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+          "evidence": "test-results/fifteenth/long-task-linux-full.json"
+        },
+        "browser": {
+          "passed_groups": 11,
+          "total_groups": 11,
+          "seconds": 284.83,
+          "source_sha256": "aff76f949ec71278d03d9734c5e21878e08d69b86dc8bd02bb564c05714c60c9",
+          "evidence": "test-results/fifteenth/long-task-browser-full.json"
+        }
+      },
+      "normal_business": {
+        "stage": "a_initial",
+        "evaluation_directory": "data/evaluations/fifteenth-business-long-task-a-v4",
+        "evaluation_summary": "data/evaluations/fifteenth-business-long-task-a-v4/execution/summary.json",
+        "source_sha256": "be9223ff6c60958362d2e39edd5dde47d8eeff901cc19bc9e80377559b77a361",
+        "status": "running",
+        "result_pending": true,
+        "published": null,
+        "contract_accepted": null,
+        "mechanical_passed": null,
+        "content_assessment": "not_evaluated",
+        "per_job_http_ceiling": 40,
+        "counting_boundary": "All manager/child/correction/transport retry client HTTP attempts count against one job ceiling; provider dashboard rows are separate.",
+        "network_route": "environment",
+        "automatic_replay_of_unknown_prior_response": false,
+        "authority": "latest_user_instruction",
+        "observed_at": "2026-11-03T01:17:52.556660+08:00",
+        "started_at": "2026-11-03T01:16:24.196599+08:00",
+        "job_id": "0fcc724b67af4629a883922e1f0731c2",
+        "request_count": "in_progress_not_finalized",
+        "lifecycle_note": "Status is this observed snapshot, not an acceptance claim; source execution summary remains authoritative.",
+        "latest_snapshot": {
+          "recorded_at": "2026-11-03T01:20:00.132004+08:00",
+          "status": "running",
+          "observation_source": "Root read-only observation of the current v4 execution; communicated while research remained in progress",
+          "model_usage_requests_observed": 23,
+          "observed_requests_completed_with_protocol_terminal_and_http_eof": 23,
+          "reserved_http_slots_observed": 27,
+          "explicit_http_503_observed": 0,
+          "local_timeouts_observed": 0,
+          "counts_are_interim": true,
+          "publication_or_content_acceptance_inferred": false,
+          "boundary": "Reserved slots and completed request records differ while work is in flight; this snapshot is not the final HTTP total or a successful publication claim."
+        }
+      }
+    },
+    "long_idle_1438_before_output_omission": {
+      "macos_python": {
+        "passed": 1438,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 1,
+        "seconds": 175.42,
+        "source_sha256": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+        "evidence": "test-results/fifteenth/long-idle-macos-full.json"
+      },
+      "linux_python_3_12": {
+        "passed": 1438,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 1,
+        "seconds": 143.16,
+        "source_sha256": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+        "evidence": "test-results/fifteenth/long-idle-linux-full.json"
+      },
+      "browser": {
+        "passed_groups": 11,
+        "total_groups": 11,
+        "seconds": 285.27,
+        "source_sha256": "7fd2cb7edcdf8c8bdbb2ae93f46444f057b4cabc130fd63251841c13f7c60ad2",
+        "evidence": "test-results/fifteenth/long-idle-browser-full.json"
+      }
+    },
+    "blocker_audit_before_output_omission_completion": {
+      "checked_at": "2026-11-03T01:17:52.556660+08:00",
+      "manual_request_count_authorization_blocker": false,
+      "previous_blocker_is_historical": true,
+      "superseded_by": "long-task-followup-user-instruction.json and the latest user confirmation to continue after supplier recovery",
+      "current_execution_status": "running",
+      "latest_completed_attempt_primary_failure": "v3 explicit HTTP503 after bounded retries; one child parent_failed cancellation was secondary",
+      "goal_completion_proven": false,
+      "unfinished_scope": [
+        "Normal A successful actual report and independent accepted content review: current v4 is in progress; prior v2/v3 failed",
+        "Normal A post-publication observation and actual service restart",
+        "A after-sell new input version actual report/content/publication/restart; offline path implemented",
+        "B independent cash account candidate159278 actual report/content/publication/restart; offline path implemented",
+        "Continuous unattended stability",
+        "Formal forecast publication inside its lawful real-time window",
+        "Naturally matured1/5/20-day forecast scoring",
+        "Independent provider invoice reconciliation",
+        "Specific cause of earlier client_gone/incomplete transport; no sole-proxy attribution"
+      ],
+      "history": "historical_snapshots.blocker_audit_before_long_task_continuation"
+    }
+  },
+  "latest_historical_aggregate": {
+    "evidence": "xhigh-v13-evidence.json",
+    "request_count": 1,
+    "published": true,
+    "contract_accepted": true,
+    "independent_content_accepted": true,
+    "limited_historical_scope": true,
+    "independent_content_review": "xhigh-v13-content-review.json",
+    "read_only_reopen_audit": "xhigh-v13-publication-check.json",
+    "actual_service_restart_after_success": false,
+    "ten_attempt_outcomes": {
+      "completed_published": 3,
+      "incomplete": 5,
+      "unknown": 2,
+      "independent_content_accepted": 1
+    }
+  },
+  "normal_business": {
+    "status": "required_limited_business_matrix_accepted",
+    "matrix_passed": true,
+    "a_initial": {
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_accepted": true,
+      "evaluation_summary": "data/evaluations/fifteenth-business-long-task-a-v4/execution/summary.json",
+      "review": "business-long-task-a-content-review.json",
+      "actual_http": 39,
+      "formal_forecasts": 0,
+      "exploratory_forecasts": 9,
+      "directions": {
+        "down": 2,
+        "abstain": 7
+      },
+      "post_publish_and_restart_observations": 4
+    },
+    "a_after_sell": {
+      "stage": "a_after_sell",
+      "evaluation": "data/evaluations/fifteenth-business-output-omission-a-sell-direct-v1/execution/summary.json",
+      "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+      "job_id": "5e4e36432824431ca8e5cf3ac85fdc1d",
+      "started_at": "2026-11-03T03:28:00.180798+08:00",
+      "completed_at": "2026-11-03T03:38:24.882223+08:00",
+      "actual_http": 29,
+      "completed_protocol_and_eof": 29,
+      "upstream_transport_error": 0,
+      "local_timeout": 0,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_assessment": "evaluated",
+      "content_accepted": true,
+      "all_output_limit_fields_omitted": true,
+      "network_route": "direct",
+      "route_scope": "isolated ModelClient only; TLS and environment CA retained; daily route unchanged",
+      "actual_mode": "fresh_research_after_normal_retry_quote_guard_mismatch",
+      "sale_repeated": false,
+      "report_sha256": "be5881cc5c72e9934a44d7c2b7f95c71bcb1d2b9cc7f6f27402860d0cb9f33fa",
+      "report_characters": 3924,
+      "final_request": {
+        "response_id": "be1a8ef8-3cec-9c7a-a507-49b9c72685c5",
+        "duration_ms": 255729.02,
+        "stream_terminal": "response.completed",
+        "http_body_complete": true,
+        "output_limit_fields_present": [],
+        "input_chars": 173697,
+        "reported_output_tokens": 21230,
+        "reported_reasoning_tokens": 14243,
+        "non_reasoning_by_subtraction": 6987,
+        "boundary": "Supplier-reported usage subtraction; not a universal token accounting guarantee"
+      },
+      "source_and_environment_unchanged": true,
+      "postpublish_and_restart_observations": 4,
+      "additional_tasks": 0,
+      "supplier_fees_reconciled": true,
+      "supplier_displayed_subtotal_usd": "0.379542",
+      "supplier_visible_rows": 29,
+      "fees_finalized": true,
+      "supplier_correlation": "29 rows 03:28:26–03:38:01; final tokens65625/21230 match client; read-only Chrome reload; not invoice verification",
+      "content_review": "docs/fifteenth/business-output-omission-a-sell-direct-content-review.json",
+      "exploratory_forecasts": 6,
+      "exploratory_directions": {
+        "abstain": 6
+      },
+      "formal_forecasts": 0
+    },
+    "b_cash": {
+      "stage": "b_cash",
+      "evaluation": "data/evaluations/fifteenth-business-output-omission-b-v1/execution/summary.json",
+      "source_sha256": "728f3fd75aa864696227b4b37b5a2ebc816c403859ccc578189780a309ea8dcf",
+      "job_id": "1f30a8dc2cb646ebad33b79d0215c930",
+      "account_id": "518c98b4484d41d390c5e980f1c98ea2",
+      "account_input_version": 1,
+      "started_at": "2026-11-03T03:42:00.107044+08:00",
+      "completed_at": "2026-11-03T03:51:11.346176+08:00",
+      "actual_http": 11,
+      "completed_protocol_and_eof": 11,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_assessment": "evaluated",
+      "content_accepted": true,
+      "network_route": "direct",
+      "all_output_limit_fields_omitted": true,
+      "all_isolated_model_routes_verified": true,
+      "report_sha256": "195ad2c191d4f9bf095befe584741ef25d05c7214f8d77186d7d9c9ecd8c7a8f",
+      "final_request": {
+        "response_id": "9e841898-1916-9662-aafe-1b3bf4ba11fc",
+        "duration_ms": 342856.76,
+        "input_chars": 147937,
+        "reported_input_tokens": 49621,
+        "reported_output_tokens": 31650,
+        "reported_reasoning_tokens": 17576,
+        "output_limit_fields_present": [],
+        "stream_terminal": "response.completed",
+        "http_body_complete": true,
+        "max_observed_idle_ms": 57817.64
+      },
+      "postpublish_and_restart_observations": 4,
+      "source_and_environment_unchanged": true,
+      "inherited_reports_and_forecasts_preserved": true,
+      "additional_task_boundary": "A queued universe_changed v6 has0attempts; global candidate_scan entered1task attempt but isolated single-job guard rejected it before HTTP. Both have0modelHTTP; legitimate universe input change, not self-report loop.",
+      "supplier_fees_reconciled": true,
+      "supplier_displayed_subtotal_usd": "0.136138",
+      "supplier_visible_rows": 11,
+      "fees_finalized": true,
+      "supplier_correlation": "11 rows 03:42:10–03:50:48; final49621/31650 matches client; read-only Chrome reload; not invoice verification",
+      "content_review": "docs/fifteenth/business-output-omission-b-content-review.json",
+      "report_characters": 2606,
+      "exploratory_forecasts": 3,
+      "exploratory_directions": {
+        "abstain": 3
+      },
+      "formal_forecasts": 0,
+      "applied_suggestions": 1,
+      "additional_model_http_from_other_tasks": 0
+    },
+    "per_job_http_ceiling": 40,
+    "standing_user_authorization": true,
+    "automatic_unknown_response_replay": false,
+    "all_attempts_and_costs": "long-task-validation.json",
+    "a_after_sell_previous_published_content_rejected": {
+      "stage": "a_after_sell",
+      "evaluation": "data/evaluations/fifteenth-business-a-sell-continue-v1/execution/summary.json",
+      "source_sha256": "7c8591121ec21f8dc427dda796aaf6c59cb4b6547aa58dcb02b9ddc09483fb2c",
+      "job_id": "78f3d56ea165445f83e8f5d857b433f3",
+      "started_at": "2026-11-03T02:29:16.569899+08:00",
+      "completed_at": "2026-11-03T02:43:07.776189+08:00",
+      "actual_http": 12,
+      "completed_protocol_and_eof": 11,
+      "explicit_incomplete_max_output_tokens": 1,
+      "local_timeout": 0,
+      "published": true,
+      "contract_accepted": true,
+      "mechanical_passed": true,
+      "content_assessment": "evaluated",
+      "content_accepted": false,
+      "content_review": "docs/fifteenth/business-long-task-a-sell-content-review.json",
+      "blocking_content_finding": "Three full Aug03–Nov02 range returns over60 closes were called20-day returns, including forecast rationale; window20 only controlled moving average.",
+      "report_sha256": "1580e51575c4ccac38865fc0f5e973f6e573f1cd72a6154b0869273d753e5bb2",
+      "report_characters": 2772,
+      "after_publish_and_restart_observations": 4,
+      "exploratory_forecasts": 6,
+      "exploratory_directions": {
+        "down": 1,
+        "abstain": 5
+      },
+      "formal_forecasts": 0,
+      "previous_report_and_nine_forecasts_preserved": true,
+      "retry_parent_unchanged": true,
+      "sale_repeated": false,
+      "recovery_mode": "continue_research",
+      "full_child_reports_delivered_in_final": 2,
+      "saved_calculation_summaries_in_final": 65,
+      "requested_output_limit": 6000,
+      "correction_completed_duration_ms": 252708.49,
+      "fees_finalized": false
+    },
+    "next": "Required three-stage matrix complete; optional future stages are not prerequisites for this delivery."
+  },
+  "prior_full_engineering_before_post_a": {
+    "macos_python": {
+      "passed": 1311,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 129.14,
+      "evidence": "test-results/fifteenth/v12-macos-post-guard-full.json"
+    },
+    "linux_python_3_12": {
+      "passed": 1311,
+      "failed": 0,
+      "warnings": 1,
+      "seconds": 104.53,
+      "evidence": "test-results/fifteenth/v12-final-linux-full.json"
+    },
+    "browser": {
+      "passed_groups": 11,
+      "total_groups": 11,
+      "evidence": "test-results/fifteenth/v12-macos-full.json",
+      "tested_source_sha256": "81e45dd5e9438aa33736450a437b8cbf8b560da9df267fea615aacf22832e95b",
+      "production_app_and_browser_file_hashes_identical": true,
+      "identity_proof": "test-results/fifteenth/v12-macos-post-guard-full.json",
+      "later_differences": [
+        "scripts/verify_fifteenth_business.py",
+        "tests/test_fifteenth_business.py",
+        "tests/test_eleventh_timeouts.py"
+      ],
+      "rerun_without_change": false
+    }
+  },
+  "latest_remote_check": "long-task-remote-ci.json",
+  "fresh_A_execution": {
+    "preparation": "business-a-fresh-v2-proposal.json",
+    "authorization": "business-a-fresh-v2-authorization.json",
+    "maximum_new_http": 6,
+    "prior_A_used": 10,
+    "state": "stopped_unknown_outcome",
+    "actual_result_pending": false,
+    "new_requests": 5,
+    "combined_A_requests": 15,
+    "combined_A_maximum": 16,
+    "preserved_remaining": 1,
+    "currently_authorized_further_requests": 0,
+    "published": false,
+    "content_status": "not_evaluated",
+    "mechanical_passed": false,
+    "actual_source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+    "last_error": "RemoteProtocolError/incomplete_response_body before terminal at290.123s; no local cancellation; synthesis hard cap360s",
+    "evidence": "business-a-fresh-v2-live-evidence.json",
+    "fees": "business-a-fresh-v2-supplier-reconciliation.json",
+    "dashboard_cost": "0.084406",
+    "all_recorded_dashboard_cost": "0.498098",
+    "status_scope": "Historical stage/pool observation at its recorded time; superseded as current authorization/status by current_user_instruction and normal_business."
+  },
+  "previous_document_checks": {
+    "checked_at": "2026-11-02T23:02:10.592647+08:00",
+    "json_documents_valid": 92,
+    "invalid_json": [],
+    "missing_latest_links": [],
+    "source_sha256": "803b3a64a2a65b3aa7f23020eac92b45e9ba849ccbaa94065e906ccf8ae64395",
+    "changed_frozen_source_or_test_files": [],
+    "git_diff_check": "passed",
+    "report_hash_matches": true,
+    "attempts": {
+      "historical": 10,
+      "business_a": 10
+    },
+    "recovery_http_attempts": 0,
+    "daily_preservation": "final-preservation.json",
+    "whole_goal_complete": false
+  },
+  "latest_final_check": "output-omission-final-preservation.json",
+  "single_recovery_execution": {
+    "authorization": "business-a-single-recovery-authorization.json",
+    "evidence": "business-a-single-recovery-live-evidence.json",
+    "independent_review": "business-a-single-recovery-independent-review.json",
+    "expired": "business-a-single-recovery-expired.json",
+    "model_http": 0,
+    "reserved_attempts": 0,
+    "combined_A_used": 15,
+    "combined_A_ceiling": 16,
+    "remaining": 1,
+    "further_authorization": false,
+    "state": "failed_before_HTTP_due_to_quote_input_change_then_checkpoint_expired",
+    "published": false,
+    "content_status": "not_evaluated",
+    "actual_execution_source": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "old_claim_and_stops_preserved": true,
+    "status_scope": "Historical stage/pool observation at its recorded time; superseded as current authorization/status by current_user_instruction and normal_business."
+  },
+  "later_readonly_transport_review": "fresh-a-local-lifecycle-route-review.json",
+  "latest_blocker_audit": {
+    "checked_at": "2026-11-02T20:01:38.028891+00:00",
+    "manual_request_count_authorization_blocker": false,
+    "goal_completion_proven": true,
+    "unfinished_required_scope": [],
+    "remaining_limits": [
+      "Continuous unattended stability",
+      "Formal live-window forecasts or naturally matured accuracy",
+      "Unique cause of previous remote transport failures",
+      "Third-party unlimited/default128000 output guarantee",
+      "Invoice-level fee verification",
+      "Deployment or pushed/green remote CI"
+    ],
+    "evidence": "output-omission-closeout.json"
+  },
+  "current_user_instruction": {
+    "evidence": "long-task-followup-user-instruction.json",
+    "authority": "Latest user instruction plus subsequent explicit confirmation that the supplier had recovered and to continue requests",
+    "request_count_approval_questions_required": false,
+    "configured_supplier_validation_continues": true,
+    "per_job_model_http_ceiling": 40,
+    "limits_preserved": [
+      "per-job time and call ceilings",
+      "formal forecast deadline",
+      "independent content review",
+      "unknown-request stop latch",
+      "completed reports are not repeated to consume budget"
+    ],
+    "old_manual_count_pools_are_historical": true,
+    "supplier_recovery_is_user_report_not_independent_availability_proof": true
+  },
+  "long_task_validation": "long-task-validation.json",
+  "output_omission_followup": "output-limit-followup.json",
+  "output_omission_closeout": "output-omission-closeout.json"
+}

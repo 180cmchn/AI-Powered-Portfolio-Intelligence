@@ -18,7 +18,7 @@ def config(protocol='responses', **extra):
     return {'model_name': 'configured-model', 'model_base_url': 'http://localhost/v1',
             'model_allow_no_key': True, 'model_key_env': 'UNUSED_FOURTEENTH_KEY',
             'model_protocol': protocol, 'reasoning_effort': 'max',
-            'model_native_search': False, 'model_retries': 3, **extra}
+            'model_native_search': False, 'model_retries': 3, 'max_output_tokens': 4000, **extra}
 
 
 def body(protocol, *, calls=None, text=None, **extra):

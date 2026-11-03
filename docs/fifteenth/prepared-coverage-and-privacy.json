@@ -1,0 +1,29 @@
+{
+  "kind": "fifteenth_prepared_evidence_and_public_privacy_check",
+  "recorded_at": "2026-11-02T17:31:39.801710+08:00",
+  "source_sha256": "ff8fffff5a91a26b27ac6d0f5e7b3a7d3572efa09a839d96c361f3fd3d88d02a",
+  "input_sha256": "ef659a140b17b92a93d0178deb2c3598f0aef86155f9abcbf734d6c299b9187d",
+  "coverage": {
+    "input_digest_matches": true,
+    "public_manifest_matches_private_preparation": true,
+    "reports_count": 2,
+    "full_reports_equal_source": true,
+    "calculation_count": 21,
+    "expanded_summaries_equal_source": true,
+    "calculation_arguments_equal_source": true,
+    "source_indexes_count": 40,
+    "source_indexes_equal_source": true,
+    "account_metrics_and_gaps_equal_source": true,
+    "input_characters": 42584
+  },
+  "private_directory_mode": "0o700",
+  "private_input_mode": "0o600",
+  "private_input_git_ignored": true,
+  "public_files_checked": 13,
+  "actual_secret_or_proxy_value_matches": [],
+  "historical_private_body_matches": [],
+  "credential_or_hidden_reasoning_object_matches": [],
+  "public_configuration_boundary": "Model/provider identifiers, endpoint base URL without authentication, protocol, effort, limits, revisions and hashes are deliberate audit metadata. No API key values, credential references, proxy credentials or private report bodies are included.",
+  "result": "passed",
+  "model_result_content_assessment": "not performed; actual run is still in progress"
+}

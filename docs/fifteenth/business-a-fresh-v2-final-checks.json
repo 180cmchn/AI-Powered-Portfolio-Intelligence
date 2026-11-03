@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-11-02T16:16:16.643677+00:00",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "source_and_tests_unchanged": true,
+  "frozen_files": 210,
+  "json_valid": 104,
+  "missing_links": [],
+  "git_diff_check_passed": true,
+  "daily_files_unchanged": true,
+  "environment_stamp_unchanged": true,
+  "listeners": {
+    "8765": "",
+    "18765": ""
+  },
+  "old_A_preservation": "business-a-fresh-v2-live-evidence.json checks",
+  "current_paid_model_attempts": 5,
+  "total_A_used": 15,
+  "total_A_cap": 16,
+  "preserved_remaining": 1,
+  "current_further_authorization": false,
+  "published": false,
+  "whole_goal_completed": false,
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "pushed": false
+}

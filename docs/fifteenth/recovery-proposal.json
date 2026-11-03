@@ -1,0 +1,70 @@
+{
+  "kind": "one_variable_recovery_proposal_not_authorized",
+  "status": "not_authorized_user_declined_for_now",
+  "prepared_at": "2026-11-02T17:52:37.635437+08:00",
+  "previous_unknown_outcome_response_id": "2c622eb5-cd61-9336-b8fb-55f265370a66",
+  "reason_for_confirmation": "User task section 6: after an accepted request has unknown outcome and result retrieval is not verified, preserve the evidence and let the user explicitly resume.",
+  "hypothesis": "One direct-route observation can help distinguish whether the environment proxy route is necessary for this failure; neither success nor failure alone proves a root cause.",
+  "only_intentional_request_transport_variable": "Use explicit httpx.AsyncHTTPTransport in this isolated diagnostic process instead of environment-proxy routing; retain default TLS verification and environment certificate trust.",
+  "fixed": {
+    "canonical_payload_sha256": "c62388600a12777e00924ac0a3042bd6f9f622e2397eb93f0ce21063c3efaf7b",
+    "payload_chars": 66258,
+    "payload_bytes": 80511,
+    "complete_production_schema_sha256": "fe7fce613037b46f444f99fbd23c4d30282ca19d7eb6077f09ad3e7e7024a2d2",
+    "model": "grok-4.7",
+    "effort": "max",
+    "protocol": "responses",
+    "output_limit": 4000,
+    "request_hard_seconds": 360,
+    "first_event_seconds": 90,
+    "stream_idle_seconds": 120,
+    "historical_input_version": 4,
+    "current_configuration_and_source_must_match": true
+  },
+  "limits": {
+    "new_http_attempts_maximum": 1,
+    "shared_authorization_maximum": 10,
+    "already_used": 1,
+    "after_this_maximum_used": 2,
+    "automatic_http_retries": 0,
+    "contract_correction_requests": 0,
+    "normal_business_matrix_requests": 0,
+    "old_40_budget_used": 0,
+    "currency_cap": null,
+    "cost_note": "Actual supplier charge remains unknown and cannot be reliably hard-capped before sending."
+  },
+  "stop_conditions": [
+    "one HTTP attempt ends, succeeds or fails",
+    "configuration/source/payload identity changes before HTTP",
+    "any deadline",
+    "complete invalid contract",
+    "unknown outcome transport failure"
+  ],
+  "unchanged": [
+    "daily database",
+    "daily 8765 service",
+    "model matrix",
+    "global proxy variables",
+    "TLS or certificate settings"
+  ],
+  "pre_send_requirement": "The actual request hook must match the prepared canonical payload and complete production schema before any real transport; a mismatch aborts instead of being silently treated as a same-input comparison.",
+  "payload_identity_limit": "Canonical JSON SHA256 used by original request hook; no original raw-byte SHA256 was stored, so raw-byte identity is not independently proven.",
+  "authorization_consumed_by_preparation": 0,
+  "no_model_request_sent": true,
+  "no_completion_claim": true,
+  "user_decision": {
+    "recorded_at": "2026-11-02T17:56:10.616349+08:00",
+    "user_answer": "暂不恢复，保留剩余 9 次",
+    "explicit_recovery_authorized": false,
+    "additional_model_requests_authorized_now": 0,
+    "previously_used": 1,
+    "remaining_preserved": 9,
+    "next_action": "No paid request or direct-route comparison until a later explicit user recovery instruction."
+  },
+  "subsequent_local_fix": {
+    "source_sha256": "a2c74872448ff00cff0aa8de18151859e6e4a90d737d3403daf8601461e2a396",
+    "prepared_execution_source_is_older": true,
+    "reprepare_required_before_any_future_real_request": true,
+    "approval_status_unchanged": "User declined recovery; no additional request is authorized now."
+  }
+}

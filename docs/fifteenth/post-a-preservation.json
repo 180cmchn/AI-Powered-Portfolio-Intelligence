@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-11-02T15:58:12.351337+00:00",
+  "source_sha256": "247c5ba48205bd2bffa2dd3419585056cdd6ea808d6e753d827d09a9bd1e3f44",
+  "head": "654065e8676e39fd6eba73f84d16155dcbe1ecab",
+  "protected_files": {
+    "data/live.sqlite3": {
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904,
+      "mtime_ns": 1793525469929264343
+    },
+    "data/live.sqlite3-wal": {
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632,
+      "mtime_ns": 1793542794634590748
+    }
+  },
+  "daily_files_unchanged": true,
+  "environment_stamp": {
+    "exists": true,
+    "mtime_ns": 1793291266379543661,
+    "size": 951
+  },
+  "environment_stamp_unchanged": true,
+  "listeners": {
+    "8765": "",
+    "18765": ""
+  },
+  "original_A_database_unchanged": true,
+  "historical_report_sha256": "76d4741121f24743648055860d8d7a63e4d502987ec86c36912d6b7a881d6c60",
+  "old_recovery_execution_exists": false,
+  "old_recovery_claim_exists": false,
+  "fresh_v2_execution_exists": false,
+  "new_paid_model_requests": 0,
+  "new_stage_authorized": false
+}

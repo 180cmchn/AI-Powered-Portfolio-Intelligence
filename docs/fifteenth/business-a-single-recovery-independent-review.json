@@ -1,0 +1,300 @@
+{
+  "kind": "independent_readonly_review_of_single_recovery_zero_model_http_failure",
+  "checked_at": "2026-11-03T00:34:59.338582+08:00",
+  "primary_evidence": "docs/fifteenth/business-a-single-recovery-live-evidence.json",
+  "reviewer": "Codex development subtask /root/delivery_validation",
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "Store_initialized": false,
+    "migrations_run": false,
+    "HTTP_sent_by_reviewer": 0,
+    "database_or_source_writes_by_reviewer": false,
+    "connections_explicitly_closed": true
+  },
+  "execution_identity": {
+    "job_id": "e9a1a4ac485d441d917c0ec47f088152",
+    "parent_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+    "started_at": "2026-11-03T00:28:42.154457+08:00",
+    "completed_at": "2026-11-03T00:28:44.415582+08:00",
+    "source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "source_at_execution_preserved": true,
+    "environment_at_execution_preserved": true,
+    "published": false,
+    "contract_accepted": false,
+    "content_assessment": "not_evaluated",
+    "model_result_exists": false,
+    "model_HTTP_observations": 0,
+    "reserved_attempts": 0,
+    "postpublication_observations": 0,
+    "postpublication_or_restart_acceptance": "not_tested_no_publication"
+  },
+  "source_timeline": {
+    "execution_source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "source_at_execution_preserved": true,
+    "current_source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+    "current_source_matches_execution": false,
+    "changed_files_since_execution_freeze": [
+      "scripts/verify_fifteenth_recovery.py",
+      "tests/test_fifteenth_recovery.py"
+    ],
+    "production_app_files_unchanged": true,
+    "change_attribution": "Post-execution offline recovery-verifier/test patch. This mismatch is not evidence that execution source changed while the failed run was in flight."
+  },
+  "confirmed_cause": {
+    "classification": "Service quote refresh changed guarded inputs before checkpoint selection",
+    "saved_guard": "b3f647be0b7bf57e62a4c1cf9a0234cdb195066c6269fe4aa554112c4e00115d",
+    "prepared_current_guard": "b3f647be0b7bf57e62a4c1cf9a0234cdb195066c6269fe4aa554112c4e00115d",
+    "execution_retry_context_guard": "1d3852a2e35bb2e5e2b378a9bfaec3d466db13450c5d615f762e80c5b09f89d7",
+    "execution_guard_with_only_prepared_quotes_in_memory": "b3f647be0b7bf57e62a4c1cf9a0234cdb195066c6269fe4aa554112c4e00115d",
+    "only_quote_replacement_restores_saved_guard": true,
+    "quote_changes": [
+      {
+        "symbol": "SH:518880",
+        "before": {
+          "price": "7.941",
+          "as_of": "2026-11-02T16:11:37+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        },
+        "after": {
+          "price": "7.941",
+          "as_of": "2026-11-02T15:34:59+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        },
+        "quote_http_diagnostics": {
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.579
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.123
+            }
+          ],
+          "fallback_diagnostic": {
+            "stage": "quote_fallback",
+            "host": "hq.sinajs.cn",
+            "attempt": 1,
+            "http_status": 200,
+            "status": "received",
+            "elapsed_seconds": 0.113
+          }
+        }
+      },
+      {
+        "symbol": "SZ:002354",
+        "before": {
+          "price": "7.9",
+          "as_of": "2026-11-02T15:34:18+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        },
+        "after": {
+          "price": "7.900",
+          "as_of": "2026-11-02T15:35:15+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        },
+        "quote_http_diagnostics": {
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.055
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.108
+            }
+          ],
+          "fallback_diagnostic": {
+            "stage": "quote_fallback",
+            "host": "hq.sinajs.cn",
+            "attempt": 1,
+            "http_status": 200,
+            "status": "received",
+            "elapsed_seconds": 0.111
+          }
+        }
+      },
+      {
+        "symbol": "SZ:159599",
+        "before": {
+          "price": "1.989",
+          "as_of": "2026-11-02T15:34:42+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        },
+        "after": {
+          "price": "1.989",
+          "as_of": "2026-11-02T15:35:00+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        },
+        "quote_http_diagnostics": {
+          "request_diagnostics": [
+            {
+              "stage": "quote",
+              "attempt": 1,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.048
+            },
+            {
+              "stage": "quote",
+              "attempt": 2,
+              "host": "push2.eastmoney.com",
+              "status": "failed",
+              "failure_kind": "remote_protocol",
+              "exception": "RemoteProtocolError",
+              "elapsed_seconds": 0.121
+            }
+          ],
+          "fallback_diagnostic": {
+            "stage": "quote_fallback",
+            "host": "hq.sinajs.cn",
+            "attempt": 1,
+            "http_status": 200,
+            "status": "received",
+            "elapsed_seconds": 0.104
+          }
+        }
+      }
+    ],
+    "diagnostic_interpretation": "Each security has two separate stage=quote EastMoney failed diagnostics with attempt 1 and 2 and exception RemoteProtocolError, plus a separate stage=quote_fallback Sina HTTP200 diagnostic. This records persisted quote diagnostics, not a claim about model-provider network calls.",
+    "Service_did_not_select_checkpoint": true,
+    "parent_resume_count": 0,
+    "event_counts": {
+      "model_configuration_bound": 1,
+      "agent_started": 1,
+      "budget_closeout": 1,
+      "budget_closeout_finished": 1,
+      "synthesis_context_projected": 1,
+      "model_error": 1,
+      "agent_failed": 1,
+      "failed": 1
+    },
+    "runtime_evidence_note": "No synthesis_resumed event; projected context had zero retained tool outputs. The request guard rejected fallback runtime before a model HTTP reservation.",
+    "causal_limit": "This explains this zero-model-HTTP recovery rejection only. It neither explains nor reclassifies the earlier approximately 290-second model stream disconnect."
+  },
+  "time_boundary": {
+    "expires_at": "2026-11-03T00:31:40.673489+08:00",
+    "execution_finished_before_expiry": true,
+    "audit_after_expiry": true,
+    "prepared_current_diagnostic": {
+      "checkpoint_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "eligible": false,
+      "partial_research": false,
+      "state": "invalidated",
+      "reasons": [
+        "expired"
+      ],
+      "note": "检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+    },
+    "execution_current_diagnostic": {
+      "checkpoint_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+      "eligible": false,
+      "partial_research": false,
+      "state": "invalidated",
+      "reasons": [
+        "expired",
+        "research_inputs_changed"
+      ],
+      "note": "检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+    },
+    "note": "The execution-time failure preceded expiry and was explained by changed quote identity. Subsequent expired diagnostics are a later condition."
+  },
+  "preservation": {
+    "original_parent_full_identity_unchanged": true,
+    "identity_covers": [
+      "summary",
+      "logical parent database",
+      "original authorization ledger",
+      "source",
+      "account/version",
+      "ledger facts",
+      "unknown-outcome stop"
+    ],
+    "cloned_ledger_facts_unchanged": true,
+    "checkpoint_body_guard_created_at_resume_count_unchanged": true,
+    "material_family_hashes_unchanged": true,
+    "material_tables_checked": [
+      "materials",
+      "material_catalog",
+      "material_document_versions",
+      "material_representations",
+      "material_stream_heads",
+      "research_material_deliveries",
+      "research_report_deliveries"
+    ],
+    "prepared_counts": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 1,
+      "materials": 33,
+      "research_material_deliveries": 40,
+      "research_report_deliveries": 0
+    },
+    "execution_counts": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 2,
+      "materials": 33,
+      "research_material_deliveries": 40,
+      "research_report_deliveries": 0
+    },
+    "new_exploratory_batches": 1,
+    "batch_note": "One new exploratory batch was created by actual Service preparation, but no forecasts were published.",
+    "claim_exists": true,
+    "claim_hash_unchanged": true,
+    "claim_cleared": false,
+    "stop_latch": [
+      {
+        "reason": "recovery_preflight_rejected",
+        "at": "2026-11-03T00:28:44.011864+08:00"
+      },
+      {
+        "reason": "recovery_execution_stopped",
+        "at": "2026-11-03T00:28:44.135465+08:00"
+      }
+    ],
+    "automatic_retry_allowed": false
+  },
+  "retained_evidence_boundary": {
+    "calculations": 12,
+    "material_indexes": 33,
+    "material_receipts": 40,
+    "child_reports": 0,
+    "source_coverage": {
+      "index_only": 28,
+      "covered": 5
+    },
+    "note": "Retained checkpoint evidence was not delivered by this retry to a model. Forty receipts are not forty full documents. Any eventual recovery rebuilds and bounds context; it is not the previous 152028-character request byte-for-byte."
+  }
+}

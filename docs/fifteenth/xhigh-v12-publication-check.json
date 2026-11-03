@@ -1,0 +1,378 @@
+{
+  "kind": "xhigh_v12_isolated_failure_preservation_readonly_check",
+  "checked_at": "2026-11-02T21:40:00.010497+08:00",
+  "execution": "data/evaluations/fifteenth-historical-xhigh-v12-final/execution",
+  "source_sha256": "75b0a784660e321c1deea29e0f63cef39d64c3751d582db60f2daa7fd33a8523",
+  "run_completed_at": "2026-11-02T21:34:38.013856+08:00",
+  "outcome": "failed_stream_idle_timeout_no_protocol_terminal",
+  "published": false,
+  "contract_accepted": false,
+  "method": {
+    "sqlite_mode": "ro",
+    "query_only": true,
+    "independent_reopen_passes": 2,
+    "connections_explicitly_closed": true,
+    "store_initialized": false,
+    "migrations_run": false,
+    "recovery_called": false,
+    "server_started": false,
+    "daily_database_opened": false,
+    "external_requests_sent": 0
+  },
+  "checks": {
+    "failed_job_recorded_once": true,
+    "no_new_report": true,
+    "no_new_structured_rows": true,
+    "old_reports_and_status_unchanged": true,
+    "account_cash_holdings_preferences_version_unchanged": true,
+    "ledger_and_materials_and_structured_tables_unchanged": true,
+    "old_jobs_unchanged": true,
+    "two_readonly_reopens_identical": true,
+    "one_observed_http_and_one_reserved_attempt": true,
+    "explicit_one_attempt_cap_preserved": true,
+    "no_new_queued_running_or_waiting_job": true,
+    "no_protocol_terminal_or_http_eof": true,
+    "no_complete_model_result_report_or_terminal_archive": true,
+    "no_application_receipt_or_accepted_contract": true,
+    "historical_source_matches_frozen_preparation": true,
+    "frozen_source_unchanged": true,
+    "main_database_files_unchanged_during_check": true,
+    "sqlite_quick_checks_ok": true
+  },
+  "failure_preservation_checks_passed": true,
+  "publication_success": false,
+  "failed_job": {
+    "state": "failed",
+    "stage": "synthesizing",
+    "attempts": 1,
+    "delivery": {
+      "status": "incomplete",
+      "contract_verified": false,
+      "content_assessment": "not_evaluated",
+      "error_code": "stream_idle_timeout"
+    },
+    "delivery_application_present": false,
+    "rows_for_job": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "old_current_reports_retained": 1
+  },
+  "request_observations": [
+    {
+      "status_code": 200,
+      "request_accepted": true,
+      "stream_terminal": null,
+      "protocol_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "stream_close_reason": "local_timeout",
+      "error_code": "stream_idle_timeout",
+      "retry_suppressed": "upstream_execution_may_continue",
+      "duration_ms": 280029.29,
+      "stream_last_byte_ms": 160026.59,
+      "stream_last_progress_ms": 160026.73,
+      "stream_max_idle_ms": 120002.6,
+      "tool_choice_satisfied": null,
+      "usage": null
+    }
+  ],
+  "attempts": {
+    "observed_http_count": 1,
+    "reserved_attempt_count": 1,
+    "local_maximum": 1,
+    "automatic_followup_request_observed": false,
+    "new_job_count": 1,
+    "shared_attempt_budget": {
+      "maximum": 10,
+      "reserved_attempts": 9,
+      "stages": {
+        "final": {
+          "maximum": 10,
+          "reserved_attempts": 9
+        },
+        "full": {
+          "maximum": 0,
+          "reserved_attempts": 0
+        }
+      }
+    }
+  },
+  "structured_delivery": {
+    "accepted_submissions": 0,
+    "complete_submission_payload_available": false,
+    "per_item_application_receipt_available": false,
+    "applied_row_counts": {
+      "analyses": 0,
+      "recommendations": 0,
+      "forecasts": 0,
+      "forecast_batches": 0
+    },
+    "note": "No complete finish_analysis payload or terminal was received. Partial deltas cannot be reconstructed or counted as a submitted delivery; absent per-item receipts are not a successful empty receipt."
+  },
+  "report_artifacts": {
+    "model_result_present": false,
+    "visible_terminal_file_count": 0,
+    "report_file_present": false
+  },
+  "references": {
+    "checked": false,
+    "reason": "No new report or accepted delivery exists. URL mapping, citation permissions and content review are not applicable to this failed attempt; stored prior report/material rows are preserved byte-for-byte."
+  },
+  "old_reports": [
+    {
+      "previous_status": "current",
+      "current_status": "current",
+      "all_columns_unchanged": true,
+      "changed_columns": [],
+      "prior_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44",
+      "retained_report_sha256": "b6c5cf67b790e9798e18c64e2a98317f9274dd726b21620cb11a4199bc9fcf44"
+    }
+  ],
+  "protected_state": {
+    "recommendations": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "after_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identical": true
+    },
+    "forecasts": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "after_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identical": true
+    },
+    "forecast_batches": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "99771a57875a7c26a7fdef9039276bb57ea824d855a55b954e4f55564ee9b6a8",
+      "after_sha256": "99771a57875a7c26a7fdef9039276bb57ea824d855a55b954e4f55564ee9b6a8",
+      "identical": true
+    },
+    "ledger_accounts": {
+      "before_count": 1,
+      "after_count": 1,
+      "before_sha256": "7a1b72bb0a5e25aa4b844163c893785af99392bb91354fcfe58c35c7d9435180",
+      "after_sha256": "7a1b72bb0a5e25aa4b844163c893785af99392bb91354fcfe58c35c7d9435180",
+      "identical": true
+    },
+    "ledger_entries": {
+      "before_count": 4,
+      "after_count": 4,
+      "before_sha256": "c4c928daff5fac36e5a4833a8de26a4c6b6f9c13be26cc321a036618146ef13d",
+      "after_sha256": "c4c928daff5fac36e5a4833a8de26a4c6b6f9c13be26cc321a036618146ef13d",
+      "identical": true
+    },
+    "ledger_operations": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "fb8fff9ddeb465543f4f8e3ef66abbd926102d7c19f4a1b3b51fe7a7871f446c",
+      "after_sha256": "fb8fff9ddeb465543f4f8e3ef66abbd926102d7c19f4a1b3b51fe7a7871f446c",
+      "identical": true
+    },
+    "ledger_positions": {
+      "before_count": 3,
+      "after_count": 3,
+      "before_sha256": "7138034856e3abb111c0fd7c9684f9063076b90743db2c7fba82060ef2326764",
+      "after_sha256": "7138034856e3abb111c0fd7c9684f9063076b90743db2c7fba82060ef2326764",
+      "identical": true
+    },
+    "material_catalog": {
+      "before_count": 212,
+      "after_count": 212,
+      "before_sha256": "4bb5bc83a595052db53a04096be66ff3120f8961ad8668c645de1341e066a0a9",
+      "after_sha256": "4bb5bc83a595052db53a04096be66ff3120f8961ad8668c645de1341e066a0a9",
+      "identical": true
+    },
+    "material_document_versions": {
+      "before_count": 203,
+      "after_count": 203,
+      "before_sha256": "52b5b2dd66b574177974172ab33d5ef1de74eb5093112f968fed5f4d0d10b7f1",
+      "after_sha256": "52b5b2dd66b574177974172ab33d5ef1de74eb5093112f968fed5f4d0d10b7f1",
+      "identical": true
+    },
+    "material_notifications": {
+      "before_count": 0,
+      "after_count": 0,
+      "before_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "after_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identical": true
+    },
+    "material_observation_bindings": {
+      "before_count": 5,
+      "after_count": 5,
+      "before_sha256": "376b28ef9286069012d87bdf38457edb53c73a40ac19453dc8210d9ca1fde68a",
+      "after_sha256": "376b28ef9286069012d87bdf38457edb53c73a40ac19453dc8210d9ca1fde68a",
+      "identical": true
+    },
+    "material_observations": {
+      "before_count": 10,
+      "after_count": 10,
+      "before_sha256": "9a055e254949233860abda21724b6c838d3c15ec48ef8c067a7b815ce17a6cf3",
+      "after_sha256": "9a055e254949233860abda21724b6c838d3c15ec48ef8c067a7b815ce17a6cf3",
+      "identical": true
+    },
+    "material_representations": {
+      "before_count": 212,
+      "after_count": 212,
+      "before_sha256": "6191ba50e5ea967b8ec96ca54a44772f51a4d1ab94cc3817d68454d548896a41",
+      "after_sha256": "6191ba50e5ea967b8ec96ca54a44772f51a4d1ab94cc3817d68454d548896a41",
+      "identical": true
+    },
+    "material_stream_heads": {
+      "before_count": 5,
+      "after_count": 5,
+      "before_sha256": "bf6e311dde6717753e1c2f17c2bbbcaf9c950cf0fe2706c0de6f48d70a720976",
+      "after_sha256": "bf6e311dde6717753e1c2f17c2bbbcaf9c950cf0fe2706c0de6f48d70a720976",
+      "identical": true
+    },
+    "material_uses": {
+      "before_count": 212,
+      "after_count": 212,
+      "before_sha256": "f8deff66afff76c1bad4dd30fb5fc942e2818203ddf8934137e1992af4accf61",
+      "after_sha256": "f8deff66afff76c1bad4dd30fb5fc942e2818203ddf8934137e1992af4accf61",
+      "identical": true
+    },
+    "materials": {
+      "before_count": 212,
+      "after_count": 212,
+      "before_sha256": "8ebd6a15e700a19827d71dc9b3b5c60d41341c0890ebdc931f7784ecc73ac041",
+      "after_sha256": "8ebd6a15e700a19827d71dc9b3b5c60d41341c0890ebdc931f7784ecc73ac041",
+      "identical": true
+    }
+  },
+  "account_facts": {
+    "compared_fields": [
+      "cash",
+      "holdings",
+      "preferences",
+      "version"
+    ],
+    "unchanged": true,
+    "previous_analysis_state": "current",
+    "current_analysis_state": "failed",
+    "latest_job_matches_failed_job": true,
+    "changed_account_columns": [
+      "analysis_state",
+      "latest_job_id"
+    ]
+  },
+  "sqlite_quick_check": {
+    "historical": [
+      "ok"
+    ],
+    "execution_first": [
+      "ok"
+    ],
+    "execution_second": [
+      "ok"
+    ]
+  },
+  "file_recheck": {
+    "before": {
+      "historical": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "ce6e7a128afd70f02bfedd63a68f76e96a465d63df726d2c76f2afe07d1e9233"
+      },
+      "execution-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "attempt_budget": {
+        "exists": true,
+        "size": 12288,
+        "sha256": "769a4e95e597bded5804e367a742e8aa2b27f01f26ae1a8ebbc6ec4a30f43f39"
+      },
+      "attempt_budget-wal": {
+        "exists": false
+      },
+      "attempt_budget-shm": {
+        "exists": false
+      }
+    },
+    "after": {
+      "historical": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "a2e4ce529cf89dff0c2e33a763e4f3e2e0cc9e6496519a981bd1f5417168d98f"
+      },
+      "historical-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "historical-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "execution": {
+        "exists": true,
+        "size": 9781248,
+        "sha256": "ce6e7a128afd70f02bfedd63a68f76e96a465d63df726d2c76f2afe07d1e9233"
+      },
+      "execution-wal": {
+        "exists": true,
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "execution-shm": {
+        "exists": true,
+        "size": 32768,
+        "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"
+      },
+      "attempt_budget": {
+        "exists": true,
+        "size": 12288,
+        "sha256": "769a4e95e597bded5804e367a742e8aa2b27f01f26ae1a8ebbc6ec4a30f43f39"
+      },
+      "attempt_budget-wal": {
+        "exists": false
+      },
+      "attempt_budget-shm": {
+        "exists": false
+      }
+    },
+    "all_database_and_sidecar_files_unchanged": true
+  },
+  "reopen_scope": {
+    "sqlite_persistence_reopened_twice": true,
+    "same_failed_job_and_no_new_report_after_reopen": true,
+    "recovery_or_republication_called": false,
+    "full_application_restart_verified": false,
+    "automatic_model_request_after_reopen_tested": false
+  },
+  "limitations": [
+    "HTTP 200 shows acceptance, not completion; the upstream result remains unknown after the local idle timeout.",
+    "The SSE stream was not archived and there is no known-terminal visible-output archive. No partial body, tool arguments, usage, or report can be reconstructed.",
+    "Exactly one observed HTTP request and one durable reservation establish no automatic followup in this run. No worker/service restart was performed.",
+    "Two readonly SQLite reopens establish persisted failure protection, not service restart, retry idempotency, or a successful business report.",
+    "Business A has not been executed or authorized by this readonly check."
+  ]
+}

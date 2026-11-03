@@ -12,6 +12,10 @@ _EXPLICIT_MATERIAL_ID = re.compile(
     r'\s*(?:[：:=]\s*)?[`"\']?([a-f0-9]{32})(?![a-f0-9])', re.IGNORECASE)
 _TEXT_REFERENCE_LIMIT = 200
 _TEXT_REFERENCE_SCAN_LIMIT = 1_000_000
+# Bare links stop at surrounding prose punctuation. Keep Unicode URL letters,
+# query/fragment syntax and percent-encoded punctuation; explicit URL fields
+# are already delimited and do not use this text-extraction rule.
+_BARE_SOURCE_URL = re.compile(r'https?://[^\s<>\]\)"\u3000）］｝〉》】」』〕〗〙〛，。；！？、：”’]+')
 
 
 def explicit_material_ids(text):
@@ -193,7 +197,7 @@ class ReferenceStore:
                     urls.extend(v for v in item[key] if source_url(v))
             for key in ('report', 'summary', 'basis'):
                 if isinstance(item.get(key), str):
-                    urls.extend(v.rstrip('.,;，。；') for v in re.findall(r'https?://[^\s<>\]\)"\u3000]+', item[key]))
+                    urls.extend(v.rstrip('.,;') for v in _BARE_SOURCE_URL.findall(item[key]))
             known = {url_key(ref['url']) for ref in refs if source_url(ref.get('url'))}
             for url in dict.fromkeys(urls):
                 if not source_url(url) or url_key(url) in known:

@@ -1,0 +1,156 @@
+{
+  "kind": "independent_readonly_single_recovery_zero_http_failure_evidence",
+  "checked_at": "2026-11-03T00:33:59.835803+08:00",
+  "execution": "data/evaluations/fifteenth-business-a-single-recovery-v1/execution",
+  "execution_source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+  "source_identity_boundary": "Actual failed run used90f8 source; later diagnostic-only verifier/test changes do not relabel this run.",
+  "job_id": "e9a1a4ac485d441d917c0ec47f088152",
+  "parent_job_id": "c6a170d23e1443a4bc3161dbf42e1233",
+  "started_at": "2026-11-03T00:28:42.154457+08:00",
+  "completed_at": "2026-11-03T00:28:44.415582+08:00",
+  "published": false,
+  "contract_accepted": false,
+  "mechanical_passed": false,
+  "execution_stopped": true,
+  "budget": {
+    "maximum_new": 1,
+    "reserved_new": 0,
+    "HTTP_observed_new": 0,
+    "original_A_used": 10,
+    "fresh_A_used": 5,
+    "combined_A_used": 15,
+    "combined_A_maximum": 16,
+    "remaining_numeric": 1,
+    "unknown_parent_latch_preserved": true,
+    "new_authorization_or_automatic_retry": false,
+    "stops": [
+      {
+        "reason": "recovery_preflight_rejected",
+        "at": "2026-11-03T00:28:44.011864+08:00"
+      },
+      {
+        "reason": "recovery_execution_stopped",
+        "at": "2026-11-03T00:28:44.135465+08:00"
+      }
+    ]
+  },
+  "first_error": "Recovery request stopped before HTTP: Actual runtime did not select the bound synthesis-only checkpoint",
+  "error_code": "model_call_budget_exhausted",
+  "root_cause": {
+    "production_path": "Service refreshed target quotes before reusable_synthesis_checkpoint. Changed source/as_of made research_guard differ, so Service returned no checkpoint. With one call remaining the normal runtime entered bounded final closeout; the isolated verifier rejected missing bound synthesis-only checkpoint before reservation or HTTP.",
+    "failed_compound_conditions": [
+      "synthesis_checkpoint.recovery_mode absent",
+      "synthesis_checkpoint.checkpoint_job_id absent"
+    ],
+    "not_a_reason": "No model/provider request was attempted; no terminal/EOF/usage/response ID exists for this recovery. The original1800s TTL had not expired at rejection.",
+    "evidence_limit": "No actual request payload was persisted because the pre-send guard rejected it. Missing checkpoint is established by production events, saved input guard comparison and the control flow; other wire fields are not claimed as observed."
+  },
+  "input_guard_comparison": {
+    "prepared": {
+      "guard": "b3f647be0b7bf57e62a4c1cf9a0234cdb195066c6269fe4aa554112c4e00115d",
+      "events_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "demands_sha256": "c1ad7f1a26bab725c9268dd7b53cdf73f87ff62f226aeb8ea336440cdc3485cf",
+      "quotes": {
+        "SH:518880": {
+          "price": "7.941",
+          "as_of": "2026-11-02T16:11:37+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        },
+        "SZ:002354": {
+          "price": "7.9",
+          "as_of": "2026-11-02T15:34:18+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        },
+        "SZ:159599": {
+          "price": "1.989",
+          "as_of": "2026-11-02T15:34:42+08:00",
+          "source": "eastmoney:public-website",
+          "status": "closed"
+        }
+      }
+    },
+    "execution": {
+      "guard": "1d3852a2e35bb2e5e2b378a9bfaec3d466db13450c5d615f762e80c5b09f89d7",
+      "events_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "demands_sha256": "c1ad7f1a26bab725c9268dd7b53cdf73f87ff62f226aeb8ea336440cdc3485cf",
+      "quotes": {
+        "SH:518880": {
+          "price": "7.941",
+          "as_of": "2026-11-02T15:34:59+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        },
+        "SZ:002354": {
+          "price": "7.900",
+          "as_of": "2026-11-02T15:35:15+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        },
+        "SZ:159599": {
+          "price": "1.989",
+          "as_of": "2026-11-02T15:35:00+08:00",
+          "source": "sina:public-website",
+          "status": "closed"
+        }
+      }
+    }
+  },
+  "checkpoint": {
+    "created_at": "2026-11-03T00:01:40.673489+08:00",
+    "max_age_seconds": 1800,
+    "age_at_rejection_seconds": 1623.338744,
+    "resume_count": 0,
+    "body_sha256": "6b441171ea7203ab36ef8ebe4fde53d32efee0d8ac73a70bad6b2fcbf9ac1afb",
+    "calculation_count": 12,
+    "material_index_count": 33,
+    "material_delivery_count": 40
+  },
+  "requested_policy": {
+    "network_route": "environment",
+    "maximum_http_attempts": 1,
+    "full_schema_sha256": "424259775fcac4bbdecdbbf1580aef93a12f6a5bf396c29f110a26f7a0a633f3",
+    "note": "Frozen preparation intent only; not actually sent."
+  },
+  "publication": {
+    "rows": {
+      "analyses": 0,
+      "forecasts": 0,
+      "recommendations": 0
+    },
+    "post_publication_and_restart": "Not reached; no publication."
+  },
+  "checks": {
+    "zero_model_http_observations": true,
+    "zero_reservations": true,
+    "maximum_one_preserved": true,
+    "rejected_within_original_TTL": true,
+    "checkpoint_body_guard_creation_resume_count_unchanged": true,
+    "parent_identity_unchanged": true,
+    "claim_retained_unchanged": true,
+    "no_Service_recovery_selected": true,
+    "no_publication": true,
+    "material_notifications_and_demands_unchanged": true,
+    "research_guard_changed": true,
+    "stopped_on_first_failure": true
+  },
+  "all_preservation_and_stop_checks_passed": true,
+  "next_action_boundary": "Claim and failed execution stay immutable. No remaining amount is automatically renewed; no TTL extension or bypass. New regression verifies source/as_of changes cause0HTTP and exact research_inputs_changed diagnostic.",
+  "method": {
+    "database_access": "SQLite mode=ro/query_only",
+    "Store_constructor_used": false,
+    "new_network_requests": 0,
+    "model_requests": 0,
+    "services_started_or_restarted": 0,
+    "execution_or_source_writes_by_audit": 0,
+    "raw_reasoning_or_stream_published": false
+  },
+  "source_observation": {
+    "execution_source_sha256": "90f8f94132a8d70128041cd89b6d416c87080e542de2b9709e0a1879b40043f3",
+    "execution_summary_source_unchanged": true,
+    "audit_current_source_sha256": "e850e6b343d46bc1ed11c07a2b71f7bb9aa1ff95329e1b51a149839d06d56e59",
+    "difference_reason": "After the stopped0HTTP run, only recovery verifier diagnostic and offline regression were changed. This is a post-execution fix, not in-flight source drift. Actual failed execution remains bound to90f8."
+  },
+  "independent_review": "docs/fifteenth/business-a-single-recovery-independent-review.json"
+}

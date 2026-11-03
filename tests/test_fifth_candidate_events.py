@@ -93,6 +93,7 @@ def test_sector_match_uses_candidate_metadata_and_leaves_other_sectors_out(store
 def test_holdings_active_suggestions_and_candidates_are_union_not_all_accounts(store):
     holder = store.save_account(AccountInput(name="持仓", holdings=[{"symbol": ETF, "quantity": "10000"}]))
     suggestion = store.save_account(AccountInput(name="建议"))
+    store.enqueue(suggestion['id'], 'manual_security:' + ETF)
     unrelated = store.save_account(AccountInput(name="其它证券", holdings=[{"symbol": "SH:600519", "quantity": "100"}]))
     jobs = store.claim_jobs()
     for job in jobs:
