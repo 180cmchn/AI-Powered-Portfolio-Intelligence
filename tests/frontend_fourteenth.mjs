@@ -5,6 +5,7 @@ import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const directory=await mkdtemp(join(tmpdir(),'guanlan-fourteenth-'));
 const child=spawn(process.env.PYTHON||'python',['tests/fourteenth_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
@@ -39,6 +40,18 @@ try {
   const reports=await (await fetch(base+`/api/accounts/${fixture.account_id}/analyses`)).json();
   assert.equal(reports.length,1);assert.equal(reports[0].status,'current');
   assert.equal(reports[0].result.delivery.content_assessment,'not_evaluated');
+  assert.ok((await report.locator('.report-system-identity').textContent()).includes('系统标识 · 无预测批次'));
+  const original=await fetch(base+`/api/analyses/${fixture.report_id}/export?format=original`);
+  const originalBytes=Buffer.from(await original.arrayBuffer());
+  const reading=await fetch(base+`/api/analyses/${fixture.report_id}/export?format=reading`);
+  const readingBytes=Buffer.from(await reading.arrayBuffer());
+  assert.equal(originalBytes.toString(),reports[0].report);
+  assert.ok(readingBytes.toString().includes('系统标识'));
+  assert.equal(readingBytes.subarray(-originalBytes.length).toString(),reports[0].report);
+  assert.equal(original.headers.get('x-content-sha256'),createHash('sha256').update(originalBytes).digest('hex'));
+  assert.equal(reading.headers.get('x-content-sha256'),createHash('sha256').update(readingBytes).digest('hex'));
+  assert.equal(await report.locator('a[href$="format=reading"]').count(),1);
+  assert.equal(await report.locator('a[href$="format=original"]').count(),1);
   // Reload into the second isolated account: production HTTP fixture first
   // fails scope preflight, then corrects within the same Agent budget.
   await page.close();
@@ -48,6 +61,11 @@ try {
   await page.goto(base+'/#research');
   const structured=page.locator(`[data-report-id="${fixture.structured_report_id}"]`);
   await structured.waitFor();
+  const identity=structured.locator('.report-system-identity');
+  assert.ok((await identity.textContent()).includes('系统标识 · 正式固定批次'));
+  await identity.locator('summary').click();
+  assert.ok((await identity.textContent()).includes('1 个交易日收益间隔'));
+  assert.ok((await identity.textContent()).includes('本报告未发布该目标'));
   const receipt=structured.locator('.delivery-application');
   await receipt.locator('summary').click();
   assert.ok((await receipt.textContent()).includes('结构化提交 2 项 · 已应用 1 项'));

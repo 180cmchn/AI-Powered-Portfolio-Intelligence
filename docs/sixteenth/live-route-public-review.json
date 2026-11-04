@@ -1,0 +1,3158 @@
+{
+  "captured_at": "2026-11-04T15:53:49.556335+00:00",
+  "source_digest_declared_by_matrix": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+  "read_only_sqlite_transaction": true,
+  "event_seq_through": 1677,
+  "scope": "Bounded independent read-only snapshot; matrix and legitimate follow-up tasks can continue.",
+  "initial_observation": {
+    "http_attempts": 123,
+    "connect_observed_nested": 15,
+    "connect_observed_tunnel": 15,
+    "no_new_connect_observed": 108,
+    "connect_label_conflicts": 0,
+    "protocol_completed_with_eof": 121,
+    "errors_before_terminal": 2
+  },
+  "current_requests": {
+    "http_attempts": 144,
+    "http_status": {
+      "200": 144
+    },
+    "response_status": {
+      "None": 3,
+      "completed": 141
+    },
+    "http_body_complete": 141,
+    "protocol_completed_with_eof": 141,
+    "error_codes": {
+      "None": 141,
+      "upstream_transport_error": 3
+    },
+    "stream_close_reasons": {
+      "http_eof": 141,
+      "transport_error_before_terminal": 3
+    },
+    "route_labels": {
+      "environment": 144
+    },
+    "route_revisions": {
+      "0": 144
+    },
+    "connect_observed_nested": 18,
+    "connect_observed_tunnel": 18,
+    "connect_established": 18,
+    "connect_label_conflicts": 0,
+    "no_new_connect_observed": 126,
+    "certificate_verification_true": 144,
+    "environment_proxy_present": 144,
+    "transport_httpx": 144,
+    "cost_known_true": 0,
+    "known_fee": null
+  },
+  "jobs": [
+    {
+      "kind": "account",
+      "id": "fc5bfb76b0c84b499ed38c9cc22f7b31",
+      "state": "superseded",
+      "created_at": "2026-11-04T23:16:16.564668+08:00",
+      "updated_at": "2026-11-04T23:16:16.589611+08:00",
+      "requests": {
+        "http_attempts": 0,
+        "http_status": {},
+        "response_status": {},
+        "http_body_complete": 0,
+        "protocol_completed_with_eof": 0,
+        "error_codes": {},
+        "stream_close_reasons": {},
+        "route_labels": {},
+        "route_revisions": {},
+        "connect_observed_nested": 0,
+        "connect_observed_tunnel": 0,
+        "connect_established": 0,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 0,
+        "certificate_verification_true": 0,
+        "environment_proxy_present": 0,
+        "transport_httpx": 0,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "80ea441fcbbb4fbebc23359ccc31f01d",
+      "state": "superseded",
+      "created_at": "2026-11-04T23:16:16.589611+08:00",
+      "updated_at": "2026-11-04T23:16:16.627141+08:00",
+      "requests": {
+        "http_attempts": 0,
+        "http_status": {},
+        "response_status": {},
+        "http_body_complete": 0,
+        "protocol_completed_with_eof": 0,
+        "error_codes": {},
+        "stream_close_reasons": {},
+        "route_labels": {},
+        "route_revisions": {},
+        "connect_observed_nested": 0,
+        "connect_observed_tunnel": 0,
+        "connect_established": 0,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 0,
+        "certificate_verification_true": 0,
+        "environment_proxy_present": 0,
+        "transport_httpx": 0,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "cfb0faedf3d54242b8d5c12f23f07c65",
+      "state": "superseded",
+      "created_at": "2026-11-04T23:16:16.627141+08:00",
+      "updated_at": "2026-11-04T23:16:16.664950+08:00",
+      "requests": {
+        "http_attempts": 0,
+        "http_status": {},
+        "response_status": {},
+        "http_body_complete": 0,
+        "protocol_completed_with_eof": 0,
+        "error_codes": {},
+        "stream_close_reasons": {},
+        "route_labels": {},
+        "route_revisions": {},
+        "connect_observed_nested": 0,
+        "connect_observed_tunnel": 0,
+        "connect_established": 0,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 0,
+        "certificate_verification_true": 0,
+        "environment_proxy_present": 0,
+        "transport_httpx": 0,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "state": "completed",
+      "created_at": "2026-11-04T23:16:16.664950+08:00",
+      "updated_at": "2026-11-04T23:28:38.482146+08:00",
+      "requests": {
+        "http_attempts": 38,
+        "http_status": {
+          "200": 38
+        },
+        "response_status": {
+          "None": 1,
+          "completed": 37
+        },
+        "http_body_complete": 37,
+        "protocol_completed_with_eof": 37,
+        "error_codes": {
+          "None": 37,
+          "upstream_transport_error": 1
+        },
+        "stream_close_reasons": {
+          "http_eof": 37,
+          "transport_error_before_terminal": 1
+        },
+        "route_labels": {
+          "environment": 38
+        },
+        "route_revisions": {
+          "0": 38
+        },
+        "connect_observed_nested": 5,
+        "connect_observed_tunnel": 5,
+        "connect_established": 5,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 33,
+        "certificate_verification_true": 38,
+        "environment_proxy_present": 38,
+        "transport_httpx": 38,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "state": "failed",
+      "created_at": "2026-11-04T23:28:46.402456+08:00",
+      "updated_at": "2026-11-04T23:38:12.184105+08:00",
+      "requests": {
+        "http_attempts": 10,
+        "http_status": {
+          "200": 10
+        },
+        "response_status": {
+          "None": 1,
+          "completed": 9
+        },
+        "http_body_complete": 9,
+        "protocol_completed_with_eof": 9,
+        "error_codes": {
+          "None": 9,
+          "upstream_transport_error": 1
+        },
+        "stream_close_reasons": {
+          "http_eof": 9,
+          "transport_error_before_terminal": 1
+        },
+        "route_labels": {
+          "environment": 10
+        },
+        "route_revisions": {
+          "0": 10
+        },
+        "connect_observed_nested": 1,
+        "connect_observed_tunnel": 1,
+        "connect_established": 1,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 9,
+        "certificate_verification_true": 10,
+        "environment_proxy_present": 10,
+        "transport_httpx": 10,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "49ad26cbfb504ea3b1f605cbff26ab3d",
+      "state": "superseded",
+      "created_at": "2026-11-04T23:38:18.760060+08:00",
+      "updated_at": "2026-11-04T23:38:18.776194+08:00",
+      "requests": {
+        "http_attempts": 0,
+        "http_status": {},
+        "response_status": {},
+        "http_body_complete": 0,
+        "protocol_completed_with_eof": 0,
+        "error_codes": {},
+        "stream_close_reasons": {},
+        "route_labels": {},
+        "route_revisions": {},
+        "connect_observed_nested": 0,
+        "connect_observed_tunnel": 0,
+        "connect_established": 0,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 0,
+        "certificate_verification_true": 0,
+        "environment_proxy_present": 0,
+        "transport_httpx": 0,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "15d837b14dda4883b71648ef6a93a0c5",
+      "state": "failed",
+      "created_at": "2026-11-04T23:38:18.775279+08:00",
+      "updated_at": "2026-11-04T23:48:05.489581+08:00",
+      "requests": {
+        "http_attempts": 29,
+        "http_status": {
+          "200": 29
+        },
+        "response_status": {
+          "None": 1,
+          "completed": 28
+        },
+        "http_body_complete": 28,
+        "protocol_completed_with_eof": 28,
+        "error_codes": {
+          "None": 28,
+          "upstream_transport_error": 1
+        },
+        "stream_close_reasons": {
+          "http_eof": 28,
+          "transport_error_before_terminal": 1
+        },
+        "route_labels": {
+          "environment": 29
+        },
+        "route_revisions": {
+          "0": 29
+        },
+        "connect_observed_nested": 4,
+        "connect_observed_tunnel": 4,
+        "connect_established": 4,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 25,
+        "certificate_verification_true": 29,
+        "environment_proxy_present": 29,
+        "transport_httpx": 29,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "state": "completed",
+      "created_at": "2026-11-04T23:38:18.776194+08:00",
+      "updated_at": "2026-11-04T23:45:45.040071+08:00",
+      "requests": {
+        "http_attempts": 37,
+        "http_status": {
+          "200": 37
+        },
+        "response_status": {
+          "completed": 37
+        },
+        "http_body_complete": 37,
+        "protocol_completed_with_eof": 37,
+        "error_codes": {
+          "None": 37
+        },
+        "stream_close_reasons": {
+          "http_eof": 37
+        },
+        "route_labels": {
+          "environment": 37
+        },
+        "route_revisions": {
+          "0": 37
+        },
+        "connect_observed_nested": 5,
+        "connect_observed_tunnel": 5,
+        "connect_established": 5,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 32,
+        "certificate_verification_true": 37,
+        "environment_proxy_present": 37,
+        "transport_httpx": 37,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "086f86ad82464b91ab45c1950381073b",
+      "state": "running",
+      "created_at": "2026-11-04T23:47:16.459140+08:00",
+      "updated_at": "2026-11-04T23:47:18.791926+08:00",
+      "requests": {
+        "http_attempts": 10,
+        "http_status": {
+          "200": 10
+        },
+        "response_status": {
+          "completed": 10
+        },
+        "http_body_complete": 10,
+        "protocol_completed_with_eof": 10,
+        "error_codes": {
+          "None": 10
+        },
+        "stream_close_reasons": {
+          "http_eof": 10
+        },
+        "route_labels": {
+          "environment": 10
+        },
+        "route_revisions": {
+          "0": 10
+        },
+        "connect_observed_nested": 1,
+        "connect_observed_tunnel": 1,
+        "connect_established": 1,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 9,
+        "certificate_verification_true": 10,
+        "environment_proxy_present": 10,
+        "transport_httpx": 10,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "account",
+      "id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "state": "running",
+      "created_at": "2026-11-04T23:48:05.950382+08:00",
+      "updated_at": "2026-11-04T23:48:05.967053+08:00",
+      "requests": {
+        "http_attempts": 9,
+        "http_status": {
+          "200": 9
+        },
+        "response_status": {
+          "completed": 9
+        },
+        "http_body_complete": 9,
+        "protocol_completed_with_eof": 9,
+        "error_codes": {
+          "None": 9
+        },
+        "stream_close_reasons": {
+          "http_eof": 9
+        },
+        "route_labels": {
+          "environment": 9
+        },
+        "route_revisions": {
+          "0": 9
+        },
+        "connect_observed_nested": 1,
+        "connect_observed_tunnel": 1,
+        "connect_established": 1,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 8,
+        "certificate_verification_true": 9,
+        "environment_proxy_present": 9,
+        "transport_httpx": 9,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    },
+    {
+      "kind": "global",
+      "id": "a3c848be78c94abfac8f940431128de5",
+      "state": "completed",
+      "created_at": "2026-11-04T23:38:19.058513+08:00",
+      "updated_at": "2026-11-04T23:47:16.244058+08:00",
+      "requests": {
+        "http_attempts": 11,
+        "http_status": {
+          "200": 11
+        },
+        "response_status": {
+          "completed": 11
+        },
+        "http_body_complete": 11,
+        "protocol_completed_with_eof": 11,
+        "error_codes": {
+          "None": 11
+        },
+        "stream_close_reasons": {
+          "http_eof": 11
+        },
+        "route_labels": {
+          "environment": 11
+        },
+        "route_revisions": {
+          "0": 11
+        },
+        "connect_observed_nested": 1,
+        "connect_observed_tunnel": 1,
+        "connect_established": 1,
+        "connect_label_conflicts": 0,
+        "no_new_connect_observed": 10,
+        "certificate_verification_true": 11,
+        "environment_proxy_present": 11,
+        "transport_httpx": 11,
+        "cost_known_true": 0,
+        "known_fee": null
+      }
+    }
+  ],
+  "request_failures": [
+    {
+      "event_seq": 408,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "task_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "research-20a317eaed18",
+      "stage": "research",
+      "started_at": "2026-11-04T15:20:44.894459+00:00",
+      "finished_at": "2026-11-04T15:22:37.658156+00:00",
+      "status_code": 200,
+      "response_status": null,
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal"
+    },
+    {
+      "event_seq": 590,
+      "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "task_id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "agent_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T15:34:17.346162+00:00",
+      "finished_at": "2026-11-04T15:38:12.116460+00:00",
+      "status_code": 200,
+      "response_status": null,
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal"
+    },
+    {
+      "event_seq": 1423,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "task_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "started_at": "2026-11-04T15:44:09.689736+00:00",
+      "finished_at": "2026-11-04T15:48:05.436916+00:00",
+      "status_code": 200,
+      "response_status": null,
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal"
+    }
+  ],
+  "connect_events": [
+    {
+      "event_seq": 7,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:16:46.937309+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 108,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "research-20a317eaed18",
+      "started_at": "2026-11-04T15:18:07.894733+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 117,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "research-0ea2b4fc3de7",
+      "started_at": "2026-11-04T15:18:07.895924+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 198,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "research-3f1a96ce1d65",
+      "started_at": "2026-11-04T15:18:07.893532+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 416,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:22:38.007917+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 425,
+      "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:28:46.657070+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 604,
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:38:19.207334+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 617,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:38:19.170435+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 628,
+      "job_id": "a3c848be78c94abfac8f940431128de5",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:38:19.087071+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 683,
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "agent_id": "research-f347ee68920f",
+      "started_at": "2026-11-04T15:38:48.822829+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 690,
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "agent_id": "research-0a303f1f504c",
+      "started_at": "2026-11-04T15:38:48.819110+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 743,
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "agent_id": "research-8c12fe92d309",
+      "started_at": "2026-11-04T15:38:48.821063+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 825,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "research-a5be1f048efc",
+      "started_at": "2026-11-04T15:39:18.575404+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 833,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "research-17fcedd045d2",
+      "started_at": "2026-11-04T15:39:18.573552+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 1379,
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:42:07.280667+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 1393,
+      "job_id": "086f86ad82464b91ab45c1950381073b",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:47:18.909595+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 1423,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:44:09.689736+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    },
+    {
+      "event_seq": 1445,
+      "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "agent_id": "manager",
+      "started_at": "2026-11-04T15:48:06.138188+00:00",
+      "tunnel_status_code": 200,
+      "established": true
+    }
+  ],
+  "route_finding": {
+    "requires_production_fix": false,
+    "cause_of_reported_mismatch": "Misaligned adjacent requests in truncated long output; no mismatched stored request found.",
+    "implementation": "Each request starts with false. CONNECT send_request_headers.started sets both nested and proxy_tunnel observed flags in the same trace callback. JSON deep copies persist completed per-request values.",
+    "limits": "False means no new CONNECT was observed on this HTTP request; reused pooled tunnels need not CONNECT again. It does not establish direct traffic. environment selects configured HTTPX proxy rules; OS VPN/TUN and physical intermediaries remain unobservable."
+  },
+  "public_run": {
+    "id": "a3c848be78c94abfac8f940431128de5",
+    "state": "completed",
+    "created_at": "2026-11-04T23:38:19.058513+08:00",
+    "completed_at": "2026-11-04T23:47:16.244058+08:00",
+    "universe_version": 2,
+    "universe": {
+      "watchlist": [],
+      "candidates": [
+        "SZ:159278"
+      ]
+    },
+    "account_id": null,
+    "input_version": null,
+    "completion": "limited",
+    "scope": [
+      "SZ:159278"
+    ],
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "report_sha256": "4afa76901ce4b90a00e7c63c95aee3f487cafd3445728566f9a2e7da01333556",
+    "report_characters": 2355,
+    "report_material_id": "957897d6fe4c412b8025268b5dc5aab6",
+    "requests": {
+      "http_attempts": 11,
+      "http_status": {
+        "200": 11
+      },
+      "response_status": {
+        "completed": 11
+      },
+      "http_body_complete": 11,
+      "protocol_completed_with_eof": 11,
+      "error_codes": {
+        "None": 11
+      },
+      "stream_close_reasons": {
+        "http_eof": 11
+      },
+      "route_labels": {
+        "environment": 11
+      },
+      "route_revisions": {
+        "0": 11
+      },
+      "connect_observed_nested": 1,
+      "connect_observed_tunnel": 1,
+      "connect_established": 1,
+      "connect_label_conflicts": 0,
+      "no_new_connect_observed": 10,
+      "certificate_verification_true": 11,
+      "environment_proxy_present": 11,
+      "transport_httpx": 11,
+      "cost_known_true": 0,
+      "known_fee": null
+    },
+    "model_calls_reported": 11,
+    "claimed_demand_ids": [
+      4009
+    ],
+    "read_demand_ids": [
+      4009
+    ],
+    "demand_coverage_at_publication": {
+      "expected": 55,
+      "completed": 0,
+      "uncovered": 55,
+      "unaccepted_claims": [
+        4009
+      ],
+      "items": [
+        {
+          "id": 4009,
+          "state": "uncovered"
+        },
+        {
+          "id": 4131,
+          "state": "uncovered"
+        },
+        {
+          "id": 4132,
+          "state": "uncovered"
+        },
+        {
+          "id": 4133,
+          "state": "uncovered"
+        },
+        {
+          "id": 4134,
+          "state": "uncovered"
+        },
+        {
+          "id": 4135,
+          "state": "uncovered"
+        },
+        {
+          "id": 4136,
+          "state": "uncovered"
+        },
+        {
+          "id": 4137,
+          "state": "uncovered"
+        },
+        {
+          "id": 4138,
+          "state": "uncovered"
+        },
+        {
+          "id": 4139,
+          "state": "uncovered"
+        },
+        {
+          "id": 4140,
+          "state": "uncovered"
+        },
+        {
+          "id": 4141,
+          "state": "uncovered"
+        },
+        {
+          "id": 4296,
+          "state": "uncovered"
+        },
+        {
+          "id": 4297,
+          "state": "uncovered"
+        },
+        {
+          "id": 4298,
+          "state": "uncovered"
+        },
+        {
+          "id": 4299,
+          "state": "uncovered"
+        },
+        {
+          "id": 4300,
+          "state": "uncovered"
+        },
+        {
+          "id": 4301,
+          "state": "uncovered"
+        },
+        {
+          "id": 4303,
+          "state": "uncovered"
+        },
+        {
+          "id": 4304,
+          "state": "uncovered"
+        },
+        {
+          "id": 4305,
+          "state": "uncovered"
+        },
+        {
+          "id": 4306,
+          "state": "uncovered"
+        },
+        {
+          "id": 4307,
+          "state": "uncovered"
+        },
+        {
+          "id": 4308,
+          "state": "uncovered"
+        },
+        {
+          "id": 4309,
+          "state": "uncovered"
+        },
+        {
+          "id": 4310,
+          "state": "uncovered"
+        },
+        {
+          "id": 4311,
+          "state": "uncovered"
+        },
+        {
+          "id": 4312,
+          "state": "uncovered"
+        },
+        {
+          "id": 4314,
+          "state": "uncovered"
+        },
+        {
+          "id": 4315,
+          "state": "uncovered"
+        },
+        {
+          "id": 4440,
+          "state": "uncovered"
+        },
+        {
+          "id": 4478,
+          "state": "uncovered"
+        },
+        {
+          "id": 4479,
+          "state": "uncovered"
+        },
+        {
+          "id": 4481,
+          "state": "uncovered"
+        },
+        {
+          "id": 4483,
+          "state": "uncovered"
+        },
+        {
+          "id": 4486,
+          "state": "uncovered"
+        },
+        {
+          "id": 4487,
+          "state": "uncovered"
+        },
+        {
+          "id": 4488,
+          "state": "uncovered"
+        },
+        {
+          "id": 4521,
+          "state": "uncovered"
+        },
+        {
+          "id": 4523,
+          "state": "uncovered"
+        },
+        {
+          "id": 4524,
+          "state": "uncovered"
+        },
+        {
+          "id": 4526,
+          "state": "uncovered"
+        },
+        {
+          "id": 4527,
+          "state": "uncovered"
+        },
+        {
+          "id": 4528,
+          "state": "uncovered"
+        },
+        {
+          "id": 4529,
+          "state": "uncovered"
+        },
+        {
+          "id": 4530,
+          "state": "uncovered"
+        },
+        {
+          "id": 4537,
+          "state": "uncovered"
+        },
+        {
+          "id": 4865,
+          "state": "uncovered"
+        },
+        {
+          "id": 4866,
+          "state": "uncovered"
+        },
+        {
+          "id": 4867,
+          "state": "uncovered"
+        },
+        {
+          "id": 4868,
+          "state": "uncovered"
+        },
+        {
+          "id": 4872,
+          "state": "uncovered"
+        },
+        {
+          "id": 4874,
+          "state": "uncovered"
+        },
+        {
+          "id": 4875,
+          "state": "uncovered"
+        },
+        {
+          "id": 4876,
+          "state": "uncovered"
+        }
+      ]
+    },
+    "current_demands": [
+      {
+        "id": 4009,
+        "kind": "universe_changed",
+        "state": "uncovered",
+        "detail": "报告未明确覆盖此项；保留待处理，手动重试时重新安排",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4131,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4132,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4133,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4134,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4135,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4136,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4137,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4138,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4139,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4140,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4141,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4296,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4297,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4298,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4299,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4300,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4301,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4303,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4304,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4305,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4306,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4307,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4308,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4309,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4310,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4311,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4312,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4314,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4315,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4440,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "covered by public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4478,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4479,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4481,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4483,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4486,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4487,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4488,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4521,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4523,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4524,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4526,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4527,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4528,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4529,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4530,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4537,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "covered by public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4865,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4866,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4867,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4868,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4872,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4874,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4875,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      },
+      {
+        "id": 4876,
+        "kind": "public_information",
+        "state": "completed",
+        "detail": "relevance unresolved; retained for later public research",
+        "job_id": "a3c848be78c94abfac8f940431128de5"
+      }
+    ],
+    "current_demand_states": {
+      "completed": 54,
+      "uncovered": 1
+    },
+    "routes": [
+      {
+        "material_id": "02e3dbad6cd549919e7169fc5fb338d2",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "02e3dbad6cd549919e7169fc5fb338d2"
+      },
+      {
+        "material_id": "04358382db5f4cb0a282f97ea58e15d6",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "04358382db5f4cb0a282f97ea58e15d6"
+      },
+      {
+        "material_id": "1299cd9675324f3394e2dca8e746116c",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "1299cd9675324f3394e2dca8e746116c"
+      },
+      {
+        "material_id": "1358293bb3a240a2be11832e2bceb7bd",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "1358293bb3a240a2be11832e2bceb7bd"
+      },
+      {
+        "material_id": "17462f2be0f449ef9d7f39644020cc69",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "17462f2be0f449ef9d7f39644020cc69"
+      },
+      {
+        "material_id": "19148056833943468519114f3e02e587",
+        "state": "routed",
+        "decision_status": "relevant",
+        "selected_account_ids": [
+          "4f32f659e694450d82d621f9664af49b",
+          "97c4a5a4773346a6ad5a5eeb96c0d826"
+        ],
+        "unresolved_account_count": 0,
+        "scope": "public",
+        "access": "full_text",
+        "representation_kind": "original_document",
+        "delivery_event": "19148056833943468519114f3e02e587"
+      },
+      {
+        "material_id": "214fc1b9055845b2999f35cb095e1b29",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "214fc1b9055845b2999f35cb095e1b29"
+      },
+      {
+        "material_id": "25a6ffe8c0244b8aabbd672df4ad5499",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "25a6ffe8c0244b8aabbd672df4ad5499"
+      },
+      {
+        "material_id": "274c005a542846d9b3576b91ffeda7db",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "274c005a542846d9b3576b91ffeda7db"
+      },
+      {
+        "material_id": "2bc20e390745430f906c68602de49817",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "2bc20e390745430f906c68602de49817"
+      },
+      {
+        "material_id": "2be42275a5d54b2cb53494ac73dce10b",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "2be42275a5d54b2cb53494ac73dce10b"
+      },
+      {
+        "material_id": "31a8a745817d4696ba594f229e77e062",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "31a8a745817d4696ba594f229e77e062"
+      },
+      {
+        "material_id": "3aed4c5d8eaa4df68884d5bbb7b8d7ab",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "3aed4c5d8eaa4df68884d5bbb7b8d7ab"
+      },
+      {
+        "material_id": "47125ee456224021afd2d0a32b85964f",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "47125ee456224021afd2d0a32b85964f"
+      },
+      {
+        "material_id": "47c1cbddaaf64a93a488f3a63bffc2b5",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "47c1cbddaaf64a93a488f3a63bffc2b5"
+      },
+      {
+        "material_id": "490e872dc99d4c32bdb1827b113b7956",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "490e872dc99d4c32bdb1827b113b7956"
+      },
+      {
+        "material_id": "4cf57a664a3b431c9ae7d922c3b6d11f",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "4cf57a664a3b431c9ae7d922c3b6d11f"
+      },
+      {
+        "material_id": "5225e51b099c41da988ad7041311e22e",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "5225e51b099c41da988ad7041311e22e"
+      },
+      {
+        "material_id": "5463c1bdce1448779ee647c8d9db5bd3",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "5463c1bdce1448779ee647c8d9db5bd3"
+      },
+      {
+        "material_id": "550e5924cdef48c88aa9bbf4b65265fb",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "550e5924cdef48c88aa9bbf4b65265fb"
+      },
+      {
+        "material_id": "56e616a6190541f48a489a8e0367ffae",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "56e616a6190541f48a489a8e0367ffae"
+      },
+      {
+        "material_id": "5dce45c9dfff478085c131eb235a6335",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "5dce45c9dfff478085c131eb235a6335"
+      },
+      {
+        "material_id": "5f6821a1b70b4bfa94118f2633c25159",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "5f6821a1b70b4bfa94118f2633c25159"
+      },
+      {
+        "material_id": "6ad6527856224c5b843a0f9224524723",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "6ad6527856224c5b843a0f9224524723"
+      },
+      {
+        "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+        "state": "routed",
+        "decision_status": "relevant",
+        "selected_account_ids": [
+          "4f32f659e694450d82d621f9664af49b",
+          "97c4a5a4773346a6ad5a5eeb96c0d826"
+        ],
+        "unresolved_account_count": 0,
+        "scope": "public",
+        "access": "pdf_search",
+        "representation_kind": "original_document",
+        "delivery_event": "6b49e818f2d64fbda2b3dd61df77cb0a"
+      },
+      {
+        "material_id": "7171a906f119437ab428cdf8d50bd372",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "7171a906f119437ab428cdf8d50bd372"
+      },
+      {
+        "material_id": "729dff602519479283a6e6216988e6cd",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "729dff602519479283a6e6216988e6cd"
+      },
+      {
+        "material_id": "73991ac6d14e42cea5fe391eb8940866",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "73991ac6d14e42cea5fe391eb8940866"
+      },
+      {
+        "material_id": "76095f04e43648c285c739d9a66f536f",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "76095f04e43648c285c739d9a66f536f"
+      },
+      {
+        "material_id": "7bf9071018ce4f598eba11b6b5137cac",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "7bf9071018ce4f598eba11b6b5137cac"
+      },
+      {
+        "material_id": "828821040c634a07b449ce3c333ff3a2",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "828821040c634a07b449ce3c333ff3a2"
+      },
+      {
+        "material_id": "83c80ce729b24e49a0655afdf98f32ad",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "83c80ce729b24e49a0655afdf98f32ad"
+      },
+      {
+        "material_id": "8d2b255363a34528af995cb5f84e2cd3",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "8d2b255363a34528af995cb5f84e2cd3"
+      },
+      {
+        "material_id": "93c0520714fa449f8a454dc0baa0f641",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "93c0520714fa449f8a454dc0baa0f641"
+      },
+      {
+        "material_id": "96cebbf128114a429fa76d9dd2ce15fa",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "96cebbf128114a429fa76d9dd2ce15fa"
+      },
+      {
+        "material_id": "9a88b4c137ef4f3b80e5f2239f3403d8",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "9a88b4c137ef4f3b80e5f2239f3403d8"
+      },
+      {
+        "material_id": "a1c339604809454b96a385a298228a06",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "a1c339604809454b96a385a298228a06"
+      },
+      {
+        "material_id": "af28e9120a31401e85459fa131cb471d",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "af28e9120a31401e85459fa131cb471d"
+      },
+      {
+        "material_id": "b1f2c05496eb42a0a0f27b956ad2fae9",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "b1f2c05496eb42a0a0f27b956ad2fae9"
+      },
+      {
+        "material_id": "b4c4d69765a84196b007bbf3ee882ad8",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "b4c4d69765a84196b007bbf3ee882ad8"
+      },
+      {
+        "material_id": "ba0ea70618a345129fadf2b769032b3d",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "ba0ea70618a345129fadf2b769032b3d"
+      },
+      {
+        "material_id": "bb6534ee39e64c3096a72b03b6ff0650",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "bb6534ee39e64c3096a72b03b6ff0650"
+      },
+      {
+        "material_id": "c715e088bacd477e836f26670c43c59b",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "c715e088bacd477e836f26670c43c59b"
+      },
+      {
+        "material_id": "ca4a74b929a34092b07792f4ba3f9036",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "ca4a74b929a34092b07792f4ba3f9036"
+      },
+      {
+        "material_id": "cd87b88f940c48dc88a68d4cccc8f65c",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "cd87b88f940c48dc88a68d4cccc8f65c"
+      },
+      {
+        "material_id": "d093535552f447ff8f1c4c2d52c80ea8",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "d093535552f447ff8f1c4c2d52c80ea8"
+      },
+      {
+        "material_id": "d7af7544ca8c43ebb3b8f3dd413e5c17",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "d7af7544ca8c43ebb3b8f3dd413e5c17"
+      },
+      {
+        "material_id": "d890ec047e6f4b0e85327bacd2cbec34",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "d890ec047e6f4b0e85327bacd2cbec34"
+      },
+      {
+        "material_id": "e2f5771d0e3847b19d109bec78246b78",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e2f5771d0e3847b19d109bec78246b78"
+      },
+      {
+        "material_id": "e35e69cac7b54820b175c07dfd523fb3",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e35e69cac7b54820b175c07dfd523fb3"
+      },
+      {
+        "material_id": "e3d310d86bea4731a331475f055737f0",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e3d310d86bea4731a331475f055737f0"
+      },
+      {
+        "material_id": "e4a3a6d84f164bc589030288392b2682",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e4a3a6d84f164bc589030288392b2682"
+      },
+      {
+        "material_id": "e5b14482a15049f4900c4879d50b513a",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e5b14482a15049f4900c4879d50b513a"
+      },
+      {
+        "material_id": "e9cdef8f3b4b44ca9bbcac474950a1a5",
+        "state": "awaiting_retry",
+        "decision_status": "uncertain",
+        "selected_account_ids": [],
+        "unresolved_account_count": 2,
+        "scope": "public",
+        "access": "source_link",
+        "representation_kind": "native_search_source",
+        "delivery_event": "e9cdef8f3b4b44ca9bbcac474950a1a5"
+      }
+    ],
+    "route_states": {
+      "awaiting_retry": 52,
+      "routed": 2
+    },
+    "coverage_finding": {
+      "classification": "Existing conservative scope policy combined with model-selected limited securities scope; not a wrong or unread demand ID.",
+      "required_fix_for_this_matrix": false,
+      "evidence": "ID 4009 was in the frozen scope, read twice and explicitly claimed. scope [SZ:159278] lacks public, so complete_task_demands applies its pre-existing security-only branch and rejects universe_changed coverage.",
+      "test_boundary": "test_limited_security_scope_cannot_complete_account_wide_demand proves the conservative account case; test_public_submission_requires_action_and_explicit_demand_coverage proves completed public reports can leave demands uncovered. No dedicated contract/test found requiring a single-security public scope to auto-complete universe_changed.",
+      "future_clarification": "Document or test the public/single-candidate scope boundary. Auto-completion would require an explicit coverage-policy change; do not silently rewrite this historical receipt to make the matrix pass.",
+      "snapshot_vs_live": "At publication: 55 uncovered. Relevance routing then acknowledged 54 public_information demands; 2 routed and 52 awaiting_retry. The latter are unresolved relevance, not model retries and not 52 fully researched materials. 4009 remains uncovered."
+    },
+    "source_isolation": {
+      "event_account_ids": {
+        "None": 122
+      },
+      "frozen_config_account_id": null,
+      "shared_research_code_path": "Service.execute_global builds account=None and shared_research=[]",
+      "claimed_delivery_receipts": 78,
+      "found_delivery_receipts": 78,
+      "distinct_delivered_materials": 57,
+      "non_public_receipts": 0,
+      "generated_or_agent_extraction_receipts": 0,
+      "metadata_only_receipts": 69,
+      "content_receipts": 9,
+      "receipt_account_ids": {
+        "": 78
+      },
+      "generated_report_notification_count": 0,
+      "global_execution_count_at_snapshot": 1,
+      "material_receipts": [
+        {
+          "receipt_id": 470,
+          "material_id": "e5b14482a15049f4900c4879d50b513a",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "6bba963a0df1211183d5d2c175de8c9b8871327c4e6b9e83b07c763c8de71890"
+        },
+        {
+          "receipt_id": 471,
+          "material_id": "cd87b88f940c48dc88a68d4cccc8f65c",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "quote.cfi.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "2048fdbffd173c3913d9e7d5b4caea0e9d40741f252edffb45433a871845ab7e"
+        },
+        {
+          "receipt_id": 472,
+          "material_id": "2bc20e390745430f906c68602de49817",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "data.cfi.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "50308b453247c038d4ab896df6300e3dad3d7e7a3582ea6531e75cd475f3967b"
+        },
+        {
+          "receipt_id": 473,
+          "material_id": "7bf9071018ce4f598eba11b6b5137cac",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "money.finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "e0c0b6b5a4c516bf16b32336955794ce202fb3759fb95603643cb3a787a625e7"
+        },
+        {
+          "receipt_id": 474,
+          "material_id": "6ad6527856224c5b843a0f9224524723",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cn.investing.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "4b0140ba18cb449a7accb99b90895fb6aa16ee5ed43d2a13e2a21852fb46e48d"
+        },
+        {
+          "receipt_id": 475,
+          "material_id": "ba0ea70618a345129fadf2b769032b3d",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "m.etf88.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "7ada6efce058fe9347bb62d4b54d29f92d1c250c6104270dbf1b07985ac35ccd"
+        },
+        {
+          "receipt_id": 476,
+          "material_id": "47c1cbddaaf64a93a488f3a63bffc2b5",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "fundf10.eastmoney.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "8f7a455271e7b1ae56ca2a6e3993f02dad03e404e8953f6b924f587c66f27b36"
+        },
+        {
+          "receipt_id": 477,
+          "material_id": "e3d310d86bea4731a331475f055737f0",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "dbde6cc54694de3be8540660539c6e1b2cf0e8df260031223e5d9b663dc2e1b8"
+        },
+        {
+          "receipt_id": 478,
+          "material_id": "7171a906f119437ab428cdf8d50bd372",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "279b9f5c28178c2970233d08fd39b29b50c7c3560a44e3f2922ddd39caf3feb0"
+        },
+        {
+          "receipt_id": 479,
+          "material_id": "bb6534ee39e64c3096a72b03b6ff0650",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "46e28ee08fca6a5c03a538a7b9fda195f4f971149c11cd616f84794731073fb6"
+        },
+        {
+          "receipt_id": 480,
+          "material_id": "25a6ffe8c0244b8aabbd672df4ad5499",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "82f9de9d743b086f1d5da82ed1825b6823ef16fe9b1f897a20cb18ff2576e663"
+        },
+        {
+          "receipt_id": 481,
+          "material_id": "8ae6f5424c28444ea42ef4ded2594153",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "history",
+          "scope": "public",
+          "document_kind": "text_representation",
+          "access": "structured_data",
+          "source_owner_present": false,
+          "domain": null,
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "41b2c6ab179792d31f6de0a345704d2b22fd9f1cb434a71a1f41aaee22604065"
+        },
+        {
+          "receipt_id": 524,
+          "material_id": "04358382db5f4cb0a282f97ea58e15d6",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "data.cfi.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "d5e7c31ef45b2540f31c543dc4c30f248459d9055d6e2c7ce86cee5b6a0650e1"
+        },
+        {
+          "receipt_id": 525,
+          "material_id": "b1f2c05496eb42a0a0f27b956ad2fae9",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "view.inews.qq.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c3642800a6ec1908f43fcc5dcd912e31c1209bd8ede54e9942e0df34f2981561"
+        },
+        {
+          "receipt_id": 526,
+          "material_id": "828821040c634a07b449ce3c333ff3a2",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "1e5dbe6a57c8509377eef62b49937e1601a2805d31993ac5f2b587915390b09d"
+        },
+        {
+          "receipt_id": 527,
+          "material_id": "b4c4d69765a84196b007bbf3ee882ad8",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "longbridge.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c56e02adcaafae2d57795e35a21b169c9590f1d946cf11475a1e6d8469139f17"
+        },
+        {
+          "receipt_id": 528,
+          "material_id": "e9cdef8f3b4b44ca9bbcac474950a1a5",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "9336721a7cadac81d25243821ba2850084717861748a95a76a9b6d4823ad9f07"
+        },
+        {
+          "receipt_id": 529,
+          "material_id": "76095f04e43648c285c739d9a66f536f",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "m.tetegu.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "2429fb15d57283af9dd76e30b1dd0b49ca1ca1481bea83c161d6ccdcc269cadb"
+        },
+        {
+          "receipt_id": 530,
+          "material_id": "cd87b88f940c48dc88a68d4cccc8f65c",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "quote.cfi.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "2048fdbffd173c3913d9e7d5b4caea0e9d40741f252edffb45433a871845ab7e"
+        },
+        {
+          "receipt_id": 531,
+          "material_id": "c715e088bacd477e836f26670c43c59b",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "baike.baidu.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "96d59c8869c079120fd71f7c0779b6f5d9fd0725de0ae9203a394b25c9aead9e"
+        },
+        {
+          "receipt_id": 532,
+          "material_id": "e4a3a6d84f164bc589030288392b2682",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.cnindex.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c069419de72557a903eb4253903044656f93931aaecda1062a41a97350e73a5c"
+        },
+        {
+          "receipt_id": 533,
+          "material_id": "214fc1b9055845b2999f35cb095e1b29",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "93ba5f038e68bc717b803b43ffe70a37ad88010678235e6e0580cbe47c651dfe"
+        },
+        {
+          "receipt_id": 534,
+          "material_id": "550e5924cdef48c88aa9bbf4b65265fb",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "4ae58f1fab800e340e55003ecdebb6c41f305678a82923818452ea5e4432d63f"
+        },
+        {
+          "receipt_id": 535,
+          "material_id": "9a88b4c137ef4f3b80e5f2239f3403d8",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.cnindex.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "b951de5fa0889af31f178bd218667fec19241fd5e0bc36a15184f19a4412a9f2"
+        },
+        {
+          "receipt_id": 536,
+          "material_id": "5dce45c9dfff478085c131eb235a6335",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "pdf.dfcfw.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "4ec16b9d0a53880723367ceb90f3fb226488adb0bd12efc067564770ed709972"
+        },
+        {
+          "receipt_id": 537,
+          "material_id": "1358293bb3a240a2be11832e2bceb7bd",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "630ee93393c08a18172ad02e4551b970560b2aa15538b52f6e56fdc3043f1e85"
+        },
+        {
+          "receipt_id": 538,
+          "material_id": "47125ee456224021afd2d0a32b85964f",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "m.tetegu.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "3fa66cba916e1a64dc3b2cc4c0a4fd36a3e0f12f96621a094088b7a023e3e789"
+        },
+        {
+          "receipt_id": 539,
+          "material_id": "a1c339604809454b96a385a298228a06",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "cfe6e64fd687a6b77489076f74e2fa037879213bb45db90c0dfd88be0e313397"
+        },
+        {
+          "receipt_id": 540,
+          "material_id": "274c005a542846d9b3576b91ffeda7db",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "0e084d58f681849e540c5fa65887d828c41aaecca125ddad6ce20af16ad63c9a"
+        },
+        {
+          "receipt_id": 541,
+          "material_id": "2bc20e390745430f906c68602de49817",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "data.cfi.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "50308b453247c038d4ab896df6300e3dad3d7e7a3582ea6531e75cd475f3967b"
+        },
+        {
+          "receipt_id": 542,
+          "material_id": "3aed4c5d8eaa4df68884d5bbb7b8d7ab",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "vip.stock.finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "e741a9b84eb335de87292f3dbc1c626e7dd4db492cd87e69940326d7af4b0e60"
+        },
+        {
+          "receipt_id": 543,
+          "material_id": "5463c1bdce1448779ee647c8d9db5bd3",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.news.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "342d7990e277c6a1a8e248a241bf26b52ec0c97ec730eb05ad370004d494628c"
+        },
+        {
+          "receipt_id": 544,
+          "material_id": "8ae6f5424c28444ea42ef4ded2594153",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "market_indicators",
+          "scope": "public",
+          "document_kind": "text_representation",
+          "access": "structured_data",
+          "source_owner_present": false,
+          "domain": null,
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "a7188b9a6b80442d963e923c596a7bbc9df0e0af59c560e139d0afb7acc03d53"
+        },
+        {
+          "receipt_id": 545,
+          "material_id": "8ae6f5424c28444ea42ef4ded2594153",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "query_market_rows",
+          "scope": "public",
+          "document_kind": "text_representation",
+          "access": "structured_data",
+          "source_owner_present": false,
+          "domain": null,
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "fab655e8853bd61c4903e49ada972ba001e0c6edacdefcb68868ba2c7f686500"
+        },
+        {
+          "receipt_id": 665,
+          "material_id": "8ae6f5424c28444ea42ef4ded2594153",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "query_market_rows",
+          "scope": "public",
+          "document_kind": "text_representation",
+          "access": "structured_data",
+          "source_owner_present": false,
+          "domain": null,
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "83c45d438e192cf5f28cad264347f085a24bf16dac5396cdab8597582c133d39"
+        },
+        {
+          "receipt_id": 669,
+          "material_id": "9a88b4c137ef4f3b80e5f2239f3403d8",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.cnindex.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "b951de5fa0889af31f178bd218667fec19241fd5e0bc36a15184f19a4412a9f2"
+        },
+        {
+          "receipt_id": 670,
+          "material_id": "bb6534ee39e64c3096a72b03b6ff0650",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "46e28ee08fca6a5c03a538a7b9fda195f4f971149c11cd616f84794731073fb6"
+        },
+        {
+          "receipt_id": 671,
+          "material_id": "93c0520714fa449f8a454dc0baa0f641",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.21jingji.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "023685c0c4850eb20aa37ac373bb7df25fb798685fe6253189fc9f79f8e673ef"
+        },
+        {
+          "receipt_id": 672,
+          "material_id": "17462f2be0f449ef9d7f39644020cc69",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.guandian.hk",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "8600f922df1b49f2d0d0d09c314eef6076723f69bf8d558823763499473fb1cc"
+        },
+        {
+          "receipt_id": 673,
+          "material_id": "47c1cbddaaf64a93a488f3a63bffc2b5",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "fundf10.eastmoney.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "8f7a455271e7b1ae56ca2a6e3993f02dad03e404e8953f6b924f587c66f27b36"
+        },
+        {
+          "receipt_id": 674,
+          "material_id": "02e3dbad6cd549919e7169fc5fb338d2",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "pdf.dfcfw.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "4aeca69befde0bc5facde8d2aa0d6a94de70a8a0e00cb6cd6f1d8ca5553177ed"
+        },
+        {
+          "receipt_id": 675,
+          "material_id": "e5b14482a15049f4900c4879d50b513a",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "6bba963a0df1211183d5d2c175de8c9b8871327c4e6b9e83b07c763c8de71890"
+        },
+        {
+          "receipt_id": 676,
+          "material_id": "5f6821a1b70b4bfa94118f2633c25159",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "pdf.dfcfw.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "92bcdd8273b2181208a318bba8db7ae134f4eba2edbf744ae4216f9b930dea75"
+        },
+        {
+          "receipt_id": 677,
+          "material_id": "214fc1b9055845b2999f35cb095e1b29",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "93ba5f038e68bc717b803b43ffe70a37ad88010678235e6e0580cbe47c651dfe"
+        },
+        {
+          "receipt_id": 678,
+          "material_id": "e3d310d86bea4731a331475f055737f0",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "dbde6cc54694de3be8540660539c6e1b2cf0e8df260031223e5d9b663dc2e1b8"
+        },
+        {
+          "receipt_id": 679,
+          "material_id": "d093535552f447ff8f1c4c2d52c80ea8",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "longbridge.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c6a6628db9ab63b16a87962c5626d3a91aee00a20cd8b2d1d00c52907e1224fc"
+        },
+        {
+          "receipt_id": 680,
+          "material_id": "e35e69cac7b54820b175c07dfd523fb3",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "ed3019ab221f83cc84c9f84ac9cd250e7015d827949395b5d8c10da92405e8d0"
+        },
+        {
+          "receipt_id": 681,
+          "material_id": "af28e9120a31401e85459fa131cb471d",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "pdf.dfcfw.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "0e7033864a88354aa0aaf3fed2a8077b7876cbe3bba9cbef3295ef1b5962c981"
+        },
+        {
+          "receipt_id": 682,
+          "material_id": "25a6ffe8c0244b8aabbd672df4ad5499",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "82f9de9d743b086f1d5da82ed1825b6823ef16fe9b1f897a20cb18ff2576e663"
+        },
+        {
+          "receipt_id": 683,
+          "material_id": "a78b7b6aea104e8e9ca1a6045990f2ec",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "read",
+          "scope": "public",
+          "document_kind": "original_document",
+          "access": "excerpt",
+          "source_owner_present": false,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "bb46eb8a0b2b7a2819d0b7f0e8b289519cd94c95d04bbd7d1baaf61e50363207"
+        },
+        {
+          "receipt_id": 719,
+          "material_id": "490e872dc99d4c32bdb1827b113b7956",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "10af9fa3868fa3a4c319dcc2e6d1a7200e9e97f0e7ec18df8705a11226753197"
+        },
+        {
+          "receipt_id": 720,
+          "material_id": "1358293bb3a240a2be11832e2bceb7bd",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "630ee93393c08a18172ad02e4551b970560b2aa15538b52f6e56fdc3043f1e85"
+        },
+        {
+          "receipt_id": 721,
+          "material_id": "d7af7544ca8c43ebb3b8f3dd413e5c17",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c67f438c315454b247b6916fec2503f6cc47a316dc07ea4f70fb00cab00f40cf"
+        },
+        {
+          "receipt_id": 722,
+          "material_id": "96cebbf128114a429fa76d9dd2ce15fa",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.eastmoney.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "997fc6754dcfa47551221b92967fcd1d6d429710218477fe27a19640eb302800"
+        },
+        {
+          "receipt_id": 723,
+          "material_id": "c715e088bacd477e836f26670c43c59b",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "baike.baidu.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "96d59c8869c079120fd71f7c0779b6f5d9fd0725de0ae9203a394b25c9aead9e"
+        },
+        {
+          "receipt_id": 724,
+          "material_id": "d890ec047e6f4b0e85327bacd2cbec34",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "e755f9c88d53f917d1d2e7e4f192bc5c2de1cfccea098df7baee3baef81da1ca"
+        },
+        {
+          "receipt_id": 725,
+          "material_id": "5225e51b099c41da988ad7041311e22e",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "3176ad8b94cbd5e5d03420cae8653fabb89a6ea26592ab559c600cee92bc6801"
+        },
+        {
+          "receipt_id": 726,
+          "material_id": "83c80ce729b24e49a0655afdf98f32ad",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c55393efa9b7c384afe5b8608d17bb13be300c2402e84470a40e0737cc1cfe66"
+        },
+        {
+          "receipt_id": 727,
+          "material_id": "73991ac6d14e42cea5fe391eb8940866",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "b1c8a3818dc4136d093e281f781b408e5cd45e919f4bcf7a57516599e07f1e03"
+        },
+        {
+          "receipt_id": 728,
+          "material_id": "4cf57a664a3b431c9ae7d922c3b6d11f",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "static.weeklyonstock.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "9f75a2eda9c167fbe8a43b7187948bc45317a156cfe58fe93a52d083c7b6c345"
+        },
+        {
+          "receipt_id": 729,
+          "material_id": "19148056833943468519114f3e02e587",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "read",
+          "scope": "public",
+          "document_kind": "original_document",
+          "access": "full_text",
+          "source_owner_present": true,
+          "domain": "www.cnindex.com.cn",
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "91e4c29bfadc392940fa96ea64ab2915883e8b074403a488e2431ba8a3f5e9a5"
+        },
+        {
+          "receipt_id": 778,
+          "material_id": "9ff5ee353ad643b7a14dfbb8842e8747",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "read",
+          "scope": "public",
+          "document_kind": "original_document",
+          "access": "excerpt",
+          "source_owner_present": true,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "a60de0b97a2196def717693c6c8fb6ba50e3ccad9380551eed295fc3d6748b05"
+        },
+        {
+          "receipt_id": 831,
+          "material_id": "7234ad534e254ef7a6cb594a52fe90c5",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "read",
+          "scope": "public",
+          "document_kind": "original_document",
+          "access": "excerpt",
+          "source_owner_present": false,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "635743615c750b79fb0985e0760a611dc344dcb7d2a35194e91d41e39274f873"
+        },
+        {
+          "receipt_id": 925,
+          "material_id": "5dce45c9dfff478085c131eb235a6335",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "pdf.dfcfw.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "4ec16b9d0a53880723367ceb90f3fb226488adb0bd12efc067564770ed709972"
+        },
+        {
+          "receipt_id": 926,
+          "material_id": "56e616a6190541f48a489a8e0367ffae",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "6224125293d4b7e6c5de9c324e89604384849a9d3f280dbf31b940fc8c70fd00"
+        },
+        {
+          "receipt_id": 927,
+          "material_id": "729dff602519479283a6e6216988e6cd",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "m.jiemian.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "bd8a50435e02319e8a948dea7c8d360cc884b299b3cb5f6d4c53f9e643657544"
+        },
+        {
+          "receipt_id": 928,
+          "material_id": "1299cd9675324f3394e2dca8e746116c",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "cj.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "e625cd3ce5a8491691463cdecba613f20c880a47361cfa74487162ab3485ca38"
+        },
+        {
+          "receipt_id": 929,
+          "material_id": "2be42275a5d54b2cb53494ac73dce10b",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "notice.10jqka.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "b4cbc9ff26e752698bbd0e0f1412a95e4feac93caa98a43efdcb76a619867db4"
+        },
+        {
+          "receipt_id": 930,
+          "material_id": "5225e51b099c41da988ad7041311e22e",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "3176ad8b94cbd5e5d03420cae8653fabb89a6ea26592ab559c600cee92bc6801"
+        },
+        {
+          "receipt_id": 931,
+          "material_id": "214fc1b9055845b2999f35cb095e1b29",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "93ba5f038e68bc717b803b43ffe70a37ad88010678235e6e0580cbe47c651dfe"
+        },
+        {
+          "receipt_id": 932,
+          "material_id": "d093535552f447ff8f1c4c2d52c80ea8",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "longbridge.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "c6a6628db9ab63b16a87962c5626d3a91aee00a20cd8b2d1d00c52907e1224fc"
+        },
+        {
+          "receipt_id": 933,
+          "material_id": "31a8a745817d4696ba594f229e77e062",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.lixinger.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "77b8d2d1aa52ee82473b79a55523b105e4c512193847c183f7cf140caa470a3b"
+        },
+        {
+          "receipt_id": 934,
+          "material_id": "bb6534ee39e64c3096a72b03b6ff0650",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "static.cninfo.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "46e28ee08fca6a5c03a538a7b9fda195f4f971149c11cd616f84794731073fb6"
+        },
+        {
+          "receipt_id": 935,
+          "material_id": "ca4a74b929a34092b07792f4ba3f9036",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": true,
+          "domain": "www.etf88.com",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "0fdfc13b851036a43df772558d0b94dc981c91134f11893d291abd68bbaa9aa3"
+        },
+        {
+          "receipt_id": 936,
+          "material_id": "e2f5771d0e3847b19d109bec78246b78",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "www.morningstar.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "dc9155298f93698cf989a8ee0a0e2a9d2201d45b9e30fe259d0f11b30d2862ce"
+        },
+        {
+          "receipt_id": 937,
+          "material_id": "8d2b255363a34528af995cb5f84e2cd3",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "40658633a3a7c166e6404a0a85754c557dd14f99c1b3d245977bb014af383d98"
+        },
+        {
+          "receipt_id": 938,
+          "material_id": "25a6ffe8c0244b8aabbd672df4ad5499",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "native_search",
+          "scope": "public",
+          "document_kind": "native_search_source",
+          "access": "source_link",
+          "source_owner_present": false,
+          "domain": "finance.sina.com.cn",
+          "metadata_only": true,
+          "delivered_content": false,
+          "visible_result_hash": "82f9de9d743b086f1d5da82ed1825b6823ef16fe9b1f897a20cb18ff2576e663"
+        },
+        {
+          "receipt_id": 939,
+          "material_id": "8ae6f5424c28444ea42ef4ded2594153",
+          "receipt_account_id": "",
+          "agent_id": "manager",
+          "tool": "query_market_rows",
+          "scope": "public",
+          "document_kind": "text_representation",
+          "access": "structured_data",
+          "source_owner_present": false,
+          "domain": null,
+          "metadata_only": false,
+          "delivered_content": true,
+          "visible_result_hash": "41b2c6ab179792d31f6de0a345704d2b22fd9f1cb434a71a1f41aaee22604065"
+        }
+      ],
+      "boundary": "Public raw documents acquired by an account may be shared; a nonempty source-owner field is not private scope. Source-link receipts prove metadata delivery only. Stored events do not contain every raw outbound prompt, so this is database/receipt plus code-path evidence, not packet-level proof."
+    }
+  },
+  "no_actions_taken": [
+    "No model request",
+    "No worker or service change",
+    "No production/test edit",
+    "No database mutation",
+    "No task cancellation or single-task guard"
+  ],
+  "known_fee": null,
+  "fee_reason": "No billing statement correlation; HTTP attempt and token counters are not monetary cost."
+}

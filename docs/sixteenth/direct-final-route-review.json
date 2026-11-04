@@ -1,0 +1,70 @@
+{
+  "captured_at": "2026-11-04T17:17:50.004562+00:00",
+  "event_seq_through": 2021,
+  "read_only_sqlite_transaction": true,
+  "http_attempts": 168,
+  "protocol_completed_with_eof": 165,
+  "http_status_counts": {
+    "200": 168
+  },
+  "response_status_counts": {
+    "completed": 165,
+    "None": 3
+  },
+  "request_event_type_counts": {
+    "model_usage": 165,
+    "model_error": 3
+  },
+  "error_type_counts": {
+    "ReadError": 3
+  },
+  "route_labels": {
+    "direct": 168
+  },
+  "route_revisions": {
+    "0": 168
+  },
+  "tls_verification_true": 168,
+  "transport_httpx": 168,
+  "connect_observed_nested": 0,
+  "connect_observed_tunnel": 0,
+  "connect_label_conflicts": 0,
+  "failures": [
+    {
+      "seq": 1776,
+      "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+      "error": "ReadError",
+      "finished_at": "2026-11-04T17:03:17.293444+00:00"
+    },
+    {
+      "seq": 1976,
+      "job_id": "a9caca3257d6490f9780d0488b179385",
+      "error": "ReadError",
+      "finished_at": "2026-11-04T17:05:31.868435+00:00"
+    },
+    {
+      "seq": 2019,
+      "job_id": "b13c7e3bab69415da25c92ea26768503",
+      "error": "ReadError",
+      "finished_at": "2026-11-04T17:10:53.057792+00:00"
+    }
+  ],
+  "account_job_state_counts": {
+    "completed": 5,
+    "failed": 3,
+    "superseded": 4
+  },
+  "global_run_state_counts": {
+    "completed": 1
+  },
+  "known_fee": null,
+  "fee_boundary": "Unknown billing; requests and token counts are not currency.",
+  "source": {
+    "manifest_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "runtime_start_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "runtime_restart_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "current_disk_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "manifest_source_unchanged": true,
+    "manifest_finished_at": "2026-11-05T01:11:08.350061+08:00"
+  }
+}

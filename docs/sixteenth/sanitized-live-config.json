@@ -1,0 +1,105 @@
+{
+  "recorded_at": "2026-11-04T23:35:06.371572+08:00",
+  "kind": "sanitized_actual_job_configuration",
+  "source": "first actual claimed job config_snapshot, not a later default",
+  "route": "environment",
+  "route_revision": 0,
+  "roles": {
+    "manager": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "reasoning_effort": "xhigh",
+        "binding_source": "global_default"
+      },
+      "role_version": 3,
+      "prompt_version": 3,
+      "tool_version": 1
+    },
+    "filing_researcher": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.6",
+        "reasoning_effort": "high",
+        "binding_source": "global_default"
+      },
+      "role_version": 2,
+      "prompt_version": 2,
+      "tool_version": 1
+    },
+    "market_researcher": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "reasoning_effort": "medium",
+        "binding_source": "global_default"
+      },
+      "role_version": 2,
+      "prompt_version": 2,
+      "tool_version": 1
+    },
+    "industry_researcher": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "reasoning_effort": "medium",
+        "binding_source": "global_default"
+      },
+      "role_version": 2,
+      "prompt_version": 2,
+      "tool_version": 1
+    },
+    "etf_researcher": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "reasoning_effort": "medium",
+        "binding_source": "global_default"
+      },
+      "role_version": 2,
+      "prompt_version": 2,
+      "tool_version": 1
+    },
+    "portfolio_researcher": {
+      "resolved": {
+        "provider_id": "legacy-09a15ec53c70",
+        "model_id": "grok-4.7",
+        "reasoning_effort": "medium",
+        "binding_source": "global_default"
+      },
+      "role_version": 2,
+      "prompt_version": 2,
+      "tool_version": 1
+    }
+  },
+  "request_policy": {
+    "max_output_tokens": null,
+    "max_model_calls": 40,
+    "max_agent_turns": 12,
+    "max_context_chars": null,
+    "agent_timeout_seconds": 1800,
+    "analysis_timeout_seconds": 3600,
+    "final_submission_reserved_calls": 2
+  },
+  "effective_http_retries": 1,
+  "research_timeout_policy": {
+    "policy_version": 2,
+    "first_event_seconds": 90.0,
+    "stream_idle_seconds": 300.0,
+    "request_hard_seconds": 900.0,
+    "connect_seconds": 15.0,
+    "pool_seconds": 15.0,
+    "write_seconds": 30.0,
+    "hard_limit_source": "model_request_hard_timeout_seconds"
+  },
+  "synthesis_timeout_policy": {
+    "policy_version": 2,
+    "first_event_seconds": 90.0,
+    "stream_idle_seconds": 300.0,
+    "request_hard_seconds": 900.0,
+    "connect_seconds": 15.0,
+    "pool_seconds": 15.0,
+    "write_seconds": 30.0,
+    "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+  }
+}

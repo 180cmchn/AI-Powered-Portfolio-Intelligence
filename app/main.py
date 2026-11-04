@@ -22,6 +22,7 @@ from .store import Conflict, Store
 from .service import Service
 from .calendar import market_state
 from .symbols import SymbolResolver, ResolveInput, SymbolResolutionError
+from .report_metadata import attach_report_metadata, export_report
 
 
 class Settings(BaseModel):
@@ -31,6 +32,10 @@ class Settings(BaseModel):
     model_name: str = Field(default="", max_length=200)
     model_key_env: str = "MODEL_API_KEY"
     model_allow_no_key: bool = False
+    model_network_route: Literal['environment', 'direct'] = 'environment'
+    # Full GET→PUT round trips may echo this read-only revision. It is checked
+    # below and never accepted as a caller-assigned next revision.
+    model_network_revision: int = Field(default=0, ge=0)
     model_request_timeout_seconds: int = Field(default=90, ge=5, le=600)
     model_first_event_timeout_seconds: int = Field(default=90, ge=5, le=600)
     model_stream_idle_timeout_seconds: int = Field(default=300, ge=5, le=600)
@@ -364,11 +369,20 @@ def create_app(path=None, mode=None, worker=True, runner=None):
     @app.get("/api/accounts/{account_id}/analyses")
     async def analyses(account_id: str, limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), summary: bool = False):
         store.account(account_id)
-        return store.analyses(account_id, limit=limit, offset=offset, summary=summary)
+        return [attach_report_metadata(store, report) for report in
+                store.analyses(account_id, limit=limit, offset=offset, summary=summary)]
 
     @app.get("/api/analyses/{analysis_id}")
     async def analysis_detail(analysis_id: str):
-        return store.analysis(analysis_id)
+        return attach_report_metadata(store, store.analysis(analysis_id))
+
+    @app.get('/api/analyses/{analysis_id}/export')
+    async def analysis_export(analysis_id: str, format: Literal['original', 'reading'] = 'reading'):
+        exported = export_report(attach_report_metadata(store, store.analysis(analysis_id)), format)
+        return Response(exported['content'], media_type='text/markdown; charset=utf-8', headers={
+            'Content-Disposition': f'attachment; filename="{exported["filename"]}"',
+            'X-Content-SHA256': exported['sha256'], 'X-Original-Report-SHA256': exported['original_sha256'],
+            'X-Report-Export-Format': format})
 
     @app.get("/api/accounts/{account_id}/jobs")
     async def jobs(account_id: str, limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0), events: bool = False):
@@ -524,6 +538,13 @@ def create_app(path=None, mode=None, worker=True, runner=None):
         # medium over REASONING_EFFORT or an earlier explicitly saved value.
         updates = data.model_dump(exclude_unset=True)
         saved = store.meta('settings', {})
+        echoed_revision = updates.pop('model_network_revision', None)
+        if echoed_revision is not None and echoed_revision != store.settings().get('model_network_revision', 0):
+            raise Conflict('模型路线修订已变化，请重新读取设置；修订由服务器维护')
+        if 'model_network_route' in updates:
+            effective = store.settings()
+            saved = {**saved, 'model_network_revision': effective.get('model_network_revision', 0) +
+                     int(updates['model_network_route'] != effective.get('model_network_route', 'environment'))}
         from .config import LONG_TASK_TIMEOUT_DEFAULTS
         if set(updates) & set(LONG_TASK_TIMEOUT_DEFAULTS):
             # Persist the currently effective profile before a partial edit.

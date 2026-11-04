@@ -1,0 +1,781 @@
+{
+  "kind": "sixteenth_normal_start_real_matrix",
+  "started_at": "2026-11-05T00:17:19.926255+08:00",
+  "finished_at": "2026-11-05T01:11:08.350061+08:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "route": "direct",
+  "manager_effort": {
+    "source": "max",
+    "isolated": "xhigh"
+  },
+  "per_job_call_limit": 40,
+  "max_started_tasks": 12,
+  "execution_wall_limit_seconds": 14400,
+  "market_state_at_start": {
+    "timezone": "Asia/Shanghai",
+    "date": "2026-11-05",
+    "as_of": "2026-11-05T00:17:19.950465+08:00",
+    "trading_day": true,
+    "phase": "closed",
+    "session": "pre_open",
+    "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+    "coverage": {
+      "start": "2026-01-01",
+      "end": "2026-12-31"
+    },
+    "is_continuous_trading": false,
+    "has_closed_today": false,
+    "quote_trigger_eligible": false,
+    "calendar_version": "2026-10-22",
+    "calendar_digest": "1246fd4d8f87495ffeb0ae876feef4a6608fa9bb3d56128d26ac30fb77c50f84",
+    "reason": "开盘前，尚未进入连续交易"
+  },
+  "execution_result": "matrix_incomplete_content_review_pending",
+  "failure": null,
+  "source_unchanged": true,
+  "restart_preserved_reports": true,
+  "restart_preserved_forecasts": true,
+  "formal_natural_generation": {
+    "status": "not_executed",
+    "reason": "This business matrix leaves isolated formal settings disabled; actual market time is recorded separately."
+  },
+  "natural_maturity": "not_yet_observed",
+  "continuous_events": {
+    "status": "fail",
+    "failed_tasks": [
+      {
+        "id": "0558397bd51145c5b6ad9d17a931fd29",
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "input_version": 6,
+        "state": "failed",
+        "reason": "来源索引关联原始材料 fc29e7bba69244309eaef8926aceaca9；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：fc29e7bba69244309eaef8926aceaca9; 来源索引关联原始材料 ddbedf9636394976b47f686f866ae000；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：ddbedf9636394976b47f686f866ae000",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-05T00:54:45.678448+08:00"
+      },
+      {
+        "id": "b13c7e3bab69415da25c92ea26768503",
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "input_version": 6,
+        "state": "failed",
+        "reason": "configuration_changed",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-05T01:03:24.757281+08:00"
+      },
+      {
+        "id": "a9caca3257d6490f9780d0488b179385",
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "input_version": 2,
+        "state": "failed",
+        "reason": "configuration_changed",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-05T01:03:24.758859+08:00"
+      }
+    ],
+    "failed_demands": [
+      {
+        "id": 4221,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "public_information",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4224,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4226,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4228,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4761,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "public_information",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4764,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4766,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 4768,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      },
+      {
+        "id": 5256,
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "kind": "configuration_changed",
+        "state": "failed",
+        "job_id": "b13c7e3bab69415da25c92ea26768503",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 5257,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "kind": "configuration_changed",
+        "state": "failed",
+        "job_id": "a9caca3257d6490f9780d0488b179385",
+        "detail": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效"
+      }
+    ],
+    "unresolved_tasks": [],
+    "superseded_tasks": [
+      {
+        "id": "cb5f6e34afb0478daa2f2420c09ce851",
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "input_version": 1,
+        "state": "superseded",
+        "reason": "account_saved",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-05T00:17:50.483279+08:00"
+      },
+      {
+        "id": "06c1bf5a1f114e28a2edaf29679dd581",
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "input_version": 2,
+        "state": "superseded",
+        "reason": "ledger_trade",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-05T00:17:50.508902+08:00"
+      },
+      {
+        "id": "756d0a39bdb240ebbb50e9e4fa27466e",
+        "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+        "input_version": 3,
+        "state": "superseded",
+        "reason": "ledger_trade",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-05T00:17:50.545202+08:00"
+      },
+      {
+        "id": "b31710d41ee64e85809e2513e993a522",
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "input_version": 1,
+        "state": "superseded",
+        "reason": "account_saved",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-05T00:43:18.927130+08:00"
+      }
+    ],
+    "boundary": "Superseded tasks remain visible with their real input/replacement reason; this is event processing, not uninterrupted request success."
+  },
+  "daily_database_writes": 0,
+  "generated_at": "2026-11-04T17:15:25.613998+00:00",
+  "private_evidence": "data/evaluations/sixteenth-normal-direct-v1",
+  "http_attempts": 168,
+  "completed_with_eof": 165,
+  "known_currency_fee": null,
+  "fee_source": "No invoice or supplier billing correlation performed",
+  "observed_connect_count": 0,
+  "connect_label_mismatch_count": 0,
+  "tasks": [
+    {
+      "id": "cb5f6e34afb0478daa2f2420c09ce851",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 1,
+      "state": "superseded",
+      "reason": "account_saved",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-05T00:17:50.483279+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "06c1bf5a1f114e28a2edaf29679dd581",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 2,
+      "state": "superseded",
+      "reason": "ledger_trade",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-05T00:17:50.508902+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "756d0a39bdb240ebbb50e9e4fa27466e",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 3,
+      "state": "superseded",
+      "reason": "ledger_trade",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-05T00:17:50.545202+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "10c585c5c47e43cb80964724e9d6e613",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 4,
+      "state": "completed",
+      "reason": "ledger_trade; configuration_changed",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:17:50.582286+08:00",
+      "http_attempts": 39,
+      "completed_with_eof": 39,
+      "error_counts": {},
+      "native_tool_usage_reported": 78,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 14310732000,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "ef306d1751894987a599539387946b7f",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 5,
+      "state": "completed",
+      "reason": "ledger_trade",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:31:19.917842+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 8,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 4285112000,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "b31710d41ee64e85809e2513e993a522",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "input_version": 1,
+      "state": "superseded",
+      "reason": "account_saved",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-05T00:43:18.927130+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "02c50aa02d0f4eaab9510f116c1489af",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "input_version": 2,
+      "state": "completed",
+      "reason": "universe_changed",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:43:18.941822+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 7,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 3245623600,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "03ade9a3be204f1ab8f5d67318a24f0c",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 6,
+      "state": "completed",
+      "reason": "universe_changed",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:43:18.943643+08:00",
+      "http_attempts": 29,
+      "completed_with_eof": 29,
+      "error_counts": {},
+      "native_tool_usage_reported": 15,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 9087520800,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "efe944bad89e48f5ae35a3da20ddf951",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "input_version": 2,
+      "state": "completed",
+      "reason": "来源索引关联原始材料 fc29e7bba69244309eaef8926aceaca9；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：fc29e7bba69244309eaef8926aceaca9; 来源索引关联原始材料 ddbedf9636394976b47f686f866ae000；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：ddbedf9636394976b47f686f866ae000",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:53:00.723009+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 3,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 3551292000,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "0558397bd51145c5b6ad9d17a931fd29",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 6,
+      "state": "failed",
+      "reason": "来源索引关联原始材料 fc29e7bba69244309eaef8926aceaca9；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：fc29e7bba69244309eaef8926aceaca9; 来源索引关联原始材料 ddbedf9636394976b47f686f866ae000；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：ddbedf9636394976b47f686f866ae000",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:54:45.678448+08:00",
+      "http_attempts": 10,
+      "completed_with_eof": 9,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 2349066800,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "b13c7e3bab69415da25c92ea26768503",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "input_version": 6,
+      "state": "failed",
+      "reason": "configuration_changed",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-05T01:03:24.757281+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 10,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 4,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 2267417600,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "a9caca3257d6490f9780d0488b179385",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "input_version": 2,
+      "state": "failed",
+      "reason": "configuration_changed",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-05T01:03:24.758859+08:00",
+      "http_attempts": 7,
+      "completed_with_eof": 6,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 2,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 1297690800,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "1f1602bc10684da5995b8dfc414a4637",
+      "state": "completed",
+      "kind": "candidate_scan",
+      "reason": "universe_changed:v2",
+      "attempts": 1,
+      "error": null,
+      "http_attempts": 39,
+      "completed_with_eof": 39,
+      "error_counts": {},
+      "native_tool_usage_reported": 67,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 13987362400,
+      "reported_ticks_missing_for_requests": 0
+    }
+  ],
+  "reports": [
+    {
+      "id": "9520a02fb6724deab6973b8ddaeb0838",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "input_version": 4,
+      "status": "stale",
+      "created_at": "2026-11-05T00:31:12.413521+08:00",
+      "report_sha256": "e35d316062b6f7079bce960bd494928399b416c11d15545a07b77d431c1b1611",
+      "report_characters": 3679,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "account",
+          "SH:518880",
+          "SZ:002354",
+          "SZ:159599"
+        ],
+        "decision_summary": "开盘前维持高现金、三只均不加仓。518880小仓持有不退出；002354在2026-11-06可卖前维持，其后减仓优于加仓或清仓，且减仓不是看跌预测；159599持有不加仓。1/5/20日方向均因信号冲突或驱动未核实而弃权，与仓位动作分开。",
+        "limitations": [
+          "收尾仅综合已交付子报告、账户版本4和已成功行情计算，未重读三季报PDF第9–11页、半年报154页及2025年报；分部收入、客户集中、商誉减值测试、审计意见和ST历史未知，只限制002354基本面完整度，不改变不加仓结论。",
+          "黄金的美元、实际利率、地缘路径，以及芯片ETF单日近涨停的产业原因，均无已读正文；上金所2026-11-04行情仅为搜索片段。因此方向预测弃权，不能把历史涨跌外推成已核实催化。",
+          "两只ETF最新份额、净资产和159599前十大持仓只到2026-09-30，不能当作2026-11-04实时持仓；没有同日NAV/IOPV，故不计算折溢价。基金合同中的T+0、申赎门槛未逐条核对，执行约束以账本可卖日为准。",
+          "若干已成功的divide/subtract结果输入口径未保留在可见上下文，本轮不采用，避免把未知算式写成论据。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "bdc305413240469a8b9c5dcad8059020",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "job_id": "ef306d1751894987a599539387946b7f",
+      "input_version": 5,
+      "status": "stale",
+      "created_at": "2026-11-05T00:43:12.222827+08:00",
+      "report_sha256": "a59591bbe7e39643e1b6ec793a468172d65f4ea7cd924f7243ad4c07b78c4e29",
+      "report_characters": 3628,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "account",
+          "SH:518880",
+          "SZ:002354",
+          "SZ:159599"
+        ],
+        "decision_summary": "版本5只是模拟卖出100份518880，现金升至86479.90并占总资产88.63%；该成交价10高于11月4日收盘，记账增益不是市场上涨。维持高现金，三只都不加仓。剩余黄金持有不再卖；002354可卖日后减一部分优于加仓或清仓，但今日不可卖且不代表看跌；159599继续持有不加。1/5/20日方向均弃权。",
+        "limitations": [
+          "本轮未重读002354三季报PDF，也未读分部、商誉测试和审计意见；减仓理由依赖上一轮对材料8f07e78b545442dcb6eb0e0b9251a4bb的提取，若原文不一致则需重估。",
+          "黄金Au99.99原页、美元与实际利率，以及159599在11月4日近涨停的原因，本轮只有链接或未读正文，因此三个期限的方向均弃权。",
+          "两只ETF的费率、规模和2026-09-30持仓沿用上一轮，未重读；没有同日NAV/IOPV，未计算折溢价，季报持仓不能当实时持仓。",
+          "报价是2026-11-04收盘，预测基准未就绪；未来卖出费用未估算，002354与159599在2026-11-06前按账本不可卖，故不给可执行股数或卖出后精确现金。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "e9cecf33d4b9446f8dc3f37d874e1443",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "job_id": "02c50aa02d0f4eaab9510f116c1489af",
+      "input_version": 2,
+      "status": "stale",
+      "created_at": "2026-11-05T00:52:27.870817+08:00",
+      "report_sha256": "26f259b9301c4ee2b57a11aaa7b372168c15ba3a8dfc6da07da47012a5763af6",
+      "report_characters": 2734,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SZ:159278",
+          "account"
+        ],
+        "decision_summary": "2026-11-05开盘前，对全现金账户维持持币、暂不买入SZ:159278；产品可观察，但11月4日收盘已较前收上涨6.23%、较10月15日低点上涨约19.3%且高于20日均线，不适合在开盘前把单一机器人主题作为第一笔投入。1/5/20日方向均弃权。若回吐至20日均线0.874附近且不破0.786，或站稳0.969后回踩确认，才重估小比例，仍不全仓。",
+        "limitations": [
+          "季报全文15页未读完；对全部15页检索“前十/公允价值”等词无命中，2026-09-30前十持仓和指数实时成分、权重均未知。不能判断个股集中度，持仓时点也不能代替2026-11-04持仓。",
+          "管理费、托管费具体费率未从已读页提取，不能量化持有成本；该缺口不改变暂不买入。",
+          "无2026-11-04的NAV或IOPV，不能计算实时折溢价；0.938只是收盘价。",
+          "若干新闻与基金页面仅有链接、正文未读，隔夜催化剂未知，因此1日方向弃权，不用标题当事实。",
+          "已取得沪深300日线，但未完成与159278的同窗相对收益计算；相对大盘仅采用季报中管理人的2026Q3陈述，不外推到11月。",
+          "行情为不复权日线，可见样本止于2026-08-05至2026-11-04共60根，更早价格未知。预测基准仍未就绪。未派发子任务，无子报告可吸收。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "3d717c5de3c142bb85c083a9638a9221",
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "job_id": "03ade9a3be204f1ab8f5d67318a24f0c",
+      "input_version": 6,
+      "status": "stale",
+      "created_at": "2026-11-05T00:54:45.650982+08:00",
+      "report_sha256": "92e14dd789ec70c86811f68de794e5cb7878a30de8b7ab08f8bbc733fd5ed2b4",
+      "report_characters": 4367,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "account",
+          "SH:518880",
+          "SZ:002354",
+          "SZ:159278",
+          "SZ:159599"
+        ],
+        "decision_summary": "版本6持仓与现金相对已入账的黄金减半未变，只是研究范围加入未持有的SZ:159278。维持高现金：518880残余持有、不加不减；002354在2026-11-06可卖前不交易，可卖后减一部分以降低证券口径集中度，这不是看跌也不是清仓；159599持有不加；159278暂不买入、只观察。四只证券的1/5/20日方向均弃权。",
+        "limitations": [
+          "518880、159599的基金正文和002354三季报本轮未重读，费率、跟踪口径、单季利润、商誉和质押仍是上一轮提取；若原文有更正，基本面腿需重估，但不改变由当前账本和集中度推出的不加仓。",
+          "159278无2026-11-04同日NAV/IOPV，不能算折溢价；国证机器人产业指数980022同期行情、11月4日成分权重、跟踪误差和季报第13-15页未取得。价差未知。",
+          "11月5日仍是开盘前，估值是11月4日收盘后报价，不触发新鲜行情条件。持仓三只的区间收益和均线本轮未重算，方向预测因此弃权而不是给出涨跌。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "ca5bb5d28aa64a42800b3f016157e668",
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "job_id": "efe944bad89e48f5ae35a3da20ddf951",
+      "input_version": 2,
+      "status": "stale",
+      "created_at": "2026-11-05T01:02:54.562108+08:00",
+      "report_sha256": "48c2fd1d6d6e5ad25a805e0ff49a9f50d001506660e8b9673e8e40eb9613a788",
+      "report_characters": 2568,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SZ:159278"
+        ],
+        "decision_summary": "2026-11-05开盘前，SZ:159278对全现金平衡账户维持持币观察、暂不买入。2026-11-04收盘0.938较前收约+6.23%，高于20日均线0.87415；季报与指数方案确认其跟踪国证机器人产业指数且主题暴露真实，但不构成在延伸位置投入第一笔现金的理由。1/5/20日方向弃权。即使观察条件出现，也只重估小比例。",
+        "limitations": [
+          "国证机器人产业指数编制方案的可见摘录只覆盖选样空间前半部分；样本数量、加权方式、权重上限和调整频率未进入可见正文，故不评价指数集中度或即将调样。",
+          "季报第5–6页及第13–15页未在本轮可见摘录中核对，因此不引用6个月、12个月和成立以来超额。",
+          "季报15页检索“管理费”无命中，费率未知；不影响当前不交易的现金结论，但限制以后的费用情景。",
+          "没有与2026-11-04场内价可比时点的NAV或IOPV，不计算折溢价；2026-09-30持仓不能代替11月4日成分。",
+          "新闻和第三方成分权重链接仅有URL，正文未读，不作为隔夜催化剂依据。",
+          "2026-11-05尚未连续交易，0.938不是可成交价；费用和最小交易单位未知，不换算股数。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    }
+  ],
+  "forecast_counts": {
+    "('exploratory', 'abstain')": 36
+  },
+  "stage_results": [
+    {
+      "label": "a_initial",
+      "at": "2026-11-05T00:31:19.814055+08:00",
+      "duration_seconds": 839.213,
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "publication": {
+        "status": "pass",
+        "current_version": 4,
+        "current_report_ids": [
+          "9520a02fb6724deab6973b8ddaeb0838"
+        ],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "a_after_sell",
+      "at": "2026-11-05T00:43:18.828795+08:00",
+      "duration_seconds": 718.872,
+      "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+      "publication": {
+        "status": "pass",
+        "current_version": 5,
+        "current_report_ids": [
+          "bdc305413240469a8b9c5dcad8059020"
+        ],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "b_cash_and_universe_events",
+      "at": "2026-11-05T01:03:24.658348+08:00",
+      "duration_seconds": 1205.668,
+      "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+      "publication": {
+        "status": "pass",
+        "current_version": 2,
+        "current_report_ids": [
+          "ca5bb5d28aa64a42800b3f016157e668"
+        ],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "after_pause_configuration_events",
+      "at": "2026-11-05T01:11:00.438432+08:00",
+      "duration_seconds": 455.679,
+      "account_id": null,
+      "publication": null,
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "after_restart",
+      "at": "2026-11-05T01:11:07.958841+08:00",
+      "duration_seconds": 6.503,
+      "account_id": null,
+      "publication": null,
+      "settled_status": "quiescent"
+    }
+  ],
+  "demand_counts": {
+    "('ledger_update', 'completed')": 4,
+    "('configuration_changed', 'completed')": 1,
+    "('recommendation_review', 'completed')": 8,
+    "('universe_changed', 'uncovered')": 1,
+    "('public_information', 'completed')": 304,
+    "('public_information', 'failed')": 2,
+    "('public_information', 'uncovered')": 2,
+    "('recommendation_review', 'failed')": 6,
+    "('configuration_changed', 'failed')": 2
+  },
+  "health_runtime": {
+    "started_at": "2026-11-05T00:17:20.219122+08:00",
+    "commit_at_start": "3da5f191c464e27120bd0f739ef2355e10122070",
+    "api_contract": 13,
+    "instance_id": "746f6286e95444cf9ce06c3dca2f3823",
+    "pid": 51427,
+    "port": 50825,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+    "database_identity": "c7bdf08c6c78517289a5b04937a9682195cfa650c85994466b018208f214caf7",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "46d84df57c33db95833e5b5b5fb9cdc69d934f6f00cdeb2c71eb29069efaa926",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "schema_version": 11,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "restart_runtime": {
+    "started_at": "2026-11-05T01:11:01.220935+08:00",
+    "commit_at_start": "3da5f191c464e27120bd0f739ef2355e10122070",
+    "api_contract": 13,
+    "instance_id": "870bedbb0e1c4c9cb60a738dafb47711",
+    "pid": 55509,
+    "port": 50825,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+    "database_identity": "c7bdf08c6c78517289a5b04937a9682195cfa650c85994466b018208f214caf7",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "46d84df57c33db95833e5b5b5fb9cdc69d934f6f00cdeb2c71eb29069efaa926",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "schema_version": 11,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "actual_model_bindings": {
+    "('grok-4.7', 'xhigh')": 91,
+    "('grok-4.6', 'high')": 12,
+    "('grok-4.7', 'medium')": 65
+  },
+  "output_limit_fields_present_request_count": 0,
+  "forecast_evaluations_count": 0,
+  "forecast_batch_state_counts": [
+    [
+      "exploratory",
+      "open",
+      3
+    ],
+    [
+      "exploratory",
+      "published",
+      5
+    ]
+  ],
+  "configured_scope": {
+    "model_network_route": "direct",
+    "model_network_revision": 0,
+    "max_job_attempts": 1,
+    "max_started_tasks_semantics": "Observation threshold; polled after launch, stop only when started count > 12; not a preflight hard cap"
+  }
+}

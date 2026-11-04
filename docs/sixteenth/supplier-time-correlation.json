@@ -1,0 +1,34 @@
+{
+  "source": "User supplied the three supplier-side timestamps during this investigation; no raw supplier log or request ID supplied",
+  "timezone": "Asia/Shanghai",
+  "matches": [
+    {
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "event_seq": 1423,
+      "response_id": "951d672d-6380-9161-851c-4dad60b1140f",
+      "user_supplied_supplier_timestamp": "2026-11-04T23:48:05+08:00",
+      "local_request_finished_at": "2026-11-04T23:48:05.436916+08:00",
+      "within_same_second": true,
+      "body_idle_ms": 49921.04
+    },
+    {
+      "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "event_seq": 1722,
+      "response_id": "5373ae6c-6a8d-9323-9579-fa38617548f5",
+      "user_supplied_supplier_timestamp": "2026-11-05T00:02:00+08:00",
+      "local_request_finished_at": "2026-11-05T00:02:00.229066+08:00",
+      "within_same_second": true,
+      "body_idle_ms": 49920.16
+    },
+    {
+      "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+      "event_seq": 2043,
+      "response_id": "81772b4d-2aa9-90f0-b15e-1223e6b8ee44",
+      "user_supplied_supplier_timestamp": "2026-11-05T00:15:35+08:00",
+      "local_request_finished_at": "2026-11-05T00:15:35.123992+08:00",
+      "within_same_second": true,
+      "body_idle_ms": 49921.29
+    }
+  ],
+  "boundary": "Matching timestamps support event correlation, not independent proof of the exact initiating network hop."
+}

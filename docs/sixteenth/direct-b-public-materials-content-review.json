@@ -1,0 +1,1322 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "reviewed_at": "2026-11-05T01:07:55.230953+08:00",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "accepted": true,
+  "decision": "limited_content_accepted_event_demand_coverage_partial",
+  "acceptance_scope": "Limited account-specific content minimum only. Public event demand handling is not fully accepted:2/4 completed and2 uncovered despite claimed coverage. No route causal conclusion or provider guarantee.",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+    "input_version": 2,
+    "job_id": "efe944bad89e48f5ae35a3da20ddf951",
+    "report_id": "ca5bb5d28aa64a42800b3f016157e668",
+    "created_at": "2026-11-05T01:02:54.562108+08:00",
+    "report_characters": 2568,
+    "report_utf8_sha256": "48c2fd1d6d6e5ad25a805e0ff49a9f50d001506660e8b9673e8e40eb9613a788",
+    "stored_result_utf8_sha256": "1b315625b8ec9eee9e1eb6b853d68d40b1bec2eb53cbc37185d423b7ed76c0ee"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro; no application/DB write or model call",
+    "original_body_changed": false,
+    "source_documents_refetched": false,
+    "final_http_payload_persisted": false
+  },
+  "configuration_evidence": {
+    "model_name": "grok-4.7",
+    "reasoning_effort": "xhigh",
+    "model_network_route": "direct",
+    "model_network_revision": 0,
+    "max_model_calls": 40,
+    "max_output_tokens": null
+  },
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SZ:159278"
+    ],
+    "decision_summary": "2026-11-05开盘前，SZ:159278对全现金平衡账户维持持币观察、暂不买入。2026-11-04收盘0.938较前收约+6.23%，高于20日均线0.87415；季报与指数方案确认其跟踪国证机器人产业指数且主题暴露真实，但不构成在延伸位置投入第一笔现金的理由。1/5/20日方向弃权。即使观察条件出现，也只重估小比例。",
+    "limitations": [
+      "国证机器人产业指数编制方案的可见摘录只覆盖选样空间前半部分；样本数量、加权方式、权重上限和调整频率未进入可见正文，故不评价指数集中度或即将调样。",
+      "季报第5–6页及第13–15页未在本轮可见摘录中核对，因此不引用6个月、12个月和成立以来超额。",
+      "季报15页检索“管理费”无命中，费率未知；不影响当前不交易的现金结论，但限制以后的费用情景。",
+      "没有与2026-11-04场内价可比时点的NAV或IOPV，不计算折溢价；2026-09-30持仓不能代替11月4日成分。",
+      "新闻和第三方成分权重链接仅有URL，正文未读，不作为隔夜催化剂依据。",
+      "2026-11-05尚未连续交易，0.938不是可成交价；费用和最小交易单位未知，不换算股数。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "checks": [
+    {
+      "name": "account_fit_counterevidence_conditions",
+      "status": "pass",
+      "evidence": "Maintains100000 cash and no holdings, no trade/quantity; compares immediate entry and permanent exclusion, includes rebound opportunity cost and relative fund performance, specifies small-allocation review conditions."
+    },
+    {
+      "name": "price_reference_precision",
+      "status": "pass",
+      "evidence": "Explicitly calls0.786 Oct15 closing value and0.969 Oct28 intraday high; fixed MA20 belongs to Nov4 and is not silently a future rolling mean. Correctly excludes pre-open quote from executable price."
+    },
+    {
+      "name": "period_arithmetic",
+      "status": "pass",
+      "evidence": "Source container62 rows; actual requested Aug5-Nov4 calculation60 closes/59 return intervals. −6.573705%,0.02744658 unannualized sample volatility and MA20=0.87415 independently reproduced."
+    },
+    {
+      "name": "new_holdings_facts",
+      "status": "pass",
+      "evidence": "Ten disclosed weights sum39.71%, largest5.36%; dated Sep30 and not substituted for Nov4 holdings/index weight. Equity98.31% total assets and active stock0.49% NAV preserve denominators; tiny0.01% position not presented as catalyst."
+    },
+    {
+      "name": "liquidity_statement",
+      "status": "needs_qualification",
+      "evidence": "20-row visible amounts47.9058011–259.01423726 million support broad capacity relative100000, not order-book depth/spreads/premium or guaranteed executions. Prose liquidity-not-a-constraint remains overbroad."
+    },
+    {
+      "name": "public_event_demand_coverage",
+      "status": "partial_not_pass",
+      "evidence": "Both source events researched and discussed, but persisted expected4/completed2/uncovered2. Public-information demands4222/4762 remain uncovered. All four IDs were read and claimed, event keys match; reviewer does not invent a cause or mark completion. Frozen complete_task_demands filters security-only scope to recommendation_review demands; this explains the conservative2/4 result, not a transport failure or proof of absent reading."
+    },
+    {
+      "name": "material_visibility",
+      "status": "partially_verified",
+      "evidence": "Actual receipts span broader source pages than final adopted excerpts; final projection truncates/omits25/43 outputs and full final raw request is unavailable. Report conservatively limits source claims; no full-file read inferred from stored source alone."
+    },
+    {
+      "name": "account_isolation",
+      "status": "pass_with_observation_boundary",
+      "evidence": "41 material receipts all public/B; no child report delivery, no observed A private conclusion delivery. Public raw source sharing is legitimate and separately routed."
+    },
+    {
+      "name": "model_transport_contract_publication",
+      "status": "pass",
+      "evidence": "11/11 actual direct attempts completed with HTTP EOF, zero error, first accepted submission zero corrections, limited report persisted. Application assessment remains not_evaluated."
+    }
+  ],
+  "calculations": {
+    "container_rows": 62,
+    "container_start": "2026-08-03",
+    "container_end": "2026-11-04",
+    "actual_return_start": "2026-08-05",
+    "actual_return_end": "2026-11-04",
+    "return_points": 60,
+    "return_intervals": 59,
+    "return_pct": "-6.573705179282868525896414340",
+    "sample_daily_return_standard_deviation": 0.02744658131150368,
+    "moving_average20": "0.87415",
+    "moving_average20_start": "2026-10-08",
+    "moving_average20_end": "2026-11-04",
+    "close_minus_ma20": "0.06385",
+    "nov4_close_over_previous_pct": "106.2287655719139297848244621",
+    "top10_weights_pct": [
+      "5.36",
+      "5.18",
+      "4.18",
+      "4.07",
+      "3.94",
+      "3.89",
+      "3.41",
+      "3.40",
+      "3.18",
+      "3.10"
+    ],
+    "top10_sum_pct": "39.71",
+    "visible_amount_query": {
+      "receipt_id": 1243,
+      "rows": 20,
+      "start": "2026-10-08",
+      "end": "2026-11-04",
+      "min": "47905801.100",
+      "max": "259014237.260"
+    }
+  },
+  "event_coverage": {
+    "status": "partial",
+    "routed_source_ids": [
+      "fc29e7bba69244309eaef8926aceaca9",
+      "ddbedf9636394976b47f686f866ae000"
+    ],
+    "claimed_ids": [
+      4222,
+      4229,
+      4762,
+      4769
+    ],
+    "read_ids": [
+      4222,
+      4229,
+      4762,
+      4769
+    ],
+    "persisted_coverage": {
+      "expected": 4,
+      "completed": 2,
+      "uncovered": 2,
+      "unaccepted_claims": [
+        4222,
+        4762
+      ],
+      "items": [
+        {
+          "id": 4222,
+          "state": "uncovered"
+        },
+        {
+          "id": 4229,
+          "state": "completed"
+        },
+        {
+          "id": 4762,
+          "state": "uncovered"
+        },
+        {
+          "id": 4769,
+          "state": "completed"
+        }
+      ]
+    },
+    "uncovered_rows": [
+      {
+        "id": 4222,
+        "event_key": "news:08b7c5c7f2524e67aa8232d3e0607581:event:bd7cf08a0ea0a6e279f251cfdcab738fae9133d2ec02183a90f99a427944295f",
+        "kind": "public_information",
+        "state": "uncovered",
+        "detail": "报告未明确覆盖此项；保留待处理，手动重试时重新安排"
+      },
+      {
+        "id": 4762,
+        "event_key": "news:08b7c5c7f2524e67aa8232d3e0607581:event:1b2bc3a50e6ae50c5e4e20e3708c50ec01f5e0f83a62cd4108e81a9fa6f6b53d",
+        "kind": "public_information",
+        "state": "uncovered",
+        "detail": "报告未明确覆盖此项；保留待处理，手动重试时重新安排"
+      }
+    ],
+    "information_impacts": [
+      {
+        "material_id": "fc29e7bba69244309eaef8926aceaca9",
+        "status": "relevant",
+        "explanation": "该材料为鹏华国证机器人产业ETF 2026年第3季度报告的检索记录，同文件正文已核对产品身份、报告期业绩、资产规模和2026-09-30前十持仓。它支持“产品可观察、跟踪未显失效”，但不改变2026-11-05开盘前暂不买入。持仓不是实时成分。",
+        "symbols": [
+          "SZ:159278"
+        ],
+        "sectors": [
+          "机器人产业"
+        ],
+        "market_wide": false,
+        "event_key": "news:08b7c5c7f2524e67aa8232d3e0607581:event:bd7cf08a0ea0a6e279f251cfdcab738fae9133d2ec02183a90f99a427944295f",
+        "references": [
+          {
+            "material_id": "fc29e7bba69244309eaef8926aceaca9",
+            "status": "resolved",
+            "title": null,
+            "url": "http://static.cninfo.com.cn/finalpage/2026-10-26/1225621727.PDF",
+            "scope": "public",
+            "access": "pdf_search",
+            "classification": "unclassified",
+            "document_version": 1,
+            "document_identity_kind": "raw_bytes_sha256",
+            "representation_kind": "original_document",
+            "range": {
+              "char_count": 1053,
+              "truncated": false,
+              "read_completeness": "partial"
+            },
+            "locator": "/api/materials/fc29e7bba69244309eaef8926aceaca9/range?account_id=08b7c5c7f2524e67aa8232d3e0607581"
+          }
+        ]
+      },
+      {
+        "material_id": "ddbedf9636394976b47f686f866ae000",
+        "status": "relevant",
+        "explanation": "国证机器人产业指数编制方案可见部分确认标的为980022、规则型产业指数，基日2014-12-31、基点1000，并列出部分选样筛选。样本数、加权和调整频率未进入可见摘录，不改变持币结论，也不能当成实时成分权重。",
+        "symbols": [
+          "SZ:159278"
+        ],
+        "sectors": [
+          "机器人产业"
+        ],
+        "market_wide": false,
+        "event_key": "news:08b7c5c7f2524e67aa8232d3e0607581:event:1b2bc3a50e6ae50c5e4e20e3708c50ec01f5e0f83a62cd4108e81a9fa6f6b53d",
+        "references": [
+          {
+            "material_id": "ddbedf9636394976b47f686f866ae000",
+            "status": "resolved",
+            "title": null,
+            "url": "https://www.cnindex.com.cn/docs/gz_980022.pdf",
+            "scope": "public",
+            "access": "full_text",
+            "classification": "unclassified",
+            "document_version": 1,
+            "document_identity_kind": "raw_bytes_sha256",
+            "representation_kind": "original_document",
+            "range": {
+              "returned_range": {
+                "start_page": 1,
+                "end_page": 4
+              },
+              "requested_range": {
+                "start_page": 1,
+                "end_page": 4
+              },
+              "pages": [
+                {
+                  "page": 1,
+                  "text_start": 0,
+                  "text_end": 291,
+                  "text_length": 291,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=1"
+                },
+                {
+                  "page": 2,
+                  "text_start": 0,
+                  "text_end": 376,
+                  "text_length": 376,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=2"
+                },
+                {
+                  "page": 3,
+                  "text_start": 0,
+                  "text_end": 469,
+                  "text_length": 469,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=3"
+                },
+                {
+                  "page": 4,
+                  "text_start": 0,
+                  "text_end": 80,
+                  "text_length": 80,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=4"
+                }
+              ],
+              "char_count": 1256,
+              "truncated": false,
+              "offset": 0,
+              "returned_chars": 1256,
+              "requested_chars": 12000,
+              "read_completeness": "complete_extracted_text"
+            },
+            "locator": "/api/materials/ddbedf9636394976b47f686f866ae000/range?account_id=08b7c5c7f2524e67aa8232d3e0607581"
+          }
+        ]
+      }
+    ],
+    "scope_policy_explanation": {
+      "code": "app/scheduling.py:178",
+      "observed_report_scope": [
+        "SZ:159278"
+      ],
+      "rule": "Without account/public/cash_only scope, complete_task_demands only discharges matching persisted recommendation_review demands. Read and claimed public_information demands remain uncovered.",
+      "verified_by": "Read-only inspection of frozen source; no policy change or retry."
+    }
+  },
+  "sources": {
+    "price_material_id": "539929fce538436082986e04e58dff74",
+    "q3_11_12_page_material_id": "dcccb5fa256d445c840805b35b7e7e59",
+    "q3_10_15_page_material_id": "a51d8d5fe1534d948e87b11a3478785b",
+    "q3_7_12_page_material_id": "f0f991d847b541839f7acdcba5166356",
+    "q3_document_sha256": "34d233606fbb94c78b43d417c5d7aa7987ad0b960daf028f9a0f0736b16ba06c",
+    "index_material_id": "ddbedf9636394976b47f686f866ae000"
+  },
+  "visibility": {
+    "material_delivery_rows": 41,
+    "material_receipts": [
+      {
+        "id": 1234,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "fc29e7bba69244309eaef8926aceaca9",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1053,
+          "total_chars": 1053,
+          "truncated": false,
+          "source_truncated": false
+        },
+        "visible_result_hash": "119bfc7a332cb51fa60a7ef8cca1e7f61be7e660c790bb1cd1127e6286464fb5"
+      },
+      {
+        "id": 1235,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "ddbedf9636394976b47f686f866ae000",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1256,
+          "total_chars": 1256,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 4
+          }
+        },
+        "visible_result_hash": "6715d24efb5d8d71fa121f9161ae7eae8fb4b633ee6c76b9f31b6fc32423b809"
+      },
+      {
+        "id": 1236,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "439730de03c24646b394de2c439fc984",
+        "scope": "public",
+        "tool": "search_pdf",
+        "delivered_range": {
+          "truncated": false
+        },
+        "visible_result_hash": "b9adf8ddc602fd42aae558e94eece0fd34ebce503ccfd0a9870de3b3f744a305"
+      },
+      {
+        "id": 1237,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "13a52e6e6db843b78e16fa3c2dc98116",
+        "scope": "public",
+        "tool": "search_pdf",
+        "delivered_range": {
+          "truncated": false
+        },
+        "visible_result_hash": "b2c4274cc4e9edaaf17f785b3a41ff6621d24923c338ba6a3aacda5c682d4f33"
+      },
+      {
+        "id": 1238,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "539929fce538436082986e04e58dff74",
+        "scope": "public",
+        "tool": "history",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-16",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": false,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 30,
+          "next_offset": 30,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "3015d7ec5b326413f1144547a9d237b71562c3ffbf8c7b7bb5d6a873fcee1ad2"
+      },
+      {
+        "id": 1239,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "b4bafb5310344fd18f1bf2ee2bb58d3b",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 2,
+            "end_page": 6
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 2,
+            "end_page": 6
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "49bfae077412a929f9ed439dd2a4da47602afc7eb9102cb91766a70ecfb5ca60"
+      },
+      {
+        "id": 1240,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "dcccb5fa256d445c840805b35b7e7e59",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 11,
+            "end_page": 12
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 11,
+            "end_page": 12
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "c1b4e5499274fd39252b604916651a3b79a55864322369ac1d451b10154e996f"
+      },
+      {
+        "id": 1241,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "91ed777d24f24354bbeaafe83e3e63c0",
+        "scope": "public",
+        "tool": "search_pdf",
+        "delivered_range": {
+          "truncated": true
+        },
+        "visible_result_hash": "9e5094af9dd66ecf5bcbf19c6bd65c9e552508a003628e4882f99f02fe77d1b0"
+      },
+      {
+        "id": 1242,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "539929fce538436082986e04e58dff74",
+        "scope": "public",
+        "tool": "market_indicators",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-08-05",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-08-05",
+            "end": "2026-11-04"
+          },
+          "row_count": 60,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "efed131b907e1f29f3b0293561a37faf5a428cd238d19f3495aadb73081285bb"
+      },
+      {
+        "id": 1243,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "539929fce538436082986e04e58dff74",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-08",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-08",
+            "end": "2026-11-04"
+          },
+          "row_count": 20,
+          "next_offset": null,
+          "order": "asc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "32e65243465ed9fade55e8dfee56d24517e788351b030869fbc7ec6b74223d12"
+      },
+      {
+        "id": 1246,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "d39cf6456fd240a0996f0ec4cbfe8244",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "6671f5c849b6a02a0c92d50eb2e078ceeb72e46f8aa1a917f32b49c07c8bb22b"
+      },
+      {
+        "id": 1247,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "4ed6891da97c4515b3439ecf61449271",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "33a1d6fe276a6cc43982377f3be1e4268f7f60c64734a512109f6633b83a024e"
+      },
+      {
+        "id": 1248,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "a3ec4ad1caff4fe78797e7affa5a7222",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "2494b701c75ed85f04040394d3dfa33c650452045a11c2cf705f0876af977016"
+      },
+      {
+        "id": 1249,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "6e83975c6cf9479ab04c3aef2287d886",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "146399edc9936b23adfbfe440229842c43193dd528d36aaafd12d00e9cfe1a6a"
+      },
+      {
+        "id": 1250,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "191a5f676a2b4eb18021233380852c0a",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "ee858dad8bd7353ab0440cd88088e5525b5df9422397ffdcfe16942c6d2e0b4e"
+      },
+      {
+        "id": 1251,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "d8522b21dff74258a536b6f3b4c80db3",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "8d7d0bc8bedb0f8bda7d1a287f1709cc8bb3a32424ec8ff4e839bef79360c2bf"
+      },
+      {
+        "id": 1252,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "a8c760dd7a8c40129b83651b6126be8f",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "efe279368b621067a42aa87b53dc2230ca332d4ff9c7e139a723ffd8a7b4eb6d"
+      },
+      {
+        "id": 1253,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "7cfd57b48fd3429fb828f6882ea24ee2",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "2261d0da134548b3dc4bcce802c45221b22b564bb443763ddde6097326629d42"
+      },
+      {
+        "id": 1254,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "b1eb8c6c28bc4e46a8fdfdcecfbe6079",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "f77a56df362f18b5f2dc54252135abf563d2121ebd8763a65df1e45f22468fe3"
+      },
+      {
+        "id": 1255,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "f82c7463e62e48bba31ee61b35da2124",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "65cd00c33220108cce51398e87c409b19c848b55f9e9b3182584ec10e9e2b5f0"
+      },
+      {
+        "id": 1256,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "77fb60a51e824d5aa21fa40394ef61a1",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "ed83624703ce9c71149b07b9517d6cf3ba96fdaf1c0f4566e1612de805c97bab"
+      },
+      {
+        "id": 1257,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "cea7612109de49f18d19012e4742951f",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "ecbf67ffb5ea0ec74bf126ac06112320899d8e407be94883e298a47c636e02d6"
+      },
+      {
+        "id": 1258,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "711714c814f4444db712e6f44677ac49",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "fce2a163d7d37e108ec7b64341e6c6a8001b43788238a812ab0c267df3821191"
+      },
+      {
+        "id": 1259,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "0618585c6b1e4c6282749ba3920ddafc",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "7d286f04bcca8cabba9498c68fb52c0b197c617a17861313feb0daaf53489be5"
+      },
+      {
+        "id": 1260,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "854d61bdd30444dbbe22c863964c9173",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 7,
+            "end_page": 9
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 7,
+            "end_page": 9
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "f0e98e2ddf860230860f78442ae647179b83fb7a59a69b10d053e142a26653bd"
+      },
+      {
+        "id": 1261,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "fc29e7bba69244309eaef8926aceaca9",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1053,
+          "total_chars": 1053,
+          "truncated": false,
+          "source_truncated": false
+        },
+        "visible_result_hash": "119bfc7a332cb51fa60a7ef8cca1e7f61be7e660c790bb1cd1127e6286464fb5"
+      },
+      {
+        "id": 1262,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "ddbedf9636394976b47f686f866ae000",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1256,
+          "total_chars": 1256,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 4
+          }
+        },
+        "visible_result_hash": "6715d24efb5d8d71fa121f9161ae7eae8fb4b633ee6c76b9f31b6fc32423b809"
+      },
+      {
+        "id": 1264,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "a51d8d5fe1534d948e87b11a3478785b",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 10,
+            "end_page": 15
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 10,
+            "end_page": 15
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "15e71abb7b34f8cb57b61a99682a9fcb76ae0adb6433676a0bfe991e1674fc05"
+      },
+      {
+        "id": 1265,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "cc497ebec5d54b52b2aaaadd437bc4ed",
+        "scope": "public",
+        "tool": "search_pdf",
+        "delivered_range": {
+          "truncated": false
+        },
+        "visible_result_hash": "584b097d8813f3339aa6a2c65952cac190840b2e422f02f3ecca506297058e83"
+      },
+      {
+        "id": 1275,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "634563c6d48748988c52a58f9a19108d",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "8da106bb5ae0fddd5122b2d90b488290c5f2683a7d864bdb2bfd93100909e24f"
+      },
+      {
+        "id": 1276,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "b1eb8c6c28bc4e46a8fdfdcecfbe6079",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "f77a56df362f18b5f2dc54252135abf563d2121ebd8763a65df1e45f22468fe3"
+      },
+      {
+        "id": 1277,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "d6b834a86d004577b92df0e86a92a71d",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "be4f47a496190d0bf67c6f39e3cbe817ced751f21d59f8b8d3519acee2684f79"
+      },
+      {
+        "id": 1278,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "a3ec4ad1caff4fe78797e7affa5a7222",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "2494b701c75ed85f04040394d3dfa33c650452045a11c2cf705f0876af977016"
+      },
+      {
+        "id": 1279,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "5746bd7f41604c07a8661e7c778df073",
+        "scope": "public",
+        "tool": "native_search",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "f0ac9a46109bb060f87af9ea7c6afead1ab8ebea68c812453e6f9d07e43d3991"
+      },
+      {
+        "id": 1280,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "d60ebb24b1824aa9926d1c1ca9b311ff",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 6
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 6
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "b511edf6ca811510dc30b319fff8342d80e189432a99bf9fbd1d02f0163ee1f8"
+      },
+      {
+        "id": 1281,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "539929fce538436082986e04e58dff74",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "row_count": 15,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "2811a09120028b3211e67a185a719b63e410dac8c7e7703912f3ccc4a0aca626"
+      },
+      {
+        "id": 1282,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "fc29e7bba69244309eaef8926aceaca9",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1053,
+          "total_chars": 1053,
+          "truncated": false,
+          "source_truncated": false
+        },
+        "visible_result_hash": "119bfc7a332cb51fa60a7ef8cca1e7f61be7e660c790bb1cd1127e6286464fb5"
+      },
+      {
+        "id": 1283,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "ddbedf9636394976b47f686f866ae000",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1256,
+          "total_chars": 1256,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 4
+          }
+        },
+        "visible_result_hash": "6715d24efb5d8d71fa121f9161ae7eae8fb4b633ee6c76b9f31b6fc32423b809"
+      },
+      {
+        "id": 1296,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "f0f991d847b541839f7acdcba5166356",
+        "scope": "public",
+        "tool": "read",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 7,
+            "end_page": 12
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 7,
+            "end_page": 12
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "bc9a4b7cf4a098ed2335c0789f988a01229467be1ec80b52c891db635b6e3349"
+      },
+      {
+        "id": 1297,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "c8ee0ec67ef246f48a29bc98d84b0ff5",
+        "scope": "public",
+        "tool": "get_material",
+        "delivered_range": {
+          "start": 0,
+          "end": 1023,
+          "total_chars": 1023,
+          "truncated": false,
+          "source_truncated": false
+        },
+        "visible_result_hash": "05f3b38ee5fa5ecc873576788bf72d05da1883919bd40bf200c4afb9906b8a47"
+      },
+      {
+        "id": 1298,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "material_id": "539929fce538436082986e04e58dff74",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "row_count": 15,
+          "next_offset": null,
+          "order": "asc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "1f7eb8691d0290f86fe929f1e4b3bc5c35bec46acc5692af6115a00a37b24f28"
+      }
+    ],
+    "child_report_delivery_rows": 0,
+    "synthesis_projection": {
+      "seq": 1716,
+      "reason": "bounded_final_request",
+      "before_chars": 166496,
+      "after_chars": 167362,
+      "visible_tool_outputs": 43,
+      "truncated_outputs": 25,
+      "archive_count": 120
+    },
+    "final_calculation_coverage": {
+      "seq": 1717,
+      "request_number": 11,
+      "calculations": [
+        {
+          "calculation_id": "calculation-c52497c937f84f7ca367bcaf1a39971f",
+          "tool": "market_indicators",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-1"
+        },
+        {
+          "calculation_id": "calculation-d375280db13040e68ec866dd05073ab4",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-2"
+        },
+        {
+          "calculation_id": "calculation-14ba346c4f6540e88628a2228e86275e",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-3"
+        },
+        {
+          "calculation_id": "calculation-6eeb20575f7a49ae8c89e2653e6e2c8b",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-4"
+        },
+        {
+          "calculation_id": "calculation-6565f3b0bad54cb0af03b594cb83e683",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-5"
+        },
+        {
+          "calculation_id": "calculation-1d4b2ed7af7d408fb2649ea4792685c1",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-6"
+        },
+        {
+          "calculation_id": "calculation-47ffe81682fb4c0ea4574349466fd202",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-7"
+        },
+        {
+          "calculation_id": "calculation-86ad8a7e7cc54cf7abbacba53e0a6b5d",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-86"
+        },
+        {
+          "calculation_id": "calculation-a6121c0652d24ca3899c34d7f0440607",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "efe944bad89e48f5ae35a3da20ddf951",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-87"
+        }
+      ]
+    },
+    "final_request_input_items": 3,
+    "final_request_input_chars": 175565,
+    "shared_research_used": []
+  },
+  "usage": {
+    "http_attempts": 11,
+    "completed_and_eof": 11,
+    "error_attempts": 0,
+    "all_recorded_routes_direct": true,
+    "provider_reported_totals": {
+      "input_tokens": 538197,
+      "output_tokens": 47235,
+      "total_tokens": 585432,
+      "cost_in_usd_ticks": 3551292000,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 3
+    },
+    "actual_money_cost": "unknown; no independently matched invoice"
+  },
+  "forecast_batch": {
+    "id": "4092782e75ea4293b4c8c8cbb1d3a962",
+    "kind": "exploratory",
+    "base_date": "2026-11-04",
+    "deadline": "2026-11-06T00:53:00.965483+08:00",
+    "expected_count": 3,
+    "state": "published",
+    "baseline_evidence": "{}"
+  },
+  "forecast_rows": [
+    {
+      "id": "95f217c60fb7431ab10f96397b09f271",
+      "batch_id": "4092782e75ea4293b4c8c8cbb1d3a962",
+      "kind": "exploratory",
+      "horizon": 1,
+      "target_date": "2026-11-05",
+      "direction": "abstain",
+      "published_at": "2026-11-05T01:02:54.562825+08:00",
+      "information_cutoff": "2026-11-05T01:02:54.562825+08:00"
+    },
+    {
+      "id": "bc996a10d16445afa2cee3bf8ffd06f2",
+      "batch_id": "4092782e75ea4293b4c8c8cbb1d3a962",
+      "kind": "exploratory",
+      "horizon": 5,
+      "target_date": "2026-11-11",
+      "direction": "abstain",
+      "published_at": "2026-11-05T01:02:54.562825+08:00",
+      "information_cutoff": "2026-11-05T01:02:54.562825+08:00"
+    },
+    {
+      "id": "b7e69b3931ab4113af5f3356c038bb01",
+      "batch_id": "4092782e75ea4293b4c8c8cbb1d3a962",
+      "kind": "exploratory",
+      "horizon": 20,
+      "target_date": "2026-12-02",
+      "direction": "abstain",
+      "published_at": "2026-11-05T01:02:54.562825+08:00",
+      "information_cutoff": "2026-11-05T01:02:54.562825+08:00"
+    }
+  ],
+  "forecast_coverage": {
+    "expected": 3,
+    "direction_published": 0,
+    "abstained": 3,
+    "uncovered": 0,
+    "waiting_data": 0,
+    "missed": 0,
+    "failed": 0
+  },
+  "delivery_application": {
+    "suggestions": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "等待条件变化；定性条件由 Agent 复核",
+        "recommendation_id": "1f47195e1db945fdbfbe8f7655b835f1"
+      }
+    ],
+    "suggestion_actions": [],
+    "forecasts": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 1,
+        "forecast_id": "95f217c60fb7431ab10f96397b09f271"
+      },
+      {
+        "index": 1,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 5,
+        "forecast_id": "bc996a10d16445afa2cee3bf8ffd06f2"
+      },
+      {
+        "index": 2,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 20,
+        "forecast_id": "b7e69b3931ab4113af5f3356c038bb01"
+      }
+    ]
+  },
+  "ledger_entries": [
+    {
+      "id": "49ab60145f8f4838bb1ca6024addc688",
+      "kind": "opening",
+      "account_version": 1
+    }
+  ],
+  "remaining_limits": [
+    "Two public-information demands persist uncovered; content acceptance does not claim complete event coverage.",
+    "Daily capacity evidence does not prove executable liquidity.",
+    "Final exact raw material payload unavailable; broader acquired pages not automatically final reads.",
+    "All3 exploratory abstentions, no formal generation or directional accuracy sample.",
+    "Direct independent run is a bounded workaround test, not same-payload comparison or guarantee.",
+    "Initial B and environment results remain intact."
+  ]
+}

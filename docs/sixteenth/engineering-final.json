@@ -1,0 +1,104 @@
+{
+  "recorded_at": "2026-11-04T23:17:14.811753+08:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "source_matches_frozen": true,
+  "python": {
+    "passed": 1567,
+    "warnings": 1,
+    "duration_seconds": 207.24,
+    "log": "test-results/sixteenth/python-final.txt",
+    "environment": "PYTHON_DOTENV_DISABLED=1, project .venv Python"
+  },
+  "browsers": {
+    "groups": [
+      {
+        "group": "iteration",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 2029
+      },
+      {
+        "group": "production",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 8572
+      },
+      {
+        "group": "seventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 4704
+      },
+      {
+        "group": "ninth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16513
+      },
+      {
+        "group": "tenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 20082
+      },
+      {
+        "group": "eleventh",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 62200
+      },
+      {
+        "group": "twelfth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 107250
+      },
+      {
+        "group": "twelfth_select",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 16859
+      },
+      {
+        "group": "thirteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 41429
+      },
+      {
+        "group": "thirteenth_correction",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 6744
+      },
+      {
+        "group": "fourteenth",
+        "code": 0,
+        "signal": null,
+        "duration_ms": 1486
+      }
+    ],
+    "all_passed": true,
+    "log": "test-results/sixteenth/browser-final.txt",
+    "environment": "PYTHON_DOTENV_DISABLED=1, PYTHON=project .venv/bin/python, Playwright Chromium"
+  },
+  "remote_ci": {
+    "updated": false,
+    "reason": "No commit or push performed; local results do not update baseline CI"
+  },
+  "earlier_failures": [
+    "test-results/sixteenth/python-initial.txt",
+    "test-results/sixteenth/browser-frozen-v1-first.txt",
+    "test-results/sixteenth/prediction-context-initial.txt",
+    "test-results/sixteenth/prediction-context-regression.txt",
+    "docs/sixteenth/authentication.md",
+    "docs/sixteenth/model-route.md"
+  ],
+  "previous_complete_run": {
+    "source": "docs/sixteenth/frozen-source-v1.json",
+    "log": "test-results/sixteenth/python-frozen-v1.txt",
+    "passed": 1559,
+    "not_final_source": true
+  }
+}

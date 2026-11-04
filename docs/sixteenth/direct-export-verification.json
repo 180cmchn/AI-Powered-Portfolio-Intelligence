@@ -1,0 +1,60 @@
+{
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "method": "Read-only normal production HTTP exports; no model call or body rewrite",
+  "reports": [
+    {
+      "report_id": "9520a02fb6724deab6973b8ddaeb0838",
+      "database_report_sha256": "e35d316062b6f7079bce960bd494928399b416c11d15545a07b77d431c1b1611",
+      "exports": {
+        "original": {
+          "status": 200,
+          "sha256": "e35d316062b6f7079bce960bd494928399b416c11d15545a07b77d431c1b1611",
+          "filename": "attachment; filename=\"report-9520a02fb6724deab6973b8ddaeb0838-original.md\"",
+          "bytes": 8173
+        },
+        "reading": {
+          "status": 200,
+          "sha256": "acc2ac8d6ade36e9ab5119dfed8c388f6493758830348f93257894f9f0098443",
+          "filename": "attachment; filename=\"report-9520a02fb6724deab6973b8ddaeb0838-reading.md\"",
+          "bytes": 13037
+        }
+      }
+    },
+    {
+      "report_id": "bdc305413240469a8b9c5dcad8059020",
+      "database_report_sha256": "a59591bbe7e39643e1b6ec793a468172d65f4ea7cd924f7243ad4c07b78c4e29",
+      "exports": {
+        "original": {
+          "status": 200,
+          "sha256": "a59591bbe7e39643e1b6ec793a468172d65f4ea7cd924f7243ad4c07b78c4e29",
+          "filename": "attachment; filename=\"report-bdc305413240469a8b9c5dcad8059020-original.md\"",
+          "bytes": 7872
+        },
+        "reading": {
+          "status": 200,
+          "sha256": "a1a4f57ec151651d83bde3cf1eb21c375bb8169f3021a23f18ed74ebc782edb7",
+          "filename": "attachment; filename=\"report-bdc305413240469a8b9c5dcad8059020-reading.md\"",
+          "bytes": 12736
+        }
+      }
+    },
+    {
+      "report_id": "e9cecf33d4b9446f8dc3f37d874e1443",
+      "database_report_sha256": "26f259b9301c4ee2b57a11aaa7b372168c15ba3a8dfc6da07da47012a5763af6",
+      "exports": {
+        "original": {
+          "status": 200,
+          "sha256": "26f259b9301c4ee2b57a11aaa7b372168c15ba3a8dfc6da07da47012a5763af6",
+          "filename": "attachment; filename=\"report-e9cecf33d4b9446f8dc3f37d874e1443-original.md\"",
+          "bytes": 5914
+        },
+        "reading": {
+          "status": 200,
+          "sha256": "d381465cdae2bed78c9b7106871a893d44d3840a4e1e2c35a7d261560f8b1ff6",
+          "filename": "attachment; filename=\"report-e9cecf33d4b9446f8dc3f37d874e1443-reading.md\"",
+          "bytes": 8509
+        }
+      }
+    }
+  ]
+}

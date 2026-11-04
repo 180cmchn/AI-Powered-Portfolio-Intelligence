@@ -1,0 +1,91 @@
+{
+  "at": "2026-11-04T22:39:19.900815+08:00",
+  "files": {
+    ".env": {
+      "exists": true,
+      "sha256": "c0abd65ea07f4f033dfe34e3a527cbbe512cdc50324e0c5fdc815dd376e5a685",
+      "size": 951
+    },
+    "data/live.sqlite3": {
+      "exists": true,
+      "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+      "size": 33787904
+    },
+    "data/live.sqlite3-wal": {
+      "exists": true,
+      "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+      "size": 741632
+    },
+    "data/live.sqlite3-shm": {
+      "exists": true,
+      "sha256": "8b7250d75aa4e44b08d5d1d9eec41a9f58d3ed5a88b4dd99fb9995e1911ec9af",
+      "size": 32768
+    }
+  },
+  "runtime": {
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "python": "/Users/chn/Documents/ChatGPT/金融股票 2/.venv/bin/python",
+    "python_version": "3.14.4",
+    "repository_source_sha256": "12ed3e522acab1d5857b3990f62ee140d767c1b683dfcb55526bd4564667e4b2",
+    "api_contract": 13,
+    "env_file": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/live.sqlite3",
+    "database_access": "read_only",
+    "runtime_version": "unknown_until_reported_by_service",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "classification": "network_unreachable",
+        "error_type": "ConnectError"
+      }
+    ],
+    "disk_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+    "disk_dirty": true,
+    "lockfile_sha256": "14cfdfb3af42c4655a49c6b2964f03c10d963021741483f842293941247d39dd",
+    "database_schema_version": 11,
+    "database_mode": "live",
+    "database_has_saved_settings": true,
+    "agent_config_migrated": true,
+    "legacy_configuration": {
+      "source": "saved_settings_over_environment_defaults",
+      "endpoint_host": "api.xxyapi.com",
+      "protocol": "responses",
+      "legacy_model_present": true,
+      "key_present_in_current_diagnostic_environment": true,
+      "note": "These are not proof of the running process environment or a selected Agent model."
+    },
+    "pidfiles": {
+      "demo": {
+        "pid": 31017,
+        "legacy": true,
+        "process": null
+      }
+    },
+    "listeners": []
+  },
+  "market_state": {
+    "timezone": "Asia/Shanghai",
+    "date": "2026-11-04",
+    "as_of": "2026-11-04T22:39:19.997404+08:00",
+    "trading_day": true,
+    "phase": "closed",
+    "session": "after_close",
+    "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+    "coverage": {
+      "start": "2026-01-01",
+      "end": "2026-12-31"
+    },
+    "is_continuous_trading": false,
+    "has_closed_today": true,
+    "quote_trigger_eligible": false,
+    "calendar_version": "2026-10-22",
+    "calendar_digest": "1246fd4d8f87495ffeb0ae876feef4a6608fa9bb3d56128d26ac30fb77c50f84",
+    "reason": "已到当日收盘；精确收盘仍须数据源确认"
+  },
+  "daily_writes": false
+}

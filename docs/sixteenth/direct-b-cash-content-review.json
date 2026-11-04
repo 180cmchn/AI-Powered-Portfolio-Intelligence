@@ -1,0 +1,1495 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "reviewed_at": "2026-11-05T00:55:24.495400+08:00",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "accepted": true,
+  "decision": "accepted_limited_account_answer_with_liquidity_and_price_label_qualifications",
+  "acceptance_scope": "Limited cash-account answer, concrete reasons/counterfactors/reassessment and verified arithmetic. Not blanket factual/source certification, directional performance, causal route comparison or availability guarantee.",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+    "input_version": 2,
+    "job_id": "02c50aa02d0f4eaab9510f116c1489af",
+    "report_id": "e9cecf33d4b9446f8dc3f37d874e1443",
+    "created_at": "2026-11-05T00:52:27.870817+08:00",
+    "report_characters": 2734,
+    "report_utf8_sha256": "26f259b9301c4ee2b57a11aaa7b372168c15ba3a8dfc6da07da47012a5763af6",
+    "stored_result_utf8_sha256": "3e32c8faa2ac6bc3fd536635954b1e77629da5658110459b1f3d651c04239934"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro, no application/DB writes or model calls",
+    "original_body_changed": false,
+    "source_documents_refetched": false,
+    "final_http_payload_persisted": false,
+    "independent_recalculation": "Decimal and sample standard deviation over actual persisted rows"
+  },
+  "configuration_evidence": {
+    "model_name": "grok-4.7",
+    "reasoning_effort": "xhigh",
+    "model_network_route": "direct",
+    "model_network_revision": 0,
+    "max_model_calls": 40,
+    "max_output_tokens": null,
+    "scheduled_research_enabled": true
+  },
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SZ:159278",
+      "account"
+    ],
+    "decision_summary": "2026-11-05开盘前，对全现金账户维持持币、暂不买入SZ:159278；产品可观察，但11月4日收盘已较前收上涨6.23%、较10月15日低点上涨约19.3%且高于20日均线，不适合在开盘前把单一机器人主题作为第一笔投入。1/5/20日方向均弃权。若回吐至20日均线0.874附近且不破0.786，或站稳0.969后回踩确认，才重估小比例，仍不全仓。",
+    "limitations": [
+      "季报全文15页未读完；对全部15页检索“前十/公允价值”等词无命中，2026-09-30前十持仓和指数实时成分、权重均未知。不能判断个股集中度，持仓时点也不能代替2026-11-04持仓。",
+      "管理费、托管费具体费率未从已读页提取，不能量化持有成本；该缺口不改变暂不买入。",
+      "无2026-11-04的NAV或IOPV，不能计算实时折溢价；0.938只是收盘价。",
+      "若干新闻与基金页面仅有链接、正文未读，隔夜催化剂未知，因此1日方向弃权，不用标题当事实。",
+      "已取得沪深300日线，但未完成与159278的同窗相对收益计算；相对大盘仅采用季报中管理人的2026Q3陈述，不外推到11月。",
+      "行情为不复权日线，可见样本止于2026-08-05至2026-11-04共60根，更早价格未知。预测基准仍未就绪。未派发子任务，无子报告可吸收。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "checks": [
+    {
+      "name": "cash_account_fit",
+      "status": "pass",
+      "evidence": "100000 cash, no holdings, zero realized P&L/fees; no trade or proposed buy quantity. Balanced exposure reasoning distinguishes securities-only weight from total wealth."
+    },
+    {
+      "name": "reason_counterevidence_reassessment",
+      "status": "pass_with_price_label_qualification",
+      "evidence": "Explains opportunity cost of continued rebound, modest positive fund-vs-benchmark returns and why no immediate entry/permanent exclusion. Explicit MA20/0.786 support and0.969 breakout-retest conditions; no automatic all-cash allocation."
+    },
+    {
+      "name": "period_arithmetic",
+      "status": "pass",
+      "evidence": "Visible Aug5-Nov4 sample60 close points/59 return intervals, exact dates and source truncation disclosed; −6.5737% return and0.02744658 unannualized sample volatility reproduced. MA20 uses Oct8-Nov4 20 closes; all quoted ratios match."
+    },
+    {
+      "name": "liquidity_claim",
+      "status": "needs_qualification",
+      "evidence": "Daily turnover establishes only broad capacity relative to100000 cash. Prose says liquidity is not a constraint although order-book depth/spread and premium remain unverified. Does not justify executable size or guaranteed fill; no trade is executed."
+    },
+    {
+      "name": "october_low_label",
+      "status": "needs_qualification",
+      "evidence": "0.786 is Oct15 close and lowest closing value in sample; Oct15 intraday low0.784 and Oct19 intraday low0.781. Report first calls0.786 a close correctly, later abbreviates it as October/Oct15 low. Reassessment threshold is explicit but must not be confused with true intraday low."
+    },
+    {
+      "name": "fund_primary_facts",
+      "status": "pass",
+      "evidence": "Saved Q3 excerpts support NAV1766412392.53, equity1741261927.69/98.31% total assets, financial figures and period performance; manager statements and declared tracking goals separated from independently computed realized tracking error."
+    },
+    {
+      "name": "source_reading",
+      "status": "partially_verified",
+      "evidence": "Q3 receipts cover1–5,6–12 and3–5 physical pages; final report claims only1–9 adopted excerpts and not all15. Final projection truncates/omits18/41 outputs; no exact final HTTP input persisted. Separate47-page PDF supports quoted goal/strategy snippets but full title/report period intentionally not verified or mixed with Q3 NAV."
+    },
+    {
+      "name": "account_isolation",
+      "status": "pass_with_observation_boundary",
+      "evidence": "55 material receipts all public and B-owned, no child report delivery, no A private report input observed; no assertion of perfect semantic independence."
+    },
+    {
+      "name": "transport_contract_prediction",
+      "status": "pass",
+      "evidence": "11/11 recorded attempts route direct/completed/EOF, first submission zero corrections, limited report persisted. Three exploratory abstentions, no directional sample; baseline remains unready, no invented formal forecast or mature effect."
+    }
+  ],
+  "calculations": {
+    "long_return": {
+      "start": "2026-08-05",
+      "end": "2026-11-04",
+      "close_points": 60,
+      "return_intervals": 59,
+      "return_pct": "-6.573705179282868525896414340"
+    },
+    "moving_average_20": {
+      "start": "2026-10-08",
+      "end": "2026-11-04",
+      "points": 20,
+      "value": "0.87415"
+    },
+    "sample_daily_return_standard_deviation": 0.02744658131150368,
+    "sample_daily_return_standard_deviation_pct": 2.744658131150368,
+    "close_over_previous_close": "1.062287655719139297848244621",
+    "close_over_oct15_close": "1.193384223918575063613231552",
+    "close_over_ma20": "1.073042384030200766458845736",
+    "close_over_aug18_peak_close": "0.8984674329501915708812260536",
+    "close_over_sep30_close": "1.044543429844097995545657016",
+    "last20_amount_min": "47905801.100",
+    "last20_amount_max": "259014237.260",
+    "nov4_amount": "204823866.295",
+    "visible_near_term_amount_range": {
+      "receipt_id": 1233,
+      "rows": 12,
+      "start": "2026-10-20",
+      "end": "2026-11-04",
+      "min": "73022343.100",
+      "max": "259014237.260",
+      "reported_hundred_million_range": "0.73–2.59",
+      "verdict": "matches_actual_visible_query_range"
+    }
+  },
+  "sources": {
+    "price_material_id": "70cd9861120a45808b84e34c89bf5b15",
+    "price_requested_range": {
+      "start": "20251105",
+      "end": "20261105"
+    },
+    "price_returned_range": {
+      "start": "2026-08-05",
+      "end": "2026-11-04"
+    },
+    "price_truncated": true,
+    "q3_pages1_5_id": "a11895796aca49d1960958ef4de45664",
+    "q3_pages6_12_id": "303c8589a2c44ab3954da3a7377e763b",
+    "q3_pages3_5_id": "4cfe30def8674339a36fd7062b62629e",
+    "other_pdf_search_id": "0bc0e727209142059670e734ccbd96df",
+    "other_pdf_page_count": 47,
+    "other_pdf_search_complete": false,
+    "other_pdf_search_range": {
+      "start_page": 1,
+      "end_page": 6
+    },
+    "other_pdf_identity": "bbd17d388d93fbe988c46b047c9860b3c5b59bceb5a6dc0b7ed69a339aceaad4"
+  },
+  "visibility": {
+    "material_delivery_rows": 55,
+    "material_receipts": [
+      {
+        "id": 570,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "70cd9861120a45808b84e34c89bf5b15",
+        "tool": "history",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-16",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 30,
+          "next_offset": 30,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "108826e06f5012296f4b001f16e62317815605a81fd90fcea3171c5779f6ceb8"
+      },
+      {
+        "id": 580,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0b3944dca8a848e1a693c36936f991c3",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "5d051c414b3fb27c501f466bf3d50f95a7d51de2c2ff8927b6469115434d6fce"
+      },
+      {
+        "id": 581,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "758ebcca572c48e3a7e9f2928aa5bbc5",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "930d7eb05db82e8a63b073bec0d68d542da392c8bcecfcac78ca6803654e6aa3"
+      },
+      {
+        "id": 582,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "3a3f1fd926c34d4c9b7f340718b2f37d",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "9450472f59354252896f08766a51c24da5346f6ad4229bdc2fcbd7c3c3e02e73"
+      },
+      {
+        "id": 583,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "cd388edcef3b458e981cc560abbc3f27",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "c4e15d06b87741a8401dc64ad75933de55df8bf69fd336a9a822c8c4e2f94c19"
+      },
+      {
+        "id": 584,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "4cea141a54fe4021aa26ffb12b9f7a68",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "c8f65bdfa181b43210a07eb9eb4b65d650af7e0302c248576840ee232ae9db96"
+      },
+      {
+        "id": 585,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "a79160c59fc24e94b2b9bef8f4e355bc",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "d308f9f29f1130b7a86001c0c10ad8b7f0fa69ad4f2ff76480d82933dd2dfc64"
+      },
+      {
+        "id": 586,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "9170ee12170c45b7be8aee6cd85867b8",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "d68e0fd2f5617a51a6621f4a45270a8fa3508ee242c8edabcc571c5180b3e007"
+      },
+      {
+        "id": 587,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "bc3ae2edfba148a0b59e36d6b82d4209",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "fdfa78288552439fd8879edbd41e4f184eaf35dc67e21eebec02ea3e2aecf6dd"
+      },
+      {
+        "id": 588,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "d7d1b5a15996434097c7fa8f689ff40e",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "68eef21cd98dea56561cdce7e8c75b9088657b364016ad21b2f91a74b4b0fc8d"
+      },
+      {
+        "id": 589,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "3549b270569541c5ac9992e2e7f4f8fe",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "f01f5f02ded7e5baf5459c4c04701b99732bbe2195266d9a3820314b19f1241a"
+      },
+      {
+        "id": 590,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "e989f788e5814487bda9b56458275df1",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "de9599f6277187943252d714db123f2f5d77cfbdd9ce102cfac53011226958b5"
+      },
+      {
+        "id": 591,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "f1e1c42b0c974da3abe984fa375b4141",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "2d84c19b30b346a39cf3c5a82ed17096cd1ffc851dddb50412c0df9ff58b76b1"
+      },
+      {
+        "id": 592,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "cc2b9feb4b2c4015bef5792e8bd317f3",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "85822a1104fa4b9405d9bc61debb5edce47469a3cd0080af0ce66ca0a6c518e8"
+      },
+      {
+        "id": 593,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "70cd9861120a45808b84e34c89bf5b15",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-08-05",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 60,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "d8a3bc3a3a8bfb0582a4a13bf30be9032daba9ac012494b60fd8b6973e999685"
+      },
+      {
+        "id": 594,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "70cd9861120a45808b84e34c89bf5b15",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-08-05",
+            "end": "2026-09-15"
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 30,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "a01bec0e6c576a61b95dd6d7f00fffb7d72a0fe311a11b0564edb9f00d044dbe"
+      },
+      {
+        "id": 696,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "dde31427786a4adf8c26b2627c053278",
+        "tool": "benchmark_history",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-18",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": false,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 28,
+          "next_offset": 28,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "1ed6618894c28cca311f6f75ef98cbf1b1ef5f631908c3f7bd6b341d17b7f47a"
+      },
+      {
+        "id": 738,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "a20aeeff9bac4098a383e8ea1b165711",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "18cebab325a18311948fb156771692fa67ab3620a6c42f0d2a517e7f50348913"
+      },
+      {
+        "id": 739,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0618585c6b1e4c6282749ba3920ddafc",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "7d286f04bcca8cabba9498c68fb52c0b197c617a17861313feb0daaf53489be5"
+      },
+      {
+        "id": 740,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "90a56fe447954dee83fb1d0d67e23c9b",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "9627e718a112bde3f699acbe8a97eea1efa9d7acbaaece28a6a1b0344cc61999"
+      },
+      {
+        "id": 741,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "77fb60a51e824d5aa21fa40394ef61a1",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "ed83624703ce9c71149b07b9517d6cf3ba96fdaf1c0f4566e1612de805c97bab"
+      },
+      {
+        "id": 742,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0b621bcb15d748c48652a194afad9134",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "fc797c08d7ada5bac0a1ae48ad53def609d8dfe0e58a8d952e560220cf298590"
+      },
+      {
+        "id": 743,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "6e7d3622a68e457ebd48167e1a31d372",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "b039f1f7f4d4ff7d548a8c8425f34b4e30ca2daa95da9b747cf7d8e6691712ad"
+      },
+      {
+        "id": 744,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "711714c814f4444db712e6f44677ac49",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "fce2a163d7d37e108ec7b64341e6c6a8001b43788238a812ab0c267df3821191"
+      },
+      {
+        "id": 745,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "d39cf6456fd240a0996f0ec4cbfe8244",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "6671f5c849b6a02a0c92d50eb2e078ceeb72e46f8aa1a917f32b49c07c8bb22b"
+      },
+      {
+        "id": 746,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0bc0e727209142059670e734ccbd96df",
+        "tool": "search_pdf",
+        "scope": "public",
+        "delivered_range": {
+          "truncated": true
+        },
+        "visible_result_hash": "110a49649e63b168057e13144d85350043c586598641d781b0cd2301f659e43e"
+      },
+      {
+        "id": 779,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "a11895796aca49d1960958ef4de45664",
+        "tool": "get_material",
+        "scope": "public",
+        "delivered_range": {
+          "start": 0,
+          "end": 3847,
+          "total_chars": 3847,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 5
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 5
+          }
+        },
+        "visible_result_hash": "aad4599e24f78e552d8c0bad76bb641048156e10cfe92d3f681ea9d49b022171"
+      },
+      {
+        "id": 780,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "70cd9861120a45808b84e34c89bf5b15",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-16",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 30,
+          "next_offset": 30,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "108826e06f5012296f4b001f16e62317815605a81fd90fcea3171c5779f6ceb8"
+      },
+      {
+        "id": 1008,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "fb0f33ac58de49a6904c188ef6f7b465",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "92574ec76534e7a640be74afd7587c724faa648925dfa1d870b29fd4c4f48ba1"
+      },
+      {
+        "id": 1009,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "66daf6cc9bb943469900370926f4fdd7",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "55760ca7cdc021cff718434aa3a20c4ea7b8e29d60de1424be138323a8e6186d"
+      },
+      {
+        "id": 1010,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "75f8cd5755e24558be495df43fd0c87f",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "efcf4762263565238b73cfff1adbee33c3549d87f5d0b9c1fb3f29d0eb5fb92c"
+      },
+      {
+        "id": 1011,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "9170ee12170c45b7be8aee6cd85867b8",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "d68e0fd2f5617a51a6621f4a45270a8fa3508ee242c8edabcc571c5180b3e007"
+      },
+      {
+        "id": 1012,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "3bb97e471af948a5924e7d97205bbc36",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "70cb36fd5841896028d82517fdb6b3ff5a4ba3f6a2aa2cd9b94eb5530f527bce"
+      },
+      {
+        "id": 1013,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "6a89ed80e9ce4a4c9baa19c127efde97",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "6bc0581847ededf045a16853e8b3faf625d7f290973ec5f1494ccee248e154b9"
+      },
+      {
+        "id": 1014,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "cc2b9feb4b2c4015bef5792e8bd317f3",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "85822a1104fa4b9405d9bc61debb5edce47469a3cd0080af0ce66ca0a6c518e8"
+      },
+      {
+        "id": 1015,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "57ba530171994dfabee636703098b879",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "86c8cd8bc9b720733d41a01f5a54a0f46a79162ff1a7adc3ed0b2871cd7df46e"
+      },
+      {
+        "id": 1016,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "3a3f1fd926c34d4c9b7f340718b2f37d",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "9450472f59354252896f08766a51c24da5346f6ad4229bdc2fcbd7c3c3e02e73"
+      },
+      {
+        "id": 1017,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "b73386420bed42a0976275879a1c2ec2",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "af51963974bc9fcae863335ed77b5e476fa16c2c54a294aa0efc0440ff4736a3"
+      },
+      {
+        "id": 1018,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "758ebcca572c48e3a7e9f2928aa5bbc5",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "930d7eb05db82e8a63b073bec0d68d542da392c8bcecfcac78ca6803654e6aa3"
+      },
+      {
+        "id": 1019,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "2b6c404745d6414699c3e883a1680cee",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "97b51c496d27ffeb1dde0645736b2f90436afa0d703727cf47ed1c536b033996"
+      },
+      {
+        "id": 1020,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "77fa7bb3341d453d8ad357d911b4565a",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "7f1dec6d88fb7555f5dbe4f4c53d1f4da25f0bbd8db50a71331ff5803bd65132"
+      },
+      {
+        "id": 1021,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "70cd9861120a45808b84e34c89bf5b15",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-08-05",
+            "end": "2026-09-15"
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start": "2026-08-05",
+            "end": "2026-09-15"
+          },
+          "row_count": 30,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "263ecaf0be656c988bace656d6b53ac42240a715c011699e4063e5138949843a"
+      },
+      {
+        "id": 1205,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0618585c6b1e4c6282749ba3920ddafc",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "7d286f04bcca8cabba9498c68fb52c0b197c617a17861313feb0daaf53489be5"
+      },
+      {
+        "id": 1206,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "a20aeeff9bac4098a383e8ea1b165711",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "18cebab325a18311948fb156771692fa67ab3620a6c42f0d2a517e7f50348913"
+      },
+      {
+        "id": 1207,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "031ab80d648546e4b2d333f97d7f84de",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "f1da0972542cf0d50abacde8ff13887cc61546d9bab48d19f1e01fff4d6b2808"
+      },
+      {
+        "id": 1208,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "711714c814f4444db712e6f44677ac49",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "fce2a163d7d37e108ec7b64341e6c6a8001b43788238a812ab0c267df3821191"
+      },
+      {
+        "id": 1209,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "d39cf6456fd240a0996f0ec4cbfe8244",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "6671f5c849b6a02a0c92d50eb2e078ceeb72e46f8aa1a917f32b49c07c8bb22b"
+      },
+      {
+        "id": 1210,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "48d3bd623a6a4ce8b1823e03beacb875",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "111e1f515eb7753e0266a141b5fc7087fd2d4e24bd3b8d4e1f90d651e03746c7"
+      },
+      {
+        "id": 1211,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "fe3bb704588e4156b6223ea218df350e",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "c80abc3484f94c8149ec3e7975a860cd5babaefb94aceb8875c59b0151e8be32"
+      },
+      {
+        "id": 1212,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "013ef0f25c764a9b9b49c248348b1697",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "654d42964b7010dde2572ecb76b1bdb1813a8c7450a5fcffc27d3fea8b4a1983"
+      },
+      {
+        "id": 1213,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "ff19bf2fd18f4920b632afba431689df",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "19512c8d1b3173859f6669935b0d5580183f2b83ad4b2bb111ab911be23bf2e6"
+      },
+      {
+        "id": 1214,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "303c8589a2c44ab3954da3a7377e763b",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 6,
+            "end_page": 12
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 6,
+            "end_page": 12
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "d4233bba717a435afdd63603b20a6c432aa527c33e48e33ebd13646c06f0c950"
+      },
+      {
+        "id": 1215,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "0bc0e727209142059670e734ccbd96df",
+        "tool": "get_material",
+        "scope": "public",
+        "delivered_range": {
+          "start": 0,
+          "end": 4000,
+          "total_chars": 4604,
+          "truncated": true,
+          "source_truncated": true
+        },
+        "visible_result_hash": "93424287228183e4dc5b6798d6701cfed75a14d377bc29722b993b5718ead5fa"
+      },
+      {
+        "id": 1232,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "4cfe30def8674339a36fd7062b62629e",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 3,
+            "end_page": 5
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 3,
+            "end_page": 5
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "282d5fba87ae8ea07d3793cea6de8526a902e95157a73b91283dc258e7a6c6cb"
+      },
+      {
+        "id": 1233,
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "agent_id": "manager",
+        "material_id": "b0607f79eaa84739a9684954df429fcb",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-20",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 12,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "8c9c490ed92a1ce35c48e2a2c8bea66c91709b302d50b5588df2043999e2da44"
+      }
+    ],
+    "child_report_delivery_rows": 0,
+    "synthesis_projection": {
+      "seq": 1417,
+      "reason": "bounded_final_request",
+      "before_chars": 88696,
+      "after_chars": 147170,
+      "visible_tool_outputs": 41,
+      "truncated_outputs": 18,
+      "archive_count": 121
+    },
+    "final_calculation_coverage": {
+      "seq": 1418,
+      "request_number": 11,
+      "calculations": [
+        {
+          "calculation_id": "calculation-357d195b20124a39974f6b14d4f7827f",
+          "tool": "market_indicators",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-1"
+        },
+        {
+          "calculation_id": "calculation-ddde0fbb2b614b28891f47658ad2dba7",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-3"
+        },
+        {
+          "calculation_id": "calculation-6ba8d768bf5e4f1ab14f95aa39bff63b",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-4"
+        },
+        {
+          "calculation_id": "calculation-180e14940b0d452bb50a336d1cb08547",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-5"
+        },
+        {
+          "calculation_id": "calculation-9221bbd6b25e4c738349660676c84904",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-6"
+        },
+        {
+          "calculation_id": "calculation-0f031d9ed9bf47e686dbcfcfdcbfdef8",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-7"
+        },
+        {
+          "calculation_id": "calculation-a9b5bdbb6015470e8e2a09a89c532a3b",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-8"
+        },
+        {
+          "calculation_id": "calculation-15de4c31604143faac79e30735846117",
+          "tool": "market_indicators",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "insufficient_data",
+          "visibility": "summary",
+          "record_id": "context-9"
+        },
+        {
+          "calculation_id": "calculation-2c1adf226ce84ebc8d8ca9ea5e4e8b28",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-10"
+        },
+        {
+          "calculation_id": "calculation-a7a913a2c17b4cd9a5880437f3a56676",
+          "tool": "calculate",
+          "source_agent_id": "manager",
+          "source_task_id": "02c50aa02d0f4eaab9510f116c1489af",
+          "status": "ok",
+          "visibility": "summary",
+          "record_id": "context-11"
+        }
+      ]
+    },
+    "final_request_input_items": 3,
+    "final_request_input_chars": 155373,
+    "shared_research_used": []
+  },
+  "usage": {
+    "http_attempts": 11,
+    "completed_and_eof": 11,
+    "error_attempts": 0,
+    "all_recorded_routes_direct": true,
+    "provider_reported_totals": {
+      "input_tokens": 383341,
+      "output_tokens": 41778,
+      "total_tokens": 425119,
+      "cost_in_usd_ticks": 3245623600,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 7
+    },
+    "actual_money_cost": "unknown; no independently matched invoice, raw ticks not converted"
+  },
+  "forecast_batch": {
+    "id": "31b49a4f6c964d8386bd3bb9c24eadda",
+    "kind": "exploratory",
+    "base_date": "2026-11-04",
+    "deadline": "2026-11-06T00:43:19.007112+08:00",
+    "expected_count": 3,
+    "state": "published",
+    "baseline_evidence": "{}"
+  },
+  "forecast_rows": [
+    {
+      "id": "ebeeb7b113464114b36068df6fd355c6",
+      "batch_id": "31b49a4f6c964d8386bd3bb9c24eadda",
+      "kind": "exploratory",
+      "horizon": 1,
+      "target_date": "2026-11-05",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:52:27.871507+08:00",
+      "information_cutoff": "2026-11-05T00:52:27.871507+08:00"
+    },
+    {
+      "id": "34742d1eedaa43689a5f881232d65aaa",
+      "batch_id": "31b49a4f6c964d8386bd3bb9c24eadda",
+      "kind": "exploratory",
+      "horizon": 5,
+      "target_date": "2026-11-11",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:52:27.871507+08:00",
+      "information_cutoff": "2026-11-05T00:52:27.871507+08:00"
+    },
+    {
+      "id": "d9aff8cbf421448d982296e85a5d716e",
+      "batch_id": "31b49a4f6c964d8386bd3bb9c24eadda",
+      "kind": "exploratory",
+      "horizon": 20,
+      "target_date": "2026-12-02",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:52:27.871507+08:00",
+      "information_cutoff": "2026-11-05T00:52:27.871507+08:00"
+    }
+  ],
+  "forecast_coverage": {
+    "expected": 3,
+    "direction_published": 0,
+    "abstained": 3,
+    "uncovered": 0,
+    "waiting_data": 0,
+    "missed": 0,
+    "failed": 0
+  },
+  "delivery_application": {
+    "suggestions": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "等待条件变化；定性条件由 Agent 复核",
+        "recommendation_id": "1f47195e1db945fdbfbe8f7655b835f1"
+      }
+    ],
+    "suggestion_actions": [],
+    "forecasts": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 1,
+        "forecast_id": "ebeeb7b113464114b36068df6fd355c6"
+      },
+      {
+        "index": 1,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 5,
+        "forecast_id": "34742d1eedaa43689a5f881232d65aaa"
+      },
+      {
+        "index": 2,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 20,
+        "forecast_id": "d9aff8cbf421448d982296e85a5d716e"
+      }
+    ]
+  },
+  "ledger_entries": [
+    {
+      "id": "49ab60145f8f4838bb1ca6024addc688",
+      "kind": "opening",
+      "account_version": 1
+    }
+  ],
+  "remaining_limits": [
+    "Liquidity statement must be restricted to observed daily capacity; no executable liquidity proof.",
+    "0.786 is a closing low, not intraday October low.",
+    "Baseline not ready and all entries abstain: no directional accuracy denominator or formal generation.",
+    "Exact final raw source payload is not persisted.",
+    "Direct is configured route metadata, not proof of all physical network hops; independent bounded run is not identical-payload control or guarantee of provider availability.",
+    "Environment run failures and all earlier B review flaws remain separate and preserved.",
+    "Near-term turnover0.73–2.59 hundred-million matches12-row query receipt1233; prose does not explicitly label that window. Earlier reviewer draft mistakenly compared it with20 rows; corrected without changing the original report."
+  ],
+  "review_corrections": [
+    {
+      "issue": "reviewer turnover-window assumption",
+      "correction": "Actual receipt1233 is12 rows Oct20-Nov4 with73022343.1–259014237.26. Report0.73–2.59 is arithmetically supported.20-row minimum is47905801.1; removed erroneous0.74 rounding criticism.",
+      "original_report_changed": false
+    }
+  ]
+}

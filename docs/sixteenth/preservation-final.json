@@ -1,0 +1,98 @@
+{
+  "checked_at": "2026-11-04T17:15:15.068645+00:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "frozen_file_count": 232,
+  "changed_frozen_files": [],
+  "source_matches_final_freeze": true,
+  "files": {
+    ".env": {
+      "before": {
+        "exists": true,
+        "sha256": "c0abd65ea07f4f033dfe34e3a527cbbe512cdc50324e0c5fdc815dd376e5a685",
+        "size": 951
+      },
+      "after": {
+        "exists": true,
+        "sha256": "c0abd65ea07f4f033dfe34e3a527cbbe512cdc50324e0c5fdc815dd376e5a685",
+        "size": 951
+      },
+      "unchanged": true
+    },
+    "data/live.sqlite3": {
+      "before": {
+        "exists": true,
+        "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+        "size": 33787904
+      },
+      "after": {
+        "exists": true,
+        "sha256": "0e0a646d6240a7df19cf61483d92a3eeace109b74860f876e6f1ad0ea7d209dd",
+        "size": 33787904
+      },
+      "unchanged": true
+    },
+    "data/live.sqlite3-wal": {
+      "before": {
+        "exists": true,
+        "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+        "size": 741632
+      },
+      "after": {
+        "exists": true,
+        "sha256": "b805d0566bf92f2a8ecd7b35af671d0c11cd64327090f0c69335665710e06e85",
+        "size": 741632
+      },
+      "unchanged": true
+    },
+    "data/live.sqlite3-shm": {
+      "before": {
+        "exists": true,
+        "sha256": "8b7250d75aa4e44b08d5d1d9eec41a9f58d3ed5a88b4dd99fb9995e1911ec9af",
+        "size": 32768
+      },
+      "after": {
+        "exists": true,
+        "sha256": "8b7250d75aa4e44b08d5d1d9eec41a9f58d3ed5a88b4dd99fb9995e1911ec9af",
+        "size": 32768
+      },
+      "unchanged": true
+    }
+  },
+  "all_daily_files_unchanged": true,
+  "listener_checks": {
+    "8765": {
+      "listening": false,
+      "output": ""
+    },
+    "62369": {
+      "listening": false,
+      "output": ""
+    },
+    "50825": {
+      "listening": false,
+      "output": ""
+    }
+  },
+  "independent_runs": [
+    {
+      "path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+      "finished_at": "2026-11-05T00:15:50.352710+08:00",
+      "shutdown_failure": null,
+      "restart_preserved_reports": true,
+      "restart_preserved_forecasts": true
+    },
+    {
+      "path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+      "finished_at": "2026-11-05T01:11:08.350061+08:00",
+      "shutdown_failure": null,
+      "restart_preserved_reports": true,
+      "restart_preserved_forecasts": true
+    }
+  ],
+  "daily_service_restarted": false,
+  "commit_or_push_performed": false,
+  "schema": 11,
+  "api_contract": 13,
+  "scope": "Raw daily file hashes incl WAL/SHM/.env; fixed production/tests/locks manifest; actual independent run completion and read-only listening-port observations."
+}

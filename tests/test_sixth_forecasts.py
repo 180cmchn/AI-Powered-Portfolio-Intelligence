@@ -330,23 +330,27 @@ async def test_missing_baseline_cutoff_records_missed_not_invisible(account):
     assert all("基准" in r["reason"] for r in store.forecasts_page()["items"])
 
 
-def test_atomic_batch_enqueue_rolls_back_crash_and_is_idempotent(account, monkeypatch):
+@pytest.mark.parametrize('old_state', ['queued', 'completed'])
+def test_atomic_batch_enqueue_rolls_back_crash_and_is_idempotent(account, monkeypatch, old_state):
     store, acc = account
+    if old_state == 'completed':
+        store.set_job_state(acc['latest_job_id'], 'completed')
     batch = store.create_forecast_batch(acc["id"], at=AT, kind="test", baseline_evidence={"SZ:159278": {"status": "ready"}})
-    original = store._enqueue
+    # Both pre-execution merge and a new job must roll back the entire binding.
+    original = store.assign_forecast_scope
     def crash(*args, **kwargs):
         original(*args, **kwargs)
-        raise RuntimeError("controlled crash before binding")
-    monkeypatch.setattr(store, "_enqueue", crash)
+        raise RuntimeError("controlled crash before binding transaction commits")
+    monkeypatch.setattr(store, "assign_forecast_scope", crash)
     with pytest.raises(RuntimeError):
         store.enqueue_forecast_batch(batch["id"], at=AT)
     assert len(store.jobs(acc["id"])) == 1
     assert store.forecast_batches(acc["id"])[0]["job_id"] is None
-    assert store.job(acc["latest_job_id"])["state"] == "queued"
-    monkeypatch.setattr(store, "_enqueue", original)
+    assert store.job(acc["latest_job_id"])["state"] == old_state
+    monkeypatch.setattr(store, "assign_forecast_scope", original)
     job = store.enqueue_forecast_batch(batch["id"], at=AT)
     assert store.enqueue_forecast_batch(batch["id"], at=AT)["id"] == job["id"]
-    assert len(store.jobs(acc["id"])) == 2
+    assert len(store.jobs(acc["id"])) == (1 if old_state == 'queued' else 2)
     assert store.forecast_batches(acc["id"])[0]["job_id"] == job["id"]
 
 

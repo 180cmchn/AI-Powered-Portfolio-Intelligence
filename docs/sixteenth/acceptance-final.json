@@ -1,0 +1,189 @@
+{
+  "closed_at": "2026-11-04T17:18:17.765897+00:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "implementation_status": "completed",
+  "engineering": {
+    "status": "passed",
+    "python_passed": 1567,
+    "python_warnings": 1,
+    "browser_groups_passed": 11,
+    "evidence": "engineering-final.json"
+  },
+  "normal_route": {
+    "status": "verified_controlled_and_real",
+    "routes": [
+      "environment",
+      "direct"
+    ],
+    "default_unchanged": "environment",
+    "daily_route_changed": false
+  },
+  "real_model_transmission": {
+    "status": "partial_failure",
+    "environment": {
+      "http": 170,
+      "completed_with_eof": 165,
+      "unknown": 5
+    },
+    "direct": {
+      "http": 168,
+      "completed_with_eof": 165,
+      "unknown": 3
+    },
+    "aggregate_attempt_inventory": {
+      "http": 338,
+      "completed_with_eof": 330,
+      "unknown": 8
+    },
+    "not_a_randomized_same_payload_success_rate": true
+  },
+  "minimal_business_publication": {
+    "environment": [
+      "passed",
+      "failed",
+      "passed"
+    ],
+    "direct": [
+      "passed",
+      "passed",
+      "passed"
+    ],
+    "phase_order": [
+      "A initial",
+      "A after production simulated sell",
+      "B cash and universe events"
+    ],
+    "direct_published_report_count": 5,
+    "all_published_contract_verified": true
+  },
+  "content": {
+    "status": "limited_minimum_accepted_with_explicit_defects",
+    "production_content_assessment": "not_evaluated unchanged",
+    "full_factual_verification": false,
+    "notable_defects": [
+      "Direct A sell report incorrectly summarizes revenue year-on-year as improving despite -2.04%; account arithmetic and change explanation separately pass.",
+      "Percentage-point versus percentage wording, liquidity/price-low semantics, index-weight rule time/scope qualifications and final source visibility limits are preserved in per-report reviews."
+    ],
+    "no_model_judge_added": true,
+    "original_bodies_unchanged": true
+  },
+  "formal_forecast_chain": {
+    "controlled_production_chain": "passed",
+    "real_formal_generation": "not_executed",
+    "real_formal_samples": 0,
+    "natural_maturity": "not_observed",
+    "natural_accuracy": null,
+    "reasons": [
+      "Isolated business accounts leave formal rules disabled",
+      "Both actual start times outside formal generation window"
+    ],
+    "exploratory_counts": {
+      "environment": {
+        "('exploratory', 'abstain')": 13,
+        "('exploratory', 'down')": 4,
+        "('exploratory', 'up')": 1
+      },
+      "direct": {
+        "('exploratory', 'abstain')": 36
+      }
+    },
+    "real_forecast_evaluations": 0
+  },
+  "continuous_operation": {
+    "controlled": "passed",
+    "real": "partial_failure_with_durable_outcomes",
+    "started_tasks_each_run": 9,
+    "failed_tasks": {
+      "environment": 4,
+      "direct": 3
+    },
+    "restart_preserved_reports_and_forecasts": true,
+    "uncovered_demands_and_unresolved_relevance_not_hidden": true,
+    "not_an_unattended_uptime_guarantee": true
+  },
+  "disconnect_investigation": {
+    "fifty_second_pattern": "Selected proxy path reproduces approximately 50-second body-idle disconnect; real fifth sample proxy FIN precedes Python FIN by 2.575ms",
+    "same_proxy_non_model_control": "environment failed after 50.039565 seconds body idle; direct completed across two approximately 55-second gaps",
+    "exact_component_within_proxy_path": "not_uniquely_identified",
+    "separate_direct_read_errors": "3 cases unresolved; body-to-error gaps 185.93/142.84/99.94ms, not original 50s pattern",
+    "non_model_public_control_gets": 2,
+    "retries": 0,
+    "production_timeout_or_tls_relaxation": false
+  },
+  "cost": {
+    "known_currency_amount": null,
+    "source": "No independent invoice or supplier billing correlation; raw usage/ticks retained without undocumented conversion"
+  },
+  "preservation": "preservation-final.json",
+  "ci": {
+    "new_remote_commit_or_ci": false,
+    "local_equivalent_checks_recorded": true
+  },
+  "review_artifacts": [
+    {
+      "file": "docs/sixteenth/a-after-sell-content-review.json",
+      "sha256": "5cd43a45f72fcf06452a8a858ca196a3d7d7072a0fb3f2cb8069f6d9a7583aa4"
+    },
+    {
+      "file": "docs/sixteenth/a-configuration-content-review.json",
+      "sha256": "26294b5b571349df7d2ace4e08ab000dd15a4beddd2f8c2952ed6e4807903643"
+    },
+    {
+      "file": "docs/sixteenth/a-initial-content-review.json",
+      "sha256": "d361b1e48361759ab3b32d32318f9f0740e9634fb90b6d2ca94eb4eaa2e59da1"
+    },
+    {
+      "file": "docs/sixteenth/a-public-materials-content-review.json",
+      "sha256": "0cdd317537f509ea70cf3e7382a9f712912c69de5fa96603b9dad8714abc5ee3"
+    },
+    {
+      "file": "docs/sixteenth/a-universe-update-content-review.json",
+      "sha256": "7103c35210f31af13d8d1ebf0b51d7532127fd4419b567ee79d7fc8ce92d1887"
+    },
+    {
+      "file": "docs/sixteenth/b-cash-content-review.json",
+      "sha256": "34ea78d9f0d65378cde67dadb266ae77085435843e8a1d740ec60fdac5196d7c"
+    },
+    {
+      "file": "docs/sixteenth/b-configuration-content-review.json",
+      "sha256": "9f0034070feef390004e3054f3960024c76780c74357723b182692d842faa516"
+    },
+    {
+      "file": "docs/sixteenth/b-public-materials-content-review.json",
+      "sha256": "b7296d20a676e03c6dc91d053a44c61c953283d7b938130ced26e04106561806"
+    },
+    {
+      "file": "docs/sixteenth/direct-a-after-sell-content-review.json",
+      "sha256": "0e5bc02126991b2aabab30e0d228360c3813320bd6b8e0db5fdfb56300bf17d1"
+    },
+    {
+      "file": "docs/sixteenth/direct-a-followup-content-review.json",
+      "sha256": "e15f99eb4bfafa6ae7626f2368731cad1a00a0f71a6689ba3724179c49c78788"
+    },
+    {
+      "file": "docs/sixteenth/direct-a-initial-content-review.json",
+      "sha256": "3ffafccbea10ab7a70c36b419bdaf6029a3e19c39a1ed018f6d3212b8ffe28c9"
+    },
+    {
+      "file": "docs/sixteenth/direct-b-cash-content-review.json",
+      "sha256": "33092ae7bb70be720763d26dcc991028e5af0484d46af467829b73c9fd972a39"
+    },
+    {
+      "file": "docs/sixteenth/direct-b-configuration-content-review.json",
+      "sha256": "f52d34641963fbd7fda7c64668db890f62bd6cb979342d15b3a61bc5381144f8"
+    },
+    {
+      "file": "docs/sixteenth/direct-b-content-review-index.json",
+      "sha256": "7fe0fc5638deb903ec4ebc918d66195b94b230e221f3299aa79fe8c0918fbfe0"
+    },
+    {
+      "file": "docs/sixteenth/direct-b-public-materials-content-review.json",
+      "sha256": "cdb3bcdf8faf646798280b8b5e443b259498b605965a149c36a5694e7e3311d3"
+    },
+    {
+      "file": "docs/sixteenth/environment-b-content-review-index.json",
+      "sha256": "7d9b8912442308abdfafb84af940c92746d9fab170f18b0ce92438ed8966ba28"
+    }
+  ]
+}

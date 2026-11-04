@@ -1,0 +1,147 @@
+{
+  "kind": "no_report_content_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-05T00:19:07.105115+08:00",
+  "accepted": null,
+  "status": "not_evaluated",
+  "reason": "A new legitimate configuration_changed task ran under the normal worker after scheduled research was paused; its manager synthesis response became unknown. No final report exists. The task is separate from v5 sell, v6 universe, and public-material failures.",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "database_path": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+  "database_access": "SQLite mode=ro transaction; no database or production change",
+  "account_id": "4f32f659e694450d82d621f9664af49b",
+  "input_version": 6,
+  "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+  "trigger": "configuration_changed",
+  "job_state": "failed",
+  "started_at": "2026-11-05T00:02:07.031327+08:00",
+  "completed_at": "2026-11-05T00:15:35.162804+08:00",
+  "report_id": null,
+  "report_sha256": null,
+  "report_count": 0,
+  "forecast_count": 0,
+  "application_delivery": {
+    "status": "incomplete",
+    "contract_verified": false,
+    "content_assessment": "not_evaluated",
+    "error_code": "upstream_transport_error"
+  },
+  "application_content_assessment": "not_evaluated",
+  "checks": {
+    "current_account_and_candidate_inputs": "pass",
+    "report_explains_gold_reduction": "not_evaluated",
+    "report_explains_cash_increase": "not_evaluated",
+    "report_explains_realized_loss": "not_evaluated",
+    "report_explains_simulated_valuation_difference": "not_evaluated",
+    "report_addresses_new_candidate": "not_evaluated"
+  },
+  "frozen_scope": {
+    "holdings": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "cost_price": "10.025"
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "cost_price": "10.0051"
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "cost_price": "2.505"
+      }
+    ],
+    "cash": "86479.90",
+    "candidates": [
+      "SZ:159278"
+    ],
+    "universe_version": 2,
+    "input_origin": "v6 holdings/candidate scope; new configuration event, not a retry of any earlier failed execution"
+  },
+  "ledger_check": {
+    "entry_ids": [
+      "87d776f541904fa9aa88c1d42aa9f2ff",
+      "91d99c00cea94e71aad7bd950ae08223",
+      "ee7fef60e5cb43868e8135e891e55010",
+      "560befbbb33d4f4fa1054d22bda96e08",
+      "0c6c96ae29d14a1e95acf59a09f7cd75"
+    ],
+    "entry_count": 5,
+    "sale_entry_id": "0c6c96ae29d14a1e95acf59a09f7cd75",
+    "sale_occurrences": 1,
+    "gold_quantity_before": "200",
+    "gold_quantity_after": "100",
+    "cash_increase": "995.00",
+    "cash": "86479.90",
+    "sale_realized_pnl": "-7.50",
+    "remaining_total_cost": "13512.60",
+    "repeat_trade_count": 0
+  },
+  "partial_artifacts": {
+    "tool_results": {
+      "list_business_demands": 2,
+      "list_recommendations": 3,
+      "search_materials": 3,
+      "list_forecast_targets": 3,
+      "history": 1,
+      "market_indicators": 12,
+      "calculate": 14,
+      "search_pdf": 3,
+      "read": 2,
+      "query_market_rows": 15,
+      "recall_context": 3,
+      "pdf_metadata": 1,
+      "finish_analysis": 1
+    },
+    "boundary": "Completed tools are retained; they do not substitute for a manager final report."
+  },
+  "old_report": {
+    "report_id": "7f3c74325ecf44e2b9c891086002ae03",
+    "report_sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+    "status": "stale",
+    "body_unchanged": true,
+    "original_exploratory_forecast_count": 9
+  },
+  "transmission": {
+    "http_attempts": 12,
+    "completed_with_eof": 11,
+    "route": "environment",
+    "failures": [
+      {
+        "event_seq": 2043,
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "model": "grok-4.7",
+        "reasoning_effort": "xhigh",
+        "started_at": "2026-11-04T16:12:41.583394+00:00",
+        "finished_at": "2026-11-04T16:15:35.123992+00:00",
+        "duration_ms": 173541.65,
+        "status_code": 200,
+        "error": "RemoteProtocolError",
+        "error_code": "upstream_transport_error",
+        "stream_terminal": null,
+        "response_status": null,
+        "http_body_complete": false,
+        "cancelled_by": null,
+        "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+        "stream_last_byte_ms": 123620.36,
+        "stream_last_progress_ms": 121839.66,
+        "stream_max_idle_ms": 51702.03,
+        "last_byte_to_failure_ms": 49921.29
+      }
+    ],
+    "fee_amount": null,
+    "fee_source": "No supplier billing correlation performed",
+    "attribution": "upstream_transport_error is the stored classification; it does not establish which connection layer initiated disconnection."
+  },
+  "recovery_boundary": "Failure-time synthesis-only eligibility requires revalidation. No retry or model request was invoked by this reviewer. All earlier failure identities and the initial accepted report remain separate.",
+  "formal_prediction": "not_generated",
+  "natural_maturity": "not_observed",
+  "event_identity": {
+    "parent_job_id": null,
+    "input_version": 6,
+    "kind": "configuration_changed",
+    "origin": "Normal settings save scheduled_research_enabled=False; normal worker drain before restart."
+  }
+}

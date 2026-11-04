@@ -261,6 +261,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             prompt_version=role['prompt_version'], tool_version=role['tool_version'], team_id=team['team_id'],
             account_id=account_id, _credential_fingerprint=(provider.get('credential_reference') or {}).get('fingerprint'))
         request_options = {k: config.get(k) for k in ('model_native_search', 'model_allow_no_key', 'reasoning',
+            'model_network_route', 'model_network_revision',
             'chat_use_max_completion_tokens', 'max_output_tokens', 'model_request_timeout_seconds', 'model_responses_stream',
             'model_first_event_timeout_seconds', 'model_stream_idle_timeout_seconds',
             'model_request_hard_timeout_seconds', 'synthesis_request_hard_timeout_seconds',
@@ -372,9 +373,16 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             if exists:
                 return dict(exists)
         job_id, stamp = uid(), now()
-        replaced = db.execute("SELECT id FROM jobs WHERE account_id=? AND state IN ('queued','running','waiting_config','waiting_scope')", (account['id'],)).fetchall()
+        replaced = db.execute("SELECT id,input_version,task_metadata FROM jobs WHERE account_id=? AND state IN ('queued','running','waiting_config','waiting_scope')", (account['id'],)).fetchall()
         for previous in replaced:
-            self.update_forecast_attempt_state(db, previous['id'], 'superseded', '已有较新的账户研究任务')
+            code = 'input_version_updated' if previous['input_version'] != account['version'] else 'same_version_replaced'
+            metadata = loads(previous['task_metadata'], {}) or {}
+            metadata['cancellation'] = {'code': code, 'at': stamp, 'replacement_job_id': job_id,
+                'previous_input_version': previous['input_version'], 'replacement_input_version': account['version']}
+            db.execute('UPDATE jobs SET task_metadata=? WHERE id=?', (dumps(metadata), previous['id']))
+            db.execute('INSERT INTO events(job_id,body) VALUES(?,?)', (previous['id'], dumps({
+                'type': 'superseded', 'at': stamp, 'cancelled_by': code, 'payload': metadata['cancellation']})))
+            self.update_forecast_attempt_state(db, previous['id'], 'superseded', code)
         db.execute("UPDATE jobs SET state='superseded',completed_at=?,updated_at=? WHERE account_id=? AND state IN ('queued','running','waiting_config','waiting_scope')", (stamp, stamp, account["id"]))
         # A replaced execution cannot erase the business work it was assigned.
         db.execute("UPDATE research_demands SET state='pending',job_id=NULL,input_version=?,detail='moved to latest account input',updated_at=? WHERE account_id=? AND state IN ('assigned','pending')", (account["version"], stamp, account["id"]))
@@ -727,9 +735,15 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
     def recover(self, config_ready=False):
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
-            abandoned = db.execute("SELECT id FROM jobs WHERE state IN ('running','queued','waiting_config') AND NOT EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)").fetchall()
+            abandoned = db.execute("SELECT j.*,a.version AS current_version,a.latest_job_id AS replacement_job_id FROM jobs j LEFT JOIN accounts a ON a.id=j.account_id WHERE j.state IN ('running','queued','waiting_config') AND (a.id IS NULL OR a.latest_job_id<>j.id OR a.version<>j.input_version)").fetchall()
             for previous in abandoned:
-                self.update_forecast_attempt_state(db, previous['id'], 'superseded', '服务恢复时已有较新的账户输入或任务')
+                code = ('account_deleted' if previous['current_version'] is None else
+                        'input_version_updated' if previous['current_version'] != previous['input_version'] else 'same_version_replaced')
+                metadata = loads(previous['task_metadata'], {}) or {}
+                metadata.setdefault('cancellation', {'code': code, 'at': now(), 'replacement_job_id': previous['replacement_job_id'],
+                    'previous_input_version': previous['input_version'], 'replacement_input_version': previous['current_version']})
+                db.execute('UPDATE jobs SET task_metadata=? WHERE id=?', (dumps(metadata), previous['id']))
+                self.update_forecast_attempt_state(db, previous['id'], 'superseded', metadata['cancellation']['code'])
             db.execute("UPDATE jobs SET state='superseded' WHERE state IN ('running','queued','waiting_config') AND NOT EXISTS(SELECT 1 FROM accounts a WHERE a.latest_job_id=jobs.id AND a.version=jobs.input_version)")
             for interrupted in db.execute("SELECT id FROM jobs WHERE state='running'").fetchall():
                 self.update_forecast_attempt_state(db, interrupted['id'], 'interrupted', '服务恢复：上次执行未完成')

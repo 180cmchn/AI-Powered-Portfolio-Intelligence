@@ -25,6 +25,7 @@ from .context import archive, recall, references, visible_message, compact_calcu
 from .calculation_context import checkpoint_summaries, projection as calculation_projection, signature as calculation_signature
 from .delivery import validate_final_result, DeliveryContractError, FinalSubmissionMissing, MAX_RESEARCH_RECORDS
 from .recovery import manager_material_deliveries, restored_manager_material_evidence
+from .report_metadata import prediction_context
 
 PROMPTS = Path(__file__).with_name("prompts")
 SHANGHAI = ZoneInfo("Asia/Shanghai")
@@ -204,7 +205,7 @@ RESEARCH_TOOLS = [
             {"material_id": STRING, "start": STRING, "end": STRING, "fields": STRINGS,
              "limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER,
              "order": {"type": "string", "enum": ["asc", "desc"]}, "symbol": STRING}, ["material_id"]),
-    _schema("market_indicators", "对已保存同口径行情计算可复算的收益、均线、区间波动及可选基准比较；return 是 start/end 筛选后全部日期的首尾收益，window 只控制均线。按返回的日期与收益间隔描述期间，不能将 window 当作收益天数；不以缺失值补零。",
+    _schema("market_indicators", "对已保存同口径行情计算可复算的收益、均线、区间波动及可选基准比较；return 是 start/end 筛选后全部日期的首尾收益，window 只控制均线。20个收盘观察点只有19个收益间隔；固定N个交易日收益需先query_market_rows选择实际N+1个可比收盘日期，再以start/end计算并核对return_period，数据不足须说明。按实际起止日期、valid_samples观察点、return_intervals收益间隔和均线window分别描述；不得将最近N条价格或window当作N日收益，不以缺失值补零。",
             {"material_id": STRING, "start": STRING, "end": STRING,
              "window": {"type": "integer", "minimum": 2, "maximum": 252, "description": "仅均线所用收盘样本数；收益区间由start/end及实际行情日期决定"}, "benchmark_material_id": STRING}, ["material_id"]),
     _schema("get_material", "按材料 ID 读取元数据与有限首段；正文较长时按 next_start 继续。", {"material_id": STRING}, ["material_id"]),
@@ -227,7 +228,7 @@ RESEARCH_TOOLS = [
 MANAGER_TOOLS = [
     _schema("list_agent_roles", "列出本轮冻结的全部系统角色、职责及账户绑定；配置错误不会删除角色。", {}),
     _schema("list_business_demands", "按当前任务分页读取需求；只在最终报告 covered_demand_ids 中声明实际处理的需求。", {"limit": {"type": "integer", "minimum": 1, "maximum": 50}, "offset": INTEGER}),
-    _schema("list_forecast_targets", "分页读取本轮固定预测证券与期限；每项明确预测或弃权，未覆盖会保留。", {"limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
+    _schema("list_forecast_targets", "分页读取本轮服务端锁定的kind、基准日、截止和各证券期限/目标交易日；exploratory是探索记录，不称为正式；每项明确预测或弃权，未覆盖会保留。", {"limit": {"type": "integer", "minimum": 1, "maximum": 100}, "offset": INTEGER}),
     _schema("prepare_synthesis", "资料研究完成后保存可见成果并进入汇总。之后仅使用已有材料、计算与报告工具；失败时可只恢复汇总。", {"summary": STRING, "material_ids": STRINGS, "open_questions": STRINGS, "material_updates": MATERIAL_UPDATES}, ["summary"]),
     _schema("spawn_research", "创建有独立模型上下文和工具循环的子 Agent；按需要创建，不要求固定数量。",
             {"role_id": STRING, "task": STRING, "title": STRING, "context": {"type": "object", "additionalProperties": True}}, ["role_id", "task"]),
@@ -465,6 +466,14 @@ class ResearchRuntime:
             proposed_contexts = dict(included_contexts)
             if summary.get('context_ref') in contexts:
                 proposed_contexts[summary['context_ref']] = contexts[summary['context_ref']]
+            if (size([*summaries, summary]) + size(proposed_contexts) > budget
+                    and isinstance(seed.get('model_config'), dict)
+                    and summary.get('model_config') == seed['model_config']):
+                # At small budgets this exact repeated identity can otherwise
+                # displace the numerical result. Keep its attribution by an
+                # explicit same-request reference; stored originals stay whole.
+                summary = {key:value for key,value in summary.items() if key != 'model_config'}
+                summary['model_config_ref'] = 'seed.model_config'
             if size([*summaries, summary]) + size(proposed_contexts) <= budget:
                 summaries.append(summary)
                 included_contexts = proposed_contexts
@@ -707,6 +716,9 @@ class ResearchRuntime:
                 status["children_omitted"] = status.get("children_omitted", 0) + 1
                 status["unresolved_children_omitted"] = status.get("unresolved_children_omitted", 0) + int(omitted["unresolved"])
         seed = json.loads(session.history[0]["content"])
+        # Identity is retained context, not child-status budget. Adding it to
+        # status would evict existing collaboration rows at small budgets.
+        seed["prediction_context"] = prediction_context(self.context)
         seed["runtime_status"] = status
         self._pin_calculations(seed, session, agent_id, final_request)
         session.history[0]["content"] = json.dumps(seed, ensure_ascii=False, default=str)
@@ -1206,6 +1218,20 @@ class ResearchRuntime:
         if not self.synthesis_only:
             await self._save_checkpoint()
         seed = copy.deepcopy(self.context)
+        max_chars = int(self.config.get('max_context_chars', 240_000))
+        batch = seed.get('forecast_batch')
+        if isinstance(batch, dict) and size(batch) > max_chars // 3:
+            # Initial ModelClient.session already bounds oversized target pages.
+            # Rebuilding synthesis must not silently re-expand that unread page
+            # and evict completed arithmetic. The original remains retrievable;
+            # this is a visible context projection, never a scope/sample change.
+            record = archive(session, batch, 'forecast_target_page')
+            seed['forecast_batch'] = {key: copy.deepcopy(batch[key]) for key in
+                ('id', 'kind', 'base_date', 'deadline', 'input_version', 'rule_version',
+                 'expected_count', 'has_more', 'offset', 'next_offset') if key in batch}
+            seed['forecast_batch'].update(items=[], items_omitted_for_context=len(batch.get('items', [])),
+                record_id=record['record_id'], total_chars=record['total_chars'], truncated_for_context=True,
+                note='目标页已归档，预期范围未改，不代表已读。研究时按 record_id 取回或分页；仅能 finish_analysis 时，未读取或未研究目标保持未覆盖。')
         seed.pop('runtime_status', None)
         if self.synthesis_checkpoint:
             seed['synthesis_checkpoint'] = _checkpoint_context(self.synthesis_checkpoint)
@@ -1217,9 +1243,12 @@ class ResearchRuntime:
                     json.dumps(seed['metrics'], sort_keys=True, default=str) ==
                     json.dumps(checkpoint['metrics'], sort_keys=True, default=str)):
                 checkpoint.pop('metrics')
+            if (size(seed) > max_chars // 3 and isinstance(seed.get('model_config'), dict)
+                    and checkpoint.get('model_config') == seed['model_config']):
+                checkpoint.pop('model_config')
+                checkpoint['model_config_ref'] = 'seed.model_config'
         seed['synthesis_transition'] = {'reason': reason, 'archive_count': len(session.archive),
             'instruction': '仅基于已经交付的可见研究结果汇总。保留未决问题和资料范围；索引及截断部分不等于新阅读。只提交一次最终报告，不再扩展研究。'}
-        max_chars = int(self.config.get('max_context_chars', 240_000))
         # Build the retained seed without ModelClient.session's one-third clip.
         # Include current status before allocating output space, so refreshing it
         # immediately before HTTP cannot consume an unaccounted-for third.

@@ -1,0 +1,580 @@
+{
+  "captured_at": "2026-11-04T16:39:01.564987+00:00",
+  "frozen_source": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "scope": "Exactly two independent unauthenticated HTTPX GET requests, one environment and one direct, using production app.model_network.model_http_options. No ModelClient protocol decoder, supplier configuration, API keys, cookies, business data, retries, configuration mutations, or production/test file changes.",
+  "authorization_refinement": "Before sending either request, the parent changed the permitted parameters from duration=55,numbytes=1,total=100s to duration=110,numbytes=2,total=130s. This guarantees a second unread byte across a 55-second gap even if a server uses Content-Length. Exactly two requests were then sent. Both actual responses were chunked with no Content-Length.",
+  "parameters": {
+    "duration": 110,
+    "numbytes": 2,
+    "delay": 0,
+    "first_byte_observation_seconds": 15,
+    "total_observation_seconds": 130,
+    "http_version": "HTTP/1.1",
+    "httpx_read_timeout": null,
+    "tls_certificate_and_hostname_verification": true,
+    "per_route_request_count": 1,
+    "total_request_count": 2,
+    "retries": 0,
+    "real_model_requests": 0,
+    "body_saved": false,
+    "unique_nonsensitive_nonce_per_route": true
+  },
+  "official_endpoint_sources": [
+    {
+      "url": "https://httpbun.com/",
+      "finding": "Official /drip documentation permits up to 300-second duration and describes test-star bytes; hosted service does not guarantee availability."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/sharat87/httpbun/main/routes/routes.go",
+      "finding": "handleDrip sets interval=duration/numbytes, writes a star then waits each interval; two bytes over110s produce a55s inter-byte gap and a final55s wait."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/sharat87/httpbun/main/response/response.go",
+      "finding": "BodyWriter.Write flushes after each write."
+    }
+  ],
+  "preflight": {
+    "recorded_at": "2026-11-04T16:35:03.721330+00:00",
+    "host": "httpbun.com",
+    "target_port": 443,
+    "dns_address_count": 1,
+    "all_dns_addresses_global": true,
+    "environment_proxy": {
+      "scheme": "http",
+      "host": "127.0.0.1",
+      "port": 7890,
+      "credentials_present": false
+    },
+    "mode": "rule",
+    "tun_enabled": false,
+    "rule_type_counts": {
+      "Domain": 22,
+      "DomainSuffix": 425,
+      "DomainKeyword": 40,
+      "IPCIDR": 34,
+      "GeoIP": 1,
+      "Match": 1
+    },
+    "hostname_rules": [],
+    "fallback_rule": {
+      "index": 522,
+      "type": "Match",
+      "action_sha256": "4c3ddb2f7ce56dba4b798a843e37cd0acb30cebd50333adf5dd387f92b524d36",
+      "is_direct": false
+    },
+    "route_inference_boundary": "Domain/rule preflight is advisory; actual environment route must be confirmed from in-flight /connections. IP/geolocation rules may supersede fallback.",
+    "historical_chain_evidence": [
+      {
+        "source": "/Users/chn/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/logs/service/service_2026-11-04_23-51-12.log",
+        "source_port": 49551,
+        "using_sha256": "a70bf24491f4f59829957b2f5240a1367d6ff5641432cb4a9f969ba58b761393"
+      },
+      {
+        "source": "/Users/chn/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/logs/service/service_2026-11-04_23-51-12.log",
+        "source_port": 49550,
+        "using_sha256": "a70bf24491f4f59829957b2f5240a1367d6ff5641432cb4a9f969ba58b761393"
+      }
+    ],
+    "outbound_control_requests_started": 0
+  },
+  "controls": [
+    {
+      "route": "environment",
+      "started_at": "2026-11-04T16:35:03.725889+00:00",
+      "finished_at": "2026-11-04T16:35:54.397860+00:00",
+      "outbound_request_count": 1,
+      "request_has_auth_or_cookie": false,
+      "request_body_bytes": 0,
+      "target_host": "httpbun.com",
+      "target_path": "/drip",
+      "parameters": {
+        "duration": 110,
+        "numbytes": 2,
+        "delay": 0,
+        "unique_nonce_used": true
+      },
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": true,
+        "physical_route": "not_observable"
+      },
+      "http_version": "HTTP/1.1",
+      "content_length": null,
+      "transfer_encoding": "chunked",
+      "status_code": 200,
+      "proxy_tunnel": {
+        "observed": true,
+        "established": true,
+        "status_code": 200
+      },
+      "tls": {
+        "verified_tls_session": true,
+        "context_verify_required": true,
+        "context_check_hostname": true
+      },
+      "actual_proxy_route": {
+        "matched_connections": 1,
+        "connection_id": "027f3622-92a9-4c29-af88-5494616a614d",
+        "source_port": 52243,
+        "chain_hops": 2,
+        "chain_sha256": "abdf29c26cfeec82665537300f06aeae20ed10435a55115ea28cf8eb5b7c54ca",
+        "using_sha256": "2b7eb76697fa05be69808ed5b57c634c7d80b60c445d5e0c99a993c54b620501",
+        "comparable_to_historical_model_chain": false,
+        "contains_direct": false,
+        "rule": "Match",
+        "rule_payload": "",
+        "destination_is_global": true
+      },
+      "outcome": "error",
+      "error_type": "RemoteProtocolError",
+      "failure_reason": "http_or_transport_error",
+      "duration_ms": 50671.553,
+      "first_byte_ms": 631.988,
+      "last_body_idle_seconds": 50.039565,
+      "body_bytes": 1,
+      "body_chunk_count": 1,
+      "max_interchunk_gap_seconds": 0,
+      "body_was_only_test_stars": true,
+      "body_saved": false,
+      "http_body_complete": false,
+      "eligible_control": false,
+      "silent_50s_boundary_exercised": false,
+      "control_success": false,
+      "timeline": [
+        {
+          "elapsed_ms": 0.012,
+          "event": "control_start"
+        },
+        {
+          "elapsed_ms": 9.248,
+          "event": "connection.connect_tcp.started",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.657,
+          "event": "connection.connect_tcp.complete",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.721,
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.777,
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.779,
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.792,
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.794,
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.976,
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 9.988,
+          "event": "proxy.start_tls.started",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 422.738,
+          "event": "proxy.start_tls.complete",
+          "scope": "proxy_tunnel",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 422.91,
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 423.016,
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 423.019,
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 423.041,
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 423.043,
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 623.684,
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 623.92,
+          "event": "response_headers",
+          "status_code": 200,
+          "http_version": "HTTP/1.1",
+          "content_length": null,
+          "transfer_encoding": "chunked"
+        },
+        {
+          "elapsed_ms": 631.904,
+          "event": "route_observed",
+          "comparable": false
+        },
+        {
+          "elapsed_ms": 631.928,
+          "event": "http11.receive_response_body.started",
+          "scope": "first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 631.992,
+          "event": "first_body_chunk",
+          "byte_count": 1
+        },
+        {
+          "elapsed_ms": 50669.566,
+          "event": "http11.receive_response_body.failed",
+          "scope": "reading_after_first_byte",
+          "exception_type": "RemoteProtocolError"
+        },
+        {
+          "elapsed_ms": 50670.39,
+          "event": "http11.response_closed.started",
+          "scope": "reading_after_first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 50670.803,
+          "event": "http11.response_closed.complete",
+          "scope": "reading_after_first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 50671.518,
+          "event": "control_error",
+          "exception_type": "RemoteProtocolError",
+          "reason": "http_or_transport_error"
+        },
+        {
+          "elapsed_ms": 50671.555,
+          "event": "explicit_response_cleanup"
+        },
+        {
+          "elapsed_ms": 50672.094,
+          "event": "client_cleanup_complete"
+        }
+      ]
+    },
+    {
+      "route": "direct",
+      "started_at": "2026-11-04T16:35:03.732461+00:00",
+      "finished_at": "2026-11-04T16:36:54.379375+00:00",
+      "outbound_request_count": 1,
+      "request_has_auth_or_cookie": false,
+      "request_body_bytes": 0,
+      "target_host": "httpbun.com",
+      "target_path": "/drip",
+      "parameters": {
+        "duration": 110,
+        "numbytes": 2,
+        "delay": 0,
+        "unique_nonce_used": true
+      },
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "http_version": "HTTP/1.1",
+      "content_length": null,
+      "transfer_encoding": "chunked",
+      "status_code": 200,
+      "proxy_tunnel": {
+        "observed": false,
+        "established": false,
+        "status_code": null
+      },
+      "tls": {
+        "verified_tls_session": true,
+        "context_verify_required": true,
+        "context_check_hostname": true
+      },
+      "actual_proxy_route": null,
+      "outcome": "complete",
+      "error_type": null,
+      "failure_reason": null,
+      "duration_ms": 110646.958,
+      "first_byte_ms": 631.862,
+      "last_body_idle_seconds": 55.015729,
+      "body_bytes": 2,
+      "body_chunk_count": 2,
+      "max_interchunk_gap_seconds": 54.999367,
+      "body_was_only_test_stars": true,
+      "body_saved": false,
+      "http_body_complete": true,
+      "eligible_control": true,
+      "silent_50s_boundary_exercised": true,
+      "control_success": true,
+      "timeline": [
+        {
+          "elapsed_ms": 2.022,
+          "event": "control_start"
+        },
+        {
+          "elapsed_ms": 2.228,
+          "event": "connection.connect_tcp.started",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 241.224,
+          "event": "connection.connect_tcp.complete",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 241.249,
+          "event": "connection.start_tls.started",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.103,
+          "event": "connection.start_tls.complete",
+          "scope": "request",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.238,
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.337,
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.34,
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.36,
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 429.362,
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 631.589,
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 631.712,
+          "event": "response_headers",
+          "status_code": 200,
+          "http_version": "HTTP/1.1",
+          "content_length": null,
+          "transfer_encoding": "chunked"
+        },
+        {
+          "elapsed_ms": 631.799,
+          "event": "http11.receive_response_body.started",
+          "scope": "first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 631.864,
+          "event": "first_body_chunk",
+          "byte_count": 1
+        },
+        {
+          "elapsed_ms": 55631.249,
+          "event": "body_chunk",
+          "byte_count": 1
+        },
+        {
+          "elapsed_ms": 110643.863,
+          "event": "http11.receive_response_body.complete",
+          "scope": "reading_after_first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 110646.61,
+          "event": "http11.response_closed.started",
+          "scope": "reading_after_first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 110646.685,
+          "event": "http11.response_closed.complete",
+          "scope": "reading_after_first_byte",
+          "exception_type": null
+        },
+        {
+          "elapsed_ms": 110646.947,
+          "event": "http_body_eof"
+        },
+        {
+          "elapsed_ms": 110646.958,
+          "event": "explicit_response_cleanup"
+        },
+        {
+          "elapsed_ms": 110647.201,
+          "event": "client_cleanup_complete"
+        }
+      ]
+    }
+  ],
+  "offline_route_correlation": {
+    "historical_logs_decoded_with": "shlex.split: decode quoted logfmt msg before extracting using group[node]",
+    "raw_script_comparison_had_logfmt_trailing_quote": true,
+    "historical_rows": [
+      {
+        "source": "/Users/chn/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/logs/service/service_2026-11-04_23-51-12.log",
+        "source_port": 49551,
+        "normalized_using_sha256": "2b7eb76697fa05be69808ed5b57c634c7d80b60c445d5e0c99a993c54b620501",
+        "matches_control": true
+      },
+      {
+        "source": "/Users/chn/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/logs/service/service_2026-11-04_23-51-12.log",
+        "source_port": 49550,
+        "normalized_using_sha256": "2b7eb76697fa05be69808ed5b57c634c7d80b60c445d5e0c99a993c54b620501",
+        "matches_control": true
+      }
+    ],
+    "actual_environment_route": {
+      "matched_connections": 1,
+      "connection_id": "027f3622-92a9-4c29-af88-5494616a614d",
+      "source_port": 52243,
+      "chain_hops": 2,
+      "chain_sha256": "abdf29c26cfeec82665537300f06aeae20ed10435a55115ea28cf8eb5b7c54ca",
+      "using_sha256": "2b7eb76697fa05be69808ed5b57c634c7d80b60c445d5e0c99a993c54b620501",
+      "comparable_to_historical_model_chain": false,
+      "contains_direct": false,
+      "rule": "Match",
+      "rule_payload": "",
+      "destination_is_global": true
+    },
+    "same_selected_proxy_chain_as_fifth_model_failure": true,
+    "note": "The underlying request and network route are unchanged; this is a correction to offline log string normalization, not another network request."
+  },
+  "assessment": {
+    "environment": {
+      "valid_failure_observation": true,
+      "timely_first_byte": true,
+      "same_selected_proxy_chain_as_historical_model_sample": true,
+      "expected_test_byte_received": true,
+      "framing_requires_remaining_body": true,
+      "failure_before_second_byte": true,
+      "observed_body_idle_seconds": 50.039565,
+      "first_byte_ms": 631.988,
+      "outcome": "RemoteProtocolError after approximately50s idle; one of two expected bytes received."
+    },
+    "direct": {
+      "valid_success_observation": true,
+      "timely_first_byte": true,
+      "tls_verified": true,
+      "connect_not_observed": true,
+      "inter_byte_gap_seconds": 54.999367,
+      "last_byte_to_http_eof_seconds": 55.015729,
+      "outcome": "Both expected bytes and complete HTTP EOF received."
+    },
+    "comparison": "Under this paired bounded control, the selected external proxy chain reproduced an approximately50s response-body silence failure on an unrelated public endpoint, while direct completed across55s silences. Combined with the earlier existing-Mihomo/local-DIRECT pass, this narrows suspicion to the selected external proxy path or its interaction with remote transport. It does not identify a unique component, prove a universal timeout policy, or assess model availability.",
+    "normalization_correction": "The temporary script initially hashed the trailing quote of historical logfmt msg strings, so its raw comparable flag is false. Offline shlex parsing removes logfmt quoting and the historical using group[node] hash exactly equals the in-flight chain representation. Raw observations are retained; no request was repeated.",
+    "eligibility_correction": "The raw script field eligible_control required two received byte chunks, which is a full-success prerequisite rather than a prerequisite for a valid failure observation. The environment failure had timelyHTTP200, verifiedTLS, one test byte and an incomplete chunked body, so it remains a valid failure observation. The assessment fields above supersede that raw naming; no data was fabricated or re-run.",
+    "limits": [
+      "One request per route; no statistical or universal-policy claim.",
+      "Public endpoint deployment, remote edges, and path-specific origin handling can differ; no provider-side or external proxy-server trace was collected.",
+      "No packet capture was run for these two controls; the earlier fifth model request has proxy-first FIN evidence separately.",
+      "This is a transport comparison using shared production HTTPX policy, not a full real model or business workflow validation."
+    ]
+  },
+  "artifacts": {
+    "public_idle_control.py": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public_idle_control.py",
+      "sha256": "12bb4001f1db08280efbf0d06f852b930be127bae2fdc72d3528746d6e094fb3"
+    },
+    "public-idle-preflight.json": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public-idle-preflight.json",
+      "sha256": "c1762015eaa9e687f6ae88aa5d07c9c9d8ed1380a2ab60a64235164808a7ae3b"
+    },
+    "public_idle_environment.json": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public_idle_environment.json",
+      "sha256": "38eb8f2d6557d49ea96efd2f05972eb5f08139a2da1b4758942539962491424a"
+    },
+    "public_idle_direct.json": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public_idle_direct.json",
+      "sha256": "0ae0e6d73b2ac95308d8eabd2a248c875ba70c98e4906f7d699f89b438d74efe"
+    },
+    "public-idle-results.json": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public-idle-results.json",
+      "sha256": "698904e6bde821e1ad68ebf9f8e953a4b93497758c51e6f4872de9034a89765c"
+    },
+    "public-idle-route-correlation.json": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public-idle-route-correlation.json",
+      "sha256": "d74df9979ab70f7ea1ff11e9eb1fbd87cbf274ef614027ca6ac503249ab6d7e5"
+    },
+    "public-idle-run.log": {
+      "path": "/private/tmp/sixteenth-stream-lifecycle/public-idle-run.log",
+      "sha256": "f180ec58c170cab56f96a650e1b786fca081fca5a37e4a1f7c79eb0375883c80"
+    }
+  }
+}

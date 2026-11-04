@@ -193,4 +193,10 @@ async def test_pausing_evaluation_does_not_stop_enabled_new_batches(configured):
     await drain(service)
     batches = [b for b in store.forecast_batches(account["id"]) if b["kind"] == "formal"]
     assert len(batches) == 1 and batches[0]["job_id"]
-    assert store.job(batches[0]["job_id"])["reason"] == "forecast_batch:" + batches[0]["id"]
+    assert store.job(batches[0]["job_id"])["reason"] == "forecast_batch:" + batches[0]["id"] + '; close_summary'
+    # Both due business events share the untouched queued execution; neither
+    # event is lost or allowed to supersede already-running research.
+    assert batches[0]['job_id'] == account['latest_job_id']
+    assert len(store.jobs(account['id'])) == 1
+    assert any(d['kind'] == 'close_summary' and d['job_id'] == batches[0]['job_id']
+               for d in store.demands(account['id']))

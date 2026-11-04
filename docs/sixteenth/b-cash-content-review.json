@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "reviewed_at": "2026-11-04T23:53:49.106581+08:00",
+  "accepted": true,
+  "acceptance_scope": "Limited account-specific content minimum only. Not blanket factual certification, production content assessment, formal forecast validation, or future performance proof.",
+  "decision": "accepted_with_material_visibility_caveat",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+    "input_version": 2,
+    "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+    "report_id": "f8e9ab0cb90d425e88d5e24983e8a9d3",
+    "report_created_at": "2026-11-04T23:45:45.037895+08:00",
+    "report_characters": 2574,
+    "report_utf8_sha256": "757d5d3271d74a2674309e550a6cc0dda4fbe08110ed65d54ad7fcdba5b155d9",
+    "stored_result_utf8_sha256": "bf6980c7136cc84572cae8f319598161310e29bdec924798ffead07361e9ef9a"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro; no Store construction, no model calls, no application/DB write",
+    "original_body_changed": false,
+    "independent_calculation": "Decimal applied to persisted source rows, matched date endpoints",
+    "final_http_payload_available": false,
+    "source_documents_refetched": false
+  },
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SZ:159278",
+      "account"
+    ],
+    "decision_summary": "2026-11-04收盘后，本账户对SZ:159278维持持币、暂不买入。它是单一机器人产业权益ETF，不适配balanced下的全部或绝大部分现金；当日收于0.938且高于短均线，但未站回0.949/0.969，近5日仍弱于沪深300。仅在重新站上0.949、成交额不弱于约1.26亿元，且只评估小比例卫星敞口时再评估。1/5/20个交易日价格方向均弃权，与账户动作分开。",
+    "limitations": [
+      "2026年三季报前十大持仓、行业权重和2026-09-30之后份额/净资产未读到，不能判断指数或基金集中度，因此不能确认卫星仓的行业内部风险。",
+      "管理费、托管费、最小申赎单位和二级市场最小交易单位未从基金合同或招募说明书核实，理论金额不能换成可执行份额，也不能比较费用是否偏高。",
+      "没有与2026-11-04收盘同时点的NAV/IOPV，未计算折溢价；国证机器人产业指数同期行情和编制细则未形成可引用正文，不能评估实现跟踪误差。",
+      "2026-10至11月初国家级机器人政策原文及可审计订单未取得，中期景气判断保持未证实，不影响“现在不买”的账户结论。",
+      "62日与沪深300的日期对齐相对收益因输入预算未算出；沪深300与ETF不是同一抓取快照。行业研究中的1.268/0.786价位日期未复核，本报告不采用。",
+      "报价fresh_for_triggers为false，价格条件只供收盘后复核，不代表可成交报价。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "checks": [
+    {
+      "name": "account_fit",
+      "status": "pass",
+      "evidence": "100000 cash, no holdings, balanced preference, no numeric max_position_pct. Explicit no-buy/watch answer, all-cash vs small satellite alternatives, cash unchanged and no executed trade."
+    },
+    {
+      "name": "reasons_counterevidence_reassessment",
+      "status": "pass",
+      "evidence": "Single-industry concentration and price/relative-return conflict; 0.949 and approximately 126 million turnover reconsideration, 0.868/rolling MA20/0.781 failure conditions; fees, spreads, tracking and source gaps explicitly constrain later candidate status."
+    },
+    {
+      "name": "period_values",
+      "status": "pass_with_wording_note",
+      "evidence": "5/10/20 return intervals independently recomputed using 6/11/21 closes; moving averages use 5/10/20 closes. Long window has 62 closes and 61 intervals. Body gives explicit dates; limitation calls it 62日 loosely."
+    },
+    {
+      "name": "fund_primary_facts",
+      "status": "pass",
+      "evidence": "Q3 physical pages 2,4,5,6 support product identity, inception/shares, declared tracking targets, relative NAV returns and manager. Statements are dated at 2026-09-30, not current real-time NAV/holdings."
+    },
+    {
+      "name": "material_read_scope",
+      "status": "partially_verified",
+      "evidence": "Persisted post-bounding manager receipt 1046 contains physical pages 5–11, but it was added immediately before final synthesis; seq1357 reports 20/36 outputs truncated or omitted. Full final HTTP payload is not persisted. Therefore receipt proves conversation insertion, not exact final request visibility of pages 9–11. Limitations say Q3 holdings/industry weights unread; this conflicts with available received-source range but cannot be proven false for final visible payload."
+    },
+    {
+      "name": "account_isolation",
+      "status": "pass_with_scope_boundary",
+      "evidence": "All 362 B material delivery rows have B account ID; 361 public deliveries plus one B-owned authored statement. All 6 report delivery projections refer to 3 B child reports and B source job. No A private report delivery observed; this is provenance evidence, not a claim to prove absence of every conceivable semantic influence."
+    },
+    {
+      "name": "prediction_kind",
+      "status": "pass",
+      "evidence": "All 3 persisted entries exploratory/abstain at horizons 1/5/20. Body distinguishes account action and price direction. Formal 0; no directional accuracy denominator."
+    },
+    {
+      "name": "transport_and_contract",
+      "status": "pass",
+      "evidence": "37 HTTP attempts, all completed with HTTP EOF, no errors; first final submission, zero corrections. Published limited with contract_verified=true; application content_assessment remains not_evaluated."
+    }
+  ],
+  "period_calculations": [
+    {
+      "return_intervals": 5,
+      "return_points": 6,
+      "return_start": "2026-10-28",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "-1.159114857744994731296101160",
+      "benchmark_return_pct": "0.427780512112285650620612300",
+      "relative_return_percentage_points": "-1.586895369857280381916713460",
+      "moving_average_points": 5,
+      "moving_average_start": "2026-10-29",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.9058",
+      "verdict": "pass"
+    },
+    {
+      "return_intervals": 10,
+      "return_points": 11,
+      "return_start": "2026-10-21",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "8.943089430894308943089430900",
+      "benchmark_return_pct": "-0.2575432947545313271383510900",
+      "relative_return_percentage_points": "9.200632725648840270227781990",
+      "moving_average_points": 10,
+      "moving_average_start": "2026-10-22",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.910",
+      "verdict": "pass"
+    },
+    {
+      "return_intervals": 20,
+      "return_points": 21,
+      "return_start": "2026-09-30",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "4.454342984409799554565701600",
+      "benchmark_return_pct": "-5.881192026840339451351884740",
+      "relative_return_percentage_points": "10.33553501125013900591758634",
+      "moving_average_points": 20,
+      "moving_average_start": "2026-10-08",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.87415",
+      "verdict": "pass"
+    }
+  ],
+  "additional_calculations": {
+    "long_window": {
+      "start": "2026-08-03",
+      "end": "2026-11-04",
+      "points": 62,
+      "intervals": 61,
+      "return_pct": "-1.985370950888192267502612330"
+    },
+    "previous_20_amount_mean": "125769589.31765",
+    "current_amount": "204823866.295",
+    "amount_ratio": "1.628564324700834811973344542",
+    "whole_cash_as_percent_of_daily_amount": "0.04882243549488213218770985899"
+  },
+  "primary_source_evidence": {
+    "price_material_id": "458e989e5c6940adb6703b41e70b5553",
+    "benchmark_material_id": "ed566b691c5b4eed8a222bf67a7bfca0",
+    "pdf_url": "http://static.cninfo.com.cn/finalpage/2026-10-26/1225621727.PDF",
+    "pdf_document_id": "34d233606fbb94c78b43d417c5d7aa7987ad0b960daf028f9a0f0736b16ba06c",
+    "manager_read_1_to_4": {
+      "material_id": "4b63090a2ee844fb955f4a0a5cba3587",
+      "delivery_id": 945
+    },
+    "manager_read_5_to_11": {
+      "material_id": "1226033fcd674a778f24388555028ed5",
+      "delivery_id": 1046
+    },
+    "quoted_search_id": "9c8e80c9be7b489ca9756d8a3fe4a373",
+    "quoted_search_matches": 0,
+    "quoted_search_warning": "Zero matches do not establish absence of any fact; primary facts above independently supported by physical page excerpts."
+  },
+  "visibility": {
+    "material_delivery_rows": 362,
+    "unique_materials": 236,
+    "non_public_receipts": [
+      {
+        "id": 957,
+        "agent_id": "research-f347ee68920f",
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "ce5d2cbc259e48838d3bf6d75a9d6980",
+        "scope": "account",
+        "classification": "statement"
+      }
+    ],
+    "unique_child_reports": [
+      "0886646c9e63419da1289fb4c940d870",
+      "357cac78209d446ea3f006a66620b404",
+      "3f990a4cb49a4f54a30125573ab0c997"
+    ],
+    "report_projection_rows": 6,
+    "all_delivered_reports_source_job_is_current_job": true,
+    "final_calculation_coverage_seq": 1358,
+    "final_request_number": 37,
+    "calculation_summaries": 43,
+    "synthesis_projection_seq": 1357,
+    "synthesis_tool_outputs": 36,
+    "synthesis_truncated_or_omitted_outputs": 20,
+    "final_input_items": 2,
+    "final_input_chars": 170271
+  },
+  "forecast_rows": [
+    {
+      "id": "e757f83838f1492e9821d8064e71cfa9",
+      "batch_id": "66038bc911714a7891afb8ba826770a2",
+      "kind": "exploratory",
+      "horizon": 1,
+      "target_date": "2026-11-05",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:45:45.040467+08:00",
+      "information_cutoff": "2026-11-04T23:45:45.040467+08:00"
+    },
+    {
+      "id": "1a8bac5c6e7840a8a940a0dea976de16",
+      "batch_id": "66038bc911714a7891afb8ba826770a2",
+      "kind": "exploratory",
+      "horizon": 5,
+      "target_date": "2026-11-11",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:45:45.040467+08:00",
+      "information_cutoff": "2026-11-04T23:45:45.040467+08:00"
+    },
+    {
+      "id": "b8c0f85f6e3047729ea7376dfb31c7cb",
+      "batch_id": "66038bc911714a7891afb8ba826770a2",
+      "kind": "exploratory",
+      "horizon": 20,
+      "target_date": "2026-12-02",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:45:45.040467+08:00",
+      "information_cutoff": "2026-11-04T23:45:45.040467+08:00"
+    }
+  ],
+  "forecast_coverage": {
+    "expected": 3,
+    "direction_published": 0,
+    "abstained": 3,
+    "uncovered": 0,
+    "waiting_data": 0,
+    "missed": 0,
+    "failed": 0
+  },
+  "usage": {
+    "http_attempts": 37,
+    "completed_and_eof": 37,
+    "error_attempts": 0,
+    "provider_reported_totals": {
+      "input_tokens": 1313900,
+      "output_tokens": 67237,
+      "total_tokens": 1381137,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 52,
+      "cost_in_usd_ticks": 11432785200
+    },
+    "actual_money_cost": "unknown; no independently matched provider invoice; raw ticks are not converted"
+  },
+  "remaining_limits": [
+    "No formal natural generation in this after-close stage.",
+    "All entries abstain: no directional sample or accuracy claim.",
+    "No Q3 concentration values are manufactured to fill final visibility uncertainty.",
+    "Final report citations omit manager direct PDF page material IDs; DB receipts are required to reconstruct source support.",
+    "Approximately 4% daily volatility lacks an explicit window in prose.",
+    "62日 in one limitation should be read as 62 closing observations/61 intervals; dated return in body is correct.",
+    "This first B report is reviewed independently; later public-material event reports cannot erase this evidence boundary."
+  ],
+  "followup_event_job_id": "086f86ad82464b91ab45c1950381073b",
+  "export_verification": "docs/sixteenth/live-export-verification.json"
+}

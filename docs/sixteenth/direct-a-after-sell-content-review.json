@@ -1,0 +1,570 @@
+{
+  "kind": "evidence_content_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-05T00:45:43.082864+08:00",
+  "accepted": true,
+  "acceptance_scope": "limited_account_update_only",
+  "limited_account_update_accepted": true,
+  "full_factual_verification_passed": false,
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "database_path": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+  "database_access": "SQLite mode=ro; no production, source, report or database mutation",
+  "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+  "input_version": 5,
+  "job_id": "ef306d1751894987a599539387946b7f",
+  "report_id": "bdc305413240469a8b9c5dcad8059020",
+  "report_sha256": "a59591bbe7e39643e1b6ec793a468172d65f4ea7cd924f7243ad4c07b78c4e29",
+  "report_characters": 3628,
+  "published_at": "2026-11-05T00:43:12.222827+08:00",
+  "data_as_of": "2026-11-04T15:34:45+08:00",
+  "report_status_at_review": "stale",
+  "status_boundary": "Published current; later legitimate universe change makes v5 stale without undoing publication.",
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "account",
+      "SH:518880",
+      "SZ:002354",
+      "SZ:159599"
+    ],
+    "decision_summary": "版本5只是模拟卖出100份518880，现金升至86479.90并占总资产88.63%；该成交价10高于11月4日收盘，记账增益不是市场上涨。维持高现金，三只都不加仓。剩余黄金持有不再卖；002354可卖日后减一部分优于加仓或清仓，但今日不可卖且不代表看跌；159599继续持有不加。1/5/20日方向均弃权。",
+    "limitations": [
+      "本轮未重读002354三季报PDF，也未读分部、商誉测试和审计意见；减仓理由依赖上一轮对材料8f07e78b545442dcb6eb0e0b9251a4bb的提取，若原文不一致则需重估。",
+      "黄金Au99.99原页、美元与实际利率，以及159599在11月4日近涨停的原因，本轮只有链接或未读正文，因此三个期限的方向均弃权。",
+      "两只ETF的费率、规模和2026-09-30持仓沿用上一轮，未重读；没有同日NAV/IOPV，未计算折溢价，季报持仓不能当实时持仓。",
+      "报价是2026-11-04收盘，预测基准未就绪；未来卖出费用未估算，002354与159599在2026-11-06前按账本不可卖，故不给可执行股数或卖出后精确现金。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "application_content_assessment": "not_evaluated",
+  "checks": {
+    "current_account_facts": "pass",
+    "sale_occurs_once": "pass",
+    "cash_change": "pass",
+    "realized_pnl_arithmetic": "pass",
+    "synthetic_sale_valuation_explanation": "pass",
+    "denominator_change": "pass",
+    "sellable_dates": "pass",
+    "account_actions_and_counterfactors": "pass",
+    "forecast_kind": "pass",
+    "source_reuse_disclosure": "pass",
+    "financial_summary": "needs_correction",
+    "realized_cost_basis_wording": "needs_precision"
+  },
+  "financial_summary": {
+    "passed": false,
+    "needs_correction": true,
+    "report_claim": "前三季度营收、归母和扣非仍为正且同比改善",
+    "correct_fact": "前三季度营收1,477,619,199.45元，同比下降2.04%；归母与扣非利润分别增长19.11%与17.57%。",
+    "evidence": {
+      "material_id": "8f07e78b545442dcb6eb0e0b9251a4bb",
+      "page": 2,
+      "previous_report_id": "9520a02fb6724deab6973b8ddaeb0838"
+    },
+    "impact": "The phrase overstates a favorable revenue factor. It prevents a full factual pass. The concrete ledger update, settlement limits and stated concentration/governance reasons are independently correct, and this phrase did not produce a new buy recommendation. Only the limited account-update minimum is accepted.",
+    "original_text_changed": false
+  },
+  "cost_basis_wording": {
+    "passed": false,
+    "report_claim": "已实现-7.50是相对剩余成本口径",
+    "precise_statement": "已实现损益等于卖出净收入995减去卖出份额结转成本1002.50；剩余份额成本另为1002.50，因为本次恰好卖掉一半。",
+    "impact": "Numeric calculation is correct; sold-cost and remaining-cost terminology should be distinguished, especially for unequal sale quantities."
+  },
+  "ledger_check": {
+    "entry_ids": [
+      "77c0037d5e1244c4bef7fda0e329ce05",
+      "2cf3f513d35b40a58ab179029ee89e35",
+      "baaf462ba54146bba4bf655796f5146a",
+      "c0c9a7dac2394511834df92c312d4544",
+      "cd1f8693f5524f7d8531f4a7abf8994e"
+    ],
+    "entry_count": 5,
+    "sale_entry_id": "cd1f8693f5524f7d8531f4a7abf8994e",
+    "operation_id": "sixteenth-sell-once",
+    "sale_occurrences": 1,
+    "gold_quantity_before": "200",
+    "gold_quantity_after": "100",
+    "gross": "1000.00",
+    "sale_fee": "5.00",
+    "cash_before": "85484.90",
+    "cash_after": "86479.90",
+    "cash_increase": "995.00",
+    "cost_relieved": "1002.50",
+    "realized_pnl": "-7.50",
+    "remaining_total_cost": "13512.60",
+    "total_fees": "20.10",
+    "market_value": "11092.90",
+    "total_assets": "97572.80",
+    "unrealized_pnl": "-2419.70",
+    "same_close_asset_change": "172.10",
+    "asset_change_formula": "100 * (10 - 8.229) - 5 = 172.10",
+    "repeat_trade_count": 0
+  },
+  "substantive_findings": [
+    "Explains gold200 to100, cash+995, realized-7.50, and asset+172.10 from synthetic sale price above mark, without claiming market gain or repeatable execution at10.",
+    "Correctly identifies the individual stock securities-only weight rising to73.83% as a denominator change after gold sale, while total-account stock weight is8.39%.",
+    "Keeps remaining gold without re-buying sold units, preserves cash, waits for11/6 stock/chip sellability and provides alternative actions, contrary factors and re-evaluation conditions.",
+    "Explicitly reuses prior same-account extracted findings without claiming new PDF reads or child reports; original source statements and later verification limits remain distinct.",
+    "All9 new forecast records are exploratory abstentions; no formal or natural-effectiveness result is inferred."
+  ],
+  "calculations": [
+    {
+      "event_seq": 454,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "86479.90",
+        "97572.80"
+      ],
+      "result": "88.63115540396503943722020891",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 456,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "11092.90",
+        "97572.80"
+      ],
+      "result": "11.36884459603496056277979109",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 458,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "822.90",
+        "97572.80"
+      ],
+      "result": "0.8433702835216371775740780217",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 460,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "8190.00",
+        "97572.80"
+      ],
+      "result": "8.393732679599232573012150927",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 462,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "2080.00",
+        "97572.80"
+      ],
+      "result": "2.131741632914090812193562140",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 468,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "995.00",
+        "822.90"
+      ],
+      "result": "172.10",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 470,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1000.00",
+        "822.90"
+      ],
+      "result": "177.10",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 472,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "995.00",
+        "1002.50"
+      ],
+      "result": "-7.50",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 474,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "822.90",
+        "11092.90"
+      ],
+      "result": "7.418258525723661080510957459",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 476,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "8190.00",
+        "11092.90"
+      ],
+      "result": "73.83100902378999179655455291",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 478,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "2080.00",
+        "11092.90"
+      ],
+      "result": "18.75073245048634712293448963",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 480,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6ae0f265221b4ae98fe0c3326cb73550",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "-7.591240875912408759124087590",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "8.34295",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 482,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6206c73c4fc14472a160cc9ef5ea59f5",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "6.779661016949152542372881400",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "7.72",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 484,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "d9ef441a6184486da45eb3b33b076e3b",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "-23.04846466888642249352571217",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "2.19485",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 497,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "8.226"
+      ],
+      "result": "1.000364697301239970824215901",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 499,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.19",
+        "8.18"
+      ],
+      "result": "1.001222493887530562347188264",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 501,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "2.080",
+        "2.148"
+      ],
+      "result": "0.9683426443202979515828677840",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 503,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "8.633"
+      ],
+      "result": "0.9532028263639522761496582880",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 505,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.19",
+        "7.16"
+      ],
+      "result": "1.143854748603351955307262570",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 507,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "2.080",
+        "2.556"
+      ],
+      "result": "0.8137715179968701095461658842",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 509,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "sum",
+      "inputs": [
+        "8.224",
+        "8.115",
+        "7.941",
+        "7.989",
+        "8.229"
+      ],
+      "result": "40.498",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 511,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "sum",
+      "inputs": [
+        "8.36",
+        "7.52",
+        "7.90",
+        "7.68",
+        "8.19"
+      ],
+      "result": "39.65",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 513,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "sum",
+      "inputs": [
+        "2.050",
+        "1.948",
+        "1.989",
+        "1.891",
+        "2.080"
+      ],
+      "result": "9.958",
+      "classification": "calculation",
+      "recomputed": true
+    }
+  ],
+  "child_reports_this_execution": [],
+  "prior_source_reuse": {
+    "prior_report_id": "9520a02fb6724deab6973b8ddaeb0838",
+    "prior_report_sha256": "e35d316062b6f7079bce960bd494928399b416c11d15545a07b77d431c1b1611",
+    "same_account": true,
+    "boundary": "Prior same-account extracted findings and source IDs are reused. This does not establish new manager original-document reading or a fresh independent filing verification."
+  },
+  "transmission": {
+    "http_attempts": 11,
+    "completed_with_eof": 11,
+    "routes": {
+      "direct": 11
+    },
+    "failures": [],
+    "fee_amount": null,
+    "fee_source": "No independent supplier billing correlation performed"
+  },
+  "forecast_records": [
+    {
+      "id": "9394ee80acf54034bdf8c638f045cb99",
+      "symbol": "SH:518880",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "2d64c954a1694e48b1c0d4d8bc929b8b",
+      "symbol": "SH:518880",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "c6d8177ac5314962a0a69d2501d35da9",
+      "symbol": "SH:518880",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "34a93c781bfd4ac8a81993f65976512b",
+      "symbol": "SZ:002354",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "6b604b98cb924f7fbd157f26d0d0d3ac",
+      "symbol": "SZ:002354",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "374943b8d1ab4cbca9d8fe1aff04db6f",
+      "symbol": "SZ:002354",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "d561f8d4735b41d8a6b7dae4bb1ce53a",
+      "symbol": "SZ:159599",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "ad7957abdcb147ba9dabede55386d1fe",
+      "symbol": "SZ:159599",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "69e7fd1223324a96bbe1f12f8466ae9b",
+      "symbol": "SZ:159599",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:43:12.223687+08:00",
+      "target_date": "2026-12-02"
+    }
+  ],
+  "forecast_counts": {
+    "abstain": 9
+  },
+  "formal_count": 0,
+  "natural_maturity": "not_yet_observed",
+  "non_blocking_observations": [
+    "Full factual verification fails on the revenue-summary phrase; it must not be hidden by the limited account-update acceptance.",
+    "Prose judgment time00:37:31 precedes publication00:43:12; system publication time remains authoritative."
+  ],
+  "review_boundary": "Accepts only the useful limited answer to the simulated account update. Does not certify all facts, endorse returns or alter production not_evaluated. No new model request or correction of original report was performed."
+}

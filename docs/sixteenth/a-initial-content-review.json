@@ -1,0 +1,448 @@
+{
+  "kind": "evidence_content_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-04T23:32:18.129408+08:00",
+  "accepted": true,
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "database_path": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+  "database_access": "SQLite mode=ro transaction; no database or production change",
+  "account_id": "4f32f659e694450d82d621f9664af49b",
+  "input_version": 4,
+  "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+  "report_id": "7f3c74325ecf44e2b9c891086002ae03",
+  "report_sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+  "report_characters": 3371,
+  "published_at": "2026-11-04T23:28:38.479519+08:00",
+  "data_as_of": "2026-11-04T15:34:45+08:00",
+  "report_status_at_review": "stale",
+  "status_boundary": "Published current in a_initial stage; later simulated sell makes v4 stale without changing original body or forecasts.",
+  "application_content_assessment": "not_evaluated",
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SH:518880",
+      "SZ:002354",
+      "SZ:159599",
+      "account"
+    ],
+    "decision_summary": "收盘后维持三只持仓、不追加现金；现金仍占约87.77%。002354虽占证券市值68.73%，但只占总资产8.41%，趋势未破，故持有而不减、也不加。518880与159599权重小，分别处于中期下行和更深的下行，今日反弹不构成加仓。模拟成交价在当日区间之外，账面浮亏不能单独驱动补仓或止损。1日方向均弃权；518880的5/20日与159599的5/20日偏下，002354的20日偏上、短线弃权。",
+    "limitations": [
+      "公告研究员任务因网络失败未交付，天娱数科2026年三季报正文未逐页阅读；11页PDF关键词无命中不能证明现金流、商誉、应收、质押或诉讼不存在，因此不能把利润增长升级为质量已核实。",
+      "两只ETF的合同条款、跟踪指数代码与权重、费率、申赎门槛、规模份额，以及同一时点NAV/IOPV均未从正文核实，故无折溢价，也不能把板块或媒体个股写成基金持仓。",
+      "国内与国际金价存在多套冲突收盘，上金所、FOMC和CPI原文未核；华安黄金ETF连续净赎回仅为未核对的媒体陈述。",
+      "探索性预测的基准价尚未就绪，未来目标日收盘不存在；方向不是已验证准确率，也不构成交易指令。",
+      "成交量“手”为供应商标注，未再与交易所单位交叉验证；成交额按人民币元使用。未来卖出费用未知，未从浮亏中扣减。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "checks": {
+    "account_facts": "pass",
+    "answers_scope": "pass",
+    "basis_and_counter_factors": "pass",
+    "conditions": "pass",
+    "limitations": "pass",
+    "return_periods": "pass",
+    "forecast_kind": "pass",
+    "source_access_provenance": "pass"
+  },
+  "account_check": {
+    "opening_cash": "100000",
+    "cash": "85484.90",
+    "trade_count": 3,
+    "buy_gross": "14500.00",
+    "fees": "15.10",
+    "remaining_total_cost": "14515.10",
+    "holdings": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "200",
+        "cost_price": "10.025"
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "cost_price": "10.0051"
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "cost_price": "2.505"
+      }
+    ],
+    "market_value": "11915.80",
+    "total_assets": "97400.70",
+    "unrealized_pnl": "-2599.30",
+    "realized_pnl": "0",
+    "ledger_entry_ids": [
+      "87d776f541904fa9aa88c1d42aa9f2ff",
+      "91d99c00cea94e71aad7bd950ae08223",
+      "ee7fef60e5cb43868e8135e891e55010",
+      "560befbbb33d4f4fa1054d22bda96e08"
+    ],
+    "operation_ids": [
+      "sixteenth-buy-0",
+      "sixteenth-buy-1",
+      "sixteenth-buy-2"
+    ],
+    "simulated_arithmetic_prices_not_market_fills": true
+  },
+  "substantive_findings": [
+    "Explicitly holds all three securities without new cash allocation; compares adding/reducing/exiting and explains concentration versus total-account weights.",
+    "Each security includes contrary factors and concrete reassessment conditions. Holding/abstaining is accepted as a reasoned decision, not required directional success.",
+    "Exact 5- and 20-return-interval calculations are supported by 6 and 21 actual closes; long returns are from 2026-06-01, while 60 only specifies moving-average samples.",
+    "Quarterly earnings are derived from structured cumulative rows, not mislabelled as manager-read PDF text; source and unverified original-comparison boundary are explicit.",
+    "The failed filing child is explicitly disclosed; manager uses its own completed financial tools and two completed child reports without claiming direct original-document reading.",
+    "Exploratory labels and pending effectiveness are explicit; the database formal count remains zero."
+  ],
+  "calculations": [
+    {
+      "event_seq": 25,
+      "material_id": "7bf21c8f47a641adba83a4742cefe523",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "-4.679717363604772385034171200",
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "8.34295",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 27,
+      "material_id": "7bf21c8f47a641adba83a4742cefe523",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "0.036469730123997082421590100",
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "8.0996",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 29,
+      "material_id": "7bf21c8f47a641adba83a4742cefe523",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-06-01",
+        "end": "2026-11-04",
+        "return_intervals": 105
+      },
+      "close_points": 106,
+      "return_percent": "-11.93279109589041095890410959",
+      "moving_average_period": {
+        "start": "2026-08-05",
+        "end": "2026-11-04",
+        "window": 60
+      },
+      "moving_average": "8.796633333333333333333333333",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 31,
+      "material_id": "b769762d272b454ab5e273781ea69954",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "14.38547486033519553072625700",
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "7.72",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 33,
+      "material_id": "b769762d272b454ab5e273781ea69954",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "0.122249388753056234718826400",
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "7.93",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 35,
+      "material_id": "b769762d272b454ab5e273781ea69954",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-06-01",
+        "end": "2026-11-04",
+        "return_intervals": 105
+      },
+      "close_points": 106,
+      "return_percent": "10.08064516129032258064516130",
+      "moving_average_period": {
+        "start": "2026-08-05",
+        "end": "2026-11-04",
+        "window": 60
+      },
+      "moving_average": "7.7525",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 37,
+      "material_id": "9ed07f37f62d4465bc5757f3d9130d36",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "-18.62284820031298904538341158",
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "2.19485",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 39,
+      "material_id": "9ed07f37f62d4465bc5757f3d9130d36",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "-3.165735567970204841713221600",
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "1.9916",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    },
+    {
+      "event_seq": 41,
+      "material_id": "9ed07f37f62d4465bc5757f3d9130d36",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-06-01",
+        "end": "2026-11-04",
+        "return_intervals": 105
+      },
+      "close_points": 106,
+      "return_percent": "-26.24113475177304964539007092",
+      "moving_average_period": {
+        "start": "2026-08-05",
+        "end": "2026-11-04",
+        "window": 60
+      },
+      "moving_average": "2.57865",
+      "adjustment": "none",
+      "source_truncated": false,
+      "recomputed": true
+    }
+  ],
+  "fundamental_sources": [
+    {
+      "delivery_id": 4,
+      "material_id": "388b17b062554647b9a6a137922b498f",
+      "access": "manager direct structured fundamentals; not full filing"
+    },
+    {
+      "delivery_id": 346,
+      "material_id": "ec0867cd4ce34153a531378f5b7259f6",
+      "access": "manager direct structured fundamentals; not full filing"
+    },
+    {
+      "event_seq": 374,
+      "material_id": "8f1907b224be46cf8ba55da8d3b7367b",
+      "access": "manager PDF keyword search pages 1-11; zero matches; not full-page reading"
+    }
+  ],
+  "quarterly_recomputation": {
+    "revenue_current": "383804809.20",
+    "revenue_comparison": "520961119.96",
+    "revenue_yoy_percent": "-26.32755219248051003825241393",
+    "parent_profit_current": "10142806.55",
+    "parent_profit_comparison": "19082954.24",
+    "profit_comparison_ratio_percent": "53.15113384666377526250359022"
+  },
+  "child_reports": [
+    {
+      "report_id": "36d4f061542e4c7e80c4e6632937cdba",
+      "role": "etf_researcher",
+      "manager_access": "full_report; source access remains that of child"
+    },
+    {
+      "report_id": "b1f364cc24d44429a302639cf5fa67bc",
+      "role": "industry_researcher",
+      "manager_access": "full_report; source access remains that of child"
+    }
+  ],
+  "transmission": {
+    "http_attempts": 38,
+    "completed_with_eof": 37,
+    "route": "environment",
+    "unknown_failures": [
+      {
+        "event_seq": 408,
+        "agent_id": "research-20a317eaed18",
+        "model": "grok-4.6",
+        "started_at": "2026-11-04T15:20:44.894459+00:00",
+        "duration_ms": 112763.97,
+        "status_code": 200,
+        "error": "RemoteProtocolError",
+        "error_code": "upstream_transport_error",
+        "stream_terminal": null,
+        "http_body_complete": false,
+        "cancelled_by": null
+      }
+    ],
+    "unknown_failure_replayed": false,
+    "fee_amount": null,
+    "fee_source": "No independent supplier billing correlation performed"
+  },
+  "forecast_records": [
+    {
+      "id": "a43681c5f01646e0b528652cd7dde09d",
+      "symbol": "SH:518880",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "2d9dbb47b7f143958854d1c9d35406ba",
+      "symbol": "SH:518880",
+      "horizon": 5,
+      "direction": "down",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "3b52dff1033a453f917f0951643bb685",
+      "symbol": "SH:518880",
+      "horizon": 20,
+      "direction": "down",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "9ad33936cd4b4967975b3b7f7ed67601",
+      "symbol": "SZ:002354",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "97b32e4592b748a690e0402e1cd18a66",
+      "symbol": "SZ:002354",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "639bdecfaeb247df8befede6c13bef67",
+      "symbol": "SZ:002354",
+      "horizon": 20,
+      "direction": "up",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "23158e4a04bc493ca90e50f3bb2269a9",
+      "symbol": "SZ:159599",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "ed530e33a69f470997f6cd52a082f301",
+      "symbol": "SZ:159599",
+      "horizon": 5,
+      "direction": "down",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "1b6b18c959d548fabb4a700309cc8dab",
+      "symbol": "SZ:159599",
+      "horizon": 20,
+      "direction": "down",
+      "kind": "exploratory",
+      "published_at": "2026-11-04T23:28:38.482703+08:00",
+      "target_date": "2026-12-02"
+    }
+  ],
+  "forecast_counts": {
+    "abstain": 4,
+    "down": 4,
+    "up": 1
+  },
+  "formal_count": 0,
+  "natural_maturity": "not_yet_observed; no accuracy claim",
+  "non_blocking_observations": [
+    "The prose judgment time 23:22 is earlier than actual publication 23:28:38; use persisted published_at and system metadata for publication time.",
+    "Original Markdown has limited source navigation; exact calculation periods/material access remain available through structured results and review evidence.",
+    "Liquidity wording is based on whole-day supplier turnover, not execution-depth proof; the report requests no executable trade."
+  ],
+  "review_boundary": "Accepts this limited report as an evidence-grounded account answer. Does not certify every external source, create production fact admission, endorse predicted returns, or modify not_evaluated."
+}

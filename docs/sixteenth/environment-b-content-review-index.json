@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "kind": "environment_B_review_index",
+  "reviewed_at": "2026-11-05T00:19:43.464047+08:00",
+  "run": {
+    "directory": "data/evaluations/sixteenth-normal-matrix-v1",
+    "route": "environment",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "started_at": "2026-11-04T23:16:15.996213+08:00",
+    "finished_at": "2026-11-05T00:15:50.352710+08:00",
+    "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826"
+  },
+  "reports": [
+    {
+      "stage": "initial_cash_and_universe",
+      "review_json": "docs/sixteenth/b-cash-content-review.json",
+      "review_markdown": "docs/sixteenth/b-cash-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "input_version": 2,
+        "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+        "report_id": "f8e9ab0cb90d425e88d5e24983e8a9d3",
+        "report_created_at": "2026-11-04T23:45:45.037895+08:00",
+        "report_characters": 2574,
+        "report_utf8_sha256": "757d5d3271d74a2674309e550a6cc0dda4fbe08110ed65d54ad7fcdba5b155d9",
+        "stored_result_utf8_sha256": "bf6980c7136cc84572cae8f319598161310e29bdec924798ffead07361e9ef9a"
+      },
+      "accepted": true,
+      "decision": "accepted_with_material_visibility_caveat",
+      "acceptance_scope": "Limited account-specific content minimum only. Not blanket factual certification, production content assessment, formal forecast validation, or future performance proof.",
+      "usage": {
+        "http_attempts": 37,
+        "completed_and_eof": 37,
+        "error_attempts": 0,
+        "provider_reported_totals": {
+          "input_tokens": 1313900,
+          "output_tokens": 67237,
+          "total_tokens": 1381137,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 52,
+          "cost_in_usd_ticks": 11432785200
+        },
+        "actual_money_cost": "unknown; no independently matched provider invoice; raw ticks are not converted"
+      },
+      "forecast_coverage": {
+        "expected": 3,
+        "direction_published": 0,
+        "abstained": 3,
+        "uncovered": 0,
+        "waiting_data": 0,
+        "missed": 0,
+        "failed": 0
+      },
+      "non_pass_checks": [
+        {
+          "name": "period_values",
+          "status": "pass_with_wording_note",
+          "evidence": "5/10/20 return intervals independently recomputed using 6/11/21 closes; moving averages use 5/10/20 closes. Long window has 62 closes and 61 intervals. Body gives explicit dates; limitation calls it 62日 loosely."
+        },
+        {
+          "name": "material_read_scope",
+          "status": "partially_verified",
+          "evidence": "Persisted post-bounding manager receipt 1046 contains physical pages 5–11, but it was added immediately before final synthesis; seq1357 reports 20/36 outputs truncated or omitted. Full final HTTP payload is not persisted. Therefore receipt proves conversation insertion, not exact final request visibility of pages 9–11. Limitations say Q3 holdings/industry weights unread; this conflicts with available received-source range but cannot be proven false for final visible payload."
+        },
+        {
+          "name": "account_isolation",
+          "status": "pass_with_scope_boundary",
+          "evidence": "All 362 B material delivery rows have B account ID; 361 public deliveries plus one B-owned authored statement. All 6 report delivery projections refer to 3 B child reports and B source job. No A private report delivery observed; this is provenance evidence, not a claim to prove absence of every conceivable semantic influence."
+        }
+      ],
+      "application_content_assessment": "not_evaluated"
+    },
+    {
+      "stage": "public_materials",
+      "review_json": "docs/sixteenth/b-public-materials-content-review.json",
+      "review_markdown": "docs/sixteenth/b-public-materials-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "job_id": "086f86ad82464b91ab45c1950381073b",
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "input_version": 2,
+        "report_id": "a49f6a538a934c6498092c401cb18250",
+        "created_at": "2026-11-04T23:55:37.195530+08:00",
+        "report_characters": 2768,
+        "report_utf8_sha256": "eb588f3d623a56d374d77d16d09a598a7c55b2926bbcc3582d368d8fd345a6f8",
+        "stored_result_utf8_sha256": "ebb97f5ffce3e677b61f46127264f7543b2ef58d5e4fe1daac3fd45d2b7cf813"
+      },
+      "accepted": true,
+      "decision": "accepted_with_nonblocking_unit_error_and_visibility_limits",
+      "acceptance_scope": "Limited account-specific content minimum and genuine public-material event handling. Not complete factual certification, formal prediction coverage, natural forecast accuracy, or production content assessment.",
+      "usage": {
+        "http_attempts": 11,
+        "completed_and_eof": 11,
+        "error_attempts": 0,
+        "provider_reported_totals": {
+          "input_tokens": 615530,
+          "output_tokens": 43760,
+          "total_tokens": 659290,
+          "cost_in_usd_ticks": 3808612000,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 0
+        },
+        "actual_money_cost": "unknown; raw ticks not converted without independent invoice"
+      },
+      "forecast_coverage": {
+        "expected": 3,
+        "direction_published": 0,
+        "abstained": 3,
+        "uncovered": 0,
+        "waiting_data": 0,
+        "missed": 0,
+        "failed": 0
+      },
+      "non_pass_checks": [
+        {
+          "name": "percentage_unit",
+          "status": "fail_nonblocking",
+          "evidence": "Price/MA20 ratio is 7.304238…%, but prose says 7.30 percentage points. Relative price distance should use percent, not percentage points. The underlying values and comparison direction are correct; original report is unchanged."
+        },
+        {
+          "name": "material_visibility_scope",
+          "status": "partially_verified",
+          "evidence": "Index get_material returns all four extracted pages and product cover identifies 159278 in persisted bounded receipts, yet final prose limits visibility. Final synthesis truncates/omits 29/44 outputs; no full final HTTP payload persisted, so do not equate receipts with final visible pages. Independently read primary sources confirm facts actually adopted."
+        },
+        {
+          "name": "account_isolation",
+          "status": "pass_with_observation_boundary",
+          "evidence": "30 material receipts all B/public; no child report delivery, shared_research_used empty; prior B same-account judgment may be reviewed, no A private report delivery observed."
+        }
+      ],
+      "application_content_assessment": "not_evaluated"
+    },
+    {
+      "stage": "configuration_changed",
+      "review_json": "docs/sixteenth/b-configuration-content-review.json",
+      "review_markdown": "docs/sixteenth/b-configuration-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "input_version": 2,
+        "job_id": "dc4fc2cb52794bc4b502d981649c5918",
+        "job_reason": "configuration_changed",
+        "report_id": "67d7c75da35641c884fffcc52f74664b",
+        "created_at": "2026-11-05T00:11:23.009677+08:00",
+        "report_characters": 2770,
+        "report_utf8_sha256": "309c484cd28b9180b22827a38ddccc59eeed9b2859b48bf31676b2d465f4ba7d",
+        "stored_result_utf8_sha256": "94b79768225d686ad55d19233e97c58d0b1a3b84e064f6b413584f3ca2500b8e"
+      },
+      "accepted": true,
+      "decision": "accepted_for_limited_account_answer_with_unit_error_and_index_rule_qualification",
+      "acceptance_scope": "Account-specific minimum only: action, reasons, counterevidence, conditions, arithmetic and current input state. Does not accept percentage-point wording, a continuous 5%/3% cap interpretation, or blanket source-reading certification.",
+      "usage": {
+        "http_attempts": 11,
+        "completed_and_eof": 11,
+        "error_attempts": 0,
+        "provider_reported_totals": {
+          "input_tokens": 564125,
+          "output_tokens": 49472,
+          "total_tokens": 613597,
+          "cost_in_usd_ticks": 3617749200,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 1
+        },
+        "actual_money_cost": "unknown; raw provider ticks not converted without independently matched invoice"
+      },
+      "forecast_coverage": {
+        "expected": 3,
+        "direction_published": 0,
+        "abstained": 3,
+        "uncovered": 0,
+        "waiting_data": 0,
+        "missed": 0,
+        "failed": 0
+      },
+      "non_pass_checks": [
+        {
+          "name": "support_counterfactors_reassessment",
+          "status": "pass_with_index_condition_qualification",
+          "evidence": "Theme concentration, historical NAV declines and 5-period weakness oppose moving-average and relative-return strength; concrete 0.949/0.868/rolling MA20 and turnover conditions. Direct comparison of fund weights with index adjustment caps needs qualification below."
+        },
+        {
+          "name": "percentage_unit",
+          "status": "fail_nonblocking",
+          "evidence": "Repeated 7.30 percentage-points wording for price/MA20 ratio should be 7.30 percent. Underlying 0.938/0.87415 ratio is correct."
+        },
+        {
+          "name": "index_rule_interpretation",
+          "status": "needs_qualification_not_accepted_as_continuous_cap",
+          "evidence": "Source section7 applies weight adjustment factors twice yearly, generally fixed before next adjustment. 5%/3% are adjustment-rule caps, not guaranteed continuous fund holding ceilings. Prose omits adjustment timing and would cancel a satellite candidate if later fund weights exceed the index caps. That may be a discretionary stricter risk condition, but must not be treated as evidence of rule breach or automatically extreme concentration. Saved Q3 5.36%/5.18% illustrates the incompatible dates/objects; report does not explicitly assert a legal/compliance breach."
+        },
+        {
+          "name": "read_scope",
+          "status": "partially_verified",
+          "evidence": "Index full extracted text is1256 chars; receipts1123 and1178 read all4 pages. Other PDF receipts include broader ranges than final adopted statements. Final projection omits/truncates23/41 outputs; full final request not persisted, so no blanket claim all acquired pages reached final prompt."
+        },
+        {
+          "name": "isolation",
+          "status": "pass_with_observation_boundary",
+          "evidence": "25 material receipts all B/public, no child report delivery, shared_research_used empty. No A private report delivery observed."
+        }
+      ],
+      "application_content_assessment": "not_evaluated"
+    }
+  ],
+  "B_totals": {
+    "reports": 3,
+    "http_attempts": 59,
+    "completed_and_eof": 59,
+    "formal_forecasts": 0,
+    "directional_forecasts": 0,
+    "exploratory_abstentions": 9,
+    "actual_money_cost": "unknown"
+  },
+  "whole_environment_run_transport_for_scope_only": {
+    "http_attempts": 170,
+    "completed_and_eof": 165,
+    "note": "These are whole-run counts, not B-only counts. B success must not hide failures from other tasks."
+  },
+  "boundaries": [
+    "All three acceptance decisions cover limited account-specific content minimum only, not blanket source/factual certification.",
+    "Final raw HTTP prompts not persisted; bounded material receipts are not proof all source pages reached final requests.",
+    "Original bodies and separate result hashes remain immutable; later reports do not erase earlier defects.",
+    "Application content_assessment remains not_evaluated.",
+    "New direct run is an independent bounded workaround validation, not identical-payload controlled comparison or provider availability guarantee.",
+    "No conclusion about disconnect initiator is inferred from these content reviews; root packet/timing evidence is separate."
+  ]
+}

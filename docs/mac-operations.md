@@ -74,6 +74,16 @@ python3 -m venv .venv
 
 打开 `http://127.0.0.1:8766`，演示固定样例不代表真实模型、行情或已到期预测表现。
 
+## 模型连接路线（第十六轮）
+
+在“设置 → 研究运行设置 → 模型连接路线”明确选择并保存。默认 `environment` 保持 HTTPX 的环境代理与 `NO_PROXY` 行为；`direct` 只让模型 HTTP 客户端不采用环境代理。该选项同时用于各供应商的模型目录、能力探测、主 Agent、子角色、追问、汇总和公共研究；行情、PDF、公告读取仍使用各自原有连接策略。供应商表单仍只有 Key、Base URL 和协议。
+
+保存时由服务器记录 `model_network_revision`；重复保存同一路线不增加修订。已领取任务冻结 `model_network_route` / 修订，各角色沿用该快照；新任务和新的目录/探测请求采用新选择。路线变化使相关目录/能力证据重新验证，不会自动付费探测，也不自动在失败后切线重发。已进入模型调用的未知结果仍按原恢复边界处理。选择保存在数据库，正常 `start.command` / `scripts/manage.py` 重启后继续生效；不需要修改 Python 或导入验证 helper。
+
+任务详情及“在途任务保持启动时配置”显示冻结路线。请求诊断中的 `model_network.route` 是配置，`proxy_connect_observed` / `proxy_tunnel.observed` 才是此请求实际观察到的 CONNECT；使用连接池时后续请求可能不再出现 CONNECT。环境代理变量存在、没有观察到 CONNECT、配置 direct 是三种不同信息。程序不能判断操作系统 TUN、VPN 或网络设备的物理链路，direct 不承诺绕过这些层。
+
+两种路线都校验证书及主机名。direct 在关闭 HTTPX 代理环境读取前显式建立 SSLContext，保持 `SSL_CERT_FILE` 优先、其次 `SSL_CERT_DIR`、否则 certifi 的 CA 语义（HTTPX 0.28.1）。诊断只记录 CA 来源标签，不记录文件内容、代理 URL、代理密码或认证头。修改启动环境的代理/CA 仍需按既有流程核对并重启；网页路线选择本身无需重启当前进程。官方语义依据：[HTTPX 环境变量](https://www.python-httpx.org/environment_variables/)、[传输配置](https://www.python-httpx.org/advanced/transports/)。
+
 ## 修改环境连接如何生效
 
 优先推荐在网页“模型供应商”填写 API Key、Base URL、协议三项。模型名称始终来自该供应商的真实目录，在 Agent 配置中选择。

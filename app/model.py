@@ -26,6 +26,7 @@ import httpx
 
 from .context import bounded_result, compact
 from .config import reasoning_effort, model_config_summary, timeout_policy
+from .model_network import model_http_options, network_observation
 
 
 class ModelError(RuntimeError):
@@ -89,7 +90,8 @@ class ModelTimeoutError(ModelError):
 def cancellation_source(exc, fallback='parent_or_user_cancelled'):
     # Task.cancel messages are internal constants, never arbitrary exception text.
     label = exc.args[0] if exc.args else None
-    return label if label in {'user_cancelled', 'input_version_updated', 'service_shutdown',
+    return label if label in {'user_cancelled', 'input_version_updated', 'same_version_replaced',
+        'superseded_reason_unknown', 'service_shutdown',
         'account_deleted', 'parent_finished', 'parent_failed', 'manager_cancelled_child',
         'analysis_budget_exhausted', 'child_budget_exhausted', 'forecast_deadline_exceeded'} else fallback
 
@@ -208,10 +210,15 @@ class ModelClient:
         headers = {"Content-Type": "application/json"}
         if self.key:
             headers["Authorization"] = f"Bearer {self.key}"
+        try:
+            http_options = model_http_options(config, transport)
+            self.network = network_observation(config, custom_transport=transport is not None)
+        except ValueError as exc:
+            raise ModelConfigurationError(str(exc)) from exc
         self.http = httpx.AsyncClient(
             base_url=base_url + "/", headers=headers,
             timeout=httpx.Timeout(connect=15, pool=15, write=30, read=None),
-            transport=transport, follow_redirects=False,
+            **http_options, follow_redirects=False,
         )
         self.before_request = before_request
         self.requests: list[dict[str, Any]] = []
@@ -794,6 +801,7 @@ class ModelClient:
             if deadline <= started_mono:
                 raise ModelTimeoutError(limit_code)
             observation = {"attempt": attempt + 1, "endpoint": endpoint, "model": self.model,
+                           "model_network": copy.deepcopy(self.network),
                            "base_url": self.base_url, "protocol": self.protocol,
                            "task_id": session.task_id if session else None,
                            "reasoning_effort": self.reasoning_effort,
@@ -842,6 +850,7 @@ class ModelClient:
                     trace_state['response_scope'] = 'proxy_tunnel' if tunnel else 'origin'
                     if tunnel:
                         observation['proxy_tunnel']['observed'] = True
+                        observation['model_network']['proxy_connect_observed'] = True
                     else:
                         # A CONNECT 200 establishes only the proxy tunnel. Each
                         # actual origin request starts with no response evidence.
@@ -976,6 +985,15 @@ class ModelClient:
             if response.status_code >= 400:
                 observation["error"] = f"HTTP {response.status_code}"
                 observation['error_code'] = f'upstream_http_{response.status_code}'
+                if response.status_code in {401, 403}:
+                    # A new scheduling window cannot repair the same rejected
+                    # credentials/permissions. Keep its HTTP diagnosis while
+                    # allowing the normal configuration fingerprint gate to
+                    # defer further work until the configuration changes.
+                    observation['retry_suppressed'] = 'authentication_configuration_rejected'
+                    raise ModelConfigurationError(
+                        f"模型服务 HTTP {response.status_code}；请检查供应商凭据和访问权限，修订模型配置后恢复。未自动重试。",
+                        code=f'upstream_http_{response.status_code}')
                 if response.status_code in {400, 404, 422} or (response.status_code >= 500 and any(
                     code in response.text.lower() for code in ('unsupported_parameter', 'unsupported_value', 'invalid_parameter', 'invalid_value'))):
                     # Read only for classification; never log server bodies or

@@ -101,6 +101,22 @@ try {
    assert.equal(await page.locator('#settings-form [name=max_output_tokens]').inputValue(),display);
  }
  evidence.checks.push('output limit defaults blank; explicit numeric/null/numeric settings round-trip through actual UI/API and reload without converting blank to zero');
+ let routeRevision=(await api('/api/settings')).model_network_revision;
+ for(const route of ['direct','environment']){
+   await page.locator('#settings-form [name=model_network_route]').selectOption(route);
+   const saved=page.waitForResponse(response=>response.url().endsWith('/api/settings')&&response.request().method()==='PUT');
+   await page.locator('#settings-form [type=submit]').click();
+   const result=await saved;assert.equal(result.status(),200);
+   assert.equal(result.request().postDataJSON().model_network_route,route);
+   const settings=await result.json();assert.equal(settings.model_network_route,route);
+   assert.equal(settings.model_network_revision,++routeRevision);
+   await page.locator('.loading-line').waitFor({state:'hidden'});
+   await page.reload();await page.locator('#settings-form').waitFor();
+   assert.equal(await page.locator('#settings-form [name=model_network_route]').inputValue(),route);
+ }
+ evidence.checks.push('model route explicit environment/direct choice persists through production settings UI/API and reload with server-managed revisions; VPN/TUN boundary displayed');
+ assert.ok((await page.locator('#settings-form').textContent()).includes('direct 不代表绕过系统 VPN / TUN'));
+
  assert.equal(errors.length,0,errors.join('\n'));
  await writeFile('test-results/eleventh/browser-evidence.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify({passed:true,checks:evidence.checks,baseline:evidence.baseline.map(x=>({kind:x.kind,before:x.before.scrollTop,after:x.after[0].scrollTop})),fixed:evidence.fixed.map(x=>({kind:x.kind,scroll:x.after.map(a=>a.scrollTop)}))},null,2));
 } catch(error) {if(page)await page.screenshot({path:'test-results/eleventh/failure.png',fullPage:true}).catch(()=>{});console.error(log);throw error;}

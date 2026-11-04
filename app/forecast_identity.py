@@ -249,7 +249,7 @@ class ForecastIdentityStore:
         sql = """SELECT s.*,b.kind,b.base_date,b.rule_version AS original_rule_version,
             COALESCE(p.scoring_rule_id,'unknown:'||b.id) AS rule_version,
             p.scoring_rule_id,p.status AS rule_identity_status,b.rule,b.deadline,b.expected_count,b.created_at AS batch_created_at,
-            f.id AS forecast_id,f.direction,f.published_at,f.report_id,f.reason AS forecast_reason,
+            f.id AS forecast_id,f.direction,f.published_at,f.information_cutoff,f.report_id,f.reason AS forecast_reason,
             a.id AS execution_attempt_id,a.job_id AS assigned_job_id,a.attempt AS assigned_attempt,
             a.planned_at AS configuration_frozen_at,
             %s AS team_id,%s AS manager_model,%s AS manager_effort,

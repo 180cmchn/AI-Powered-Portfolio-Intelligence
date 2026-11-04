@@ -1,0 +1,658 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "reviewed_at": "2026-11-04T23:58:06.758015+08:00",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "accepted": true,
+  "decision": "accepted_with_nonblocking_unit_error_and_visibility_limits",
+  "acceptance_scope": "Limited account-specific content minimum and genuine public-material event handling. Not complete factual certification, formal prediction coverage, natural forecast accuracy, or production content assessment.",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "job_id": "086f86ad82464b91ab45c1950381073b",
+    "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+    "input_version": 2,
+    "report_id": "a49f6a538a934c6498092c401cb18250",
+    "created_at": "2026-11-04T23:55:37.195530+08:00",
+    "report_characters": 2768,
+    "report_utf8_sha256": "eb588f3d623a56d374d77d16d09a598a7c55b2926bbcc3582d368d8fd345a6f8",
+    "stored_result_utf8_sha256": "ebb97f5ffce3e677b61f46127264f7543b2ef58d5e4fe1daac3fd45d2b7cf813"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro; no DB/application write or model request",
+    "source_documents_refetched": false,
+    "original_body_changed": false,
+    "final_http_payload_persisted": false,
+    "numeric_recalculation": "Decimal and sample standard deviation on persisted actual close inputs"
+  },
+  "checks": [
+    {
+      "name": "account_fit_and_reassessment",
+      "status": "pass",
+      "evidence": "Maintains 100000 cash/no holdings under balanced; no buy, gives alternatives, counterfactors and 0.949/0.868/rolling MA20 conditions; new turnover criterion explicitly qualitative."
+    },
+    {
+      "name": "public_event_research",
+      "status": "pass",
+      "evidence": "Two actual public source IDs individually read and assigned relevant impacts; all four demand IDs completed; source routing is not an investment opinion."
+    },
+    {
+      "name": "new_primary_facts",
+      "status": "pass",
+      "evidence": "Q3 equity 98.31% of total assets, manufacturing 89.13% of NAV, first two holdings 5.36%/5.18% and third fair value all match primary excerpt; historical dates and distinct denominators preserved."
+    },
+    {
+      "name": "numerical_period_values",
+      "status": "pass",
+      "evidence": "5/10/20 return intervals use 6/11/21 close points; exact recomputation matches returns, relative returns and MA. Five-return sample daily volatility 4.3416% is not annualized."
+    },
+    {
+      "name": "percentage_unit",
+      "status": "fail_nonblocking",
+      "evidence": "Price/MA20 ratio is 7.304238…%, but prose says 7.30 percentage points. Relative price distance should use percent, not percentage points. The underlying values and comparison direction are correct; original report is unchanged."
+    },
+    {
+      "name": "material_visibility_scope",
+      "status": "partially_verified",
+      "evidence": "Index get_material returns all four extracted pages and product cover identifies 159278 in persisted bounded receipts, yet final prose limits visibility. Final synthesis truncates/omits 29/44 outputs; no full final HTTP payload persisted, so do not equate receipts with final visible pages. Independently read primary sources confirm facts actually adopted."
+    },
+    {
+      "name": "account_isolation",
+      "status": "pass_with_observation_boundary",
+      "evidence": "30 material receipts all B/public; no child report delivery, shared_research_used empty; prior B same-account judgment may be reviewed, no A private report delivery observed."
+    },
+    {
+      "name": "transport_contract_publication",
+      "status": "pass",
+      "evidence": "11/11 completed+EOF, first final submission, zero corrections, actual limited report persisted; application content_assessment unchanged at not_evaluated."
+    }
+  ],
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SZ:159278",
+      "account"
+    ],
+    "decision_summary": "本账户维持100%现金、暂不买入SZ:159278。2026-11-04收盘0.938未站上0.949、也未跌破0.868；单一机器人主题与balanced不符。新读季报与指数编制说明只确认产品身份和主题集中，不构成投入。1/5/20个交易日价格方向均弃权。",
+    "limitations": [
+      "国证机器人产业指数编制方案可见摘录只到选样空间开头，样本数量、权重上限和调整频率未纳入判断，因此不能排除指数规则层面的极端集中。",
+      "2026年三季报前十持仓只见到前两名权重和第三名公允价值，且时点为2026-09-30，不能当作2026-11-04实时持仓或指数权重。",
+      "季报全文检索未出现已实现跟踪误差；合同生效以来净值落后基准1.87个百分点不是年化跟踪误差。同时点IOPV、NAV与折溢价未取得。",
+      "产品资料PDF检索到管理费0.5%、托管费0.1%、综合运作费率0.63%，但可见摘录未重复基金名称，费率归属若有误只影响成本评估，不影响当前持币。",
+      "2026年10月至11月初可核对的订单、交付或新政策原文未取得，不能把11月4日上涨解释为景气兑现。",
+      "腾讯日线成交额为空，不能与东财成交额跨源比较；沪深300与ETF不是同一抓取快照。报价fresh_for_triggers为false，价格条件不能当可执行触发。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "period_calculations": [
+    {
+      "return_intervals": 5,
+      "return_points": 6,
+      "return_start": "2026-10-28",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "-1.159114857744994731296101160",
+      "relative_return_percentage_points": "-1.586895369857280381916713460",
+      "moving_average_points": 5,
+      "moving_average_start": "2026-10-29",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.9058"
+    },
+    {
+      "return_intervals": 10,
+      "return_points": 11,
+      "return_start": "2026-10-21",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "8.943089430894308943089430900",
+      "relative_return_percentage_points": "9.200632725648840270227781990",
+      "moving_average_points": 10,
+      "moving_average_start": "2026-10-22",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.910"
+    },
+    {
+      "return_intervals": 20,
+      "return_points": 21,
+      "return_start": "2026-09-30",
+      "return_end": "2026-11-04",
+      "asset_return_pct": "4.454342984409799554565701600",
+      "relative_return_percentage_points": "10.33553501125013900591758634",
+      "moving_average_points": 20,
+      "moving_average_start": "2026-10-08",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.87415"
+    }
+  ],
+  "price_over_ma20_percent": "7.304238403020076645884573600",
+  "five_interval_sample_daily_volatility_pct": "4.341611190631384",
+  "public_event": {
+    "routed_source_material_ids": [
+      "6b49e818f2d64fbda2b3dd61df77cb0a",
+      "19148056833943468519114f3e02e587"
+    ],
+    "information_impacts": [
+      {
+        "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+        "status": "relevant",
+        "explanation": "该材料是鹏华国证机器人产业ETF 2026年三季报的检索入口。结合已读季报正文，确认跟踪标的、份额、净值表现和季末持仓轮廓，支持维持观察、暂不买入，但不提供2026-11-04之后的新订单或政策。",
+        "symbols": [
+          "SZ:159278"
+        ],
+        "sectors": [
+          "机器人产业"
+        ],
+        "market_wide": false,
+        "event_key": "news:97c4a5a4773346a6ad5a5eeb96c0d826:6b49e818f2d64fbda2b3dd61df77cb0a",
+        "references": [
+          {
+            "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+            "status": "resolved",
+            "title": null,
+            "url": "http://static.cninfo.com.cn/finalpage/2026-10-26/1225621727.PDF",
+            "scope": "public",
+            "access": "pdf_search",
+            "classification": "unclassified",
+            "document_version": 1,
+            "document_identity_kind": "raw_bytes_sha256",
+            "representation_kind": "original_document",
+            "range": {
+              "char_count": 1052,
+              "truncated": false,
+              "read_completeness": "partial"
+            },
+            "locator": "/api/materials/6b49e818f2d64fbda2b3dd61df77cb0a/range?account_id=97c4a5a4773346a6ad5a5eeb96c0d826"
+          }
+        ]
+      },
+      {
+        "material_id": "19148056833943468519114f3e02e587",
+        "status": "relevant",
+        "explanation": "国证机器人产业指数编制说明确认980022是机器人主题指数，与159278披露的跟踪标的一致。可见摘录未覆盖权重和样本数，因此只加强“单一主题、不宜全额配置”的判断，不构成买入或市场层面结论。",
+        "symbols": [
+          "SZ:159278"
+        ],
+        "sectors": [
+          "机器人产业"
+        ],
+        "market_wide": false,
+        "event_key": "news:97c4a5a4773346a6ad5a5eeb96c0d826:19148056833943468519114f3e02e587",
+        "references": [
+          {
+            "material_id": "19148056833943468519114f3e02e587",
+            "status": "resolved",
+            "title": null,
+            "url": "https://www.cnindex.com.cn/docs/gz_980022.pdf",
+            "scope": "public",
+            "access": "full_text",
+            "classification": "unclassified",
+            "document_version": 1,
+            "document_identity_kind": "raw_bytes_sha256",
+            "representation_kind": "original_document",
+            "range": {
+              "returned_range": {
+                "start_page": 1,
+                "end_page": 4
+              },
+              "requested_range": {
+                "start_page": 1,
+                "end_page": 4
+              },
+              "pages": [
+                {
+                  "page": 1,
+                  "text_start": 0,
+                  "text_end": 291,
+                  "text_length": 291,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=1"
+                },
+                {
+                  "page": 2,
+                  "text_start": 0,
+                  "text_end": 376,
+                  "text_length": 376,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=2"
+                },
+                {
+                  "page": 3,
+                  "text_start": 0,
+                  "text_end": 469,
+                  "text_length": 469,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=3"
+                },
+                {
+                  "page": 4,
+                  "text_start": 0,
+                  "text_end": 80,
+                  "text_length": 80,
+                  "truncated": false,
+                  "source_url": "https://www.cnindex.com.cn/docs/gz_980022.pdf#page=4"
+                }
+              ],
+              "char_count": 1256,
+              "truncated": false,
+              "offset": 0,
+              "returned_chars": 1256,
+              "requested_chars": 12000,
+              "read_completeness": "complete_extracted_text"
+            },
+            "locator": "/api/materials/19148056833943468519114f3e02e587/range?account_id=97c4a5a4773346a6ad5a5eeb96c0d826"
+          }
+        ]
+      }
+    ],
+    "demand_coverage": {
+      "expected": 4,
+      "completed": 4,
+      "uncovered": 0,
+      "unaccepted_claims": [],
+      "items": [
+        {
+          "id": 7462,
+          "state": "completed"
+        },
+        {
+          "id": 7469,
+          "state": "completed"
+        },
+        {
+          "id": 7516,
+          "state": "completed"
+        },
+        {
+          "id": 7523,
+          "state": "completed"
+        }
+      ]
+    }
+  },
+  "sources": {
+    "asset_material_id": "372a3dc013e8459495eb2ddec990b880",
+    "benchmark_material_id": "e0b3f324718c49f3b10ed62a65417371",
+    "holdings_keyword_excerpt_id": "096e8f11e1254c5d9320606db35658e3",
+    "fee_search_id": "d4147e0423594a2e9801db0d1d56696a",
+    "fee_document_cover_id": "2c43f98daa2941aeb31b22be53a900c4",
+    "fee_document_sha256": "256ba37b10d9e7c7e3707a8562669e5c687170fd838b1bc9d1810c505d5d00ab",
+    "fee_document_identity_verified_by_reviewer": "Penghua CNI Robot ETF 159278, compiled 2026-07-01, distributed 2026-07-03; visible primary page4 rates 0.5%/0.1%/0.63%, authorized agent commission no more than0.20%; not current trade all-in cost",
+    "index_material_id": "19148056833943468519114f3e02e587",
+    "index_raw_document_sha256": "80612032de2b9c30a103cd9302a739ce86cbd7e0cec8000f2d3a58f693c68f89",
+    "index_details_not_adopted_by_final_report": "Saved source contains 50 samples, semiannual changes and 5%/3% adjustment caps; final report treated these as not visible. Reviewer does not patch them into original report."
+  },
+  "visibility": {
+    "material_delivery_rows": 30,
+    "all_material_receipts_bound_to_B": true,
+    "all_materials_public": true,
+    "material_receipts": [
+      {
+        "id": 1053,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "c1738cbdde075ed898316dae2f53363468b7cb79af66eb11aa8f096428a48a28"
+      },
+      {
+        "id": 1054,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "19148056833943468519114f3e02e587",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "64aad787bd1b4bf7cbe1fee9a5df5b51404a42e01463b5705604b90d9ac9019c"
+      },
+      {
+        "id": 1055,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "537c5143d40e4a009dad1b7f39cc9ac8",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "e5ddbc4bc82a2c3d1747eb780d1225e8b9ef86ba5994d5d8a1f700928dd5ee6f"
+      },
+      {
+        "id": 1056,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "2c43f98daa2941aeb31b22be53a900c4",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "d551511ef27bce3daa1408a4e0aa0e7aa5e51d35cec34dabe091169acdadb89a"
+      },
+      {
+        "id": 1057,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "4b63090a2ee844fb955f4a0a5cba3587",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "d12fcbf8621b856d0cd0cc3b5ec6d279a70c4c118bc428e86f10a801c89497ad"
+      },
+      {
+        "id": 1058,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "history",
+        "visible_result_hash": "6511fe649fde90911156fd85b307ba7caf9d31e2d9ff7d5046c7eaa8759af952"
+      },
+      {
+        "id": 1059,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "1226033fcd674a778f24388555028ed5",
+        "scope": "public",
+        "tool": "read",
+        "visible_result_hash": "c421b1b361f698f59d8778637bf9cec82c5321d23093053ffca86b6cb0837a0b"
+      },
+      {
+        "id": 1060,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "d4147e0423594a2e9801db0d1d56696a",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "47315a9b3a5eb5c3ac58ef6c3515cafe9808028ce451429179c0e11695cfe19b"
+      },
+      {
+        "id": 1061,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "096e8f11e1254c5d9320606db35658e3",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "c662d900b72b16a23ac60ce4c04b60385af2b59fd18ddcbb5fc33da44450b177"
+      },
+      {
+        "id": 1062,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "market_indicators",
+        "visible_result_hash": "309b44d04864af66e9f172618621fbaf4091e5417c024b790b029347ace9fe6d"
+      },
+      {
+        "id": 1063,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e0b3f324718c49f3b10ed62a65417371",
+        "scope": "public",
+        "tool": "benchmark_history",
+        "visible_result_hash": "4c5809c32ebebc0434dba5cea837802154c92ad8eddc3e968035bc1d57a748dd"
+      },
+      {
+        "id": 1071,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "493c5404000b4eceb8051edc1bc4744d",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "54ce6fd3b02a9cecdcb310e55729c5fcdf2cb125a4281bc1b30c6f985eb20e95"
+      },
+      {
+        "id": 1072,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "visible_result_hash": "01f0de62024dd53b6667f43307abfdaafaea27f75111e68578c6968ee17a03a8"
+      },
+      {
+        "id": 1073,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "market_indicators",
+        "visible_result_hash": "d92fdabd80d30c0a752a6880ea3d3f4ed02862775f9ea93e3515697b93636cda"
+      },
+      {
+        "id": 1074,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e0b3f324718c49f3b10ed62a65417371",
+        "scope": "public",
+        "tool": "market_indicators",
+        "visible_result_hash": "42e85e97ff8c7d6274e12917441e6a325e683d698f202784d9e23bbf8eae9d85"
+      },
+      {
+        "id": 1075,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "market_indicators",
+        "visible_result_hash": "324103c9ae749eff962e2b671b941e2e1745da723d55ee49587d535919acd879"
+      },
+      {
+        "id": 1076,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e0b3f324718c49f3b10ed62a65417371",
+        "scope": "public",
+        "tool": "market_indicators",
+        "visible_result_hash": "17544029f207f9a49007a5ff03cf664fc7e19efdc6e3c00a691c076a5240ed15"
+      },
+      {
+        "id": 1077,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "458e989e5c6940adb6703b41e70b5553",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "99bcc7b4bf9ea6b24f0de67fb0425259d34d74c3fd09ccdb430fbed08416308f"
+      },
+      {
+        "id": 1078,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "c1738cbdde075ed898316dae2f53363468b7cb79af66eb11aa8f096428a48a28"
+      },
+      {
+        "id": 1079,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "19148056833943468519114f3e02e587",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "64aad787bd1b4bf7cbe1fee9a5df5b51404a42e01463b5705604b90d9ac9019c"
+      },
+      {
+        "id": 1080,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "495a39e1c54e4545a1285713095be700",
+        "scope": "public",
+        "tool": "read",
+        "visible_result_hash": "3c22365a9c26847a31c90129c4c212d81f3db209a4ec05b8c7fc8c6a80ef8d4c"
+      },
+      {
+        "id": 1081,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e40ce56f11a1401c93517d49b0aba6a3",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "16dd051ed0afda899750483a44df3b5424e9073b6cafd7ac51891fff60380bc4"
+      },
+      {
+        "id": 1082,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "visible_result_hash": "0eaf944c9cde651d8eaa13496f1b50094306ece30a9c3f4311a7cfd0427f6d77"
+      },
+      {
+        "id": 1091,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "f4c3ab4c4a124659b137480bc8ad2710",
+        "scope": "public",
+        "tool": "search_pdf",
+        "visible_result_hash": "2028de7da42070d7cbba56763d584821ba893b6e9b5801cddb8e29753cc22f27"
+      },
+      {
+        "id": 1092,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "458e989e5c6940adb6703b41e70b5553",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "visible_result_hash": "d685780d1e1f06da7cf8f3ada3c5f2f116b9ecf11ca8faab314983881d85151c"
+      },
+      {
+        "id": 1093,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "153214853e384260a3597193e4655348",
+        "scope": "public",
+        "tool": "read",
+        "visible_result_hash": "2e5ea18f374cfd8b60f81014e04d743b69bcbd0a71d113b5017366ec9f334d37"
+      },
+      {
+        "id": 1094,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "458e989e5c6940adb6703b41e70b5553",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "visible_result_hash": "592824cfcdc0ebe8599b6aa5feb5dde9f06cb08e80ccf3de7ea5558e405ddf93"
+      },
+      {
+        "id": 1095,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "6b49e818f2d64fbda2b3dd61df77cb0a",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "c1738cbdde075ed898316dae2f53363468b7cb79af66eb11aa8f096428a48a28"
+      },
+      {
+        "id": 1096,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "19148056833943468519114f3e02e587",
+        "scope": "public",
+        "tool": "get_material",
+        "visible_result_hash": "64aad787bd1b4bf7cbe1fee9a5df5b51404a42e01463b5705604b90d9ac9019c"
+      },
+      {
+        "id": 1098,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "372a3dc013e8459495eb2ddec990b880",
+        "scope": "public",
+        "tool": "query_market_rows",
+        "visible_result_hash": "d679b168cf1a3b7979111ae992880e2c70882a5087ff5f45895522427cf3055a"
+      }
+    ],
+    "child_report_delivery_rows": 0,
+    "final_calculation_summaries": 7,
+    "synthesis_projection": {
+      "seq": 1631,
+      "reason": "bounded_final_request",
+      "before_chars": 136509,
+      "after_chars": 171453,
+      "visible_tool_outputs": 44,
+      "truncated_outputs": 29,
+      "archive_count": 118
+    },
+    "final_request_input_items": 3,
+    "final_request_input_chars": 179656
+  },
+  "usage": {
+    "http_attempts": 11,
+    "completed_and_eof": 11,
+    "error_attempts": 0,
+    "provider_reported_totals": {
+      "input_tokens": 615530,
+      "output_tokens": 43760,
+      "total_tokens": 659290,
+      "cost_in_usd_ticks": 3808612000,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 0
+    },
+    "actual_money_cost": "unknown; raw ticks not converted without independent invoice"
+  },
+  "forecast_rows": [
+    {
+      "id": "9b6d04ad04a64a23a12596f4effc6f89",
+      "batch_id": "b9c2b7df14454b76918bce65dfc75c9c",
+      "kind": "exploratory",
+      "horizon": 1,
+      "target_date": "2026-11-05",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:55:37.196359+08:00",
+      "information_cutoff": "2026-11-04T23:55:37.196359+08:00",
+      "revises_id": null
+    },
+    {
+      "id": "6b02ac8cc93f40689c5b5df8e07348c5",
+      "batch_id": "b9c2b7df14454b76918bce65dfc75c9c",
+      "kind": "exploratory",
+      "horizon": 5,
+      "target_date": "2026-11-11",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:55:37.196359+08:00",
+      "information_cutoff": "2026-11-04T23:55:37.196359+08:00",
+      "revises_id": null
+    },
+    {
+      "id": "73678acbcd264528a69ee4b2eec42656",
+      "batch_id": "b9c2b7df14454b76918bce65dfc75c9c",
+      "kind": "exploratory",
+      "horizon": 20,
+      "target_date": "2026-12-02",
+      "direction": "abstain",
+      "published_at": "2026-11-04T23:55:37.196359+08:00",
+      "information_cutoff": "2026-11-04T23:55:37.196359+08:00",
+      "revises_id": null
+    }
+  ],
+  "forecast_coverage": {
+    "expected": 3,
+    "direction_published": 0,
+    "abstained": 3,
+    "uncovered": 0,
+    "waiting_data": 0,
+    "missed": 0,
+    "failed": 0
+  },
+  "delivery_application": {
+    "suggestions": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "等待条件变化；定性条件由 Agent 复核",
+        "recommendation_id": "94fd8da48e424ce585510d3105b4b912"
+      }
+    ],
+    "suggestion_actions": [],
+    "forecasts": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 1,
+        "forecast_id": "9b6d04ad04a64a23a12596f4effc6f89"
+      },
+      {
+        "index": 1,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 5,
+        "forecast_id": "6b02ac8cc93f40689c5b5df8e07348c5"
+      },
+      {
+        "index": 2,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 20,
+        "forecast_id": "73678acbcd264528a69ee4b2eec42656"
+      }
+    ]
+  },
+  "ledger_entries": [
+    {
+      "id": "028e553326034c2888138f4fd3fe9667",
+      "kind": "opening",
+      "account_version": 1
+    }
+  ],
+  "remaining_limits": [
+    "Nonblocking percent vs percentage-point wording error remains in original body.",
+    "Exact final raw material payload not persisted; no claim that all source pages reached final prompt.",
+    "No formal forecast generated; all three entries abstain and no directional accuracy denominator.",
+    "Report source-data HTTP fallback from Eastmoney to Tencent is separate from all-completed model HTTP count.",
+    "Follow-up is a distinct legitimate public-material task and does not retroactively correct or overwrite B initial report."
+  ],
+  "initial_B_review": "docs/sixteenth/b-cash-content-review.json"
+}

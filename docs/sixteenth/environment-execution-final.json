@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-11-05T00:15:50.352710+08:00",
+  "execution_result": "matrix_incomplete_content_review_pending",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "source_unchanged": true,
+  "http_attempts": 170,
+  "completed_with_eof": 165,
+  "restart_preserved_reports": true,
+  "restart_preserved_forecasts": true,
+  "started_tasks": 9,
+  "failed_tasks": [
+    "462e7ae1f7854f2bbcfa545b7960b726",
+    "15d837b14dda4883b71648ef6a93a0c5",
+    "cd93c5fd7a3541bd95175f1df6225b1e",
+    "bb3bbd42e2954c56aba6ebc34307aed5"
+  ],
+  "packet_header_artifacts": {
+    "connection-timeline-error.txt": {
+      "sha256": "ca4108bb26ac6255d6e7ce8637359e003a1bd23dae3baafe6fc6fc8e1688f96c",
+      "bytes": 231
+    },
+    "connection-timeline-flags-error.txt": {
+      "sha256": "d2416160925e7058898d328d637710d81303b53d4355a71842308de682a87358",
+      "bytes": 230
+    },
+    "connection-timeline.txt": {
+      "sha256": "9962f38d33101244346d9e789da7e7b0fca2ced8edf7baa15cbf7701ad0099bf",
+      "bytes": 707298
+    },
+    "connection-timeline-flags.txt": {
+      "sha256": "6ddad31730e30313b9ac959a427b7e3d792a5b9f983492f751a3bb589dbfbaa2",
+      "bytes": 83033
+    }
+  },
+  "scope": "This closes the original environment matrix only; the later direct solution-validation is separate. All originals/old failures are preserved."
+}

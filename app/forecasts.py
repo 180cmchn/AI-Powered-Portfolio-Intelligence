@@ -372,6 +372,28 @@ class ForecastStore(ForecastIdentityStore):
                 db.execute("UPDATE forecast_samples SET state='failed',reason='基准等待期间账户输入已变化' WHERE batch_id=? AND state NOT IN ('predicted','abstain')", (batch_id,))
                 db.execute("UPDATE forecast_batches SET state='failed' WHERE id=?", (batch_id,))
                 return None
+            current = db.execute("SELECT * FROM jobs WHERE id=?", (account['latest_job_id'],)).fetchone()
+            merge_job = None
+            if not prior_job and current and current['state'] in ('queued', 'running', 'waiting_config', 'waiting_scope'):
+                metadata = _load(current['task_metadata'], {})
+                # Only untouched, compatible work can acquire the formal scope.
+                # A recovered/previously frozen request must never be relabelled
+                # as if its model had already received today's formal targets.
+                compatible = (current['input_version'] == batch['input_version']
+                    and current['state'] in ('queued', 'waiting_config')
+                    and not current['config_snapshot'] and current['attempts'] == 0
+                    and metadata.get('research_scope') != 'cash_only'
+                    and (not metadata.get('target_security') or set(batch['symbols']) <= {metadata['target_security']})
+                    and set(batch['symbols']) <= set((metadata.get('target') or {}).get('symbols', []))
+                    and not db.execute('SELECT 1 FROM forecast_research_scopes WHERE job_id=?', (current['id'],)).fetchone())
+                if compatible:
+                    merge_job = dict(current)
+                else:
+                    # The batch itself is the durable demand: identity, samples,
+                    # baseline evidence and original deadline remain untouched.
+                    db.execute("UPDATE forecast_batches SET state='waiting_research' WHERE id=?", (batch_id,))
+                    db.execute("UPDATE forecast_samples SET reason='等待当前账户研究结束；保持原正式截止' WHERE batch_id=? AND state='uncovered'", (batch_id,))
+                    return None
             purpose = "initial"
             if prior_job:
                 # A user cancellation does not authorize an automatic paid retry.
@@ -391,7 +413,7 @@ class ForecastStore(ForecastIdentityStore):
                 if any(scope["purpose"] == "supplement" for scope in scopes):
                     db.execute("UPDATE forecast_samples SET reason='基准已补齐，但本批次自动补充研究预算已用尽；未发布' WHERE batch_id=? AND state='uncovered'", (batch_id,))
                     return None
-                if db.execute("SELECT 1 FROM jobs WHERE account_id=? AND state IN ('queued','running','waiting_config')", (account["id"],)).fetchone():
+                if db.execute("SELECT 1 FROM jobs WHERE account_id=? AND state IN ('queued','running','waiting_config','waiting_scope')", (account["id"],)).fetchone():
                     return None
                 pending = db.execute("SELECT 1 FROM forecast_preparations WHERE batch_id=? AND state IN ('unattempted','waiting_data','preparing')", (batch_id,)).fetchone()
                 # Merge arrivals across one scheduler interval; never one team per quote.
@@ -404,7 +426,13 @@ class ForecastStore(ForecastIdentityStore):
                 # Keep the generic explicit-retry hook from consuming this
                 # automatic supplement's identity or budget record.
                 db.execute("UPDATE forecast_batches SET state='supplement_pending' WHERE id=?", (batch_id,))
-            job = self._enqueue(db, account, event_key, event_key=event_key)
+            if merge_job:
+                job = merge_job
+                job['reason'] = (event_key + '; ' + job['reason'])[:2000]
+                db.execute('UPDATE jobs SET reason=?,updated_at=? WHERE id=?',
+                    (job['reason'], stamp, job['id']))
+            else:
+                job = self._enqueue(db, account, event_key, event_key=event_key)
             if job["state"] not in ("queued", "running", "waiting_config"):
                 db.execute("UPDATE forecast_samples SET state='failed',reason='原批次任务在绑定前已结束' WHERE batch_id=? AND state NOT IN ('predicted','abstain')", (batch_id,))
                 db.execute("UPDATE forecast_batches SET state='failed' WHERE id=?", (batch_id,))
@@ -412,9 +440,25 @@ class ForecastStore(ForecastIdentityStore):
             db.execute("UPDATE forecast_batches SET job_id=?,state='open' WHERE id=?", (job["id"], batch_id))
             db.execute("INSERT OR IGNORE INTO forecast_research_scopes VALUES(?,?,?,?,?)", (job["id"], batch_id, _dump(sorted(ready)), stamp, purpose))
             db.execute("INSERT INTO forecast_job_bindings(batch_id,prior_job_id,job_id,reason,created_at) VALUES(?,?,?,?,?)",
-                       (batch_id, batch["job_id"], job["id"], "bounded_baseline_supplement" if prior_job else "atomic_enqueue", stamp))
+                       (batch_id, batch["job_id"], job["id"], "bounded_baseline_supplement" if prior_job else "merged_before_execution" if merge_job else "atomic_enqueue", stamp))
             self.assign_forecast_scope(db, job["id"], batch_id, symbols=eligible, assigned_at=stamp)
             return job
+
+    def dispatch_waiting_forecast_batches(self, at=None, *, start_enabled=True):
+        """Resume persisted formal demands at worker boundaries, before new work.
+
+        No network, no extra execution budget, and no implicit retry of a bound
+        cancelled task. Expiry applies even while research is administratively
+        paused; starting new work is controlled by Service.tick.
+        """
+        with self.connect() as db:
+            ids = [r[0] for r in db.execute("SELECT id FROM forecast_batches WHERE state='waiting_research' AND job_id IS NULL ORDER BY deadline,created_at,id")]
+        if not ids:
+            return []
+        self.expire_forecast_batches(at)
+        if not start_enabled:
+            return []
+        return [job for batch_id in ids if (job := self.enqueue_forecast_batch(batch_id, at=at))]
 
     def reconcile_forecast_jobs(self, db, account_id, new_job_id, input_version, at=None):
         """Store._enqueue hook after superseding old executions, in its transaction."""
@@ -427,6 +471,10 @@ class ForecastStore(ForecastIdentityStore):
         explicit_retry = bool(requested and (requested[0] in ("manual", "retry", "manual_retry") or requested[0].startswith("retry:")))
         for batch in rows:
             previous_state = db.execute("SELECT state FROM jobs WHERE id=?", (batch["job_id"],)).fetchone()
+            if previous_state and previous_state[0] == 'cancelled' and not explicit_retry:
+                # A later timer or information event cannot revive the formal
+                # execution that the user deliberately cancelled.
+                continue
             if previous_state and previous_state[0] == "completed" and not explicit_retry:
                 continue
             unfinished = db.execute("SELECT 1 FROM forecast_samples s WHERE batch_id=? AND NOT EXISTS(SELECT 1 FROM forecasts f WHERE f.sample_id=s.id)", (batch["id"],)).fetchone()
@@ -666,6 +714,7 @@ class ForecastStore(ForecastIdentityStore):
     def expire_forecast_batches(self, at=None):
         stamp = _local(at).isoformat()
         with self.connect() as db:
+            db.execute("UPDATE forecast_samples SET state='missed',reason='等待当前账户研究期间超过原正式截止，未启动模型研究' WHERE state='uncovered' AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<=? AND state='waiting_research' AND job_id IS NULL)", (stamp,))
             db.execute("UPDATE forecast_samples SET state='missed',reason='超过截止仍未发布' WHERE state IN ('uncovered','waiting_config') AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<=?)", (stamp,))
             db.execute("UPDATE forecast_samples SET state='missed',reason='超过截止仍无可用基准收盘数据，未生成预测' WHERE state='waiting_data' AND batch_id IN (SELECT id FROM forecast_batches WHERE deadline<=?)", (stamp,))
             db.execute("UPDATE forecast_batches SET state='closed' WHERE deadline<=?", (stamp,))

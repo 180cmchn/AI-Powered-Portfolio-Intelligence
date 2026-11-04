@@ -1,0 +1,43 @@
+{
+  "observed_at": "2026-11-04T16:29:42.168056+00:00",
+  "method": "Read-only lsof -a -p 51427 -iTCP -sTCP:ESTABLISHED; endpoint addresses sanitized",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "pid": 51427,
+  "connections": [
+    {
+      "local_address": "[redacted host IPv6]",
+      "local_port": 51266,
+      "peer_address": "2606:4700:3037::6815:3adf",
+      "peer_port": 443,
+      "state": "ESTABLISHED"
+    },
+    {
+      "local_address": "[redacted host IPv6]",
+      "local_port": 50986,
+      "peer_address": "2606:4700:3037::6815:3adf",
+      "peer_port": 443,
+      "state": "ESTABLISHED"
+    },
+    {
+      "local_address": "[redacted host IPv6]",
+      "local_port": 50987,
+      "peer_address": "2606:4700:3037::6815:3adf",
+      "peer_port": 443,
+      "state": "ESTABLISHED"
+    },
+    {
+      "local_address": "[redacted host IPv6]",
+      "local_port": 50988,
+      "peer_address": "2606:4700:3037::6815:3adf",
+      "peer_port": 443,
+      "state": "ESTABLISHED"
+    }
+  ],
+  "local_proxy_7890_connection_count_at_snapshot": 0,
+  "boundary": "Actual socket snapshot supports bypass of local HTTP proxy for these connections; it does not reveal every physical transit hop.",
+  "subsequent_header_capture": {
+    "status": "insufficient_for_closure_attribution",
+    "reason": "Capture began as initial A completed; only one header line was observed, then capture was stopped. No close-direction claim is made from this attempt.",
+    "private_file": "data/evaluations/sixteenth-normal-direct-v1/connection-timeline-flags.txt"
+  }
+}

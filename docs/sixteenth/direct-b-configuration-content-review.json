@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "reviewed_at": "2026-11-05T01:12:08.262776+08:00",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "accepted": null,
+  "assessment": "not_evaluated",
+  "decision": "not_evaluated_no_report_after_unknown_transport_failure",
+  "acceptance_scope": "No content exists for this task to judge. Earlier B reports are not substitutes. Transport failure and content non-evaluation are distinct.",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+    "input_version": 2,
+    "job_id": "a9caca3257d6490f9780d0488b179385",
+    "job_reason": "configuration_changed",
+    "started_at": "2026-11-05T01:03:25.089874+08:00",
+    "completed_at": "2026-11-05T01:05:31.935429+08:00",
+    "job_state": "failed",
+    "report_id": null,
+    "report_utf8_sha256": null,
+    "job_result_utf8_sha256": "5fafd8bb4c210f70901234a491830bf6b2dd5d48e432245100942598ce9bd804"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro; no model request or DB/application write",
+    "original_reports_changed": false,
+    "review_artifacts_written_only": true
+  },
+  "configuration_evidence": {
+    "model_name": "grok-4.7",
+    "reasoning_effort": "xhigh",
+    "model_network_route": "direct",
+    "model_network_revision": 0,
+    "scheduled_research_enabled": false,
+    "max_model_calls": 40,
+    "max_output_tokens": null
+  },
+  "application_result": {
+    "delivery": {
+      "status": "incomplete",
+      "contract_verified": false,
+      "content_assessment": "not_evaluated",
+      "error_code": "upstream_transport_error"
+    }
+  },
+  "job_error": "模型网络请求失败（ReadError）；账户保存不受影响；当前可基于部分成果恢复有限汇总，未完成研究仍为缺口；重试前再校验输入与时效",
+  "publication": {
+    "reports_for_this_job": 0,
+    "forecasts_for_this_job": 0,
+    "checkpoint_rows": 1,
+    "checkpoint_is_final_report": false,
+    "recovery_requested_by_reviewer": false
+  },
+  "usage": {
+    "http_attempts": 7,
+    "completed_and_eof": 6,
+    "error_attempts": 1,
+    "all_recorded_routes_direct": true,
+    "known_reported_totals": {
+      "input_tokens": 257908,
+      "output_tokens": 7301,
+      "total_tokens": 265209,
+      "cost_in_usd_ticks": 1297690800,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 2
+    },
+    "failed_attempt_usage_known": false,
+    "actual_money_cost": "unknown; missing failed usage and independent invoice, successful subset is not total billing"
+  },
+  "failure_evidence": {
+    "model_error_event_seq": 1976,
+    "failed_attempt_ordinal_in_job": 7,
+    "request": {
+      "stage": "research",
+      "model": "grok-4.7",
+      "reasoning_effort_sent": "xhigh",
+      "status_code": 200,
+      "request_accepted": true,
+      "started_at": "2026-11-04T17:05:25.836444+00:00",
+      "finished_at": "2026-11-04T17:05:31.868435+00:00",
+      "duration_ms": 6032.4,
+      "input_chars": 126989,
+      "input_items": 14,
+      "output_bytes": 11983,
+      "requested_max_output_tokens": null,
+      "output_limit_fields_present": [],
+      "error": "ReadError",
+      "error_code": "upstream_transport_error",
+      "cancelled_by": null,
+      "transport_phase": "receiving_body",
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.19
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.33
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.33
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.47
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.48
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5931.74
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5932.37
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 6031.51
+        }
+      ],
+      "response_headers_received": true,
+      "response_body_received": false,
+      "http_body_complete": false,
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_event_count": 0,
+      "stream_first_effective_event_ms": null,
+      "stream_first_byte_ms": 5932.46,
+      "stream_terminal": null,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "exception_types": [
+        "ReadError",
+        "ReadError"
+      ],
+      "transport_failure_kind": "transport_error",
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      }
+    },
+    "local_timeout_or_cancellation_supported": false,
+    "network_disconnect_initiator": "not_established_by_HTTP_metadata_alone",
+    "observed_boundary": "HTTP200 headers and some bytes recorded, zero effective SSE event/terminal and no complete EOF; accepted/sent outcome unknown, automatic repeat suppressed."
+  },
+  "ledger_entries": [
+    {
+      "id": "49ab60145f8f4838bb1ca6024addc688",
+      "kind": "opening",
+      "account_version": 1
+    }
+  ],
+  "checks": [
+    {
+      "name": "normal_configuration_binding",
+      "status": "pass",
+      "evidence": "Actual configuration_changed task snapshot has scheduled_research_enabled=false and direct route; inputv2 unchanged."
+    },
+    {
+      "name": "transport",
+      "status": "failed",
+      "evidence": "Six successful research attempts followed by one accepted/sent unknown ReadError after6032.4ms, no valid SSE event/EOF."
+    },
+    {
+      "name": "content",
+      "status": "not_evaluated",
+      "evidence": "No analysis/report row for this job; checkpoint is incomplete research, not final report."
+    },
+    {
+      "name": "forecast_effect",
+      "status": "not_evaluated",
+      "evidence": "No new forecasts from this failed task; prior exploratory abstentions are not substituted."
+    }
+  ],
+  "remaining_limits": [
+    "Direct route did not eliminate all transport failures in this bounded run.",
+    "ReadError alone does not identify which peer or device first closed/reset connection.",
+    "6.032s is shorter than configured first-event90s/idle300s/hard900s; cancelled_by null, so logs do not support local budget cancellation as cause.",
+    "Recoverable checkpoint is not a published report; reviewer made no recovery/retry request.",
+    "Other stages and all environment failures stay in their own denominators."
+  ]
+}

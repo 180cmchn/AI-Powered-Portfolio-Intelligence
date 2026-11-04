@@ -37,6 +37,12 @@ def _execution_forecast_batches(store, job):
     return store.execution_forecast_batches(job)
 
 
+def _job_cancellation_source(job, fallback='service_interrupted'):
+    if job['state'] == 'superseded':
+        return (job.get('cancellation') or {}).get('code', 'superseded_reason_unknown')
+    return {'cancelled': 'user_cancelled', 'deleted': 'account_deleted'}.get(job['state'], fallback)
+
+
 class ResearchTools:
     def __init__(self, store: Store, job: dict, config: dict, context=None):
         self.store, self.job, self.config = store, job, {**config, '_research_failure_memory': {}}
@@ -501,8 +507,7 @@ class Service:
                 current = self.store.job(job['id'])
             except KeyError:
                 current = {'state': 'deleted'}
-            cancelled_by = {'cancelled': 'user_cancelled', 'superseded': 'input_version_updated',
-                'deleted': 'account_deleted'}.get(current['state'], cancellation_source(exc, 'service_interrupted'))
+            cancelled_by = _job_cancellation_source(current, cancellation_source(exc, 'service_interrupted'))
             self.store.event(job["id"], {"type": "interrupted", "message": "任务已中断；已保存持仓不受影响",
                 'error_code': 'cancelled', 'cancelled_by': cancelled_by})
             raise
@@ -831,12 +836,12 @@ class Service:
         self.last_wall_tick = wall
         for job_id, task in list(self.active.items()):
             try:
-                state = self.store.job(job_id)["state"]
+                current_job = self.store.job(job_id)
             except KeyError:
-                state = "deleted"
+                current_job = {'state': 'deleted'}
+            state = current_job['state']
             if state not in ("running",) and not task.done():
-                task.cancel({'cancelled': 'user_cancelled', 'superseded': 'input_version_updated',
-                             'deleted': 'account_deleted'}.get(state, 'parent_finished'))
+                task.cancel(_job_cancellation_source(current_job, 'parent_finished'))
             if task.done():
                 self.active.pop(job_id)
         await self.scheduler_tick()
@@ -844,6 +849,8 @@ class Service:
             self.notify_material_changes()
             self.store.review_recommendations(self.quotes())
             self.last_recommendation_check = current
+        self.store.dispatch_waiting_forecast_batches(
+            start_enabled=self.store.settings().get('scheduled_research_enabled', True))
         self.store.dispatch_demands()
         if not self.global_task or self.global_task.done():
             global_run = self.store.claim_global()

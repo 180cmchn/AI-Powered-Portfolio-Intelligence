@@ -1,0 +1,816 @@
+{
+  "kind": "sixteenth_normal_start_real_matrix",
+  "started_at": "2026-11-04T23:16:15.996213+08:00",
+  "finished_at": "2026-11-05T00:15:50.352710+08:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "route": "environment",
+  "manager_effort": {
+    "source": "max",
+    "isolated": "xhigh"
+  },
+  "per_job_call_limit": 40,
+  "max_started_tasks": 12,
+  "execution_wall_limit_seconds": 14400,
+  "market_state_at_start": {
+    "timezone": "Asia/Shanghai",
+    "date": "2026-11-04",
+    "as_of": "2026-11-04T23:16:16.020300+08:00",
+    "trading_day": true,
+    "phase": "closed",
+    "session": "after_close",
+    "source": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+    "coverage": {
+      "start": "2026-01-01",
+      "end": "2026-12-31"
+    },
+    "is_continuous_trading": false,
+    "has_closed_today": true,
+    "quote_trigger_eligible": false,
+    "calendar_version": "2026-10-22",
+    "calendar_digest": "1246fd4d8f87495ffeb0ae876feef4a6608fa9bb3d56128d26ac30fb77c50f84",
+    "reason": "已到当日收盘；精确收盘仍须数据源确认"
+  },
+  "execution_result": "matrix_incomplete_content_review_pending",
+  "failure": null,
+  "source_unchanged": true,
+  "restart_preserved_reports": true,
+  "restart_preserved_forecasts": true,
+  "formal_natural_generation": {
+    "status": "not_executed",
+    "reason": "This business matrix leaves isolated formal settings disabled; actual market time is recorded separately."
+  },
+  "natural_maturity": "not_yet_observed",
+  "continuous_events": {
+    "status": "fail",
+    "failed_tasks": [
+      {
+        "id": "462e7ae1f7854f2bbcfa545b7960b726",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 5,
+        "state": "failed",
+        "reason": "ledger_trade",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-04T23:28:46.402506+08:00"
+      },
+      {
+        "id": "15d837b14dda4883b71648ef6a93a0c5",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 6,
+        "state": "failed",
+        "reason": "universe_changed",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-04T23:38:18.775329+08:00"
+      },
+      {
+        "id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 6,
+        "state": "failed",
+        "reason": "来源索引关联原始材料 6b49e818f2d64fbda2b3dd61df77cb0a；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：6b49e818f2d64fbda2b3dd61df77cb0a; 来源索引关联原始材料 19148056833943468519114f3e02e587；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：19148056833943468519114f3e02e587",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-04T23:48:05.950488+08:00"
+      },
+      {
+        "id": "bb3bbd42e2954c56aba6ebc34307aed5",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 6,
+        "state": "failed",
+        "reason": "configuration_changed",
+        "attempts": 1,
+        "error_code": "upstream_transport_error",
+        "cancellation_code": null,
+        "due_at": "2026-11-05T00:02:06.786759+08:00"
+      }
+    ],
+    "failed_demands": [
+      {
+        "id": 1278,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "ledger_update",
+        "state": "failed",
+        "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；仅有部分成果；明确重试时优先带入仍有效的已完成成果，按缺口继续研究，可能产生新的模型与联网费用；不能承诺仅汇总恢复"
+      },
+      {
+        "id": 1279,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；仅有部分成果；明确重试时优先带入仍有效的已完成成果，按缺口继续研究，可能产生新的模型与联网费用；不能承诺仅汇总恢复"
+      },
+      {
+        "id": 1280,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；仅有部分成果；明确重试时优先带入仍有效的已完成成果，按缺口继续研究，可能产生新的模型与联网费用；不能承诺仅汇总恢复"
+      },
+      {
+        "id": 1281,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；仅有部分成果；明确重试时优先带入仍有效的已完成成果，按缺口继续研究，可能产生新的模型与联网费用；不能承诺仅汇总恢复"
+      },
+      {
+        "id": 4006,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+      },
+      {
+        "id": 4007,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+      },
+      {
+        "id": 4008,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；检查点已失效或恢复次数耗尽；已交付成果保留，需按当前输入重新研究"
+      },
+      {
+        "id": 7461,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "public_information",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7464,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7466,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7468,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7515,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "public_information",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7518,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7520,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 7522,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "recommendation_review",
+        "state": "failed",
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      },
+      {
+        "id": 12976,
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "kind": "configuration_changed",
+        "state": "failed",
+        "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+        "detail": "模型网络请求失败（RemoteProtocolError）；账户保存不受影响；当前具备仅汇总恢复资格；重试前再校验输入与时效"
+      }
+    ],
+    "unresolved_tasks": [],
+    "superseded_tasks": [
+      {
+        "id": "fc5bfb76b0c84b499ed38c9cc22f7b31",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 1,
+        "state": "superseded",
+        "reason": "account_saved",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-04T23:16:46.564722+08:00"
+      },
+      {
+        "id": "80ea441fcbbb4fbebc23359ccc31f01d",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 2,
+        "state": "superseded",
+        "reason": "ledger_trade",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-04T23:16:46.589712+08:00"
+      },
+      {
+        "id": "cfb0faedf3d54242b8d5c12f23f07c65",
+        "account_id": "4f32f659e694450d82d621f9664af49b",
+        "input_version": 3,
+        "state": "superseded",
+        "reason": "ledger_trade",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-04T23:16:46.627236+08:00"
+      },
+      {
+        "id": "49ad26cbfb504ea3b1f605cbff26ab3d",
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "input_version": 1,
+        "state": "superseded",
+        "reason": "account_saved",
+        "attempts": 0,
+        "error_code": null,
+        "cancellation_code": "input_version_updated",
+        "due_at": "2026-11-04T23:38:18.760107+08:00"
+      }
+    ],
+    "boundary": "Superseded tasks remain visible with their real input/replacement reason; this is event processing, not uninterrupted request success."
+  },
+  "daily_database_writes": 0,
+  "generated_at": "2026-11-04T16:33:14.810039+00:00",
+  "private_evidence": "data/evaluations/sixteenth-normal-matrix-v1",
+  "http_attempts": 170,
+  "completed_with_eof": 165,
+  "known_currency_fee": null,
+  "fee_source": "No invoice or supplier billing correlation performed",
+  "observed_connect_count": 20,
+  "connect_label_mismatch_count": 0,
+  "tasks": [
+    {
+      "id": "fc5bfb76b0c84b499ed38c9cc22f7b31",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 1,
+      "state": "superseded",
+      "reason": "account_saved",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-04T23:16:46.564722+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "80ea441fcbbb4fbebc23359ccc31f01d",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 2,
+      "state": "superseded",
+      "reason": "ledger_trade",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-04T23:16:46.589712+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "cfb0faedf3d54242b8d5c12f23f07c65",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 3,
+      "state": "superseded",
+      "reason": "ledger_trade",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-04T23:16:46.627236+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 4,
+      "state": "completed",
+      "reason": "ledger_trade; configuration_changed; close_summary",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:16:46.665044+08:00",
+      "http_attempts": 38,
+      "completed_with_eof": 37,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 61,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 12801825600,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 5,
+      "state": "failed",
+      "reason": "ledger_trade",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:28:46.402506+08:00",
+      "http_attempts": 10,
+      "completed_with_eof": 9,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 2535951200,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "49ad26cbfb504ea3b1f605cbff26ab3d",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "input_version": 1,
+      "state": "superseded",
+      "reason": "account_saved",
+      "attempts": 0,
+      "error_code": null,
+      "cancellation_code": "input_version_updated",
+      "due_at": "2026-11-04T23:38:18.760107+08:00",
+      "http_attempts": 0,
+      "completed_with_eof": 0,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 0,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "15d837b14dda4883b71648ef6a93a0c5",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 6,
+      "state": "failed",
+      "reason": "universe_changed",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:38:18.775329+08:00",
+      "http_attempts": 29,
+      "completed_with_eof": 28,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 14,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 7343334800,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "input_version": 2,
+      "state": "completed",
+      "reason": "universe_changed; close_summary",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:38:18.776252+08:00",
+      "http_attempts": 37,
+      "completed_with_eof": 37,
+      "error_counts": {},
+      "native_tool_usage_reported": 52,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 11432785200,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "086f86ad82464b91ab45c1950381073b",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "input_version": 2,
+      "state": "completed",
+      "reason": "来源索引关联原始材料 6b49e818f2d64fbda2b3dd61df77cb0a；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：6b49e818f2d64fbda2b3dd61df77cb0a; 来源索引关联原始材料 19148056833943468519114f3e02e587；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：19148056833943468519114f3e02e587",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:47:18.459345+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 3808612000,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 6,
+      "state": "failed",
+      "reason": "来源索引关联原始材料 6b49e818f2d64fbda2b3dd61df77cb0a；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：6b49e818f2d64fbda2b3dd61df77cb0a; 来源索引关联原始材料 19148056833943468519114f3e02e587；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：19148056833943468519114f3e02e587",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-04T23:48:05.950488+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 10,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 0,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 3208532400,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "bb3bbd42e2954c56aba6ebc34307aed5",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "input_version": 6,
+      "state": "failed",
+      "reason": "configuration_changed",
+      "attempts": 1,
+      "error_code": "upstream_transport_error",
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:02:06.786759+08:00",
+      "http_attempts": 12,
+      "completed_with_eof": 11,
+      "error_counts": {
+        "upstream_transport_error": 1
+      },
+      "native_tool_usage_reported": 2,
+      "native_tool_usage_missing_for_requests": 1,
+      "reported_ticks": 3779663600,
+      "reported_ticks_missing_for_requests": 1
+    },
+    {
+      "id": "dc4fc2cb52794bc4b502d981649c5918",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "input_version": 2,
+      "state": "completed",
+      "reason": "configuration_changed",
+      "attempts": 1,
+      "error_code": null,
+      "cancellation_code": null,
+      "due_at": "2026-11-05T00:02:06.789398+08:00",
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 1,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 3617749200,
+      "reported_ticks_missing_for_requests": 0
+    },
+    {
+      "id": "a3c848be78c94abfac8f940431128de5",
+      "state": "completed",
+      "kind": "candidate_scan",
+      "reason": "universe_changed:v2",
+      "attempts": 1,
+      "error": null,
+      "http_attempts": 11,
+      "completed_with_eof": 11,
+      "error_counts": {},
+      "native_tool_usage_reported": 9,
+      "native_tool_usage_missing_for_requests": 0,
+      "reported_ticks": 3511319200,
+      "reported_ticks_missing_for_requests": 0
+    }
+  ],
+  "reports": [
+    {
+      "id": "7f3c74325ecf44e2b9c891086002ae03",
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "input_version": 4,
+      "status": "stale",
+      "created_at": "2026-11-04T23:28:38.479519+08:00",
+      "report_sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+      "report_characters": 3371,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SH:518880",
+          "SZ:002354",
+          "SZ:159599",
+          "account"
+        ],
+        "decision_summary": "收盘后维持三只持仓、不追加现金；现金仍占约87.77%。002354虽占证券市值68.73%，但只占总资产8.41%，趋势未破，故持有而不减、也不加。518880与159599权重小，分别处于中期下行和更深的下行，今日反弹不构成加仓。模拟成交价在当日区间之外，账面浮亏不能单独驱动补仓或止损。1日方向均弃权；518880的5/20日与159599的5/20日偏下，002354的20日偏上、短线弃权。",
+        "limitations": [
+          "公告研究员任务因网络失败未交付，天娱数科2026年三季报正文未逐页阅读；11页PDF关键词无命中不能证明现金流、商誉、应收、质押或诉讼不存在，因此不能把利润增长升级为质量已核实。",
+          "两只ETF的合同条款、跟踪指数代码与权重、费率、申赎门槛、规模份额，以及同一时点NAV/IOPV均未从正文核实，故无折溢价，也不能把板块或媒体个股写成基金持仓。",
+          "国内与国际金价存在多套冲突收盘，上金所、FOMC和CPI原文未核；华安黄金ETF连续净赎回仅为未核对的媒体陈述。",
+          "探索性预测的基准价尚未就绪，未来目标日收盘不存在；方向不是已验证准确率，也不构成交易指令。",
+          "成交量“手”为供应商标注，未再与交易所单位交叉验证；成交额按人民币元使用。未来卖出费用未知，未从浮亏中扣减。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "f8e9ab0cb90d425e88d5e24983e8a9d3",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "job_id": "55f444b01e1f4e628d838ad87aa8d26b",
+      "input_version": 2,
+      "status": "stale",
+      "created_at": "2026-11-04T23:45:45.037895+08:00",
+      "report_sha256": "757d5d3271d74a2674309e550a6cc0dda4fbe08110ed65d54ad7fcdba5b155d9",
+      "report_characters": 2574,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SZ:159278",
+          "account"
+        ],
+        "decision_summary": "2026-11-04收盘后，本账户对SZ:159278维持持币、暂不买入。它是单一机器人产业权益ETF，不适配balanced下的全部或绝大部分现金；当日收于0.938且高于短均线，但未站回0.949/0.969，近5日仍弱于沪深300。仅在重新站上0.949、成交额不弱于约1.26亿元，且只评估小比例卫星敞口时再评估。1/5/20个交易日价格方向均弃权，与账户动作分开。",
+        "limitations": [
+          "2026年三季报前十大持仓、行业权重和2026-09-30之后份额/净资产未读到，不能判断指数或基金集中度，因此不能确认卫星仓的行业内部风险。",
+          "管理费、托管费、最小申赎单位和二级市场最小交易单位未从基金合同或招募说明书核实，理论金额不能换成可执行份额，也不能比较费用是否偏高。",
+          "没有与2026-11-04收盘同时点的NAV/IOPV，未计算折溢价；国证机器人产业指数同期行情和编制细则未形成可引用正文，不能评估实现跟踪误差。",
+          "2026-10至11月初国家级机器人政策原文及可审计订单未取得，中期景气判断保持未证实，不影响“现在不买”的账户结论。",
+          "62日与沪深300的日期对齐相对收益因输入预算未算出；沪深300与ETF不是同一抓取快照。行业研究中的1.268/0.786价位日期未复核，本报告不采用。",
+          "报价fresh_for_triggers为false，价格条件只供收盘后复核，不代表可成交报价。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "a49f6a538a934c6498092c401cb18250",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "job_id": "086f86ad82464b91ab45c1950381073b",
+      "input_version": 2,
+      "status": "stale",
+      "created_at": "2026-11-04T23:55:37.195530+08:00",
+      "report_sha256": "eb588f3d623a56d374d77d16d09a598a7c55b2926bbcc3582d368d8fd345a6f8",
+      "report_characters": 2768,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SZ:159278",
+          "account"
+        ],
+        "decision_summary": "本账户维持100%现金、暂不买入SZ:159278。2026-11-04收盘0.938未站上0.949、也未跌破0.868；单一机器人主题与balanced不符。新读季报与指数编制说明只确认产品身份和主题集中，不构成投入。1/5/20个交易日价格方向均弃权。",
+        "limitations": [
+          "国证机器人产业指数编制方案可见摘录只到选样空间开头，样本数量、权重上限和调整频率未纳入判断，因此不能排除指数规则层面的极端集中。",
+          "2026年三季报前十持仓只见到前两名权重和第三名公允价值，且时点为2026-09-30，不能当作2026-11-04实时持仓或指数权重。",
+          "季报全文检索未出现已实现跟踪误差；合同生效以来净值落后基准1.87个百分点不是年化跟踪误差。同时点IOPV、NAV与折溢价未取得。",
+          "产品资料PDF检索到管理费0.5%、托管费0.1%、综合运作费率0.63%，但可见摘录未重复基金名称，费率归属若有误只影响成本评估，不影响当前持币。",
+          "2026年10月至11月初可核对的订单、交付或新政策原文未取得，不能把11月4日上涨解释为景气兑现。",
+          "腾讯日线成交额为空，不能与东财成交额跨源比较；沪深300与ETF不是同一抓取快照。报价fresh_for_triggers为false，价格条件不能当可执行触发。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    },
+    {
+      "id": "67d7c75da35641c884fffcc52f74664b",
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "job_id": "dc4fc2cb52794bc4b502d981649c5918",
+      "input_version": 2,
+      "status": "current",
+      "created_at": "2026-11-05T00:11:23.009677+08:00",
+      "report_sha256": "309c484cd28b9180b22827a38ddccc59eeed9b2859b48bf31676b2d465f4ba7d",
+      "report_characters": 2770,
+      "delivery": {
+        "status": "limited",
+        "contract_verified": true,
+        "content_assessment": "not_evaluated",
+        "scope": [
+          "SZ:159278"
+        ],
+        "decision_summary": "维持持币、暂不买入并继续观察SZ:159278。2026-11-04收盘0.938未站上0.949、也未跌破0.868；balanced账户不宜把10万现金全部或绝大部分投入单一机器人产业ETF。指数规则显示50只样本、单券权重上限5%或3%，减轻个股极端集中疑虑，但不改变主题集中和当前不宜追高的判断。1/5/20个交易日方向均弃权。",
+        "limitations": [
+          "季报前十持仓权重及权益、行业占比未在本轮可见正文中复核，相关关键词检索无命中；不影响现在不买，但限制对实际个股集中度的更新确认。",
+          "产品资料概要检索未出现管理费、托管费或运作费率，费用仍未知；不构成买入或永久排除。",
+          "已实现跟踪误差、与NAV或IOPV同时点的折溢价未知，不能评估实际跟踪质量和买卖价差。",
+          "2026年10月至11月初可核对的产业订单或官方政策未取得正文，只限制中期产业背景，不改变当前持币。",
+          "腾讯成交额为空、成交量单位未核实；流动性只采用东财成交额。报价fresh_for_triggers为false，不能当作可执行触发价。"
+        ],
+        "submission_outcome": "first_attempt",
+        "submission_corrections": 0
+      }
+    }
+  ],
+  "forecast_counts": {
+    "('exploratory', 'abstain')": 13,
+    "('exploratory', 'down')": 4,
+    "('exploratory', 'up')": 1
+  },
+  "stage_results": [
+    {
+      "label": "a_initial",
+      "at": "2026-11-04T23:28:46.302249+08:00",
+      "duration_seconds": 749.619,
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "publication": {
+        "status": "pass",
+        "current_version": 4,
+        "current_report_ids": [
+          "7f3c74325ecf44e2b9c891086002ae03"
+        ],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "a_after_sell",
+      "at": "2026-11-04T23:38:18.669801+08:00",
+      "duration_seconds": 572.232,
+      "account_id": "4f32f659e694450d82d621f9664af49b",
+      "publication": {
+        "status": "fail",
+        "current_version": 5,
+        "current_report_ids": [],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "b_cash_and_universe_events",
+      "at": "2026-11-05T00:02:06.672399+08:00",
+      "duration_seconds": 1427.864,
+      "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+      "publication": {
+        "status": "pass",
+        "current_version": 2,
+        "current_report_ids": [
+          "a49f6a538a934c6498092c401cb18250"
+        ],
+        "content_assessment": "not_evaluated"
+      },
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "after_pause_configuration_events",
+      "at": "2026-11-05T00:15:42.406850+08:00",
+      "duration_seconds": 815.617,
+      "account_id": null,
+      "publication": null,
+      "settled_status": "quiescent"
+    },
+    {
+      "label": "after_restart",
+      "at": "2026-11-05T00:15:49.943991+08:00",
+      "duration_seconds": 6.487,
+      "account_id": null,
+      "publication": null,
+      "settled_status": "quiescent"
+    }
+  ],
+  "demand_counts": {
+    "('ledger_update', 'completed')": 3,
+    "('configuration_changed', 'completed')": 1,
+    "('close_summary', 'completed')": 2,
+    "('ledger_update', 'failed')": 1,
+    "('recommendation_review', 'failed')": 12,
+    "('universe_changed', 'uncovered')": 1,
+    "('public_information', 'completed')": 56,
+    "('public_information', 'failed')": 2,
+    "('recommendation_review', 'completed')": 2,
+    "('configuration_changed', 'failed')": 1,
+    "('configuration_changed', 'uncovered')": 1
+  },
+  "health_runtime": {
+    "started_at": "2026-11-04T23:16:16.303262+08:00",
+    "commit_at_start": "3da5f191c464e27120bd0f739ef2355e10122070",
+    "api_contract": 13,
+    "instance_id": "59ff9699f24f41c891c5f5b657f8c386",
+    "pid": 47336,
+    "port": 62369,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+    "database_identity": "57867a8f0ed61c53a91dd7d4d5402f4f764eb803c40d3ad6dedf8fb3f7b7311f",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "46d84df57c33db95833e5b5b5fb9cdc69d934f6f00cdeb2c71eb29069efaa926",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "schema_version": 11,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "restart_runtime": {
+    "started_at": "2026-11-05T00:15:43.170384+08:00",
+    "commit_at_start": "3da5f191c464e27120bd0f739ef2355e10122070",
+    "api_contract": 13,
+    "instance_id": "f4fc07eaa9c14c2badca05e59093b4cf",
+    "pid": 51196,
+    "port": 62369,
+    "project_path": "/Users/chn/Documents/ChatGPT/金融股票 2",
+    "database_path": "/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+    "database_identity": "57867a8f0ed61c53a91dd7d4d5402f4f764eb803c40d3ad6dedf8fb3f7b7311f",
+    "env_file_at_start": {
+      "exists": true,
+      "mtime_ns": 1793291266379543661,
+      "size": 951
+    },
+    "environment_settings_at_start": {
+      "model_base_url": "https://api.xxyapi.com/v1",
+      "model_protocol": "responses",
+      "legacy_model_name": "grok-4.7",
+      "reasoning_effort": "medium",
+      "key_env_name": "MODEL_API_KEY",
+      "key_present": true,
+      "quote_provider": "eastmoney",
+      "quote_fallback_provider": "sina",
+      "model_native_search": true,
+      "research_provider": "eastmoney"
+    },
+    "static_sha256_at_start": "46d84df57c33db95833e5b5b5fb9cdc69d934f6f00cdeb2c71eb29069efaa926",
+    "working_tree_dirty_at_start": true,
+    "source_sha256_at_start": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "schema_version": 11,
+    "provenance": "source files observed at application creation; restart required after source edits",
+    "database_mode": "live"
+  },
+  "actual_model_bindings": {
+    "('grok-4.7', 'xhigh')": 95,
+    "('grok-4.6', 'high')": 11,
+    "('grok-4.7', 'medium')": 64
+  },
+  "output_limit_fields_present_request_count": 0,
+  "forecast_evaluations_count": 0,
+  "forecast_batch_state_counts": [
+    [
+      "exploratory",
+      "open",
+      4
+    ],
+    [
+      "exploratory",
+      "published",
+      4
+    ]
+  ],
+  "configured_scope": {
+    "model_network_route": "environment",
+    "model_network_revision": 0,
+    "max_job_attempts": 1,
+    "max_started_tasks_semantics": "Observation threshold; polled after launch, stop only when started count > 12; not a preflight hard cap"
+  }
+}

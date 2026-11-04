@@ -1,0 +1,2977 @@
+{
+  "captured_at": "2026-11-04T16:16:25.671257+00:00",
+  "frozen_source": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "dependencies": {
+    "httpx": "0.28.1",
+    "httpcore": "1.0.9",
+    "anyio": "4.15.1",
+    "h11": "0.16.0"
+  },
+  "scope": "Read-only production code/dependency/database review plus isolated loopback experiments. No real model retry, production/test source edit, environment/system-network change or daily data mutation.",
+  "supplier_feedback_boundary": "User reports supplier observed requester-side disconnection; this review does not infer upstream model unavailability from a RemoteProtocolError.",
+  "four_persisted_failures": [
+    {
+      "event_seq": 408,
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "agent_id": "research-20a317eaed18",
+      "stage": "research",
+      "started_at": "2026-11-04T15:20:44.894459+00:00",
+      "finished_at": "2026-11-04T15:22:37.658156+00:00",
+      "duration_ms": 112763.97,
+      "status_code": 200,
+      "request_accepted": true,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "cancelled_by": null,
+      "stream_close_reason": "transport_error_before_terminal",
+      "http_body_complete": false,
+      "stream_terminal": null,
+      "stream_last_byte_ms": 63055.18,
+      "stream_last_progress_ms": 38493.59,
+      "stream_max_idle_ms": 74270.41,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "child_budget_exhausted": 1642999.19,
+        "analysis_budget_exhausted": 3361840.63,
+        "request_hard_timeout": 900000.0
+      },
+      "output_bytes": 61051,
+      "stream_event_count": 68,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 0.48
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.57
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 0.57
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.64
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 0.64
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5304.34
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5305.04
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 112762.63
+        }
+      ],
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "decoded_body_idle_at_error_seconds": 49.70879,
+      "hard_timeout_remaining_seconds": 787.23603
+    },
+    {
+      "event_seq": 590,
+      "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "agent_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T15:34:17.346162+00:00",
+      "finished_at": "2026-11-04T15:38:12.116460+00:00",
+      "duration_ms": 234771.26,
+      "status_code": 200,
+      "request_accepted": true,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "cancelled_by": null,
+      "stream_close_reason": "transport_error_before_terminal",
+      "http_body_complete": false,
+      "stream_terminal": null,
+      "stream_last_byte_ms": 184755.79,
+      "stream_last_progress_ms": 183284.67,
+      "stream_max_idle_ms": 51486.65,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3269166.63,
+        "request_hard_timeout": 900000.0
+      },
+      "output_bytes": 266781,
+      "stream_event_count": 197,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.32
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.59
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.59
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7033.1
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7033.3
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 234769.55
+        }
+      ],
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "decoded_body_idle_at_error_seconds": 50.01547,
+      "hard_timeout_remaining_seconds": 665.22874
+    },
+    {
+      "event_seq": 1423,
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "started_at": "2026-11-04T15:44:09.689736+00:00",
+      "finished_at": "2026-11-04T15:48:05.436916+00:00",
+      "duration_ms": 235748.13,
+      "status_code": 200,
+      "request_accepted": true,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "cancelled_by": null,
+      "stream_close_reason": "transport_error_before_terminal",
+      "http_body_complete": false,
+      "stream_terminal": null,
+      "stream_last_byte_ms": 185827.09,
+      "stream_last_progress_ms": 168758.45,
+      "stream_max_idle_ms": 66989.69,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3249396.74,
+        "request_hard_timeout": 900000.0
+      },
+      "output_bytes": 1657698,
+      "stream_event_count": 7092,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.77
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.83
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.83
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.05
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.08
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 483.21
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 483.34
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 483.41
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 483.41
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 483.57
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 483.57
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6109.26
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6109.78
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 235747.68
+        }
+      ],
+      "proxy_tunnel": {
+        "observed": true,
+        "status_code": 200,
+        "response_headers_received": true,
+        "established": true
+      },
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "decoded_body_idle_at_error_seconds": 49.92104,
+      "hard_timeout_remaining_seconds": 664.25187
+    },
+    {
+      "event_seq": 1722,
+      "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "started_at": "2026-11-04T15:55:05.578523+00:00",
+      "finished_at": "2026-11-04T16:02:00.229066+00:00",
+      "duration_ms": 414654.18,
+      "status_code": 200,
+      "request_accepted": true,
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "cancelled_by": null,
+      "stream_close_reason": "transport_error_before_terminal",
+      "http_body_complete": false,
+      "stream_terminal": null,
+      "stream_last_byte_ms": 364734.02,
+      "stream_last_progress_ms": 326164.51,
+      "stream_max_idle_ms": 88489.69,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3180391.25,
+        "request_hard_timeout": 900000.0
+      },
+      "output_bytes": 1938854,
+      "stream_event_count": 7636,
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.34
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.48
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.49
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.65
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4947.83
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4948.43
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 414653.73
+        }
+      ],
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "decoded_body_idle_at_error_seconds": 49.92016,
+      "hard_timeout_remaining_seconds": 485.34582
+    }
+  ],
+  "experiment_directory": "/private/tmp/sixteenth-stream-lifecycle",
+  "experiment_script_sha256": {
+    "experiment.py": "9d4c2d0083f2611c68f2c63bdcec511fdbfce6d95b3d58b3c231b6aa87e2403f",
+    "tls_experiment.py": "747329d2b2cba51392f6a8e0d442bbea7183f6896df2ca6196845cf0f6ba0aab"
+  },
+  "experiments": [
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "peer_fin",
+      "action": "peer_fin",
+      "timeline": [
+        {
+          "at_seconds": 0.033028,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034011,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034209,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034388,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034396,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.03449,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034506,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.034598,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.034646,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.034761,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.035126,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.235755,
+          "kind": "origin_intentional_close"
+        },
+        {
+          "at_seconds": 0.23607,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "RemoteProtocolError"
+        },
+        {
+          "at_seconds": 0.236339,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.236474,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.236679,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.236803,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.236805,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.236807,
+          "kind": "model_client_aclose_called"
+        }
+      ],
+      "requests": [
+        {
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 220.09,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 18.52,
+          "stream_last_progress_ms": 18.68,
+          "exception_types": [
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 16.4
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 17.38
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 17.58
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 17.75
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 17.76
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 17.86
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 17.87
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 18.12
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 18.49
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 219.44
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "ReadError",
+        "ReadError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "client_aclose",
+      "action": "client_aclose",
+      "timeline": [
+        {
+          "at_seconds": 0.007448,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00829,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.008451,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.008599,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.008607,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.008683,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.008688,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00877,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.008814,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.008958,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.009145,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.009279,
+          "kind": "intentional_client_aclose"
+        },
+        {
+          "at_seconds": 0.009281,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.009489,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "ReadError"
+        },
+        {
+          "at_seconds": 0.009553,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.009573,
+          "kind": "origin_observed_client_eof"
+        },
+        {
+          "at_seconds": 0.009601,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.009727,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.009823,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "ReadError",
+            "ReadError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.009824,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.009825,
+          "kind": "model_client_aclose_called"
+        }
+      ],
+      "requests": [
+        {
+          "error": "ReadError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 3.1,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 2.53,
+          "stream_last_progress_ms": 2.57,
+          "exception_types": [
+            "ReadError",
+            "ReadError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.81
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.65
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.81
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.96
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.96
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.04
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 2.04
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.31
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 2.5
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 2.85
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "CancelledError"
+      ],
+      "code": null,
+      "case": "task_cancel",
+      "action": "task_cancel",
+      "timeline": [
+        {
+          "at_seconds": 0.00512,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005637,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005776,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005912,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00592,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005989,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005994,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006069,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.006102,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.006217,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006329,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006431,
+          "kind": "intentional_task_cancel"
+        },
+        {
+          "at_seconds": 0.006468,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "CancelledError"
+        },
+        {
+          "at_seconds": 0.006537,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006611,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006708,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.006772,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "CancelledError"
+          ],
+          "code": null
+        },
+        {
+          "at_seconds": 0.006774,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.006774,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.006833,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": "cancelled",
+          "error_code": "cancelled",
+          "cancelled_by": "user_cancelled",
+          "duration_ms": 2.0,
+          "http_body_complete": false,
+          "stream_close_reason": "local_cancellation",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 1.62,
+          "stream_last_progress_ms": 1.65,
+          "exception_types": null,
+          "retry_suppressed": "cancelled",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.39
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 0.91
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.06
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.19
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.19
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.26
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.27
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.49
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.6
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 1.74
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelTimeoutError",
+        "TimeoutError",
+        "CancelledError"
+      ],
+      "code": "stream_idle_timeout",
+      "case": "application_idle_timeout",
+      "action": "application_idle_timeout",
+      "timeline": [
+        {
+          "at_seconds": 0.004573,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005052,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005135,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005223,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005227,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005272,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005275,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005324,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.005347,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.005451,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005539,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.206674,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "CancelledError"
+        },
+        {
+          "at_seconds": 0.206824,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.206929,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.207053,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.207123,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelTimeoutError",
+            "TimeoutError",
+            "CancelledError"
+          ],
+          "code": "stream_idle_timeout"
+        },
+        {
+          "at_seconds": 0.207124,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.207125,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.207234,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": "stream_idle_timeout",
+          "error_code": "stream_idle_timeout",
+          "cancelled_by": "stream_idle_timeout",
+          "duration_ms": 202.87,
+          "http_body_complete": false,
+          "stream_close_reason": "local_timeout",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 1.34,
+          "stream_last_progress_ms": 1.36,
+          "exception_types": null,
+          "retry_suppressed": "upstream_execution_may_continue",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.36
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 0.84
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 0.93
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.01
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.02
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.06
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.06
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.24
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.33
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 202.47
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 0.2,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "raw_socket_shutdown",
+      "action": "raw_socket_shutdown",
+      "timeline": [
+        {
+          "at_seconds": 0.005875,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006477,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006601,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006716,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006723,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006782,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006787,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006852,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.00688,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.006999,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007127,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007238,
+          "kind": "intentional_raw_socket_shutdown"
+        },
+        {
+          "at_seconds": 0.007344,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "RemoteProtocolError"
+        },
+        {
+          "at_seconds": 0.007412,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007488,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00761,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.00768,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.007681,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.007682,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.00775,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 2.2,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 1.72,
+          "stream_last_progress_ms": 1.75,
+          "exception_types": [
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.45
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.05
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.18
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.29
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.3
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.36
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.36
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.57
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.7
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 1.92
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "local_proxy_idle",
+      "action": "local_proxy_idle",
+      "timeline": [
+        {
+          "at_seconds": 0.01303,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.013531,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.01362,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.013712,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.013717,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.013761,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.013765,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.014111,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.014134,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.014198,
+          "kind": "local_proxy_forwarded_bytes",
+          "size": 317
+        },
+        {
+          "at_seconds": 0.014295,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.014389,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.21529,
+          "kind": "local_proxy_idle_close",
+          "configured_idle_seconds": 0.2
+        },
+        {
+          "at_seconds": 0.215447,
+          "kind": "origin_observed_client_eof"
+        },
+        {
+          "at_seconds": 0.215561,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "RemoteProtocolError"
+        },
+        {
+          "at_seconds": 0.215723,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.215819,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.216006,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.216101,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.216103,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.216104,
+          "kind": "model_client_aclose_called"
+        }
+      ],
+      "requests": [
+        {
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 203.4,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 1.78,
+          "stream_last_progress_ms": 1.8,
+          "exception_types": [
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.4
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 0.9
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 0.99
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.08
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.09
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.13
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.14
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.67
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.76
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 202.94
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "success",
+      "case": "stable_idle_55_seconds",
+      "action": "stable_idle",
+      "timeline": [
+        {
+          "at_seconds": 0.006237,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006858,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.006991,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007113,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00712,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007182,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007187,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007255,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.007283,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.007403,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.007519,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.009713,
+          "kind": "origin_terminal_eof_sent"
+        },
+        {
+          "at_seconds": 55.011594,
+          "kind": "trace",
+          "name": "http11.receive_response_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.011831,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.012714,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.012862,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.013437,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.013983,
+          "kind": "caller_observed_result",
+          "outcome": "success"
+        },
+        {
+          "at_seconds": 55.013985,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 55.013986,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 55.014349,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": null,
+          "error_code": null,
+          "cancelled_by": null,
+          "duration_ms": 55007.83,
+          "http_body_complete": true,
+          "stream_close_reason": "http_eof",
+          "stream_terminal": "response.completed",
+          "stream_last_byte_ms": 55005.17,
+          "stream_last_progress_ms": 55005.37,
+          "exception_types": null,
+          "retry_suppressed": null,
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.54
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.16
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.29
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.41
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.42
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.48
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.49
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.7
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.82
+            },
+            {
+              "event": "http11.receive_response_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 55005.91
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "ReadError",
+        "ReadError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "tls_client_aclose",
+      "action": "client_aclose",
+      "timeline": [
+        {
+          "at_seconds": 0.023528,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.024045,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.024056,
+          "kind": "trace",
+          "name": "connection.start_tls.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025314,
+          "kind": "trace",
+          "name": "connection.start_tls.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025386,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025525,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025529,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025574,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025577,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025622,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.025646,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.025745,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.025917,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.02603,
+          "kind": "intentional_client_aclose"
+        },
+        {
+          "at_seconds": 0.026031,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.026166,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "ReadError"
+        },
+        {
+          "at_seconds": 0.026197,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.026204,
+          "kind": "origin_observed_client_eof"
+        },
+        {
+          "at_seconds": 0.026235,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.026295,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.026343,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "ReadError",
+            "ReadError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.026343,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.026344,
+          "kind": "model_client_aclose_called"
+        }
+      ],
+      "requests": [
+        {
+          "error": "ReadError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 15.07,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 14.7,
+          "stream_last_progress_ms": 14.74,
+          "exception_types": [
+            "ReadError",
+            "ReadError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 12.3
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 12.81
+            },
+            {
+              "event": "connection.start_tls.started",
+              "scope": "origin",
+              "elapsed_ms": 12.82
+            },
+            {
+              "event": "connection.start_tls.complete",
+              "scope": "origin",
+              "elapsed_ms": 14.08
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 14.15
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 14.29
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 14.29
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 14.34
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 14.34
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 14.51
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 14.68
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 14.93
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "error",
+      "exception_types": [
+        "ModelError",
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "code": "upstream_transport_error",
+      "case": "tls_raw_socket_shutdown",
+      "action": "raw_socket_shutdown",
+      "timeline": [
+        {
+          "at_seconds": 0.000617,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.000955,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.000961,
+          "kind": "trace",
+          "name": "connection.start_tls.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001751,
+          "kind": "trace",
+          "name": "connection.start_tls.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001817,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001932,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001935,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001975,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001977,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002015,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.002038,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.00212,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002225,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002295,
+          "kind": "intentional_raw_socket_shutdown"
+        },
+        {
+          "at_seconds": 0.002355,
+          "kind": "trace",
+          "name": "http11.receive_response_body.failed",
+          "exception_type": "RemoteProtocolError"
+        },
+        {
+          "at_seconds": 0.002386,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002432,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002493,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 0.00252,
+          "kind": "caller_observed_result",
+          "outcome": "error",
+          "exception_types": [
+            "ModelError",
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "code": "upstream_transport_error"
+        },
+        {
+          "at_seconds": 0.002521,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 0.002521,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 0.002575,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": "RemoteProtocolError",
+          "error_code": "upstream_transport_error",
+          "cancelled_by": null,
+          "duration_ms": 2.14,
+          "http_body_complete": false,
+          "stream_close_reason": "transport_error_before_terminal",
+          "stream_terminal": null,
+          "stream_last_byte_ms": 1.87,
+          "stream_last_progress_ms": 1.89,
+          "exception_types": [
+            "RemoteProtocolError",
+            "RemoteProtocolError"
+          ],
+          "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.25
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 0.59
+            },
+            {
+              "event": "connection.start_tls.started",
+              "scope": "origin",
+              "elapsed_ms": 0.59
+            },
+            {
+              "event": "connection.start_tls.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.39
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.45
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.57
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.57
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.61
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.61
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.75
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.86
+            },
+            {
+              "event": "http11.receive_response_body.failed",
+              "scope": "origin",
+              "elapsed_ms": 1.99
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    {
+      "outcome": "success",
+      "case": "tls_stable_idle_55_seconds",
+      "action": "stable_idle",
+      "timeline": [
+        {
+          "at_seconds": 0.000751,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001125,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001132,
+          "kind": "trace",
+          "name": "connection.start_tls.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002005,
+          "kind": "trace",
+          "name": "connection.start_tls.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002074,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00228,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002286,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002361,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002368,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002423,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.002446,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.002535,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002627,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.004297,
+          "kind": "origin_terminal_eof_sent"
+        },
+        {
+          "at_seconds": 55.005731,
+          "kind": "trace",
+          "name": "http11.receive_response_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.005888,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.006561,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.006742,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.007055,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.007431,
+          "kind": "caller_observed_result",
+          "outcome": "success"
+        },
+        {
+          "at_seconds": 55.007433,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 55.007435,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 55.007765,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": null,
+          "error_code": null,
+          "cancelled_by": null,
+          "duration_ms": 55006.64,
+          "http_body_complete": true,
+          "stream_close_reason": "http_eof",
+          "stream_terminal": "response.completed",
+          "stream_last_byte_ms": 55004.91,
+          "stream_last_progress_ms": 55005.02,
+          "exception_types": null,
+          "retry_suppressed": null,
+          "transport_events": [
+            {
+              "event": "connection.connect_tcp.started",
+              "scope": "origin",
+              "elapsed_ms": 0.29
+            },
+            {
+              "event": "connection.connect_tcp.complete",
+              "scope": "origin",
+              "elapsed_ms": 0.66
+            },
+            {
+              "event": "connection.start_tls.started",
+              "scope": "origin",
+              "elapsed_ms": 0.67
+            },
+            {
+              "event": "connection.start_tls.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.54
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.61
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.82
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 1.82
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 1.9
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 1.9
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.07
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 2.16
+            },
+            {
+              "event": "http11.receive_response_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 55005.3
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    }
+  ],
+  "confirmed_findings": [
+    "All four failures followed the last decoded HTTP body chunk by 49.70879–50.01547 seconds. This is body-decoder timing, not packet-level idle proof.",
+    "No recorded first-event, 300-second semantic idle, 900-second hard, child or parent deadline was reached. All four lack a terminal event and stay below byte/event limits.",
+    "ModelClient explicitly passes HTTPX read=None. Installed httpcore passes this through AnyIO; no 50-second read timer was found in the examined application/HTTPX/httpcore paths.",
+    "Application task cancellation and idle timeout were distinguishable in controlled runs and retained cancellation attribution.",
+    "Direct client.aclose during a pending HTTP or TLS read yields ReadError without cancelled_by in the current diagnostic schema. The production runtime normally cancels/awaits children before closing their clients.",
+    "Explicit local socket receive-shutdown and a local forwarding proxy closing after its idle timer both reproduced RemoteProtocolError with cancelled_by=null. The exception type is not a causal attribution.",
+    "HTTP and verified TLS direct loopback requests both survived 55 seconds without bytes and then returned a complete terminal plus HTTP EOF.",
+    "httpcore emits receive_response_body.failed before its exception-cleanup response_closed event. The application currently drops response_closed events from its bounded trace list.",
+    "Active HTTP/1.1 requests clear keepalive expiry; a fresh CONNECT occurred in one actual failure while the others reused connections, so a reuse-only explanation is insufficient."
+  ],
+  "hypotheses_not_proven": [
+    "A roughly 50-second body-idle policy in the local proxy or its selected transport path can explain both the supplier-side requester-disconnect observation and the application exception. Its exact enforcing component remains unproven by these records.",
+    "Uninstrumented socket/transport shutdown can leave cancelled_by null; no application raw-socket shutdown call was found and normal Runtime.close ordering does not currently supply a matching trigger.",
+    "A cleanup exception could theoretically replace the primary failure. The performed controls did not reproduce that, so it is not a demonstrated explanation."
+  ],
+  "repair_points_after_causal_confirmation": [
+    {
+      "path": "app/model.py::trace / ModelClient.aclose / _receive_stream",
+      "change": "Add bounded type-only receive_response_body.failed, response_closed and application close-intent/owner/timestamps; keep primary exception and local-close intent distinct. Never record headers, keys or stream contents."
+    },
+    {
+      "path": "app/model.py::httpx.RequestError diagnostic",
+      "change": "Preserve legacy error code if API compatibility requires it, but add initiator=undetermined unless directly observed. Do not interpret upstream_transport_error as proof the model provider disconnected."
+    },
+    {
+      "path": "app/agents.py::Runtime.close / Service.stop",
+      "change": "Document and assert cancel-then-await-before-client-close ownership. A known local close during an active read should carry its actual local cause even when HTTPX surfaces ReadError."
+    },
+    {
+      "path": "confirmed local proxy/transport configuration, if identified",
+      "change": "Fix only the proven idle boundary or explicit model-route policy after separately authorized controlled validation. Do not change system proxy/TUN, increase unrelated application deadlines, or silently replay accepted unknown model requests."
+    }
+  ],
+  "minimum_followup_regressions": [
+    "Persist failure-before-cleanup ordering for EOF and close-intent-before-failure for explicit client shutdown, in HTTP and verified TLS.",
+    "Run a verified TLS CONNECT proxy relay with a declared short idle-close policy; assert supplier sees downstream close while ModelClient reports unknown protocol outcome without retry.",
+    "Run a >50-second no-byte control over direct and nonclosing CONNECT, including a reused keepalive connection; keep the application 300/900-second budgets unchanged.",
+    "Exercise manager/child cancellation and client cleanup with event barriers to prove one role does not close another active role/client; never use blind timing races.",
+    "Only after the local closing component is identified, validate one explicitly identified real request under frozen input/route/config with correlated request ID and boundary-only trace; do not resend the four unknown requests."
+  ],
+  "official_references": [
+    "https://www.python-httpx.org/advanced/timeouts/",
+    "https://www.encode.io/httpcore/extensions/#trace"
+  ],
+  "tcp_fin_limit": "The first TCP FIN sender is not by itself the TLS/application initiator: a received TLS close_notify or EOF can make the application subsequently send FIN during cleanup. Correlate TLS/read boundary, trace failure and close intent.",
+  "fifth_request_supplement": {
+    "event_seq": 2043,
+    "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+    "agent_id": "manager",
+    "stage": "synthesis",
+    "finished_at": "2026-11-05T00:15:35.123992+08:00",
+    "duration_ms": 173541.65,
+    "stream_last_byte_ms": 123620.36,
+    "decoded_body_idle_seconds": 49.92129,
+    "error": "RemoteProtocolError",
+    "cancelled_by": null,
+    "loopback_capture": {
+      "source": "data/evaluations/sixteenth-normal-matrix-v1/connection-timeline-flags.txt",
+      "sha256": "6ddad31730e30313b9ac959a427b7e3d792a5b9f983492f751a3bb589dbfbaa2",
+      "captured_by": "parent investigator",
+      "app_pid": 47336,
+      "app_source_port": 49550,
+      "proxy_port": 7890,
+      "last_payload_at": "2026-11-05T00:14:45.202233+08:00",
+      "last_payload_length": 35,
+      "proxy_first_fin_at": "2026-11-05T00:15:35.120369+08:00",
+      "app_fin_at": "2026-11-05T00:15:35.122944+08:00",
+      "proxy_fin_to_app_fin_ms": 2.575,
+      "last_payload_to_first_fin_seconds": 49.918136,
+      "payload_saved": false
+    },
+    "conclusion": "For this request, the local proxy port sent TCP FIN before the application. This excludes application-initiated TCP close for this sample; it does not distinguish the proxy policy from a closure originating farther along its selected external transport. Do not retroactively assign all earlier failures an unobserved exact initiator."
+  },
+  "diagnostic_recommendation_for_current_freeze": {
+    "change_source_now": false,
+    "reason": "b7 evidence is frozen; packet evidence now identifies the fifth loopback initiator. Adding observability does not by itself repair the closing network path.",
+    "derive_without_source_change": "last_body_idle_ms = duration_ms - stream_last_byte_ms from persisted request observation",
+    "separate_future_change": [
+      "bounded response_closed started/complete timestamps",
+      "explicit ModelClient.aclose intent/reason/time for active requests",
+      "first read failure type/time and preserve primary exception if cleanup fails",
+      "initiator=undetermined unless independently observed; never infer from RemoteProtocolError alone"
+    ]
+  },
+  "actual_mihomo_loopback_control": {
+    "reviewed_at": "2026-11-04T16:28:03.631108+00:00",
+    "source_freeze": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "real_supplier_request": false,
+    "existing_local_proxy": "127.0.0.1:7890",
+    "controller_access": "Read-only Unix-domain /configs, /rules and /connections; bearer secret read from active config only for local controller authentication; never written to evidence.",
+    "active_config_path": "/Users/chn/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev/clash-verge.yaml",
+    "controller_uds": "/tmp/verge/verge-mihomo.sock",
+    "preflight": {
+      "first_matching_rule": {
+        "index": 511,
+        "type": "IPCIDR",
+        "payload": "127.0.0.0/8",
+        "proxy": "DIRECT"
+      },
+      "mode": "rule",
+      "mixed_port": 7890,
+      "tun_enabled": false
+    },
+    "preflight_method": "Before any CONNECT, evaluate rules in order for literal 127.0.0.1. Abort for any unknown earlier rule type. First match is index 511 IPCIDR 127.0.0.0/8 DIRECT; no earlier match.",
+    "process_only_environment": "Set HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and lower-case variants to existing local port; unset bypass with empty NO_PROXY/no_proxy; SSL_CERT_FILE points to temporary fixture CA. No system settings or trust store changes.",
+    "model_client_path": "Production app.model.ModelClient; temporary observer subclass records trace and explicit close order without changing stream reads.",
+    "artifacts": {
+      "actual_mihomo_experiment.py": {
+        "path": "/private/tmp/sixteenth-stream-lifecycle/actual_mihomo_experiment.py",
+        "sha256": "7e15b3962e63466125e8cabe0889bff59fdba8ce46e5dc1e3cb11fea030b8233"
+      },
+      "actual_mihomo_local_direct_tls_idle_55_seconds.json": {
+        "path": "/private/tmp/sixteenth-stream-lifecycle/actual_mihomo_local_direct_tls_idle_55_seconds.json",
+        "sha256": "c8d7a6fe0a53b4b573a19e5e8858d88b68335a740ff72bfbd1450348915930f2"
+      },
+      "mihomo-preflight-at-execution.json": {
+        "path": "/private/tmp/sixteenth-stream-lifecycle/mihomo-preflight-at-execution.json",
+        "sha256": "820ced96c7a66f69965e7136893d7015fb90b685277de6e298055018648a5d26"
+      },
+      "actual-mihomo-run.log": {
+        "path": "/private/tmp/sixteenth-stream-lifecycle/actual-mihomo-run.log",
+        "sha256": "52c934182ad602b39915e7e60a66b272fe0f5624a69335c33cf6963213c6c99b"
+      }
+    },
+    "result": {
+      "outcome": "success",
+      "case": "actual_mihomo_local_direct_tls_idle_55_seconds",
+      "action": "stable_idle",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": false,
+        "ca_source": "SSL_CERT_FILE",
+        "certificate_verification": true,
+        "proxy_connect_observed": true,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": true,
+        "status_code": 200,
+        "response_headers_received": true,
+        "established": true
+      },
+      "timeline": [
+        {
+          "at_seconds": 0.001348,
+          "kind": "trace",
+          "name": "connection.connect_tcp.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001771,
+          "kind": "trace",
+          "name": "connection.connect_tcp.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001853,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001919,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001923,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001939,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.001941,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002052,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.002068,
+          "kind": "trace",
+          "name": "proxy.start_tls.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.00329,
+          "kind": "trace",
+          "name": "proxy.start_tls.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003355,
+          "kind": "trace",
+          "name": "http11.send_request_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003473,
+          "kind": "trace",
+          "name": "http11.send_request_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003476,
+          "kind": "trace",
+          "name": "http11.send_request_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003521,
+          "kind": "trace",
+          "name": "http11.send_request_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003524,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003584,
+          "kind": "origin_request_received"
+        },
+        {
+          "at_seconds": 0.003605,
+          "kind": "origin_progress_sent"
+        },
+        {
+          "at_seconds": 0.003696,
+          "kind": "trace",
+          "name": "http11.receive_response_headers.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.003767,
+          "kind": "trace",
+          "name": "http11.receive_response_body.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 0.005169,
+          "kind": "actual_mihomo_route",
+          "matched_connection_count": 1,
+          "connection_id": "5b9ee581-fb2d-441a-9c48-0b285fe3c1d9",
+          "chains": [
+            "DIRECT"
+          ],
+          "rule": "IPCIDR",
+          "rule_payload": "127.0.0.0/8",
+          "source_ip": "127.0.0.1",
+          "source_port": "51327",
+          "destination_ip": "127.0.0.1",
+          "destination_port": "51326",
+          "host": "",
+          "type": "HTTPS"
+        },
+        {
+          "at_seconds": 55.006276,
+          "kind": "origin_terminal_eof_sent"
+        },
+        {
+          "at_seconds": 55.00847,
+          "kind": "trace",
+          "name": "http11.receive_response_body.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.008627,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.009709,
+          "kind": "trace",
+          "name": "http11.response_closed.started",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.009879,
+          "kind": "trace",
+          "name": "http11.response_closed.complete",
+          "exception_type": null
+        },
+        {
+          "at_seconds": 55.010372,
+          "kind": "response_aclose_called"
+        },
+        {
+          "at_seconds": 55.011003,
+          "kind": "caller_observed_result",
+          "outcome": "success"
+        },
+        {
+          "at_seconds": 55.011005,
+          "kind": "experiment_final_cleanup_started"
+        },
+        {
+          "at_seconds": 55.011008,
+          "kind": "model_client_aclose_called"
+        },
+        {
+          "at_seconds": 55.011849,
+          "kind": "origin_observed_client_eof"
+        }
+      ],
+      "requests": [
+        {
+          "error": null,
+          "error_code": null,
+          "cancelled_by": null,
+          "duration_ms": 55009.62,
+          "http_body_complete": true,
+          "stream_close_reason": "http_eof",
+          "stream_terminal": "response.completed",
+          "stream_last_byte_ms": 55007.1,
+          "stream_last_progress_ms": 55007.24,
+          "exception_types": null,
+          "retry_suppressed": null,
+          "transport_events": [
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 0.98
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 1.04
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 1.05
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 1.06
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 1.07
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "proxy_tunnel",
+              "elapsed_ms": 1.18
+            },
+            {
+              "event": "proxy.start_tls.started",
+              "scope": "origin_tls",
+              "elapsed_ms": 1.19
+            },
+            {
+              "event": "proxy.start_tls.complete",
+              "scope": "origin_tls",
+              "elapsed_ms": 2.42
+            },
+            {
+              "event": "http11.send_request_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 2.48
+            },
+            {
+              "event": "http11.send_request_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.6
+            },
+            {
+              "event": "http11.send_request_body.started",
+              "scope": "origin",
+              "elapsed_ms": 2.6
+            },
+            {
+              "event": "http11.send_request_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.65
+            },
+            {
+              "event": "http11.receive_response_headers.started",
+              "scope": "origin",
+              "elapsed_ms": 2.65
+            },
+            {
+              "event": "http11.receive_response_headers.complete",
+              "scope": "origin",
+              "elapsed_ms": 2.82
+            },
+            {
+              "event": "http11.receive_response_body.started",
+              "scope": "origin",
+              "elapsed_ms": 2.89
+            },
+            {
+              "event": "http11.receive_response_body.complete",
+              "scope": "origin",
+              "elapsed_ms": 55007.62
+            }
+          ],
+          "timeout_policy": {
+            "policy_version": 2,
+            "first_event_seconds": 90.0,
+            "stream_idle_seconds": 300.0,
+            "request_hard_seconds": 900.0,
+            "connect_seconds": 15.0,
+            "pool_seconds": 15.0,
+            "write_seconds": 30.0,
+            "hard_limit_source": "model_request_hard_timeout_seconds"
+          }
+        }
+      ]
+    },
+    "conclusion": "The existing Mihomo local HTTP CONNECT ingress plus its DIRECT route to a loopback TLS server survived 55 seconds without response-body bytes and completed with response.completed and HTTP EOF. A universal 50-second timeout in that local ingress/DIRECT path is not reproduced. This does not exercise the actual external proxy node, its transport, or the remote model endpoint; it does not prove that external chain healthy or uniquely locate the real failures.",
+    "modifications": "No production/test source, live matrix state, daily configuration, proxy rules, system network settings, or system trust modified."
+  },
+  "user_supplied_supplier_timestamp_correlation": {
+    "source": "User-provided supplier-side disconnect timestamps, relayed by parent investigator; not independently retrieved provider logs.",
+    "timezone": "Asia/Shanghai (+08:00), as supplied in task context",
+    "matches": [
+      {
+        "user_reported_supplier_disconnect_at": "2026-11-04T23:48:05+08:00",
+        "local_finished_at": "2026-11-04T23:48:05.436916+08:00",
+        "event_seq": 1423,
+        "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+        "agreement": "same wall-clock second",
+        "packet_capture_available": false
+      },
+      {
+        "user_reported_supplier_disconnect_at": "2026-11-05T00:02:00+08:00",
+        "local_finished_at": "2026-11-05T00:02:00.229066+08:00",
+        "event_seq": 1722,
+        "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "agreement": "same wall-clock second",
+        "packet_capture_available": false
+      },
+      {
+        "user_reported_supplier_disconnect_at": "2026-11-05T00:15:35+08:00",
+        "local_finished_at": "2026-11-05T00:15:35.123992+08:00",
+        "event_seq": 2043,
+        "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+        "agreement": "same wall-clock second",
+        "packet_capture_available": true
+      }
+    ],
+    "boundary": "The supplied times agree with the local failures to the second, including the fifth failure with proxy-first FIN evidence. No supplier request IDs, raw provider logs, clock-offset proof, or complete provider-side lifecycle trace were supplied. This is temporal corroboration, not a full provider-log audit or an exact component attribution."
+  },
+  "public_endpoint_route_control_supplement": {
+    "report": "docs/sixteenth/public-idle-route-control.json",
+    "request_count": 2,
+    "environment_outcome": "RemoteProtocolError after50.039565s body silence; same selected external chain as historical model sample",
+    "direct_outcome": "Complete after54.999367s inter-byte gap and55.015729s last-byte-to-EOF silence",
+    "boundary": "Narrows to selected external proxy path/remote interaction; does not identify a unique component or assess model availability."
+  }
+}

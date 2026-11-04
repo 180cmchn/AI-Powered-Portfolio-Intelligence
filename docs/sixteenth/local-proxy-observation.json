@@ -1,0 +1,34 @@
+{
+  "/version": {
+    "status": 200,
+    "version": "v1.19.21",
+    "meta": true
+  },
+  "/configs": {
+    "status": 200,
+    "mode": "rule",
+    "mixed-port": 7890,
+    "keep-alive-idle": 0,
+    "keep-alive-interval": 0,
+    "disable-keep-alive": false,
+    "tcp-concurrent": false,
+    "tun_enabled": false
+  },
+  "/connections": {
+    "status": 200,
+    "project_model_connections": [
+      {
+        "sourcePort": "49550",
+        "host": "api.xxyapi.com",
+        "network": "tcp",
+        "type": "HTTPS",
+        "rule": "Match",
+        "proxy_hops": 2,
+        "chain_direct": false,
+        "start": "2026-11-05T00:02:07.511861+08:00",
+        "upload": 2209099,
+        "download": 4175351
+      }
+    ]
+  }
+}

@@ -1,0 +1,929 @@
+{
+  "kind": "read_only_stream_disconnect_lifecycle_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-05T00:18:16.597589+08:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "database_path": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+  "database_access": "mode=ro transaction; production source, settings and database unchanged",
+  "scope": "Five completed unknown-disconnect observations, including the final configuration task. This covers the observed A execution sequence; it is not a claim about unobserved provider requests.",
+  "root_cause": "unresolved",
+  "attribution": "The application error label upstream_transport_error is an exception category, not evidence assigning fault to the supplier or a particular proxy. Supplier client_gone feedback is second-hand and has not been correlated here with packet direction or server logs.",
+  "hypothesis": "A connection layer closes after approximately 50 seconds without HTTP body bytes. The component and direction are not established.",
+  "cases": [
+    {
+      "agent_id": "research-20a317eaed18",
+      "stage": "research",
+      "model": "grok-4.6",
+      "reasoning_effort": "high",
+      "started_at": "2026-11-04T15:20:44.894459+00:00",
+      "finished_at": "2026-11-04T15:22:37.658156+00:00",
+      "duration_ms": 112763.97,
+      "status_code": 200,
+      "http_version": "HTTP/1.1",
+      "request_id": null,
+      "response_id": "c76dec11-83ae-9033-9ade-046041765f8c",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "stream_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_last_byte_ms": 63055.18,
+      "stream_last_progress_ms": 38493.59,
+      "stream_max_idle_ms": 74270.41,
+      "stream_heartbeat_count": 1,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "child_budget_exhausted": 1642999.19,
+        "analysis_budget_exhausted": 3361840.63,
+        "request_hard_timeout": 900000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 0.48
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.57
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 0.57
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 0.64
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 0.64
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 5304.34
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 5305.04
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 112762.63
+        }
+      ],
+      "event_seq": 408,
+      "event_at": "2026-11-04T23:22:37.658630+08:00",
+      "job_id": "e25f72a7b48245fbb1eadff102ec8c4b",
+      "input_version": 4,
+      "job_state": "completed",
+      "job_started_at": "2026-11-04T23:16:46.726634+08:00",
+      "job_completed_at": "2026-11-04T23:28:38.482142+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 49708.79,
+      "analysis_count": 1
+    },
+    {
+      "agent_id": "manager",
+      "stage": "research",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T15:34:17.346162+00:00",
+      "finished_at": "2026-11-04T15:38:12.116460+00:00",
+      "duration_ms": 234771.26,
+      "status_code": 200,
+      "http_version": "HTTP/1.1",
+      "request_id": null,
+      "response_id": "0227bef9-de7a-9408-9462-a44778fc3340",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "stream_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_last_byte_ms": 184755.79,
+      "stream_last_progress_ms": 183284.67,
+      "stream_max_idle_ms": 51486.65,
+      "stream_heartbeat_count": 3,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3269166.63,
+        "request_hard_timeout": 900000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.32
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.44
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.59
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.59
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7033.1
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7033.3
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 234769.55
+        }
+      ],
+      "event_seq": 590,
+      "event_at": "2026-11-04T23:38:12.117052+08:00",
+      "job_id": "462e7ae1f7854f2bbcfa545b7960b726",
+      "input_version": 5,
+      "job_state": "failed",
+      "job_started_at": "2026-11-04T23:28:46.510273+08:00",
+      "job_completed_at": "2026-11-04T23:38:12.184102+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 50015.47,
+      "analysis_count": 0,
+      "next_legitimate_job": {
+        "id": "15d837b14dda4883b71648ef6a93a0c5",
+        "created_at": "2026-11-04T23:38:18.775279+08:00",
+        "reason": "universe_changed",
+        "input_version": 6,
+        "creation_after_previous_job_completed_seconds": 6.591177
+      }
+    },
+    {
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T15:44:09.689736+00:00",
+      "finished_at": "2026-11-04T15:48:05.436916+00:00",
+      "duration_ms": 235748.13,
+      "status_code": 200,
+      "http_version": "HTTP/1.1",
+      "request_id": null,
+      "response_id": "951d672d-6380-9161-851c-4dad60b1140f",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "stream_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_last_byte_ms": 185827.09,
+      "stream_last_progress_ms": 168758.45,
+      "stream_max_idle_ms": 66989.69,
+      "stream_heartbeat_count": 3,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3249396.74,
+        "request_hard_timeout": 900000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": true,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": true,
+        "status_code": 200,
+        "response_headers_received": true,
+        "established": true
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.77
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.83
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.83
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 1.85
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "proxy_tunnel",
+          "elapsed_ms": 2.05
+        },
+        {
+          "event": "proxy.start_tls.started",
+          "scope": "origin_tls",
+          "elapsed_ms": 2.08
+        },
+        {
+          "event": "proxy.start_tls.complete",
+          "scope": "origin_tls",
+          "elapsed_ms": 483.21
+        },
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 483.34
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 483.41
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 483.41
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 483.57
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 483.57
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 6109.26
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 6109.78
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 235747.68
+        }
+      ],
+      "event_seq": 1423,
+      "event_at": "2026-11-04T23:48:05.437053+08:00",
+      "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+      "input_version": 6,
+      "job_state": "failed",
+      "job_started_at": "2026-11-04T23:38:19.061281+08:00",
+      "job_completed_at": "2026-11-04T23:48:05.489575+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 49921.04,
+      "analysis_count": 0,
+      "next_legitimate_job": {
+        "id": "cd93c5fd7a3541bd95175f1df6225b1e",
+        "created_at": "2026-11-04T23:48:05.950382+08:00",
+        "reason": "来源索引关联原始材料 6b49e818f2d64fbda2b3dd61df77cb0a；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：6b49e818f2d64fbda2b3dd61df77cb0a; 来源索引关联原始材料 19148056833943468519114f3e02e587；请独立读取并研究，路由不代表投资结论; 公开材料新增或更正：19148056833943468519114f3e02e587",
+        "input_version": 6,
+        "creation_after_previous_job_completed_seconds": 0.460807
+      }
+    },
+    {
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T15:55:05.578523+00:00",
+      "finished_at": "2026-11-04T16:02:00.229066+00:00",
+      "duration_ms": 414654.18,
+      "status_code": 200,
+      "http_version": "HTTP/1.1",
+      "request_id": null,
+      "response_id": "5373ae6c-6a8d-9323-9579-fa38617548f5",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "stream_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_last_byte_ms": 364734.02,
+      "stream_last_progress_ms": 326164.51,
+      "stream_max_idle_ms": 88489.69,
+      "stream_heartbeat_count": 6,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3180391.25,
+        "request_hard_timeout": 900000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.34
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.48
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.49
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.64
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.65
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 4947.83
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 4948.43
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 414653.73
+        }
+      ],
+      "event_seq": 1722,
+      "event_at": "2026-11-05T00:02:00.229229+08:00",
+      "job_id": "cd93c5fd7a3541bd95175f1df6225b1e",
+      "input_version": 6,
+      "job_state": "failed",
+      "job_started_at": "2026-11-04T23:48:05.967049+08:00",
+      "job_completed_at": "2026-11-05T00:02:00.257286+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 49920.16,
+      "analysis_count": 0,
+      "next_legitimate_job": {
+        "id": "bb3bbd42e2954c56aba6ebc34307aed5",
+        "created_at": "2026-11-05T00:02:06.786697+08:00",
+        "reason": "configuration_changed",
+        "input_version": 6,
+        "creation_after_previous_job_completed_seconds": 6.529411
+      }
+    },
+    {
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T16:12:41.583394+00:00",
+      "finished_at": "2026-11-04T16:15:35.123992+00:00",
+      "duration_ms": 173541.65,
+      "status_code": 200,
+      "http_version": "HTTP/1.1",
+      "request_id": null,
+      "response_id": "81772b4d-2aa9-90f0-b15e-1223e6b8ee44",
+      "error": "RemoteProtocolError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "RemoteProtocolError",
+        "RemoteProtocolError"
+      ],
+      "transport_failure_kind": "incomplete_response_body",
+      "stream_terminal": null,
+      "response_status": null,
+      "http_body_complete": false,
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "stream_close_reason": "transport_error_before_terminal",
+      "stream_last_byte_ms": 123620.36,
+      "stream_last_progress_ms": 121839.66,
+      "stream_max_idle_ms": 51702.03,
+      "stream_heartbeat_count": 2,
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 2965455.28,
+        "request_hard_timeout": 900000.0
+      },
+      "effective_limit": "request_hard_timeout",
+      "model_network": {
+        "route": "environment",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2.08
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.33
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 2.34
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 2.59
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 2.59
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 3761.1
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 3761.5
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 173539.69
+        }
+      ],
+      "event_seq": 2043,
+      "event_at": "2026-11-05T00:15:35.124533+08:00",
+      "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+      "input_version": 6,
+      "job_state": "failed",
+      "job_started_at": "2026-11-05T00:02:07.031327+08:00",
+      "job_completed_at": "2026-11-05T00:15:35.162804+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 49921.29,
+      "analysis_count": 0
+    }
+  ],
+  "lifecycle_log_at_review": "2026-11-04T23:16:16.466716+08:00 start\n观澜已在后台启动： http://127.0.0.1:62369 （live，PID 47336，schema 11）\n基本 API 与实例身份已核对；模型绑定/原生搜索另行配置。日志：/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-matrix-v1/live.log\n2026-11-05T00:15:42.845531+08:00 stop\nlive 已停止（PID 47336）；持仓及任务保存在数据库。\n2026-11-05T00:15:43.455356+08:00 start\n观澜已在后台启动： http://127.0.0.1:62369 （live，PID 51196，schema 11）\n基本 API 与实例身份已核对；模型绑定/原生搜索另行配置。日志：/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-matrix-v1/live.log\n2026-11-05T00:15:50.352562+08:00 stop\nlive 已停止（PID 51196）；持仓及任务保存在数据库。\n",
+  "source_inspection": [
+    {
+      "path": "app/service.py:837",
+      "finding": "Worker cancels an active coroutine only after persistent job state is no longer running. Each affected A execution has no durable cancellation; later A jobs were created after the previous failure."
+    },
+    {
+      "path": "app/service.py:930",
+      "finding": "Service.stop explicitly cancels service tasks with service_shutdown, then gathers them. The first logged stop at 00:15:42.845531 occurs 7.682727 seconds after the last affected job reached failed at 00:15:35.162804."
+    },
+    {
+      "path": "app/service.py:414",
+      "finding": "Configuration preflight constructs and closes its own short-lived ModelClient before research. The production research client is separately constructed."
+    },
+    {
+      "path": "app/agents.py:767",
+      "finding": "Manager run awaits _loop under its deadline. Its finally calls close only after completion or exception propagation; close cancels/gathers children before closing role clients."
+    },
+    {
+      "path": "app/agents.py:1746",
+      "finding": "Production role-team child agents receive independent ModelClient instances; a failing child does not itself close the manager client."
+    },
+    {
+      "path": "app/model.py:930",
+      "finding": "Hard/semantic timeout and coroutine cancellation branches record cancelled_by and local close reasons; the observed branch is httpx.RequestError with RemoteProtocolError."
+    },
+    {
+      "path": "app/model.py:927",
+      "finding": "HTTPX per-request read timeout is explicitly None. Semantic idle is 300 seconds and hard cap 900 seconds; observed remaining parent budgets exceed each request duration."
+    },
+    {
+      "path": "app/model.py:750",
+      "finding": "Optional terminal-tail drain starts only after a valid parsed terminal event. All four observations lack a terminal, so this early-cleanup branch did not apply."
+    },
+    {
+      "path": ".venv/lib/python3.14/site-packages/httpcore/_async/http11.py:213",
+      "finding": "HTTP/1.1 parser reads network bytes; unexpected EOF during an incomplete response can raise RemoteProtocolError. The exception does not identify the original component that closed a multi-hop connection."
+    },
+    {
+      "path": ".venv/lib/python3.14/site-packages/httpcore/_async/http11.py:330",
+      "finding": "Response iterator catches BaseException, closes the response under cancellation shielding, then re-raises. Cleanup after a failure is not by itself proof that cleanup caused the failure."
+    },
+    {
+      "path": ".venv/lib/python3.14/site-packages/httpcore/_backends/anyio.py:25",
+      "finding": "Read calls fail_after(timeout), where application supplies None. ClosedResourceError maps to ReadError; EndOfStream becomes empty bytes. No 50-second read cap is configured here."
+    }
+  ],
+  "limitations": [
+    "No FIN/RST/TLS-close packet direction or network-stream aclose call stack was captured for these historical requests.",
+    "No application cancellation evidence does not exclude every process-local proxy, TLS, operating-system or remote intermediary mechanism.",
+    "CONNECT observed true for event1423. No CONNECT in the other request traces can also reflect pooled tunnels; it does not establish direct physical routing.",
+    "Historical exact paid requests were not replayed. No model, retry, route change, shutdown or restart was initiated by this reviewer.",
+    "The first four-case record was assembled while the configuration task ran; this updated record includes its independent fifth failure and the subsequent normal restart chronology."
+  ],
+  "recommended_next_evidence": "For a separately identified authorized new diagnostic, correlate monotonic last-byte times, task.cancel/aclose caller and socket endpoint identity with packet FIN/RST direction and supplier request logs, without exposing authorization headers or replaying an unknown accepted request.",
+  "dependencies": {
+    "httpx": "0.28.1",
+    "httpcore": "1.0.9",
+    "h11": "0.16.0",
+    "anyio": "4.15.1"
+  },
+  "inspected_file_sha256": {
+    "app/service.py": "d476a7eabc5835534e0f7363ae320b4c16b0b91ef03f2635dca2597fc89dba1f",
+    "app/agents.py": "9f9bb73e4e04da729d3967c9164f6bf60c576348e5ae36f89cd6bb20bd0be578",
+    "app/model.py": "f8a237740a3248fe0d06127cc50e6e4e16849c1716f5027dc27d67fe0cd4149d",
+    "app/model_network.py": "70ebf99d313fbac8692868a9314833fda27482fa87cc27c8775a3ecc184da6c4",
+    ".venv/lib/python3.14/site-packages/httpcore/_async/http11.py": "faa33d6d5ecf8d2405e6fc6cdfbf9e5173881706c88cf7196cd962b97f53b41c",
+    ".venv/lib/python3.14/site-packages/httpcore/_async/connection_pool.py": "0ce210dacd9909ff6a7f0c61ccca6b4cf2ea08bf0ec465e2285eaa447c6f5726",
+    ".venv/lib/python3.14/site-packages/httpcore/_backends/anyio.py": "c7c3e01215d10bc6d5aac77393f609c7c63a77d4ee6f4e82b944b09db9adaa86",
+    ".venv/lib/python3.14/site-packages/httpx/_transports/default.py": "03379a454c95c0271c4f2c8d25ec437f49f57457f3cf2769748420bf0ecf2e79"
+  },
+  "official_reference": [
+    "https://www.python-httpx.org/exceptions/",
+    "https://www.python-httpx.org/advanced/timeouts/"
+  ],
+  "updated_at": "2026-11-05T01:12:57.391550+08:00",
+  "additional_direct_failures": [
+    {
+      "agent_id": "manager",
+      "stage": "research",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T16:59:53.565483+00:00",
+      "finished_at": "2026-11-04T17:03:17.293444+00:00",
+      "duration_ms": 203729.02,
+      "stream_last_byte_ms": 203543.09,
+      "stream_last_progress_ms": 203543.19,
+      "stream_max_idle_ms": 9707.1,
+      "status_code": 200,
+      "stream_terminal": null,
+      "http_body_complete": false,
+      "error": "ReadError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "ReadError",
+        "ReadError"
+      ],
+      "transport_failure_kind": "transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "model_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3292637.24,
+        "request_hard_timeout": 900000.0
+      },
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.38
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.51
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.52
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.73
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.74
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 7002.2
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 7002.5
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 203728.53
+        }
+      ],
+      "event_seq": 1776,
+      "database_path": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+      "job_id": "0558397bd51145c5b6ad9d17a931fd29",
+      "job_state": "failed",
+      "job_completed_at": "2026-11-05T01:03:17.360996+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 185.93,
+      "next_legitimate_job": {
+        "id": "b13c7e3bab69415da25c92ea26768503",
+        "created_at": "2026-11-05T01:03:24.757213+08:00",
+        "started_at": "2026-11-05T01:03:25.087227+08:00"
+      },
+      "next_creation_after_failure_seconds": 7.396217,
+      "inference": "ReadError185.93ms after the last byte differs from the five environment ~50-second byte-idle RemoteProtocolError observations. It does not establish an application cancellation or a supplier/proxy fault. Direct is not a guarantee of no disconnects."
+    },
+    {
+      "agent_id": "manager",
+      "stage": "synthesis",
+      "model": "grok-4.7",
+      "reasoning_effort": "xhigh",
+      "started_at": "2026-11-04T17:06:43.253265+00:00",
+      "finished_at": "2026-11-04T17:10:53.057792+00:00",
+      "duration_ms": 249805.74,
+      "stream_last_byte_ms": 249662.9,
+      "stream_last_progress_ms": 187676.69,
+      "stream_max_idle_ms": 62129.09,
+      "status_code": 200,
+      "stream_terminal": null,
+      "http_body_complete": false,
+      "error": "ReadError",
+      "error_code": "upstream_transport_error",
+      "exception_types": [
+        "ReadError",
+        "ReadError"
+      ],
+      "transport_failure_kind": "transport_error",
+      "cancelled_by": null,
+      "retry_suppressed": "accepted_or_sent_request_outcome_unknown",
+      "timeout_policy": {
+        "policy_version": 2,
+        "first_event_seconds": 90.0,
+        "stream_idle_seconds": 300.0,
+        "request_hard_seconds": 900.0,
+        "connect_seconds": 15.0,
+        "pool_seconds": 15.0,
+        "write_seconds": 30.0,
+        "hard_limit_source": "synthesis_request_hard_timeout_seconds"
+      },
+      "deadline_remaining_ms": {
+        "analysis_budget_exhausted": 3401845.83,
+        "request_hard_timeout": 900000.0
+      },
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "transport_events": [
+        {
+          "event": "http11.send_request_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.58
+        },
+        {
+          "event": "http11.send_request_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.75
+        },
+        {
+          "event": "http11.send_request_body.started",
+          "scope": "origin",
+          "elapsed_ms": 1.75
+        },
+        {
+          "event": "http11.send_request_body.complete",
+          "scope": "origin",
+          "elapsed_ms": 1.96
+        },
+        {
+          "event": "http11.receive_response_headers.started",
+          "scope": "origin",
+          "elapsed_ms": 1.97
+        },
+        {
+          "event": "http11.receive_response_headers.complete",
+          "scope": "origin",
+          "elapsed_ms": 9886.01
+        },
+        {
+          "event": "http11.receive_response_body.started",
+          "scope": "origin",
+          "elapsed_ms": 9886.66
+        },
+        {
+          "event": "http11.receive_response_body.failed",
+          "scope": "origin",
+          "elapsed_ms": 249803.64
+        }
+      ],
+      "event_seq": 2019,
+      "database_path": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+      "job_id": "b13c7e3bab69415da25c92ea26768503",
+      "job_state": "failed",
+      "job_completed_at": "2026-11-05T01:10:53.103292+08:00",
+      "durable_cancellation": null,
+      "last_byte_to_failure_ms": 142.84,
+      "inference": "A second direct ReadError142.84ms after the last byte, below application deadlines. Root cause and socket-close direction remain unproven; it is not the environment ~50-second byte-idle signature."
+    }
+  ],
+  "direct_lifecycle_log_at_update": "2026-11-05T00:17:20.379612+08:00 start\n观澜已在后台启动： http://127.0.0.1:50825 （live，PID 51427，schema 11）\n基本 API 与实例身份已核对；模型绑定/原生搜索另行配置。日志：/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-direct-v1/live.log\n2026-11-05T01:11:00.894948+08:00 stop\nlive 已停止（PID 51427）；持仓及任务保存在数据库。\n2026-11-05T01:11:01.454248+08:00 start\n观澜已在后台启动： http://127.0.0.1:50825 （live，PID 55509，schema 11）\n基本 API 与实例身份已核对；模型绑定/原生搜索另行配置。日志：/Users/chn/Documents/ChatGPT/金融股票 2/data/evaluations/sixteenth-normal-direct-v1/live.log\n2026-11-05T01:11:08.349898+08:00 stop\nlive 已停止（PID 55509）；持仓及任务保存在数据库。\n"
+}

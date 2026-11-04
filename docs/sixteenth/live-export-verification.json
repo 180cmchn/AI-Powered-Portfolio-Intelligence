@@ -1,0 +1,42 @@
+{
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "method": "Read-only production HTTP exports from actual independent live service; zero model calls",
+  "reports": [
+    {
+      "report_id": "7f3c74325ecf44e2b9c891086002ae03",
+      "database_report_sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+      "exports": {
+        "original": {
+          "status": 200,
+          "sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+          "filename": "attachment; filename=\"report-7f3c74325ecf44e2b9c891086002ae03-original.md\"",
+          "bytes": 7605
+        },
+        "reading": {
+          "status": 200,
+          "sha256": "5d407f025418b9de53e3ff672328325ba909cac485669e75c8427708adf61b60",
+          "filename": "attachment; filename=\"report-7f3c74325ecf44e2b9c891086002ae03-reading.md\"",
+          "bytes": 12452
+        }
+      }
+    },
+    {
+      "report_id": "f8e9ab0cb90d425e88d5e24983e8a9d3",
+      "database_report_sha256": "757d5d3271d74a2674309e550a6cc0dda4fbe08110ed65d54ad7fcdba5b155d9",
+      "exports": {
+        "original": {
+          "status": 200,
+          "sha256": "757d5d3271d74a2674309e550a6cc0dda4fbe08110ed65d54ad7fcdba5b155d9",
+          "filename": "attachment; filename=\"report-f8e9ab0cb90d425e88d5e24983e8a9d3-original.md\"",
+          "bytes": 5844
+        },
+        "reading": {
+          "status": 200,
+          "sha256": "f2c8bddb33206de3bd2f1cd8290935d46ed7b663cabf9d6913e3e2882c2de74d",
+          "filename": "attachment; filename=\"report-f8e9ab0cb90d425e88d5e24983e8a9d3-reading.md\"",
+          "bytes": 8439
+        }
+      }
+    }
+  ]
+}

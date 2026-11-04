@@ -1,0 +1,150 @@
+{
+  "kind": "no_report_content_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-04T23:49:14.375026+08:00",
+  "accepted": null,
+  "status": "not_evaluated",
+  "reason": "A legitimate universe_changed v6 task ran through normal workers but its manager synthesis response became unknown; no final report exists. This is separate from the failed v5 sell task.",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "database_path": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+  "database_access": "SQLite mode=ro transaction; no database or production change",
+  "account_id": "4f32f659e694450d82d621f9664af49b",
+  "input_version": 6,
+  "job_id": "15d837b14dda4883b71648ef6a93a0c5",
+  "trigger": "universe_changed",
+  "job_state": "failed",
+  "started_at": "2026-11-04T23:38:19.061281+08:00",
+  "completed_at": "2026-11-04T23:48:05.489575+08:00",
+  "report_id": null,
+  "report_sha256": null,
+  "report_count": 0,
+  "forecast_count": 0,
+  "application_delivery": {
+    "status": "incomplete",
+    "contract_verified": false,
+    "content_assessment": "not_evaluated",
+    "error_code": "upstream_transport_error"
+  },
+  "application_content_assessment": "not_evaluated",
+  "checks": {
+    "current_account_and_candidate_inputs": "pass",
+    "report_explains_gold_reduction": "not_evaluated",
+    "report_explains_cash_increase": "not_evaluated",
+    "report_explains_realized_loss": "not_evaluated",
+    "report_explains_simulated_valuation_difference": "not_evaluated",
+    "report_addresses_new_candidate": "not_evaluated"
+  },
+  "frozen_scope": {
+    "holdings": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "cost_price": "10.025"
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "cost_price": "10.0051"
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "cost_price": "2.505"
+      }
+    ],
+    "cash": "86479.90",
+    "candidates": [
+      "SZ:159278"
+    ],
+    "universe_version": 2,
+    "input_origin": "v5 simulated sale plus v6 global universe change, not a v5 retry or relabel"
+  },
+  "ledger_check": {
+    "entry_ids": [
+      "87d776f541904fa9aa88c1d42aa9f2ff",
+      "91d99c00cea94e71aad7bd950ae08223",
+      "ee7fef60e5cb43868e8135e891e55010",
+      "560befbbb33d4f4fa1054d22bda96e08",
+      "0c6c96ae29d14a1e95acf59a09f7cd75"
+    ],
+    "entry_count": 5,
+    "sale_entry_id": "0c6c96ae29d14a1e95acf59a09f7cd75",
+    "sale_occurrences": 1,
+    "gold_quantity_before": "200",
+    "gold_quantity_after": "100",
+    "cash_increase": "995.00",
+    "cash": "86479.90",
+    "sale_realized_pnl": "-7.50",
+    "remaining_total_cost": "13512.60",
+    "repeat_trade_count": 0
+  },
+  "partial_artifacts": {
+    "completed_child_reports_delivered_to_manager": [
+      {
+        "report_id": "adf395fc7eda4f3186cd652fc29036c0",
+        "source_job_id": "15d837b14dda4883b71648ef6a93a0c5"
+      },
+      {
+        "report_id": "ebe69d4f627447148b1652c1e18f4a50",
+        "source_job_id": "15d837b14dda4883b71648ef6a93a0c5"
+      }
+    ],
+    "tool_results": {
+      "list_business_demands": 3,
+      "list_forecast_targets": 3,
+      "list_recommendations": 3,
+      "list_agent_roles": 3,
+      "calculate": 24,
+      "search_materials": 4,
+      "history": 3,
+      "market_indicators": 14,
+      "query_market_rows": 13,
+      "spawn_research": 2,
+      "get_material": 7,
+      "read": 9,
+      "agent_status": 2,
+      "recall_context": 5,
+      "wait_agents": 1,
+      "list_materials": 1,
+      "search_pdf": 7,
+      "submit_report": 2
+    },
+    "boundary": "Completed tools and two child reports are retained. Their presence is not manager final publication or evidence that a missing final report answered the account question."
+  },
+  "old_report": {
+    "report_id": "7f3c74325ecf44e2b9c891086002ae03",
+    "report_sha256": "252970adc67f148765fab80fd9a207d1d132dd49bdd002c135c55773679a40a4",
+    "status": "stale",
+    "body_unchanged": true,
+    "original_exploratory_forecast_count": 9
+  },
+  "transmission": {
+    "http_attempts": 29,
+    "completed_with_eof": 28,
+    "route": "environment",
+    "failures": [
+      {
+        "event_seq": 1423,
+        "agent_id": "manager",
+        "stage": "synthesis",
+        "model": "grok-4.7",
+        "reasoning_effort": "xhigh",
+        "started_at": "2026-11-04T15:44:09.689736+00:00",
+        "duration_ms": 235748.13,
+        "status_code": 200,
+        "error": "RemoteProtocolError",
+        "error_code": "upstream_transport_error",
+        "stream_terminal": null,
+        "response_status": null,
+        "http_body_complete": false,
+        "cancelled_by": null,
+        "retry_suppressed": "accepted_or_sent_request_outcome_unknown"
+      }
+    ],
+    "fee_amount": null,
+    "fee_source": "No supplier billing correlation performed"
+  },
+  "recovery_boundary": "No model or retry invoked by reviewer. v5 failure and v4 accepted report remain separate immutable records.",
+  "formal_prediction": "not_generated",
+  "natural_maturity": "not_observed"
+}

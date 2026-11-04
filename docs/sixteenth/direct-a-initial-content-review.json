@@ -1,0 +1,997 @@
+{
+  "kind": "evidence_content_review",
+  "reviewer": "Codex independent development reviewer /root/scheduler",
+  "reviewed_at": "2026-11-05T00:36:45.134505+08:00",
+  "accepted": true,
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "baseline_commit": "3da5f191c464e27120bd0f739ef2355e10122070",
+  "database_path": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+  "database_access": "SQLite mode=ro; no production or database changes",
+  "account_id": "4b4e9b0be36a4a88b12263831e304b55",
+  "input_version": 4,
+  "job_id": "10c585c5c47e43cb80964724e9d6e613",
+  "report_id": "9520a02fb6724deab6973b8ddaeb0838",
+  "report_sha256": "e35d316062b6f7079bce960bd494928399b416c11d15545a07b77d431c1b1611",
+  "report_characters": 3679,
+  "published_at": "2026-11-05T00:31:12.413521+08:00",
+  "data_as_of": "2026-11-04T15:34:45+08:00",
+  "report_status_at_review": "stale",
+  "status_boundary": "Published current, then legally stale after the next production API simulated sale; original body hash remains unchanged.",
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "account",
+      "SH:518880",
+      "SZ:002354",
+      "SZ:159599"
+    ],
+    "decision_summary": "开盘前维持高现金、三只均不加仓。518880小仓持有不退出；002354在2026-11-06可卖前维持，其后减仓优于加仓或清仓，且减仓不是看跌预测；159599持有不加仓。1/5/20日方向均因信号冲突或驱动未核实而弃权，与仓位动作分开。",
+    "limitations": [
+      "收尾仅综合已交付子报告、账户版本4和已成功行情计算，未重读三季报PDF第9–11页、半年报154页及2025年报；分部收入、客户集中、商誉减值测试、审计意见和ST历史未知，只限制002354基本面完整度，不改变不加仓结论。",
+      "黄金的美元、实际利率、地缘路径，以及芯片ETF单日近涨停的产业原因，均无已读正文；上金所2026-11-04行情仅为搜索片段。因此方向预测弃权，不能把历史涨跌外推成已核实催化。",
+      "两只ETF最新份额、净资产和159599前十大持仓只到2026-09-30，不能当作2026-11-04实时持仓；没有同日NAV/IOPV，故不计算折溢价。基金合同中的T+0、申赎门槛未逐条核对，执行约束以账本可卖日为准。",
+      "若干已成功的divide/subtract结果输入口径未保留在可见上下文，本轮不采用，避免把未知算式写成论据。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "application_content_assessment": "not_evaluated",
+  "checks": {
+    "account_facts": "pass",
+    "answers_scope": "pass",
+    "basis_and_counter_factors": "pass",
+    "conditions": "pass",
+    "limitations": "pass",
+    "return_periods": "pass",
+    "forecast_kind": "pass",
+    "source_access_provenance": "pass",
+    "market_phase_and_settlement": "pass"
+  },
+  "account_check": {
+    "opening_cash": "100000",
+    "cash": "85484.90",
+    "trade_count": 3,
+    "buy_gross": "14500.00",
+    "fees": "15.10",
+    "remaining_total_cost": "14515.10",
+    "holdings": [
+      {
+        "symbol": "SH:518880",
+        "quantity": "200",
+        "cost_price": "10.025"
+      },
+      {
+        "symbol": "SZ:002354",
+        "quantity": "1000",
+        "cost_price": "10.0051"
+      },
+      {
+        "symbol": "SZ:159599",
+        "quantity": "1000",
+        "cost_price": "2.505"
+      }
+    ],
+    "securities_value": "11915.80",
+    "total_assets": "97400.70",
+    "unrealized_pnl": "-2599.30",
+    "realized_pnl": "0.00",
+    "ledger_entry_ids": [
+      "77c0037d5e1244c4bef7fda0e329ce05",
+      "2cf3f513d35b40a58ab179029ee89e35",
+      "baaf462ba54146bba4bf655796f5146a",
+      "c0c9a7dac2394511834df92c312d4544"
+    ],
+    "operation_ids": [
+      "sixteenth-buy-0",
+      "sixteenth-buy-1",
+      "sixteenth-buy-2"
+    ],
+    "sellable_dates": {
+      "SH:518880": "2026-11-05",
+      "SZ:002354": "2026-11-06",
+      "SZ:159599": "2026-11-06"
+    },
+    "market_phase": "2026-11-05 pre-open; valuation is 2026-11-04 close, not intraday",
+    "simulated_arithmetic_prices_not_market_fills": true
+  },
+  "substantive_findings": [
+    "Explicitly keeps high cash and avoids adding to all three holdings. Gold/chip holdings are maintained, while a partial reduction in the individual stock is preferred only after its actual sellable date; action is not mislabeled as price direction.",
+    "Each holding compares adding, holding, reducing or exiting with contrary factors and reassessment conditions. Synthetic purchase prices above last close are not attributed to an overnight market loss.",
+    "The report correctly distinguishes total-account weights from securities-only concentration and respects gold T+0 versus the two new T+1 positions becoming sellable on 2026-11-06.",
+    "Uses exact ranges for 29,20,5 return intervals and distinguishes moving-average sample windows. Nine market-indicator outputs and36 arithmetic outputs recompute successfully.",
+    "Quarter report figures and governance facts are supported by the filing child visible excerpt and original saved pages. Manager explicitly says it did not reread the PDF; this review does not relabel child access as manager direct access.",
+    "All nine forecasts are explicitly exploratory abstentions with distinct reasons; no formal record or natural effectiveness claim is created."
+  ],
+  "calculations": [
+    {
+      "event_seq": 22,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "85484.90",
+        "97400.70"
+      ],
+      "result": "87.76620701904606435066688432",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 24,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "11915.80",
+        "97400.70"
+      ],
+      "result": "12.23379298095393564933311568",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 26,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "8190.00",
+        "97400.70"
+      ],
+      "result": "8.408563798822801068164807850",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 28,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "1645.80",
+        "97400.70"
+      ],
+      "result": "1.689720915763439071793118530",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 30,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "2080.00",
+        "97400.70"
+      ],
+      "result": "2.135508266367695509375189295",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 36,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6ae0f265221b4ae98fe0c3326cb73550",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "-7.591240875912408759124087590",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "8.34295",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 38,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6206c73c4fc14472a160cc9ef5ea59f5",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "6.779661016949152542372881400",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "7.72",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 40,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "d9ef441a6184486da45eb3b33b076e3b",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-09-16",
+        "end": "2026-11-04",
+        "return_intervals": 29
+      },
+      "close_points": 30,
+      "return_percent": "-23.04846466888642249352571217",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "2.19485",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 42,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1477619199.45",
+        "1093814390.25"
+      ],
+      "result": "383804809.20",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 44,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "50865243.13",
+        "40722436.58"
+      ],
+      "result": "10142806.55",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 46,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1508466388.58",
+        "987505268.62"
+      ],
+      "result": "520961119.96",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 48,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "42703059.13",
+        "23620104.89"
+      ],
+      "result": "19082954.24",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 50,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "41307850.58",
+        "33828156.75"
+      ],
+      "result": "7479693.83",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 95,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "383804809.20",
+        "520961119.96"
+      ],
+      "result": "73.67244780751948996174758607",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 97,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "10142806.55",
+        "19082954.24"
+      ],
+      "result": "53.15113384666377526250359022",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 99,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "7.989"
+      ],
+      "result": "1.030041306796845662786331205",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 101,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.19",
+        "7.68"
+      ],
+      "result": "1.06640625",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 103,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "2.080",
+        "1.891"
+      ],
+      "result": "1.099947117927022739291380222",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 105,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "8.226"
+      ],
+      "result": "1.000364697301239970824215901",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 107,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.19",
+        "8.18"
+      ],
+      "result": "1.001222493887530562347188264",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 109,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "2.080",
+        "2.148"
+      ],
+      "result": "0.9683426443202979515828677840",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 111,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "50865243.13",
+        "1477619199.45"
+      ],
+      "result": "3.442378330555875344476933867",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 208,
+      "agent_id": "research-5d9d34697ea6",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "0.0204",
+        "8.2086"
+      ],
+      "result": "0.2485198450405672099992690593",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 210,
+      "agent_id": "research-5d9d34697ea6",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "0.189",
+        "1.891"
+      ],
+      "result": "9.994711792702273929138022210",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 243,
+      "agent_id": "research-f11bb04eafdf",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1477619199.45",
+        "1093814390.25"
+      ],
+      "result": "383804809.20",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 245,
+      "agent_id": "research-f11bb04eafdf",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1093814390.25",
+        "547112843.14"
+      ],
+      "result": "546701547.11",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 247,
+      "agent_id": "research-f11bb04eafdf",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "40722436.58",
+        "30241248.36"
+      ],
+      "result": "10481188.22",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 339,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "7.989"
+      ],
+      "result": "1.030041306796845662786331205",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 341,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.229",
+        "8.34295"
+      ],
+      "result": "0.9863417616071054003679753564",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 343,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "8.19",
+        "7.72"
+      ],
+      "result": "1.060880829015544041450777202",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 345,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "divide",
+      "inputs": [
+        "2.08",
+        "2.19485"
+      ],
+      "result": "0.9476729617058113310704603959",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 366,
+      "agent_id": "research-5d9d34697ea6",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "0.189",
+        "1.891"
+      ],
+      "result": "9.994711792702273929138022210",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 368,
+      "agent_id": "research-5d9d34697ea6",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "8.229",
+        "8.457"
+      ],
+      "result": "-0.228",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 372,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "50865243.13",
+        "41307850.58"
+      ],
+      "result": "9557392.55",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 374,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "40722436.58",
+        "30241248.36"
+      ],
+      "result": "10481188.22",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 376,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "subtract",
+      "inputs": [
+        "1093814390.25",
+        "547112843.14"
+      ],
+      "result": "546701547.11",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 378,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "10142806.55",
+        "19082954.24"
+      ],
+      "result": "53.15113384666377526250359022",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 380,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "383804809.20",
+        "520961119.96"
+      ],
+      "result": "73.67244780751948996174758607",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 382,
+      "agent_id": "manager",
+      "tool": "calculate",
+      "operation": "percent",
+      "inputs": [
+        "10142806.55",
+        "383804809.20"
+      ],
+      "result": "2.642699181164924287769972008",
+      "classification": "calculation",
+      "recomputed": true
+    },
+    {
+      "event_seq": 384,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6ae0f265221b4ae98fe0c3326cb73550",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "-4.679717363604772385034171200",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "8.34295",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 386,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6206c73c4fc14472a160cc9ef5ea59f5",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "14.38547486033519553072625700",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "7.72",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 388,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "d9ef441a6184486da45eb3b33b076e3b",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-09-30",
+        "end": "2026-11-04",
+        "return_intervals": 20
+      },
+      "close_points": 21,
+      "return_percent": "-18.62284820031298904538341158",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-08",
+        "end": "2026-11-04",
+        "window": 20
+      },
+      "moving_average": "2.19485",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 390,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6ae0f265221b4ae98fe0c3326cb73550",
+      "symbol": "SH:518880",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "0.036469730123997082421590100",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "8.0996",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 392,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "6206c73c4fc14472a160cc9ef5ea59f5",
+      "symbol": "SZ:002354",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "0.122249388753056234718826400",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "7.93",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    },
+    {
+      "event_seq": 394,
+      "agent_id": "manager",
+      "tool": "market_indicators",
+      "material_id": "d9ef441a6184486da45eb3b33b076e3b",
+      "symbol": "SZ:159599",
+      "return_period": {
+        "start": "2026-10-28",
+        "end": "2026-11-04",
+        "return_intervals": 5
+      },
+      "close_points": 6,
+      "return_percent": "-3.165735567970204841713221600",
+      "return_matches": true,
+      "intervals_match": true,
+      "moving_average_period": {
+        "start": "2026-10-29",
+        "end": "2026-11-04",
+        "window": 5
+      },
+      "moving_average": "1.9916",
+      "moving_average_matches": true,
+      "adjustment": "none",
+      "source_truncated": false
+    }
+  ],
+  "source_checks": {
+    "quarterly_original_material_id": "8f07e78b545442dcb6eb0e0b9251a4bb",
+    "quarterly_original_url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF",
+    "quarterly_original_pages_checked": [
+      2,
+      3,
+      4,
+      5,
+      7,
+      8
+    ],
+    "child_visible_proof": {
+      "event_seq": 360,
+      "agent_id": "research-f11bb04eafdf",
+      "record_id": "context-98",
+      "underlying_bounded_record_id": "context-75",
+      "visible_excerpt_characters": 8000,
+      "sha256": "cf0bd9ccce9612ea5986b77d51226c8fabdb34529fe2043b5e72b628d5f058a1",
+      "numeric_and_named_claims_found": [
+        "383,804,809.20",
+        "10,142,806.55",
+        "7,479,693.83",
+        "327,140,440.92",
+        "500,967,184.56",
+        "2,263,314,012.06",
+        "9,557,392.55",
+        "5,870,355",
+        "40,000,000",
+        "王玉辉",
+        "丁杰",
+        "朱晔"
+      ],
+      "boundary": "This is the child actual bounded visible excerpt restored through recall_context, not a claim that the unabridged archive was delivered. Its read result did not receive a full direct-source receipt because it was bounded."
+    },
+    "chip_quarter_source": {
+      "delivery_id": 397,
+      "material_id": "b7b00c3595564adeb5347533210c5094",
+      "reader": "research-0ae9678e16b3",
+      "pages": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "confirmed_values": [
+        "1895685739.04",
+        "2.5537",
+        "-37.09%"
+      ]
+    },
+    "chip_index_source": {
+      "delivery_id": 187,
+      "material_id": "d0a00407bd7c4c2f8176357562227165",
+      "reader": "research-0ae9678e16b3",
+      "pages": [
+        1,
+        2
+      ],
+      "confirmed_code": "H30007"
+    },
+    "fees_boundary": "ETF fee statements are attributed to the child report. This review did not independently re-fetch and validate every fee-source version or later fee change; it does not certify current executable charges."
+  },
+  "child_reports": [
+    {
+      "report_id": "c141c231adb74fb486d9298b21a8717d",
+      "source_agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "access": "full_report",
+      "summary_truncated": false,
+      "report_hash": "eea603bb6f6d733f2c36619560f6dc1cac13ecc28d5bcec44e18cdf8e8ccea76"
+    },
+    {
+      "report_id": "f1d42690c1114bfa80f3b69a439e7ce1",
+      "source_agent_id": "research-0ae9678e16b3",
+      "role_id": "etf_researcher",
+      "access": "full_report",
+      "summary_truncated": false,
+      "report_hash": "08e6b973f139ae17e691a8d35e7917e8fd75bc68a5dbd4338a6b299ce3200f92"
+    },
+    {
+      "report_id": "38eb5c1fac32481e85a86c1a13c105a4",
+      "source_agent_id": "research-5d9d34697ea6",
+      "role_id": "industry_researcher",
+      "access": "full_report",
+      "summary_truncated": false,
+      "report_hash": "73785c7c083a95b25993812414bbef7e58212377b085aa4a182f324b2ba1d547"
+    }
+  ],
+  "transmission": {
+    "http_attempts": 39,
+    "completed_with_eof": 39,
+    "routes": {
+      "direct": 39
+    },
+    "failures": [],
+    "unknown_failure_replayed": false,
+    "fee_amount": null,
+    "fee_source": "No independent supplier billing correlation performed"
+  },
+  "forecast_records": [
+    {
+      "id": "65e85c3ccd7e44438e47b50ca1970cb5",
+      "symbol": "SH:518880",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "246e95bf21cb48babcb7476e6c648c5d",
+      "symbol": "SH:518880",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "c71a8c8333c94549a79f756880132bed",
+      "symbol": "SH:518880",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "e900c04703384ad082904cdf6f158796",
+      "symbol": "SZ:002354",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "bc9ae5b84a3c40b4b031f1012615b0d2",
+      "symbol": "SZ:002354",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "80f0af9eb2da44018e09afbe48300ebd",
+      "symbol": "SZ:002354",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-12-02"
+    },
+    {
+      "id": "6d48eafe7e574ef38b3f4b03f0edfbb9",
+      "symbol": "SZ:159599",
+      "horizon": 1,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-05"
+    },
+    {
+      "id": "5a1a917b7eff4623a4a6b47ab86cf694",
+      "symbol": "SZ:159599",
+      "horizon": 5,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-11-11"
+    },
+    {
+      "id": "d70b7946537d439ebdea44a975611dcd",
+      "symbol": "SZ:159599",
+      "horizon": 20,
+      "direction": "abstain",
+      "kind": "exploratory",
+      "published_at": "2026-11-05T00:31:12.417882+08:00",
+      "target_date": "2026-12-02"
+    }
+  ],
+  "forecast_counts": {
+    "abstain": 9
+  },
+  "formal_count": 0,
+  "natural_maturity": "not_yet_observed; no accuracy claim",
+  "non_blocking_observations": [
+    "Prose judgment time00:23:33 precedes actual publication00:31:12; persisted published_at remains authoritative.",
+    "ETF fee-source freshness is limited and not independently certified by this review; no trade was executed from these recommendations.",
+    "Several arithmetic inputs are explicitly not reused when their visible context was insufficient; this limits coverage without fabricating certainty."
+  ],
+  "route_comparison_boundary": "This is a distinct normal-start direct execution, not an exact-payload randomized replay. Its39 complete requests do not locate every historical disconnect cause.",
+  "review_boundary": "Accepts this limited account report as useful and supported within stated source coverage; does not certify all external claims, predicted returns or production fact admission. Application not_evaluated is unchanged."
+}

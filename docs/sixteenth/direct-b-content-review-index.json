@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "kind": "direct_B_review_index",
+  "reviewed_at": "2026-11-05T01:13:00.518844+08:00",
+  "run_directory": "data/evaluations/sixteenth-normal-direct-v1",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "route": "direct",
+  "run_finished_at_at_review": "2026-11-05T01:11:08.350061+08:00",
+  "scope": "Only the three explicitly bound B stages; no whole-run or later-task success claim.",
+  "stages": [
+    {
+      "stage": "initial_cash",
+      "review_json": "docs/sixteenth/direct-b-cash-content-review.json",
+      "review_markdown": "docs/sixteenth/direct-b-cash-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "input_version": 2,
+        "job_id": "02c50aa02d0f4eaab9510f116c1489af",
+        "report_id": "e9cecf33d4b9446f8dc3f37d874e1443",
+        "created_at": "2026-11-05T00:52:27.870817+08:00",
+        "report_characters": 2734,
+        "report_utf8_sha256": "26f259b9301c4ee2b57a11aaa7b372168c15ba3a8dfc6da07da47012a5763af6",
+        "stored_result_utf8_sha256": "3e32c8faa2ac6bc3fd536635954b1e77629da5658110459b1f3d651c04239934"
+      },
+      "accepted": true,
+      "decision": "accepted_limited_account_answer_with_liquidity_and_price_label_qualifications",
+      "usage": {
+        "http_attempts": 11,
+        "completed_and_eof": 11,
+        "error_attempts": 0,
+        "all_recorded_routes_direct": true,
+        "provider_reported_totals": {
+          "input_tokens": 383341,
+          "output_tokens": 41778,
+          "total_tokens": 425119,
+          "cost_in_usd_ticks": 3245623600,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 7
+        },
+        "actual_money_cost": "unknown; no independently matched invoice, raw ticks not converted"
+      },
+      "event_coverage": null,
+      "forecast_coverage": {
+        "expected": 3,
+        "direction_published": 0,
+        "abstained": 3,
+        "uncovered": 0,
+        "waiting_data": 0,
+        "missed": 0,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "public_materials",
+      "review_json": "docs/sixteenth/direct-b-public-materials-content-review.json",
+      "review_markdown": "docs/sixteenth/direct-b-public-materials-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "input_version": 2,
+        "job_id": "efe944bad89e48f5ae35a3da20ddf951",
+        "report_id": "ca5bb5d28aa64a42800b3f016157e668",
+        "created_at": "2026-11-05T01:02:54.562108+08:00",
+        "report_characters": 2568,
+        "report_utf8_sha256": "48c2fd1d6d6e5ad25a805e0ff49a9f50d001506660e8b9673e8e40eb9613a788",
+        "stored_result_utf8_sha256": "1b315625b8ec9eee9e1eb6b853d68d40b1bec2eb53cbc37185d423b7ed76c0ee"
+      },
+      "accepted": true,
+      "decision": "limited_content_accepted_event_demand_coverage_partial",
+      "usage": {
+        "http_attempts": 11,
+        "completed_and_eof": 11,
+        "error_attempts": 0,
+        "all_recorded_routes_direct": true,
+        "provider_reported_totals": {
+          "input_tokens": 538197,
+          "output_tokens": 47235,
+          "total_tokens": 585432,
+          "cost_in_usd_ticks": 3551292000,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 3
+        },
+        "actual_money_cost": "unknown; no independently matched invoice"
+      },
+      "event_coverage": {
+        "expected": 4,
+        "completed": 2,
+        "uncovered": 2,
+        "unaccepted_claims": [
+          4222,
+          4762
+        ],
+        "items": [
+          {
+            "id": 4222,
+            "state": "uncovered"
+          },
+          {
+            "id": 4229,
+            "state": "completed"
+          },
+          {
+            "id": 4762,
+            "state": "uncovered"
+          },
+          {
+            "id": 4769,
+            "state": "completed"
+          }
+        ]
+      },
+      "forecast_coverage": {
+        "expected": 3,
+        "direction_published": 0,
+        "abstained": 3,
+        "uncovered": 0,
+        "waiting_data": 0,
+        "missed": 0,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "configuration_changed",
+      "review_json": "docs/sixteenth/direct-b-configuration-content-review.json",
+      "review_markdown": "docs/sixteenth/direct-b-configuration-content-review.md",
+      "binding": {
+        "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+        "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+        "account_id": "08b7c5c7f2524e67aa8232d3e0607581",
+        "input_version": 2,
+        "job_id": "a9caca3257d6490f9780d0488b179385",
+        "job_reason": "configuration_changed",
+        "started_at": "2026-11-05T01:03:25.089874+08:00",
+        "completed_at": "2026-11-05T01:05:31.935429+08:00",
+        "job_state": "failed",
+        "report_id": null,
+        "report_utf8_sha256": null,
+        "job_result_utf8_sha256": "5fafd8bb4c210f70901234a491830bf6b2dd5d48e432245100942598ce9bd804"
+      },
+      "accepted": null,
+      "decision": "not_evaluated_no_report_after_unknown_transport_failure",
+      "usage": {
+        "http_attempts": 7,
+        "completed_and_eof": 6,
+        "error_attempts": 1,
+        "all_recorded_routes_direct": true,
+        "known_reported_totals": {
+          "input_tokens": 257908,
+          "output_tokens": 7301,
+          "total_tokens": 265209,
+          "cost_in_usd_ticks": 1297690800,
+          "num_sources_used": 0,
+          "num_server_side_tools_used": 2
+        },
+        "failed_attempt_usage_known": false,
+        "actual_money_cost": "unknown; missing failed usage and independent invoice, successful subset is not total billing"
+      },
+      "event_coverage": null,
+      "forecast_coverage": null
+    }
+  ],
+  "B_totals": {
+    "observed_stages": 3,
+    "published_reports": 2,
+    "content_minimum_accepted_reports": 2,
+    "content_not_evaluated_stages": 1,
+    "http_attempts": 29,
+    "completed_and_eof": 28,
+    "unknown_transport_failures": 1,
+    "exploratory_abstentions": 6,
+    "formal_forecasts": 0,
+    "directional_forecasts": 0,
+    "actual_money_cost": "unknown"
+  },
+  "remaining_boundaries": [
+    "Public B demand coverage2/4 under conservative security-scope policy; not all demand coverage accepted.",
+    "B configuration has no report after direct ReadError; checkpoint is not substituted.",
+    "Initial/public liquidity claims require capacity-only qualification; initial0.786 low is a closing reference.",
+    "Final raw material payload not persisted; receipts do not prove final full-file input.",
+    "Direct bounded workaround validation is not identical-payload comparison or provider availability guarantee.",
+    "No disconnect initiator inferred solely from HTTP error; root transport investigation is separate.",
+    "All environment reports and failures remain preserved."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "capture_file": "data/evaluations/sixteenth-normal-matrix-v1/connection-timeline-flags.txt",
+  "capture_sha256": "6ddad31730e30313b9ac959a427b7e3d792a5b9f983492f751a3bb589dbfbaa2",
+  "scope": "TCP headers only on lo0, project PID47336 source ports49550/49551 to127.0.0.1:7890; no packet payload/credentials; capture stopped after target closure",
+  "job_id": "bb3bbd42e2954c56aba6ebc34307aed5",
+  "event_seq": 2043,
+  "agent_id": "manager",
+  "started_at": "2026-11-04T16:12:41.583394+00:00",
+  "finished_at": "2026-11-04T16:15:35.123992+00:00",
+  "response_id": "81772b4d-2aa9-90f0-b15e-1223e6b8ee44",
+  "duration_ms": 173541.65,
+  "last_decoded_body_ms": 123620.36,
+  "body_idle_at_error_ms": 49921.29,
+  "application_cancellation": null,
+  "stream_close_reason": "transport_error_before_terminal",
+  "first_tcp_fin": {
+    "from": "127.0.0.1:7890",
+    "to": "127.0.0.1:49550",
+    "at": "2026-11-05T00:15:35.120369+08:00"
+  },
+  "application_tcp_fin_at": "2026-11-05T00:15:35.122944+08:00",
+  "application_fin_delay_ms": 2.575,
+  "last_proxy_payload_at": "2026-11-05T00:14:45.202233+08:00",
+  "last_proxy_payload_to_first_fin_seconds": 49.918136,
+  "tcp_keepalives_answered_during_gap": true,
+  "selected_header_lines": [
+    "2026-11-05 00:14:45.202233 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [P.], seq 458399:458434, ack 161633, win 11653, options [nop,nop,TS val 2254904799 ecr 2312610331], length 35",
+    "2026-11-05 00:15:00.206938 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [.], ack 161633, win 11652, length 0",
+    "2026-11-05 00:15:15.209684 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [.], ack 161633, win 11652, length 0",
+    "2026-11-05 00:15:30.299949 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [.], ack 161633, win 11652, length 0",
+    "2026-11-05 00:15:35.120369 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [F.], seq 458434, ack 161633, win 11653, options [nop,nop,TS val 2254954717 ecr 2312657210], length 0",
+    "2026-11-05 00:15:35.120410 IP 127.0.0.1.49550 > 127.0.0.1.7890: Flags [.], ack 458435, win 6369, options [nop,nop,TS val 2312662030 ecr 2254954717], length 0",
+    "2026-11-05 00:15:35.122944 IP 127.0.0.1.49550 > 127.0.0.1.7890: Flags [F.], seq 161633, ack 458435, win 6369, options [nop,nop,TS val 2312662033 ecr 2254954717], length 0",
+    "2026-11-05 00:15:35.123006 IP 127.0.0.1.7890 > 127.0.0.1.49550: Flags [.], ack 161634, win 11653, options [nop,nop,TS val 2254954720 ecr 2312662033], length 0"
+  ],
+  "finding": "For this one correlated failure, the proxy-facing TCP peer sent FIN before the Python application. This excludes application-first TCP cancellation for this sample. It does not locate whether the local proxy originated the close or relayed a close from its outbound chain. Earlier four failures have matching body-idle timing, but no historical packet direction evidence.",
+  "model_availability": "No model unavailability conclusion is inferred from the legacy upstream_transport_error classification."
+}

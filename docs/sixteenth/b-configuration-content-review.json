@@ -1,0 +1,895 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_development_content_review",
+  "reviewer": "Codex delegated prediction_semantics",
+  "reviewed_at": "2026-11-05T00:14:37.283702+08:00",
+  "human_signoff": false,
+  "model_self_evaluation": false,
+  "accepted": true,
+  "decision": "accepted_for_limited_account_answer_with_unit_error_and_index_rule_qualification",
+  "acceptance_scope": "Account-specific minimum only: action, reasons, counterevidence, conditions, arithmetic and current input state. Does not accept percentage-point wording, a continuous 5%/3% cap interpretation, or blanket source-reading certification.",
+  "binding": {
+    "database": "data/evaluations/sixteenth-normal-matrix-v1/evaluation.sqlite3",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+    "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+    "input_version": 2,
+    "job_id": "dc4fc2cb52794bc4b502d981649c5918",
+    "job_reason": "configuration_changed",
+    "report_id": "67d7c75da35641c884fffcc52f74664b",
+    "created_at": "2026-11-05T00:11:23.009677+08:00",
+    "report_characters": 2770,
+    "report_utf8_sha256": "309c484cd28b9180b22827a38ddccc59eeed9b2859b48bf31676b2d465f4ba7d",
+    "stored_result_utf8_sha256": "94b79768225d686ad55d19233e97c58d0b1a3b84e064f6b413584f3ca2500b8e"
+  },
+  "method": {
+    "database_access": "SQLite mode=ro; no Store constructor, model calls, or DB/application writes",
+    "original_body_changed": false,
+    "source_documents_refetched": false,
+    "final_http_payload_persisted": false,
+    "independent_calculation": "Decimal and sample standard deviation on persisted price input rows"
+  },
+  "configuration_evidence": {
+    "scheduled_research_enabled": false,
+    "model_name": "grok-4.7",
+    "reasoning_effort": "xhigh",
+    "model_network_route": "environment",
+    "model_network_revision": 0,
+    "max_model_calls": 40,
+    "max_output_tokens": null
+  },
+  "application_delivery": {
+    "status": "limited",
+    "contract_verified": true,
+    "content_assessment": "not_evaluated",
+    "scope": [
+      "SZ:159278"
+    ],
+    "decision_summary": "维持持币、暂不买入并继续观察SZ:159278。2026-11-04收盘0.938未站上0.949、也未跌破0.868；balanced账户不宜把10万现金全部或绝大部分投入单一机器人产业ETF。指数规则显示50只样本、单券权重上限5%或3%，减轻个股极端集中疑虑，但不改变主题集中和当前不宜追高的判断。1/5/20个交易日方向均弃权。",
+    "limitations": [
+      "季报前十持仓权重及权益、行业占比未在本轮可见正文中复核，相关关键词检索无命中；不影响现在不买，但限制对实际个股集中度的更新确认。",
+      "产品资料概要检索未出现管理费、托管费或运作费率，费用仍未知；不构成买入或永久排除。",
+      "已实现跟踪误差、与NAV或IOPV同时点的折溢价未知，不能评估实际跟踪质量和买卖价差。",
+      "2026年10月至11月初可核对的产业订单或官方政策未取得正文，只限制中期产业背景，不改变当前持币。",
+      "腾讯成交额为空、成交量单位未核实；流动性只采用东财成交额。报价fresh_for_triggers为false，不能当作可执行触发价。"
+    ],
+    "submission_outcome": "first_attempt",
+    "submission_corrections": 0
+  },
+  "checks": [
+    {
+      "name": "normal_configuration_event",
+      "status": "pass",
+      "evidence": "Actual configuration_changed task begins 2026-11-05 00:02:07; immutable config snapshot scheduled_research_enabled=false. B input_version=2 remains cash100000/no holdings. No manual model invocation by reviewer."
+    },
+    {
+      "name": "account_answer",
+      "status": "pass",
+      "evidence": "No-buy/watch answer compares full allocation, small satellite and permanent rejection; retains cash and recognizes balanced/unknown numeric limit; no transaction."
+    },
+    {
+      "name": "support_counterfactors_reassessment",
+      "status": "pass_with_index_condition_qualification",
+      "evidence": "Theme concentration, historical NAV declines and 5-period weakness oppose moving-average and relative-return strength; concrete 0.949/0.868/rolling MA20 and turnover conditions. Direct comparison of fund weights with index adjustment caps needs qualification below."
+    },
+    {
+      "name": "cross_midnight_dates",
+      "status": "pass",
+      "evidence": "Distinguishes Nov5 pre-open decision from Nov4 close, fresh_for_triggers=false, no Nov5 executed price. Exploratory batch baseline remains Nov4; targets Nov5, Nov11, Dec2."
+    },
+    {
+      "name": "period_values",
+      "status": "pass",
+      "evidence": "5/10/20 returns, date-aligned relative returns, moving averages and 4.3416% unannualized five-return sample volatility independently match."
+    },
+    {
+      "name": "percentage_unit",
+      "status": "fail_nonblocking",
+      "evidence": "Repeated 7.30 percentage-points wording for price/MA20 ratio should be 7.30 percent. Underlying 0.938/0.87415 ratio is correct."
+    },
+    {
+      "name": "fund_primary_facts",
+      "status": "pass",
+      "evidence": "Q3 pages13-14 support opening shares1304545853 + subscriptions2149000000 - redemptions1490000000 = ending1963545853; no single-investor>=20% and no manager proprietary investment are qualified as report statements."
+    },
+    {
+      "name": "index_rule_interpretation",
+      "status": "needs_qualification_not_accepted_as_continuous_cap",
+      "evidence": "Source section7 applies weight adjustment factors twice yearly, generally fixed before next adjustment. 5%/3% are adjustment-rule caps, not guaranteed continuous fund holding ceilings. Prose omits adjustment timing and would cancel a satellite candidate if later fund weights exceed the index caps. That may be a discretionary stricter risk condition, but must not be treated as evidence of rule breach or automatically extreme concentration. Saved Q3 5.36%/5.18% illustrates the incompatible dates/objects; report does not explicitly assert a legal/compliance breach."
+    },
+    {
+      "name": "read_scope",
+      "status": "partially_verified",
+      "evidence": "Index full extracted text is1256 chars; receipts1123 and1178 read all4 pages. Other PDF receipts include broader ranges than final adopted statements. Final projection omits/truncates23/41 outputs; full final request not persisted, so no blanket claim all acquired pages reached final prompt."
+    },
+    {
+      "name": "isolation",
+      "status": "pass_with_observation_boundary",
+      "evidence": "25 material receipts all B/public, no child report delivery, shared_research_used empty. No A private report delivery observed."
+    },
+    {
+      "name": "transport_contract_publication",
+      "status": "pass",
+      "evidence": "11/11 model attempts completed+HTTP EOF, no error, first final submission, zero corrections; limited report persisted, application not_evaluated unchanged."
+    }
+  ],
+  "period_calculations": [
+    {
+      "return_intervals": 5,
+      "return_points": 6,
+      "return_start": "2026-10-28",
+      "return_end": "2026-11-04",
+      "return_pct": "-1.159114857744994731296101160",
+      "relative_return_percentage_points": "-1.586895369857280381916713460",
+      "moving_average_points": 5,
+      "moving_average_start": "2026-10-29",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.9058"
+    },
+    {
+      "return_intervals": 10,
+      "return_points": 11,
+      "return_start": "2026-10-21",
+      "return_end": "2026-11-04",
+      "return_pct": "8.943089430894308943089430900",
+      "relative_return_percentage_points": "9.200632725648840270227781990",
+      "moving_average_points": 10,
+      "moving_average_start": "2026-10-22",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.910"
+    },
+    {
+      "return_intervals": 20,
+      "return_points": 21,
+      "return_start": "2026-09-30",
+      "return_end": "2026-11-04",
+      "return_pct": "4.454342984409799554565701600",
+      "relative_return_percentage_points": "10.33553501125013900591758634",
+      "moving_average_points": 20,
+      "moving_average_start": "2026-10-08",
+      "moving_average_end": "2026-11-04",
+      "moving_average": "0.87415"
+    }
+  ],
+  "five_return_sample_daily_volatility_pct": "4.341611190631384",
+  "price_over_ma20_percent": "7.304238403020076645884573600",
+  "share_reconciliation": {
+    "opening": "1304545853",
+    "subscriptions": "2149000000",
+    "redemptions": "1490000000",
+    "closing": "1963545853"
+  },
+  "sources": {
+    "price_material_id": "e4661dda34434a86b9d9565586560a2f",
+    "benchmark_material_id": "a07f7719f05b4c959b47553e710e3580",
+    "q3_pages_12_to_15_material_id": "72e425e3d4e94f2d88f9972730d4f761",
+    "q3_pages_12_to_15_receipt_id": 1147,
+    "q3_pages_5_to_11_material_id": "1226033fcd674a778f24388555028ed5",
+    "index_material_id": "19148056833943468519114f3e02e587",
+    "index_document_sha256": "80612032de2b9c30a103cd9302a739ce86cbd7e0cec8000f2d3a58f693c68f89",
+    "product_cover_id": "2c43f98daa2941aeb31b22be53a900c4",
+    "multiword_fee_query_id": "6d01891b772b40b392944305a7dc7379",
+    "fee_search_note": "Literal multiword query has no matches; does not mean rates absent. Earlier B event single-term primary search found rates; current report keeps fees unknown rather than alleging zero fees or no disclosure. Knowledge retention remains limited."
+  },
+  "visibility": {
+    "material_delivery_rows": 25,
+    "material_receipts": [
+      {
+        "id": 1120,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "history",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-16",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": false,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 30,
+          "next_offset": 30,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "1f77c114c644a4aa8fcf055d64251f8b71845273525f1f6f8bb8c09fc97d05aa"
+      },
+      {
+        "id": 1121,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "a07f7719f05b4c959b47553e710e3580",
+        "tool": "benchmark_history",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-21",
+            "end": "2026-11-04"
+          },
+          "truncated": true,
+          "source_truncated": false,
+          "requested_range": {
+            "start": null,
+            "end": null
+          },
+          "row_count": 27,
+          "next_offset": 27,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "f6b65e2c5efea7008a62b65216eced31cac70aa147ba770353621251f33b19ed"
+      },
+      {
+        "id": 1122,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "fc61ba6fdd334b3ca2d911660d11b38a",
+        "tool": "get_material",
+        "scope": "public",
+        "delivered_range": {
+          "start": 0,
+          "end": 4000,
+          "total_chars": 9364,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 11
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 11
+          }
+        },
+        "visible_result_hash": "175c31e83ffcc0086467f13c4d0c7fc2c87c34d580614a84f0789d115002f03d"
+      },
+      {
+        "id": 1123,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "19148056833943468519114f3e02e587",
+        "tool": "get_material",
+        "scope": "public",
+        "delivered_range": {
+          "start": 0,
+          "end": 1256,
+          "total_chars": 1256,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 4
+          }
+        },
+        "visible_result_hash": "64aad787bd1b4bf7cbe1fee9a5df5b51404a42e01463b5705604b90d9ac9019c"
+      },
+      {
+        "id": 1128,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "fc61ba6fdd334b3ca2d911660d11b38a",
+        "tool": "read_material_range",
+        "scope": "public",
+        "delivered_range": {
+          "start": 4000,
+          "end": 9364,
+          "total_chars": 9364,
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 11
+          },
+          "truncated": true,
+          "source_truncated": true,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 11
+          }
+        },
+        "visible_result_hash": "b997a1a35fb0a0913e27a5f868f1566265e0acddee3122efc89cd131abd3d96f"
+      },
+      {
+        "id": 1129,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-28",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-10-28",
+            "end": "2026-11-04"
+          },
+          "row_count": 6,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "92185ddf211ccc78be75dcd80024ddb5a248634701ef6f8235ee82d556d8efb3"
+      },
+      {
+        "id": 1130,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "a07f7719f05b4c959b47553e710e3580",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-28",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-10-28",
+            "end": "2026-11-04"
+          },
+          "row_count": 6,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "757e0f8b277efe686334ea3b3c16ffdbf94748b5b2101b503e38661bcfa05f01"
+      },
+      {
+        "id": 1131,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-21",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-10-21",
+            "end": "2026-11-04"
+          },
+          "row_count": 11,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "64f53f0d8711e14a67c046a5f0f35dc1de44f7993e070bfff6fe0797d67618ed"
+      },
+      {
+        "id": 1132,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "a07f7719f05b4c959b47553e710e3580",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-21",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-10-21",
+            "end": "2026-11-04"
+          },
+          "row_count": 11,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "a410d85559b96358ce1c1c6e68c41473bf782aeab75ad87bf1341f1628bcf0fc"
+      },
+      {
+        "id": 1133,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-30",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-09-30",
+            "end": "2026-11-04"
+          },
+          "row_count": 21,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "dcb4fee3e31ae5d09e4aa8ab45e597654f433db74459c13901054eedce7698de"
+      },
+      {
+        "id": 1134,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "a07f7719f05b4c959b47553e710e3580",
+        "tool": "market_indicators",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-09-30",
+            "end": "2026-11-04"
+          },
+          "requested_range": {
+            "start": "2026-09-30",
+            "end": "2026-11-04"
+          },
+          "row_count": 21,
+          "order": "asc",
+          "fields": [
+            "time",
+            "close"
+          ]
+        },
+        "visible_result_hash": "e25a7cf31399e0dd24c4da543accccfc84ab34c49c8aebdcfa25b6a40b9c5381"
+      },
+      {
+        "id": 1135,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "458e989e5c6940adb6703b41e70b5553",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-11-04",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-11-04",
+            "end": "2026-11-04"
+          },
+          "row_count": 1,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "d685780d1e1f06da7cf8f3ada3c5f2f116b9ecf11ca8faab314983881d85151c"
+      },
+      {
+        "id": 1147,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "72e425e3d4e94f2d88f9972730d4f761",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 12,
+            "end_page": 15
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 12,
+            "end_page": 15
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "93e4cf524c37d5a0b6e305d2ab38f3766db2f18ce5e2582a962dc315cdc88fa2"
+      },
+      {
+        "id": 1157,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "1226033fcd674a778f24388555028ed5",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 5,
+            "end_page": 11
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 5,
+            "end_page": 11
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "6eac97392d4616cc67d55cca9e0fa9e89310af4124ebf5c8622b73236c9088ac"
+      },
+      {
+        "id": 1158,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-20",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-20",
+            "end": "2026-11-04"
+          },
+          "row_count": 12,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "1b5ef109068f614fdb46ebf5039bfdc2a895f9c74482725d2bb5502c55ff5ce8"
+      },
+      {
+        "id": 1159,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "b3dbb02339fc4992915a72e0b651bb47",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-20",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-20",
+            "end": "2026-11-04"
+          },
+          "row_count": 12,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "f645ccd3d722b67ea495446c93cb46bab0f14265ab47280dc447f80fc15c3bc6"
+      },
+      {
+        "id": 1160,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "82b2e7977bc14d069f06e082afdd152c",
+        "tool": "get_material",
+        "scope": "public",
+        "delivered_range": {
+          "start": 0,
+          "end": 915,
+          "total_chars": 915,
+          "truncated": false,
+          "source_truncated": false
+        },
+        "visible_result_hash": "79065e25b650f1fb319013c0fa0385f2b7febdf8d3994eefc511ff59e9b8f628"
+      },
+      {
+        "id": 1162,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "b0eb960fbef54c828322b8f6368935a8",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "9967a22bfeefdf139c4dd4902524eb7a1dd0787263a94037880f8ba964552552"
+      },
+      {
+        "id": 1163,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e90af0d7a5404693bab64fe42db8217b",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "a84bd36e7f69fb7e6e281c7781fef539deb3cdb56bb8287e89a6ce05f0f2b12a"
+      },
+      {
+        "id": 1164,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "3fbf8ec2024e4498bc8cdfc225df6959",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "dcba8286f1a3f28103d2ef6c0e947232a2871d338407659fb5fddc15bec94be6"
+      },
+      {
+        "id": 1165,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "7baa8f2f28364248922575f61bfbd6b5",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "058ad762a2e4d21c55bc1670cb7f3dd23d24c5b1783618f766c322f5ec0b5453"
+      },
+      {
+        "id": 1166,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "8894e2b1dd3740bfa016e30969c93699",
+        "tool": "native_search",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": 0,
+            "end": 0,
+            "unit": "character",
+            "basis": "merged_visible_search_text"
+          },
+          "truncated": false
+        },
+        "visible_result_hash": "74c791eaabe7ef49ad35076f6bac3553d59dddeb0d7ca1bd2b6d261e4aefb54b"
+      },
+      {
+        "id": 1167,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "2c43f98daa2941aeb31b22be53a900c4",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 2
+          },
+          "truncated": true,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 2
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "c55e156ea8afa5039c0472fd374be9bd6699da6edb8992ad7b264cf0d0593f29"
+      },
+      {
+        "id": 1178,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "19148056833943468519114f3e02e587",
+        "tool": "read",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "truncated": false,
+          "requested_range": {
+            "start_page": 1,
+            "end_page": 4
+          },
+          "next_offset": null
+        },
+        "visible_result_hash": "a7437b321009ee9db613c2f737c7b6d4b42648da5d8596c40acce791c4d75667"
+      },
+      {
+        "id": 1179,
+        "account_id": "97c4a5a4773346a6ad5a5eeb96c0d826",
+        "material_id": "e4661dda34434a86b9d9565586560a2f",
+        "tool": "query_market_rows",
+        "scope": "public",
+        "delivered_range": {
+          "returned_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "truncated": false,
+          "source_truncated": false,
+          "requested_range": {
+            "start": "2026-10-15",
+            "end": "2026-11-04"
+          },
+          "row_count": 15,
+          "next_offset": null,
+          "order": "desc",
+          "fields": [
+            "time",
+            "open",
+            "close",
+            "high",
+            "low",
+            "volume",
+            "amount"
+          ]
+        },
+        "visible_result_hash": "3710e1cc616890dd16c8e1c510cf7c47494c3ba39271bc79d64ae8e5ddb09480"
+      }
+    ],
+    "child_report_delivery_rows": 0,
+    "final_calculation_summaries": 8,
+    "synthesis_projection": {
+      "seq": 2008,
+      "reason": "bounded_final_request",
+      "before_chars": 139127,
+      "after_chars": 165417,
+      "visible_tool_outputs": 41,
+      "truncated_outputs": 23,
+      "archive_count": 110
+    },
+    "final_request_input_chars": 173620,
+    "final_request_input_items": 3
+  },
+  "usage": {
+    "http_attempts": 11,
+    "completed_and_eof": 11,
+    "error_attempts": 0,
+    "provider_reported_totals": {
+      "input_tokens": 564125,
+      "output_tokens": 49472,
+      "total_tokens": 613597,
+      "cost_in_usd_ticks": 3617749200,
+      "num_sources_used": 0,
+      "num_server_side_tools_used": 1
+    },
+    "actual_money_cost": "unknown; raw provider ticks not converted without independently matched invoice"
+  },
+  "forecast_batch": {
+    "id": "99d99a1d8ec6462fa24eb868458973d3",
+    "kind": "exploratory",
+    "base_date": "2026-11-04",
+    "deadline": "2026-11-06T00:02:07.076475+08:00",
+    "expected_count": 3,
+    "state": "published"
+  },
+  "forecast_rows": [
+    {
+      "id": "2578913a6a544695891f862d163e6747",
+      "batch_id": "99d99a1d8ec6462fa24eb868458973d3",
+      "kind": "exploratory",
+      "horizon": 1,
+      "target_date": "2026-11-05",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:11:23.010257+08:00",
+      "information_cutoff": "2026-11-05T00:11:23.010257+08:00"
+    },
+    {
+      "id": "e04d2296ac3b4264bf55f7fcf6bed873",
+      "batch_id": "99d99a1d8ec6462fa24eb868458973d3",
+      "kind": "exploratory",
+      "horizon": 5,
+      "target_date": "2026-11-11",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:11:23.010257+08:00",
+      "information_cutoff": "2026-11-05T00:11:23.010257+08:00"
+    },
+    {
+      "id": "7781a324346b4e4f9fb14b6ff63ff9c2",
+      "batch_id": "99d99a1d8ec6462fa24eb868458973d3",
+      "kind": "exploratory",
+      "horizon": 20,
+      "target_date": "2026-12-02",
+      "direction": "abstain",
+      "published_at": "2026-11-05T00:11:23.010257+08:00",
+      "information_cutoff": "2026-11-05T00:11:23.010257+08:00"
+    }
+  ],
+  "forecast_coverage": {
+    "expected": 3,
+    "direction_published": 0,
+    "abstained": 3,
+    "uncovered": 0,
+    "waiting_data": 0,
+    "missed": 0,
+    "failed": 0
+  },
+  "delivery_application": {
+    "suggestions": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "等待条件变化；定性条件由 Agent 复核",
+        "recommendation_id": "94fd8da48e424ce585510d3105b4b912"
+      }
+    ],
+    "suggestion_actions": [],
+    "forecasts": [
+      {
+        "index": 0,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 1,
+        "forecast_id": "2578913a6a544695891f862d163e6747"
+      },
+      {
+        "index": 1,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 5,
+        "forecast_id": "e04d2296ac3b4264bf55f7fcf6bed873"
+      },
+      {
+        "index": 2,
+        "security_id": "SZ:159278",
+        "status": "applied",
+        "reason": "已发布弃权",
+        "horizon": 20,
+        "forecast_id": "7781a324346b4e4f9fb14b6ff63ff9c2"
+      }
+    ]
+  },
+  "ledger_entries": [
+    {
+      "id": "028e553326034c2888138f4fd3fe9667",
+      "kind": "opening",
+      "account_version": 1
+    }
+  ],
+  "remaining_limits": [
+    "Unit error persists in unmodified original.",
+    "Do not apply index5%/3% as perpetual fund holding limits; rule timing and discretionary risk threshold must be distinguished.",
+    "Fees and some prior acquired holdings details are not reliably retained in final report; exact final raw material input not persisted.",
+    "All three entries exploratory abstentions, no formal generation and no directional accuracy sample.",
+    "This configuration report is separate from both earlier B reports and does not correct them retroactively."
+  ],
+  "prior_B_reviews": [
+    "docs/sixteenth/b-cash-content-review.json",
+    "docs/sixteenth/b-public-materials-content-review.json"
+  ]
+}

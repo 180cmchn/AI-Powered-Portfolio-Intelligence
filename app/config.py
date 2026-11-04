@@ -131,6 +131,8 @@ def model_config_summary(config: dict) -> dict:
     summary = {key: config.get(key) for key in ("model_protocol", "model_base_url", "model_name", "model_native_search")}
     summary.update({key: config.get(key) for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in config})
     summary['model_allow_no_key'] = config.get('model_allow_no_key', False)
+    summary['model_network_route'] = config.get('model_network_route', 'environment')
+    summary['model_network_revision'] = config.get('model_network_revision', 0)
     if 'model_responses_stream' in config:
         summary['model_responses_stream'] = config['model_responses_stream']
     summary["reasoning_effort"] = config.get("reasoning_effort", "medium")
@@ -146,6 +148,7 @@ def defaults() -> dict:
         "model_base_url": os.getenv("MODEL_BASE_URL", "https://api.openai.com/v1"),
         "model_name": os.getenv("MODEL_NAME", ""),
         "model_key_env": os.getenv("MODEL_KEY_ENV", "MODEL_API_KEY"),
+        "model_network_route": "environment", "model_network_revision": 0,
         "model_native_search": os.getenv("MODEL_NATIVE_SEARCH", "true").lower() not in {"0", "false", "off"},
         "reasoning_effort": os.getenv("REASONING_EFFORT", "medium"),
         "model_request_timeout_seconds": 90,

@@ -1,0 +1,91 @@
+{
+  "at": "2026-11-04T23:15:55.354058+08:00",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "model_destinations": [
+    {
+      "provider_id": "legacy-09a15ec53c70",
+      "revision": 1,
+      "host": "api.xxyapi.com",
+      "base_url": "https://api.xxyapi.com/v1",
+      "protocol": "responses"
+    }
+  ],
+  "source_access": "daily SQLite opened mode=ro; only model configuration and selected role overrides copied",
+  "copied_tables": [
+    "model_providers",
+    "provider_connections",
+    "provider_catalogs",
+    "agent_definitions"
+  ],
+  "not_copied": [
+    "accounts",
+    "holdings",
+    "ledger_entries",
+    "cash_entries",
+    "analyses",
+    "forecasts",
+    "materials"
+  ],
+  "synthetic_inputs": {
+    "A": {
+      "initial_cash": "100000",
+      "buys": [
+        {
+          "symbol": "SH:518880",
+          "quantity": "200",
+          "price": "10"
+        },
+        {
+          "symbol": "SZ:002354",
+          "quantity": "1000",
+          "price": "10"
+        },
+        {
+          "symbol": "SZ:159599",
+          "quantity": "1000",
+          "price": "2.5"
+        }
+      ],
+      "sell": {
+        "symbol": "SH:518880",
+        "quantity": "100",
+        "price": "10"
+      }
+    },
+    "B": {
+      "initial_cash": "100000",
+      "holdings": [],
+      "candidate": "SZ:159278"
+    }
+  },
+  "recipient_scope": "existing configured provider only; model API Key used only for ordinary authorized authentication, never written to this evidence",
+  "authorization": {
+    "request": "有关真实端到端验证或者需要使用真实配置的第三方供应商时，不限请求次数，完全授权使用项目中配置的第三方供应商",
+    "attachment": "/Users/chn/.codex/attachments/33485529-21ef-46bb-9560-8ea32a4b0c0a/pasted-text-1.txt",
+    "sections": "7.2 explicitly requests independent simulated A with 100000 initial cash and production buy/sell API; B 100000 cash plus 159278. 7.3 authorizes continuous bounded configured supplier execution without per-HTTP approval."
+  },
+  "limits": {
+    "per_task_http": 40,
+    "max_started_tasks_observation_guard": 12,
+    "wall_seconds": 14400,
+    "automatic_business_retry": false
+  },
+  "auto_review_rejection": {
+    "executed": false,
+    "model_http": 0,
+    "target_directory_exists": false,
+    "reason": "reviewer treated independent synthetic business inputs as unapproved sensitive disclosure; concrete authorized recipient and synthetic-only scope documented here"
+  },
+  "configuration_copy_implementation": "def configure(source, target, account_id):\n    store = Store(target, 'live')\n    with sqlite3.connect(source.resolve().as_uri() + '?mode=ro', uri=True) as origin, store.connect() as dest:\n        origin.row_factory = sqlite3.Row\n        if not origin.execute('SELECT 1 FROM accounts WHERE id=?', (account_id,)).fetchone():\n            raise ValueError('Reference account not present; no inferred model configuration')\n        raw = origin.execute(\"SELECT value FROM meta WHERE key='settings'\").fetchone()\n        cfg = {**defaults(), **migrate_timeout_policy(json.loads(raw[0]) if raw else {})}\n        cfg.update(scheduled_research_enabled=False, market_refresh_enabled=False,\n            forecast_evaluation_enabled=False, news_queries=[], debounce_seconds=600, max_job_attempts=1)\n        for table in ('model_providers', 'provider_connections', 'provider_catalogs', 'agent_definitions'):\n            dest.execute('DELETE FROM ' + table)\n            for row in origin.execute('SELECT * FROM ' + table):\n                dest.execute('INSERT INTO ' + table + ' VALUES(' + ','.join('?' for _ in row) + ')', tuple(row))\n        overrides = {r['role_id']: json.loads(r['body']) for r in origin.execute(\n            'SELECT role_id,body FROM account_agent_overrides WHERE account_id=?', (account_id,))}\n        for row in dest.execute('SELECT role_id,body FROM agent_definitions').fetchall():\n            body = json.loads(row['body'])\n            body['default_binding'].update(overrides.get(row['role_id'], {}))\n            dest.execute('UPDATE agent_definitions SET body=? WHERE role_id=?',\n                (json.dumps(body, ensure_ascii=False), row['role_id']))\n    store.set_meta('settings', cfg)\n    return store, cfg",
+  "after_scope_verification": {
+    "at": "2026-11-04T23:17:14.818845+08:00",
+    "same_command_approved": true,
+    "execution_directory": "data/evaluations/sixteenth-normal-matrix-v1",
+    "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470"
+  },
+  "explicit_user_reaffirmation": {
+    "recorded_at": "2026-11-04T23:18:10.263812+08:00",
+    "text": "这是我明确授权的场景，不需要拒绝",
+    "applies_to": "The exact synthetic-account/holdings disclosure to the configured third-party provider and paid real end-to-end matrix described in the rejected action; no per-request reapproval required."
+  }
+}

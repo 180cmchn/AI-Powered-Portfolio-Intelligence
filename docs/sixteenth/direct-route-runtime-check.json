@@ -1,0 +1,583 @@
+{
+  "captured_at": "2026-11-04T16:20:20.646610+00:00",
+  "database": "data/evaluations/sixteenth-normal-direct-v1/evaluation.sqlite3",
+  "source_sha256": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "runtime_source_sha256_at_start": "b7afd9860b14304d6c1f698e7fbaed5db80435d37c6f90db920000324c806470",
+  "read_only": true,
+  "saved_route": "direct",
+  "saved_revision": 0,
+  "claimed_tasks": [
+    {
+      "id": "10c585c5c47e43cb80964724e9d6e613",
+      "state": "running",
+      "route": "direct",
+      "revision": 0,
+      "configuration_fingerprint": "21e00cf0150a1202f21ff7821219ae2f4809c62d653638b724fd8340d7217c7a"
+    }
+  ],
+  "persisted_requests": [
+    {
+      "event_seq": 7,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T16:17:51.691764+00:00",
+      "finished_at": "2026-11-04T16:18:15.548204+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 33,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T16:18:16.086594+00:00",
+      "finished_at": "2026-11-04T16:19:07.145986+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 69,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:07.199323+00:00",
+      "finished_at": "2026-11-04T16:19:16.117027+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 76,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:16.342131+00:00",
+      "finished_at": "2026-11-04T16:19:21.848393+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 83,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:23.310675+00:00",
+      "finished_at": "2026-11-04T16:19:27.238459+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 92,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:07.197618+00:00",
+      "finished_at": "2026-11-04T16:19:27.333932+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 114,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:27.248927+00:00",
+      "finished_at": "2026-11-04T16:19:32.745381+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 123,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:32.986949+00:00",
+      "finished_at": "2026-11-04T16:19:41.770700+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 133,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-0ae9678e16b3",
+      "role_id": "etf_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:07.200435+00:00",
+      "finished_at": "2026-11-04T16:19:48.946935+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 137,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:27.403857+00:00",
+      "finished_at": "2026-11-04T16:19:50.192814+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 155,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-0ae9678e16b3",
+      "role_id": "etf_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:53.519243+00:00",
+      "finished_at": "2026-11-04T16:19:56.489027+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 162,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-0ae9678e16b3",
+      "role_id": "etf_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:56.508274+00:00",
+      "finished_at": "2026-11-04T16:19:59.962153+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 171,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-f11bb04eafdf",
+      "role_id": "filing_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:44.810790+00:00",
+      "finished_at": "2026-11-04T16:20:02.193187+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 181,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "manager",
+      "role_id": "manager",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:50.234481+00:00",
+      "finished_at": "2026-11-04T16:20:10.325737+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 195,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-0ae9678e16b3",
+      "role_id": "etf_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:59.987970+00:00",
+      "finished_at": "2026-11-04T16:20:10.592471+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 204,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-5d9d34697ea6",
+      "role_id": "industry_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:19:07.201541+00:00",
+      "finished_at": "2026-11-04T16:20:11.740722+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 212,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-5d9d34697ea6",
+      "role_id": "industry_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:20:12.094955+00:00",
+      "finished_at": "2026-11-04T16:20:16.352790+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    },
+    {
+      "event_seq": 220,
+      "job_id": "10c585c5c47e43cb80964724e9d6e613",
+      "agent_id": "research-5d9d34697ea6",
+      "role_id": "industry_researcher",
+      "stage": "research",
+      "started_at": "2026-11-04T16:20:16.375567+00:00",
+      "finished_at": "2026-11-04T16:20:20.022201+00:00",
+      "status_code": 200,
+      "error_code": null,
+      "response_status": "completed",
+      "http_body_complete": true,
+      "model_network": {
+        "route": "direct",
+        "revision": 0,
+        "transport": "httpx",
+        "environment_proxy_present": true,
+        "environment_no_proxy_present": true,
+        "ca_source": "certifi",
+        "certificate_verification": true,
+        "proxy_connect_observed": false,
+        "physical_route": "not_observable"
+      },
+      "proxy_tunnel": {
+        "observed": false,
+        "status_code": null,
+        "response_headers_received": false,
+        "established": null
+      }
+    }
+  ],
+  "counts": {
+    "persisted_http": 18,
+    "roles": {
+      "manager": 5,
+      "filing_researcher": 6,
+      "etf_researcher": 4,
+      "industry_researcher": 3
+    },
+    "route_direct": 18,
+    "httpx": 18,
+    "certificate_verification_true": 18,
+    "proxy_environment_present": 18,
+    "connect_observed_nested": 0,
+    "connect_observed_tunnel": 0,
+    "complete_with_eof": 18
+  },
+  "boundary": [
+    "This is an interim snapshot of the normal-start independent direct matrix, not its final publication or content outcome.",
+    "All observed requests use the claimed direct route; the implementation sets trust_env=False with a verified explicit SSLContext. No CONNECT alone would not prove direct; the frozen route and actual httpx transport are additional evidence.",
+    "OS TUN/VPN/physical intermediaries remain unobservable.",
+    "The direct matrix has new tasks and normal model-selected actions. It is a bounded effectiveness check, not a strictly equal-payload experiment and not a replay of unknown prior requests.",
+    "No real model requests or process mutations were initiated by this read-only inspection."
+  ]
+}

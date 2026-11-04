@@ -494,6 +494,7 @@ class AgentConfigStore:
         return self.provider(provider['id'])
 
     def configuration_readiness(self, account_id=None):
+        from .model_network import network_policy
         roles = self.list_agent_roles(account_id)
         manager = next((r for r in roles if r['role_id'] == 'manager'), None)
         providers = {p['id']: p for p in self.list_providers()}
@@ -512,6 +513,8 @@ class AgentConfigStore:
                 'catalog_status': provider['catalog']['status'] if provider else 'not_fetched',
                 'manager_binding': resolved, 'manager_ready': configured, 'manager_error': error,
                 'next_step': next_step,
+                'model_network': {**network_policy(self.settings()), 'capability_verified': False,
+                    'note': '路线是后续请求的配置；实际 CONNECT 观察见请求诊断，不代表模型能力已验证。'},
                 'roles': [{'role_id': r['role_id'], 'binding_source': r['resolved']['binding_source'], 'error': r.get('config_error')} for r in roles],
                 'functions': 'unverified', 'native_search': 'protocol_unsupported' if provider and provider['protocol'] == 'chat_completions' else 'unverified'}
 
@@ -626,18 +629,24 @@ class AgentConfigStore:
         return self.provider(provider_id)
 
     async def discover_models(self, provider_id, force=False, continue_page=False, transport=None):
+        from .model_network import network_policy
+        config = self.settings()
+        policy = network_policy(config)
         with self.connect() as db:
             provider = self._provider(provider_id, db)
             old = self._provider_catalog(provider_id, provider['revision'], db)
         if provider.get('archived'):
             return {**old, 'error': '供应商已归档'}
-        if not force and not continue_page and old.get('fetched_at') and old.get('status') in {'success', 'empty', 'partial'}:
+        same_route = old.get('model_network_policy', {'route': 'environment', 'revision': 0}) == policy
+        if not same_route:
+            continue_page = False
+        if same_route and not force and not continue_page and old.get('fetched_at') and old.get('status') in {'success', 'empty', 'partial'}:
             if (datetime.fromisoformat(now()) - datetime.fromisoformat(old['fetched_at'])).total_seconds() < DISCOVERY_TTL_SECONDS:
                 return old
-        key = (str(self.path.resolve()), provider_id, provider['revision'], id(asyncio.get_running_loop()))
+        key = (str(self.path.resolve()), provider_id, provider['revision'], policy['route'], policy['revision'], id(asyncio.get_running_loop()))
         task = _DISCOVERY_TASKS.get(key)
         if task is None or task.done():
-            task = asyncio.create_task(self._discover(provider, old, continue_page, transport))
+            task = asyncio.create_task(self._discover(provider, old, continue_page, transport, config))
             _DISCOVERY_TASKS[key] = task
         try:
             return await asyncio.shield(task)
@@ -645,7 +654,14 @@ class AgentConfigStore:
             if task.done() and _DISCOVERY_TASKS.get(key) is task:
                 _DISCOVERY_TASKS.pop(key, None)
 
-    async def _discover(self, provider, old, continuation, transport):
+    async def _discover(self, provider, old, continuation, transport, config):
+        from .model_network import model_http_options, network_policy, network_observation
+        policy = network_policy(config)
+        observation = network_observation(config, custom_transport=transport is not None)
+        async def trace(event, info):
+            if event.endswith('send_request_headers.started') and getattr(info.get('request'), 'method', None) in (b'CONNECT', 'CONNECT'):
+                observation['proxy_connect_observed'] = True
+        old = {**old, 'model_network_policy': policy, 'model_network': observation}
         provider_id, revision, base = provider['id'], provider['revision'], provider['base_url']
         models = list(old.get('models', [])) if continuation and old.get('next_url') else []
         next_url = old.get('next_url') if continuation else None
@@ -657,12 +673,12 @@ class AgentConfigStore:
             secret = await asyncio.to_thread(self._vault().get, provider.get('credential_reference'))
             visited = set()
             async with asyncio.timeout(45), httpx.AsyncClient(headers={'Authorization': 'Bearer ' + secret, 'Accept': 'application/json'},
-                    follow_redirects=False, timeout=15, transport=transport) as client:
+                    follow_redirects=False, timeout=15, **model_http_options(config, transport)) as client:
                 for _ in range(DISCOVERY_PAGE_LIMIT):
                     if next_url in visited:
                         raise ValueError('模型目录分页循环，已停止')
                     visited.add(next_url)
-                    async with client.stream('GET', next_url) as response:
+                    async with client.stream('GET', next_url, extensions={'trace': trace}) as response:
                         status = response.status_code
                         if status != 200:
                             kind = ('authentication_failed' if status in {401, 403} else 'rate_limited' if status == 429
@@ -696,6 +712,7 @@ class AgentConfigStore:
                     if not next_url or len(models) >= DISCOVERY_MODEL_LIMIT:
                         break
             state = {'status': 'partial' if next_url else 'success' if models else 'empty', 'models': models,
+                     'model_network_policy': policy, 'model_network': observation,
                      'revision': revision, 'credential_revision': provider['credential_revision'],
                      'base_url': base, 'protocol': provider['protocol'], 'fetched_at': now(),
                      'attempted_at': now(), 'complete': not bool(next_url), 'next_url': next_url,
@@ -724,6 +741,9 @@ class AgentConfigStore:
         return state
 
     def _save_catalog_if_current(self, provider, state):
+        from .model_network import network_policy
+        if state.get('model_network_policy') and state['model_network_policy'] != network_policy(self.settings()):
+            return False
         with self.connect() as db:
             current = self._provider(provider['id'], db)
             if current['revision'] != provider['revision']:
