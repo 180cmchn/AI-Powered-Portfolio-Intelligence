@@ -111,7 +111,10 @@ async def test_request_usage_observes_real_attempts_without_secrets(config):
         await client.complete(client.session("test", {}), [])
         summary = client.usage_summary(client.requests)
         assert summary["requests"] == 2 and summary["failed_requests"] == 1
-        assert summary["usage"] == {"input_tokens": 12, "output_tokens": 3}
+        assert summary["usage"] == {"input_tokens": 12, "output_tokens": 3,
+            "input_tokens_details": {"cached_tokens": 4}}
+        assert summary['cache_summary']['complete_requests'] == 1
+        assert summary['cache_summary']['unknown_requests'] == 1
         assert all(r["duration_ms"] >= 0 for r in client.requests)
         assert client.requests[1]["usage"]["input_tokens_details"]["cached_tokens"] == 4
         assert "hidden-response" not in json.dumps(client.requests)

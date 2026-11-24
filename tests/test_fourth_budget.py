@@ -1,3 +1,4 @@
+from tests.context_helpers import effective_context
 from tests.delivery_helpers import delivery_arguments
 """A protocol substitute exercises the real runtime and durable evidence resolver."""
 import asyncio
@@ -184,7 +185,7 @@ async def test_shared_30_calls_close_before_any_agent_reaches_18_turns(monkeypat
 
     async def handler(request):
         payload = json.loads(request.content)
-        seed = json.loads(payload["input"][0]["content"])
+        seed = effective_context(payload)
         state = seed["runtime_status"]
         ident = state["agent_id"]
         requests.append((ident, payload))
@@ -233,7 +234,7 @@ async def test_retry_cannot_spend_the_manager_final_request(monkeypatch):
 
     async def handler(request):
         payload = json.loads(request.content)
-        state = json.loads(payload["input"][0]["content"])["runtime_status"]
+        state = effective_context(payload)["runtime_status"]
         requests.append(state["agent_id"])
         if state["agent_id"] != "manager":
             assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
@@ -269,7 +270,7 @@ async def test_compaction_keeps_live_child_state_and_unfinished_followup(monkeyp
 
     async def handler(request):
         payload = json.loads(request.content)
-        seed = json.loads(payload["input"][0]["content"])
+        seed = effective_context(payload)
         child = seed["runtime_status"]["children"][0]
         seen.append(child)
         assert child["agent_id"] == "research-existing" and child["title"] == "Existing issuer research"
@@ -331,7 +332,7 @@ async def test_synthesis_budget_also_forces_submission_before_exhaustion(monkeyp
         pass
     async def handler(request):
         payload = json.loads(request.content)
-        state = json.loads(payload["input"][0]["content"])["runtime_status"]
+        state = effective_context(payload)["runtime_status"]
         requests.append(payload)
         if len(requests) < 3:
             return model_response("get_material", {"material_id": "existing"}, f"read-{len(requests)}")
@@ -358,7 +359,7 @@ async def test_retry_crossing_shared_tail_rebuilds_child_payload_before_http(mon
             return httpx.Response(503, json={"error": "fixture unavailable"})
         assert len(requests) == 2
         assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
-        state = json.loads(payload["input"][0]["content"])["runtime_status"]
+        state = effective_context(payload)["runtime_status"]
         assert state["closing"] is True
         return model_response("submit_report", {"summary": "Earlier research retained; supplemental request failed.",
             "open_questions": ["Supplemental figures remain unknown."]})

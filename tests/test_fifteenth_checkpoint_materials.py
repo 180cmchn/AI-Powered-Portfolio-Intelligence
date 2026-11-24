@@ -51,7 +51,12 @@ async def test_api_interruption_restores_actual_fundamentals_in_final_http(store
             assert '1470.25' in visible and 'SZ:002354' in visible and '人民币元' in visible
             assert 'visible_result_hash' not in visible and 'material_deliveries' not in visible
             final = next(t for t in agents.MANAGER_TOOLS if t['name'] == 'finish_analysis')
-            assert [{k:v for k,v in t.items() if k not in {'type','strict'}} for t in payload['tools']] == [final]
+            if arithmetic:
+                assert [{k:v for k,v in t.items() if k not in {'type','strict'}} for t in payload['tools']] == [final]
+            else:
+                assert seed['synthesis_checkpoint']['recovery_mode'] == 'continue_research'
+                assert {'get_material', 'finish_analysis'} <= {tool.get('name') for tool in payload['tools']}
+                assert 'completed_not_delivered' in visible
             return response(call('finish_analysis', delivery_arguments(report='Controlled limited report from restored visible income rows.')))
         if len(sent) == 1:
             return response(call('fundamentals', {'symbol':'SZ:002354'}))
@@ -71,18 +76,30 @@ async def test_api_interruption_restores_actual_fundamentals_in_final_http(store
             saved = dict(db.execute('SELECT body,created_at FROM synthesis_checkpoints WHERE job_id=?', (first['id'],)).fetchone())
         cp = json.loads(saved['body'])
         assert len(cp['calculations']) == (4 if arithmetic else 0) and cp['manager_summary'] == {}
-        receipt = next(x for x in cp['material_deliveries'] if x['tool'] == 'fundamentals')
+        if arithmetic:
+            receipt = next(x for x in cp['material_deliveries'] if x['tool'] == 'fundamentals')
+            proof, visible_result = receipt['body'], receipt['body']['visible_result']
+        else:
+            assert cp['material_deliveries'] == [], 'failed before HTTP acceptance cannot prove an old model read'
+            receipt = next(x for x in cp['pending_tool_outputs'] if x['tool'] == 'fundamentals')
+            assert receipt['previously_delivered'] is False
+            proof, visible_result = receipt, receipt['result']
         assert receipt['material_id'] in cp['verified_material_versions']
         assert receipt['material_id'] in cp['material_ids']
-        assert receipt['body']['visible_result']['rows'] == financial_rows()['rows']
-        assert hashlib.sha256(dumps(receipt['body']['visible_result']).encode()).hexdigest() == receipt['body']['visible_result_hash']
+        assert visible_result['rows'] == financial_rows()['rows']
+        assert hashlib.sha256(dumps(visible_result).encode()).hexdigest() == proof['visible_result_hash']
         retried = await api.post('/api/jobs/'+first['id']+'/retry', json={'research_scope':'cash_only'})
         assert retried.status_code == 200, retried.text
         second = actual.claim_jobs(account_id=account['id'])[0]
         await app.state.service.execute(second)
         assert '供应商累计利润表' in json.dumps(sent[-1], ensure_ascii=False), 'completed financial rows lost in recovery HTTP payload'
         assert actual.job(second['id'])['state'] == 'completed', actual.job(second['id']).get('error')
-        assert len(sent) == (4 if arithmetic else 3) and actual.analyses(account['id'])[0]['result']['synthesis_recovered']
+        assert len(sent) == (4 if arithmetic else 3)
+        assert actual.analyses(account['id'])[0]['result']['synthesis_recovered'] is arithmetic
+        if not arithmetic:
+            current_receipt = next(x for x in actual.checkpoint_deliveries(second['id']) if x['tool'] == 'fundamentals')
+            assert current_receipt['body']['visible_result'] == visible_result
+            assert actual.checkpoint_deliveries(first['id']) == []
         with actual.connect() as db:
             after = db.execute('SELECT body,created_at FROM synthesis_checkpoints WHERE job_id=?', (first['id'],)).fetchone()
         assert dict(after) == saved  # Runtime consumption does not rewrite evidence/clock.

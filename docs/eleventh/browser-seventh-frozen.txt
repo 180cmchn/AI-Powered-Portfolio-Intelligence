@@ -1,5 +1,0 @@
-
-> test:browser:seventh
-> node tests/frontend_seventh.mjs
-
-Seventh production browser regressions passed

@@ -46,7 +46,7 @@ class Settings(BaseModel):
     model_native_search: bool = True
     reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
     synthesis_request_timeout_seconds: int = Field(default=120, ge=5, le=600)
-    synthesis_max_calls: int = Field(default=4, ge=1, le=8)
+    synthesis_max_calls: int | None = Field(default=4, ge=1, le=8)
     synthesis_checkpoint_max_age_seconds: int = Field(default=1800, ge=60, le=86400)
     chat_use_max_completion_tokens: bool = False
     model_retries: int = Field(default=1, ge=0, le=3)
@@ -55,11 +55,11 @@ class Settings(BaseModel):
     quote_provider: str = "eastmoney"
     quote_fallback_provider: str = "sina"
     max_concurrent_agents: int = Field(default=3, ge=1, le=8)
-    max_model_calls: int = Field(default=40, ge=2, le=300)
+    max_model_calls: int | None = Field(default=40, ge=2, le=300)
     final_submission_reserved_calls: int = Field(default=2, ge=2, le=4)
     agent_timeout_seconds: int = Field(default=1800, ge=5, le=1800)
     analysis_timeout_seconds: int = Field(default=3600, ge=10, le=3600)
-    max_agent_turns: int = Field(default=12, ge=2, le=60)
+    max_agent_turns: int | None = Field(default=12, ge=2, le=60)
     max_output_tokens: int | None = Field(default=None, ge=256, le=32000)
     quote_interval_seconds: int = Field(default=60, ge=30, le=3600)
     scheduled_research_enabled: bool = True
@@ -97,6 +97,17 @@ class Settings(BaseModel):
     research_cache_seconds: int = Field(default=300, ge=0, le=3600)
     research_provider: str = "eastmoney"
     tushare_token_env: str = "TUSHARE_TOKEN"
+
+    @field_validator("max_model_calls", "max_agent_turns", "synthesis_max_calls", mode="before")
+    @classmethod
+    def optional_count_limit(cls, value):
+        # Null is an explicit policy, not an absent/default value. The settings
+        # endpoint merges only supplied fields, so existing limits stay intact.
+        if isinstance(value, str) and not value.strip():
+            return None
+        if isinstance(value, bool):
+            raise ValueError("次数上限应为整数或留空不限次数")
+        return value
 
     @field_validator("model_key_env", "tushare_token_env")
     @classmethod

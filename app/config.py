@@ -156,6 +156,9 @@ def defaults() -> dict:
         "synthesis_request_timeout_seconds": 120,
         **LONG_TASK_TIMEOUT_DEFAULTS,
         "timeout_defaults_revision": TIMEOUT_DEFAULTS_REVISION,
+        # These three count limits also accept explicit None (unlimited).
+        # Keep existing defaults and saved user choices; only an explicit edit
+        # opts a task into unlimited counts. Deadlines/cancellation still apply.
         "synthesis_max_calls": 4, "synthesis_checkpoint_max_age_seconds": 1800,
         "quote_provider": os.getenv("QUOTE_PROVIDER", "eastmoney"),
         "quote_fallback_provider": os.getenv("QUOTE_FALLBACK_PROVIDER", "sina"),

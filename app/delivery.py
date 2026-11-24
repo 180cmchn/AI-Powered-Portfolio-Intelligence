@@ -52,7 +52,8 @@ def _validate_expiry(value, path):
         raise DeliveryContractError(f'{path}: 需要有效日期文本或 null') from None
 
 
-def validate_final_result(result, *, allowed_scope=None, required_scope=None, contract_context=None):
+def validate_final_result(result, *, allowed_scope=None, required_scope=None, contract_context=None,
+                          require_demand_coverage=False):
     if not isinstance(result, dict):
         raise DeliveryContractError('最终提交需要对象')
     if not isinstance(result.get('report'), str) or not result['report'].strip():
@@ -90,6 +91,8 @@ def validate_final_result(result, *, allowed_scope=None, required_scope=None, co
         if field in result and (not isinstance(result[field], list) or
                                any(not isinstance(value, str) or not value.strip() for value in result[field])):
             raise DeliveryContractError(f'{field} 需要非空字符串组成的数组')
+    if (require_demand_coverage or (contract_context or {}).get('require_demand_coverage')) and 'covered_demand_ids' not in result:
+        raise DeliveryContractError('本任务有冻结业务需求，必须显式填写 covered_demand_ids；只列已读且实际回答的需求 ID，未覆盖可填 []。不根据正文自动推断覆盖，也不要求全部完成。')
     if 'covered_demand_ids' in result and (not isinstance(result['covered_demand_ids'], list) or
             any(type(value) is not int or value < 1 for value in result['covered_demand_ids'])):
         raise DeliveryContractError('covered_demand_ids 需要正整数数组')

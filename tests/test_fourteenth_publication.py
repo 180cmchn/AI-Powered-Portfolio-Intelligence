@@ -126,7 +126,7 @@ def test_public_submission_requires_action_and_explicit_demand_coverage(store):
         store.finish_global(run['id'], 'completed', {'report': '正在整理最终报告。'})
     assert store.global_run(run['id'])['state'] == 'running'
     demands = store.task_demands(run['id'], None)['items']
-    body = final_result({'report': '仅评价黄金风险，后续数据待取得。'}, scope=('public',))
+    body = final_result({'report': '仅评价黄金风险，后续数据待取得。', 'covered_demand_ids': []}, scope=('public',))
     assert store.finish_global(run['id'], 'completed', body)
     assert all(row['state'] == 'uncovered' for row in store.demands(job_id=run['id']))
     assert store.global_run(run['id'])['result']['delivery']['status'] == 'limited'

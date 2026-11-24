@@ -40,7 +40,9 @@ def output(protocol, calls):
             'name': name, 'arguments': json.dumps(args)}} for i, (name, args) in enumerate(calls)]}}]})
 
 
-def source(store, symbol, index, *, count=65, benchmark=False):
+def source(store, symbol, index, *, count=50, benchmark=False):
+    # Keep a full result above the archive threshold and within the unchanged
+    # 6000-character response budget, including the derived price semantics.
     rows = [{'time': str(date(2026, 1, 1) + timedelta(days=i)),
              'close': str(100 + (i if not benchmark else i * 2) + index)} for i in range(count)]
     return store.save_material({'scope': 'public', 'access': 'structured_data',
@@ -59,8 +61,8 @@ def setup(tmp_path, cfg):
 
 
 def seed(payload):
-    return json.loads(next(item['content'] for item in payload.get('input', payload.get('messages'))
-                           if item.get('role') == 'user'))
+    from tests.context_helpers import effective_context
+    return effective_context(payload)
 
 
 @pytest.mark.asyncio

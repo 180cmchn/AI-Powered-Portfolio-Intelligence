@@ -54,7 +54,7 @@ async def test_failed_event_driven_research_manual_retry_resumes_only_synthesis(
             state["recovery_requests"] += 1
             assert all(tool["type"] != "web_search" and tool.get("name") != "spawn_research" for tool in payload["tools"])
             assert "Visible finished child report" in json.dumps(payload)
-            return response(call("finish_analysis", delivery_arguments(**{"report": "Complete recovered account report", "material_ids": initial["synthesis_checkpoint"]["material_ids"]})))
+            return response(call("finish_analysis", delivery_arguments(**{"report": "Complete recovered account report", "covered_demand_ids": [], "material_ids": initial["synthesis_checkpoint"]["material_ids"]})))
         state["native_requests"] += 1
         if "task" in initial:
             state["child_done"] = True

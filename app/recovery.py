@@ -27,6 +27,27 @@ def manager_material_deliveries(deliveries):
             and not item.get('body', {}).get('metadata_only')]
 
 
+def pending_manager_tool_outputs(body):
+    """Completed local results waiting for their first accepted model input."""
+    return [item for item in body.get('pending_tool_outputs', []) or [] if isinstance(item, dict)
+            and item.get('agent_id') == 'manager'
+            and item.get('delivery_status') == 'completed_not_delivered'
+            and item.get('previously_delivered') is False]
+
+
+def _pending_source_guard_matches(captured, verified):
+    """The read is immutable; the available head can advance before save.
+
+    The saved checkpoint's complete guard is still compared with current state
+    on recovery, and source coverage still determines whether more research is
+    required. A historical pending result never becomes a read of the new head.
+    """
+    return (isinstance(captured, dict) and isinstance(verified, dict)
+            and bool(captured) and captured.keys() == verified.keys()
+            and all(captured[key] == verified[key] for key in captured
+                    if key != 'latest_available_document_version_id'))
+
+
 def checkpoint_material_evidence_issues(body):
     """Legacy omitted reads must not bypass source-version protection."""
     verified = body.get('verified_material_versions', {})
@@ -47,6 +68,23 @@ def checkpoint_material_evidence_issues(body):
                     or visible.get('truncated_for_context') or visible.get('failed')
                     or digest != proof.get('visible_result_hash')):
                 issues.add('manager_material_visible_result_invalid')
+    for item in body.get('pending_tool_outputs', []) or []:
+        if not isinstance(item, dict) or item not in pending_manager_tool_outputs(body):
+            issues.add('pending_tool_output_status_invalid')
+            continue
+        visible = item.get('result')
+        digest = hashlib.sha256(json.dumps(visible, ensure_ascii=False, default=str).encode()).hexdigest()
+        if (item.get('visible_result_version') != 1 or not isinstance(visible, dict)
+                or visible.get('truncated_for_context') or visible.get('failed')
+                or digest != item.get('visible_result_hash')):
+            issues.add('pending_tool_output_hash_invalid')
+        guards = item.get('source_guard')
+        guards = guards if isinstance(guards, dict) else {}
+        if not item.get('material_ids') or item.get('material_id') not in item['material_ids']:
+            issues.add('pending_tool_output_material_ids_invalid')
+        for mid in item.get('material_ids', []):
+            if not _pending_source_guard_matches(guards.get(mid), verified.get(mid)):
+                issues.add('pending_tool_output_guard_incomplete_or_changed')
     return sorted(issues)
 
 
@@ -66,7 +104,15 @@ def restored_manager_material_evidence(body):
         result.append({'tool': item['tool'], 'result': copy.deepcopy(proof['visible_result']),
             'material_id': item['material_id'], 'source_task_id': item['job_id'],
             'source_agent_id': item['agent_id'], 'source_delivery_id': item['id'],
+            'visibility': 'previously_delivered_manager_tool_output', 'previously_delivered': True,
             'delivered_range': copy.deepcopy(proof.get('delivered_range', {}))})
+    for item in pending_manager_tool_outputs(body):
+        identity = (item['material_id'], item['visible_result_hash'])
+        if identity in seen:
+            continue
+        seen.add(identity)
+        result.append({**copy.deepcopy(item), 'source_agent_id': item['agent_id'],
+            'source_delivery_id': None, 'visibility': 'completed_not_delivered'})
     return result
 
 
@@ -139,6 +185,17 @@ class RecoveryStore:
         return (job.get('config_snapshot') or (job.get('input_snapshot') or {}).get('config')
                 or (context.get('input_snapshot') or {}).get('config') or self.settings())
 
+    @staticmethod
+    def _checkpoint_consumed(db, checkpoint_job_id):
+        # Success is a terminal business fact, independent of retry counts.
+        # Looking at committed results also handles old databases without a
+        # schema migration or a synthetic count used as a completion marker.
+        return bool(db.execute('''SELECT 1 FROM jobs WHERE state='completed'
+            AND json_extract(result, '$.synthesis_checkpoint_job_id')=?
+            UNION ALL SELECT 1 FROM global_runs WHERE state='completed'
+            AND json_extract(result, '$.synthesis_checkpoint_job_id')=? LIMIT 1''',
+            (checkpoint_job_id, checkpoint_job_id)).fetchone())
+
     def checkpoint_material_guard(self, material_ids, account_id):
         """Bind actual immutable reads (and their parents), never label the head as read."""
         from .materials import parent_material_ids
@@ -168,6 +225,41 @@ class RecoveryStore:
                     'latest_available_document_version_id': latest[0] if latest else None}
                 pending.extend(parent for parent in parents if parent not in result)
         return result
+
+    def prepare_pending_tool_output(self, job_id, account_id, agent_id, tool, result):
+        """Capture finished bounded material output without a delivery receipt.
+
+        The runtime calls this after a local tool completes. The immutable
+        source guard and exact visible object survive a rejected/failed next
+        HTTP request, but cannot imply that the old model accepted either.
+        """
+        from .store import dumps
+        if agent_id != 'manager' or not isinstance(result, dict) or result.get('failed') or result.get('truncated_for_context'):
+            return None
+        if tool not in {'read', 'get_material', 'read_material_range', 'search_pdf', 'history',
+                        'sectors', 'sector_members', 'sector_history', 'benchmark_history', 'fundamentals',
+                        'native_search', 'query_market_rows', 'market_indicators'}:
+            return None
+        mid = result.get('material_id') or result.get('id')
+        if not isinstance(mid, str) or not self.material_accessible(mid, account_id):
+            return None
+        if not any(result.get(key) for key in ('text', 'content', 'visible_excerpt', 'items', 'rows', 'matches', 'data', 'input_closes')):
+            return None
+        mids = [mid]
+        if tool == 'market_indicators' and result.get('comparison_input_closes'):
+            benchmark_mid = (result.get('benchmark') or {}).get('material_id')
+            if isinstance(benchmark_mid, str):
+                mids.append(benchmark_mid)
+        guards = self.checkpoint_material_guard(mids, account_id)
+        if any(identity not in guards for identity in mids):
+            return None
+        return {'tool': tool, 'result': copy.deepcopy(result), 'source_task_id': job_id,
+            'agent_id': agent_id, 'material_id': mid, 'material_ids': sorted(set(mids)),
+            'visible_result_version': 1, 'visible_result_hash': hashlib.sha256(dumps(result).encode()).hexdigest(),
+            'source_guard': guards, 'delivery_status': 'completed_not_delivered', 'previously_delivered': False,
+            'delivered_range': {key: copy.deepcopy(result[key]) for key in ('start', 'end', 'total_chars',
+                'returned_range', 'page_range', 'pages_read', 'requested_range', 'actual_range',
+                'row_count', 'order', 'fields', 'adjust') if key in result}}
 
     def record_material_delivery(self, job_id, account_id, agent_id, tool, result, *, authored=None):
         """Record the bounded result actually put into this actor's conversation.
@@ -452,6 +544,16 @@ class RecoveryStore:
         # Original receipts retain their source task/actor. They are provenance
         # for restored reports, never invented current-manager source reads.
         deliveries = list({item['id']: item for item in [*body.get('restored_material_deliveries', []), *deliveries]}.values())
+        # A newly accepted delivery consumes its corresponding pending object.
+        # The prior task's lack of receipt remains a historical fact.
+        delivered = {(item['material_id'], item['body'].get(key))
+                     for item in manager_material_deliveries(deliveries)
+                     for key in ('visible_result_hash', 'parent_visible_result_hash') if item['body'].get(key)}
+        pending = [copy.deepcopy(item) for item in body.get('pending_tool_outputs', [])
+                   if (item.get('material_id'), item.get('visible_result_hash')) not in delivered]
+        pending_ids = {mid for item in pending for mid in item.get('material_ids', [])}
+        body = {**body, 'pending_tool_outputs': pending,
+                'material_ids': sorted(set(body.get('material_ids', [])) | pending_ids)}
         body = self.include_manager_materials(body, deliveries, job.get('account_id'))
         verified = self.checkpoint_material_guard(body.get('material_ids', []), job.get('account_id'))
         report_deliveries = self.checkpoint_report_deliveries(job['id'])
@@ -462,7 +564,7 @@ class RecoveryStore:
             'material_guard_version': 3, 'material_deliveries': deliveries,
             'report_delivery_guard_version': 1, 'report_deliveries': report_deliveries,
             'source_coverage': coverage, 'unknown_material_ids': missing,
-            'recovery_state': 'needs_research' if missing or any(item['status'] not in {'covered', 'index_only'} for item in coverage.values()) else 'synthesis_ready',
+            'recovery_state': 'needs_research' if pending or missing or any(item['status'] not in {'covered', 'index_only'} for item in coverage.values()) else 'synthesis_ready',
             'covered_event_scope': context.get('_research_input_guard') or self.research_guard(context),
             'latest_event_scope_at_save': self.research_guard(context),
             'team_snapshot': body.get('team_snapshot') or context.get('team_snapshot'),
@@ -485,8 +587,9 @@ class RecoveryStore:
                 WHERE account_id=? AND input_version IS ? AND universe_version=?
                 AND NOT EXISTS(SELECT 1 FROM jobs j WHERE j.id=c.job_id AND j.state='completed')
                 AND NOT EXISTS(SELECT 1 FROM global_runs g WHERE g.id=c.job_id AND g.state='completed')
-                ORDER BY created_at DESC LIMIT 10''',
-                (job.get('account_id') or '', job.get('input_version'), context['universe_version'])).fetchall()
+                ORDER BY (c.job_id=?) DESC, created_at DESC LIMIT 10''',
+                (job.get('account_id') or '', job.get('input_version'), context['universe_version'],
+                 job.get('parent_job_id') or '')).fetchall()
             for row in rows:
                 # Continuing incomplete research is an explicit retry of that
                 # task, never an automatic scheduler decision to spend again.
@@ -494,7 +597,9 @@ class RecoveryStore:
                 age = (now_datetime(TZ) - datetime.fromisoformat(row['created_at'])).total_seconds()
                 if row['guard'] != guard or not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
                     continue
-                if row['resume_count'] >= 2:
+                if self._checkpoint_consumed(db, row['job_id']):
+                    continue
+                if config.get('synthesis_max_calls', 4) is not None and row['resume_count'] >= 2:
                     continue
                 body = loads(row['body'])
                 if checkpoint_material_evidence_issues(body):
@@ -530,7 +635,7 @@ class RecoveryStore:
     def _has_completed_research(body):
         # A partial HTTP response is never stored here. Reports and calculations
         # were committed only after their completed tool/terminal transitions.
-        return bool(body.get('reports') or body.get('calculations') or any(
+        return bool(body.get('reports') or body.get('calculations') or pending_manager_tool_outputs(body) or any(
             item.get('body', {}).get('delivered_content') for item in body.get('material_deliveries', [])))
 
     def reassess_checkpoint_coverage(self, body):
@@ -540,7 +645,8 @@ class RecoveryStore:
             return {**body, 'recovery_state': 'needs_research', 'recovery_assessment': {
                 'stored_state': body.get('recovery_state'), 'basis': issues[0], 'reasons': issues,
                 'note': '已交付材料缺少完整版本保护或可见结果证明；原记录不改写，不能据此恢复汇总。'}}
-        if body.get('material_guard_version') != 3 or body.get('recovery_state') != 'needs_research' or body.get('unknown_material_ids'):
+        if (body.get('material_guard_version') != 3 or body.get('recovery_state') != 'needs_research'
+                or body.get('unknown_material_ids') or pending_manager_tool_outputs(body)):
             return body
         verified = body.get('verified_material_versions', {})
         if self.checkpoint_material_guard(list(verified), body.get('account_id')) != verified:
@@ -569,7 +675,11 @@ class RecoveryStore:
         invalid.extend(checkpoint_material_evidence_issues(body))
         if not 0 <= age <= config.get('synthesis_checkpoint_max_age_seconds', 1800):
             invalid.append('expired')
-        if row['resume_count'] >= 2:
+        with self.connect() as db:
+            consumed = self._checkpoint_consumed(db, row['job_id'])
+        if consumed:
+            invalid.append('checkpoint_already_delivered')
+        if config.get('synthesis_max_calls', 4) is not None and row['resume_count'] >= 2:
             invalid.append('resume_budget_exhausted')
         if row['universe_version'] != self.universe_snapshot()['universe_version']:
             invalid.append('universe_changed')
@@ -611,6 +721,7 @@ class RecoveryStore:
         saved = self.reassess_checkpoint_coverage(original) if row else {}
         return {'available': bool(row), **({key: row[key] for key in ('created_at', 'resume_count')} if row else {}),
                 'completed_research_available': self._has_completed_research(saved),
+                'completed_not_delivered_outputs': len(pending_manager_tool_outputs(saved)),
                 'saved_recovery_state': original.get('recovery_state', 'legacy_unknown'),
                 'recovery_state': saved.get('recovery_state', 'legacy_unknown'), 'source_coverage': saved.get('source_coverage', {}),
                 'report_access': [{key: item['body'].get(key) for key in ('report_id', 'source_agent_id',

@@ -7,6 +7,66 @@ import json
 import statistics
 
 FIELDS = {'time', 'open', 'close', 'high', 'low', 'volume', 'amount', 'amplitude_pct', 'change_pct', 'change', 'turnover_pct'}
+CANDLE_METHODS = {'signed_body': 'close-open', 'real_body': 'abs(close-open)',
+                  'upper_shadow': 'high-max(open,close)', 'lower_shadow': 'min(open,close)-low'}
+FIELDS.update(CANDLE_METHODS)
+
+
+def _price(value):
+    try:
+        result = Decimal(str(value))
+        return result if result.is_finite() and result > 0 else None
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+
+
+def _candle(row):
+    prices = {key: _price(row.get(key)) for key in ('open', 'high', 'low', 'close')}
+    result = dict.fromkeys(CANDLE_METHODS)
+    missing = [key for key in prices if row.get(key) is None]
+    invalid = [key for key, value in prices.items() if value is None]
+    if invalid:
+        return {**result, 'candle_status': 'unavailable' if missing else 'invalid',
+                'candle_reason': ('missing_ohlc:' + ','.join(missing)) if missing else 'nonfinite_or_nonpositive_ohlc'}
+    opening, high, low, close = (prices[key] for key in ('open', 'high', 'low', 'close'))
+    if high < max(opening, close) or low > min(opening, close) or low > high:
+        return {**result, 'candle_status': 'invalid', 'candle_reason': 'inconsistent_ohlc_bounds'}
+    return {'signed_body': str(close-opening), 'real_body': str(abs(close-opening)),
+            'upper_shadow': str(high-max(opening, close)), 'lower_shadow': str(min(opening, close)-low),
+            'candle_status': 'ok', 'candle_reason': None}
+
+
+def _tail_close_streak(rows, data, adjustment):
+    """Count comparable adjacent saved observations, never invent trading dates."""
+    result = {'status': 'insufficient_data', 'direction': None, 'change_intervals': 0,
+              'baseline_date': data[-1][0] if data else None, 'first_change_date': None,
+              'end_date': data[-1][0] if data else None, 'boundary': 'selection_start',
+              'preceding_date': None, 'left_censored': True, 'calendar_continuity': 'unverified'}
+    if not data:
+        return {**result, 'boundary': 'no_rows'}
+    if not adjustment or adjustment == 'unknown':
+        return {**result, 'status': 'unverified_adjustment', 'change_intervals': None,
+                'baseline_date': None, 'boundary': 'unknown_adjustment'}
+    def issue(index):
+        if rows[index].get('adjustment', adjustment) != adjustment:
+            return 'incompatible_adjustment'
+        if data[index][1] is None:
+            return 'missing_or_invalid_close'
+        return None
+    if last_issue := issue(len(data)-1):
+        return {**result, 'change_intervals': None, 'baseline_date': None, 'boundary': last_issue}
+    for index in range(len(data)-1, 0, -1):
+        if boundary := issue(index-1):
+            result.update(boundary=boundary, preceding_date=data[index-1][0])
+            break
+        change = data[index][1] - data[index-1][1]
+        direction = 'up' if change > 0 else 'down' if change < 0 else 'flat'
+        if result['direction'] is not None and direction != result['direction']:
+            result.update(boundary='direction_change', preceding_date=data[index-1][0], left_censored=False)
+            break
+        result.update(status='ok', direction=direction, change_intervals=result['change_intervals']+1,
+                      baseline_date=data[index-1][0], first_change_date=data[index][0])
+    return result
 
 
 def data_from_material(material):
@@ -60,7 +120,7 @@ def query_rows(material, *, start=None, end=None, fields=None, limit=30, offset=
         raise ValueError('排序仅支持 asc 或 desc')
     fields = fields or ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
     if not isinstance(fields, list) or not fields or len(fields) > len(FIELDS) or any(f not in FIELDS for f in fields):
-        raise ValueError('仅支持 time/OHLCV/成交额及供应商涨跌字段')
+        raise ValueError('仅支持 time/OHLCV/成交额、供应商涨跌及实体/影线字段')
     fields = list(dict.fromkeys(['time', *fields]))
     rows = selected_rows(body, start, end)
     if order == 'desc':
@@ -74,6 +134,11 @@ def query_rows(material, *, start=None, end=None, fields=None, limit=30, offset=
               'missing_exact_date': start if start == end and start and not rows and body.get('status') in ('ok', 'empty') else None,
               'missing_fields': [], 'truncated': False,
               'coverage_note': '只返回已保存的实际行；不以最近日期替代确切日期。缺失交易记录不补零。'}
+    candle_fields = [field for field in fields if field in CANDLE_METHODS]
+    if candle_fields:
+        output.update(derived_field_methods={key: CANDLE_METHODS[key] for key in candle_fields},
+                      derived_field_unit='source OHLC price unit',
+                      derived_field_basis='same saved row; no adjustment conversion or long/short classification')
     budget = min(14000, max(2200, int(max_chars)))
     def budget_error(reason):
         # A page that cannot return one row must not point back to itself.
@@ -88,6 +153,9 @@ def query_rows(material, *, start=None, end=None, fields=None, limit=30, offset=
         return budget_error('metadata_exceeds_response_budget')
     for row in rows[offset:offset + limit]:
         value = {k: row.get(k) for k in fields}
+        if candle_fields:
+            candle = _candle(row)
+            value.update({key: candle[key] for key in [*candle_fields, 'candle_status', 'candle_reason']})
         # Leave space for the final range, counters and missing-field annotation.
         if len(json.dumps({**output, 'rows': [*output['rows'], value]}, ensure_ascii=False)) > budget - 400:
             break
@@ -117,7 +185,9 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
             'status': 'insufficient_data', 'classification': 'calculation',
             'methods': {'return': 'last_close/first_close-1 across return_period', 'moving_average': 'mean(last window closes)',
                         'volatility': 'sample standard deviation of consecutive close returns; not annualized',
-                        'relative_return': 'asset return minus benchmark return on common trading dates'}}
+                        'relative_return': 'asset return minus benchmark return on common trading dates',
+                        'tail_close_streak': 'tail count of adjacent comparable close changes',
+                        'close_to_ma_change_pct': '(last_close/moving_average-1)*100'}}
     window = int(window)
     if not 2 <= window <= 252:
         raise ValueError('均线窗口为2–252行')
@@ -127,22 +197,34 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
         return {**base, 'reason': 'daily_bars_required'}
     if len(rows) > 252:
         return {**base, 'reason': 'range_too_large', 'matched_rows': len(rows), 'note': '请缩小日期区间至252行以内；完整材料仍可分页读取'}
-    def values(source):
+    def values(source, strict=True):
         seen, vals = set(), []
         for r in source:
             d = r['time'][:10]
             if d in seen:
                 raise ValueError('同一日期多行，不能用数组位置对齐')
             seen.add(d)
-            try:
-                close = Decimal(str(r.get('close')))
-                if not close.is_finite() or close <= 0:
-                    raise ValueError('价格缺失或非正数')
-            except (InvalidOperation, TypeError) as exc:
-                raise ValueError('价格缺失；不补零') from exc
+            close = _price(r.get('close'))
+            if strict and close is None:
+                raise ValueError('价格缺失或无效；不补零')
             vals.append((d, close))
         return vals
-    data = values(rows)
+    data = values(rows, strict=False)
+    base['tail_close_streak'] = _tail_close_streak(rows, data, body.get('adjustment'))
+    base['close_to_ma_change_pct'] = None
+    def bounded(result):
+        if len(json.dumps(result, ensure_ascii=False)) > min(14000, max(2200, int(max_chars))):
+            return {**base, 'reason': 'input_exceeds_response_budget', 'matched_rows': len(rows),
+                    'note': '请缩小计算日期范围；计算输入不能被静默截断。完整行情可用query_market_rows分页读取。'}
+        return result
+    invalid_dates = [day for day, close in data if close is None]
+    inconsistent_dates = [row['time'][:10] for row in rows
+                          if row.get('adjustment', body.get('adjustment')) != body.get('adjustment')]
+    if invalid_dates or inconsistent_dates:
+        return bounded({**base, 'valid_samples': len(data)-len(invalid_dates),
+                'reason': 'missing_or_invalid_close' if invalid_dates else 'incompatible_row_adjustment',
+                'invalid_close_dates': invalid_dates, 'incompatible_adjustment_dates': inconsistent_dates,
+                'input_closes': [[day, str(close) if close is not None else None] for day, close in data]})
     if len(data) < 2:
         return {**base, 'valid_samples': len(data), 'reason': 'at_least_two_actual_closes_required'}
     def ret(v):
@@ -158,6 +240,8 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
               'moving_average_gap': None if len(data) >= window else 'insufficient_window_rows',
               'volatility': statistics.stdev([float(x) for x in returns]) if len(returns) >= 2 else None,
               'return_samples': len(returns)}
+    if result['moving_average'] is not None:
+        result['close_to_ma_change_pct'] = str((data[-1][1]/Decimal(result['moving_average'])-1)*100)
     if benchmark:
         other = data_from_material(benchmark)
         result['benchmark'] = provenance(benchmark, other)
@@ -191,7 +275,4 @@ def indicators(material, *, start=None, end=None, window=20, benchmark=None, max
                               aligned_asset_return=str(asset_return), aligned_benchmark_return=str(benchmark_return))
             else:
                 result.update(comparison_status='insufficient_common_dates', relative_return=None)
-    if len(json.dumps(result, ensure_ascii=False)) > min(14000,max(2200,int(max_chars))):
-        return {**base, 'reason':'input_exceeds_response_budget', 'matched_rows':len(rows),
-                'note':'请缩小计算日期范围；计算输入不能被静默截断。完整行情可用query_market_rows分页读取。'}
-    return result
+    return bounded(result)

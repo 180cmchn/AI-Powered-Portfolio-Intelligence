@@ -208,7 +208,7 @@ async def test_budget_failure_does_not_fabricate_result(config, monkeypatch):
 
     with pytest.raises(FinalSubmissionMissing):
         await agents.run_research(CONTEXT, config, ResearchTools(), emit)
-    assert events[-1]["type"] == "agent_failed"
+    assert [e for e in events if e["type"] != "model_client_closed"][-1]["type"] == "agent_failed"
     assert not any(e["type"] == "agent_completed" for e in events)
 
 

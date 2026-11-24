@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [iteration, production, seventh, ninth, tenth, eleventh, twelfth, twelfth-select, thirteenth, thirteenth-correction, fourteenth]
+        group: [iteration, production, seventh, ninth, tenth, eleventh, twelfth, twelfth-select, thirteenth, thirteenth-correction, fourteenth, seventeenth]
     steps:
       - uses: actions/checkout@v4
         with:

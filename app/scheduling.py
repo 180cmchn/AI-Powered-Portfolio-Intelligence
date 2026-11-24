@@ -122,6 +122,12 @@ class SchedulingStore:
         label = "; ".join(reasons)[:1500]
         if job and job["state"] in ("queued", "waiting_config") and job["input_version"] == account["version"]:
             job_id = job["id"]
+            # Recovery can requeue a job without reopening its frozen demand scope.
+            if job["state"] == "queued" and db.execute(
+                    "SELECT 1 FROM research_demand_scopes WHERE job_id=?", (job_id,)).fetchone():
+                db.execute("""UPDATE research_demands SET detail='deferred: queued research scope already frozen',updated_at=?
+                            WHERE account_id=? AND state='pending'""", (now(), account["id"]))
+                return
             if label not in job["reason"]:
                 combined = label if job["reason"] == "account_saved" else job["reason"] + "; " + label
                 db.execute("UPDATE jobs SET reason=?,updated_at=? WHERE id=?", (combined[:2000], now(), job_id))
@@ -325,8 +331,9 @@ class SchedulingStore:
             if state == "completed" and result:
                 self.save_research_records(result.get("research_records", []), run_id, db=db)
                 if applicable:
-                    db.execute("UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id='' AND universe_version=?",
-                               (result.get('synthesis_checkpoint_job_id'), run['universe_version']))
+                    if self._checkpoint_config(prior, {}).get('synthesis_max_calls', 4) is not None:
+                        db.execute("UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id='' AND universe_version=?",
+                                   (result.get('synthesis_checkpoint_job_id'), run['universe_version']))
                     impacts = {d.get('material_id'): d for d in (result.get('information_impacts') or [])
                                if isinstance(d, dict) and isinstance(d.get('material_id'), str)} if isinstance(result.get('information_impacts', []), list) else {}
                     for mid in result.get('_information_material_ids', []):

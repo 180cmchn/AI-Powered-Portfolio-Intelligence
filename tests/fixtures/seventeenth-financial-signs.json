@@ -1,0 +1,58 @@
+{
+  "kind": "public_original_pdf_excerpt_fixture",
+  "source": {
+    "url": "http://static.cninfo.com.cn/finalpage/2026-10-29/1225633283.PDF",
+    "title": "天娱数字科技集团股份有限公司2026年第三季度报告",
+    "original_material_id": "d6cd1229251c48558232db047ca991ea",
+    "document_bytes_sha256": "f78485db5481a604309b1fda4ae32adefb36e3c5725bb49a882859c51684e6f6",
+    "original_material_content_hash": "9a1d126e0f2b4b5e72dc73fefd6f6b04db5ef89b33b43091f7796f301eeae9db",
+    "stored_extracted_page_sha256": "6d124de773069d80fc410fb52382678508b218bfbd532fc8f26f229fb9f0cde0",
+    "physical_pdf_page": 2,
+    "access": "stored original_document/full_text; excerpt selected from independently saved raw PDF extraction",
+    "fetched_at": "2026-11-05T00:19:23.279917+08:00"
+  },
+  "excerpt": "本报告期 本报告期比上年同期增减 年初至报告期末 年初至报告期末比上年同期增减 \n营业收入（元） 383,804,809.20 -26.33% 1,477,619,199.45 -2.04% \n归属于上市公司股东的净利润\n（元） 10,142,806.55 -46.85% 50,865,243.13 19.11% \n归属于上市公司股东的扣除非经常\n性损益的净利润（元） 7,479,693.83 -46.22% 41,307,850.58 17.57%",
+  "excerpt_sha256": "757176bb436a7ab03d72cd6217ab8d643af9cead52f044c3fbd32b169f038522",
+  "expected_financial_metrics": [
+    {
+      "subject": "SZ:002354 天娱数字科技集团股份有限公司",
+      "report_period": "2026年1月1日至9月30日（年初至报告期末）",
+      "metric": "营业收入",
+      "value": "1477619199.45",
+      "unit": "人民币元",
+      "comparison": {
+        "kind": "year_over_year",
+        "baseline_period": "2025年1月1日至9月30日（上年同期）",
+        "value": "-2.04",
+        "unit": "percent"
+      }
+    },
+    {
+      "subject": "SZ:002354 天娱数字科技集团股份有限公司",
+      "report_period": "2026年1月1日至9月30日（年初至报告期末）",
+      "metric": "归属于上市公司股东的净利润",
+      "value": "50865243.13",
+      "unit": "人民币元",
+      "comparison": {
+        "kind": "year_over_year",
+        "baseline_period": "2025年1月1日至9月30日（上年同期）",
+        "value": "19.11",
+        "unit": "percent"
+      }
+    },
+    {
+      "subject": "SZ:002354 天娱数字科技集团股份有限公司",
+      "report_period": "2026年1月1日至9月30日（年初至报告期末）",
+      "metric": "归属于上市公司股东的扣除非经常性损益的净利润",
+      "value": "41307850.58",
+      "unit": "人民币元",
+      "comparison": {
+        "kind": "year_over_year",
+        "baseline_period": "2025年1月1日至9月30日（上年同期）",
+        "value": "17.57",
+        "unit": "percent"
+      }
+    }
+  ],
+  "boundary": "The excerpt is saved original PDF extracted text, not the prior model report or its review. Expected metric records are explicit developer transcription for controlled regression; not a new external fetch or a declaration that every report fact is verified."
+}

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import copy
 from contextlib import nullcontext
+from decimal import Decimal, InvalidOperation
 from urllib.parse import urlsplit, urlunsplit
 
 from .domain import now
@@ -43,8 +45,60 @@ CREATE TABLE IF NOT EXISTS material_stream_heads(
 """
 
 
-def material_text(body):
+def _material_prose(body):
     return str(body.get("text") or body.get("content") or body.get("claim") or body.get("excerpt") or body.get("summary") or "")
+
+
+def numeric_sign(value):
+    """Sign of an explicit scalar only; this does not assert growth or truth."""
+    if isinstance(value, bool) or not isinstance(value, (str, int, float, Decimal)):
+        return None
+    try:
+        number = Decimal(str(value))
+        return ('positive' if number > 0 else 'negative' if number < 0 else 'zero') if number.is_finite() else None
+    except InvalidOperation:
+        return None
+
+
+def normalize_financial_metrics(value):
+    """Optional extraction metadata, never an evidence-admission requirement.
+
+    Numeric signs are derived independently for the amount and its comparison.
+    Missing subject/period/baseline stays unknown; no inferred financial label.
+    Original/model-supplied values remain intact, including malformed entries.
+    """
+    if not isinstance(value, list):
+        return copy.deepcopy(value)
+    result = []
+    for supplied in value:
+        if not isinstance(supplied, dict):
+            result.append(copy.deepcopy(supplied))
+            continue
+        metric = copy.deepcopy(supplied)
+        for key in ('subject', 'report_period', 'metric', 'value', 'unit'):
+            metric.setdefault(key, None)
+        metric['value_sign'] = numeric_sign(metric['value'])
+        comparison = metric.get('comparison')
+        if comparison is None:
+            comparison = {}
+        if isinstance(comparison, dict):
+            for key in ('kind', 'baseline_period', 'value', 'unit'):
+                comparison.setdefault(key, None)
+            comparison['value_sign'] = numeric_sign(comparison['value'])
+        metric['comparison'] = comparison
+        result.append(metric)
+    return result
+
+
+def material_text(body):
+    text = _material_prose(body)
+    # The structured extraction is part of its readable/versioned content.
+    # Therefore correcting a sign cannot deduplicate to the previous claim,
+    # and range reads can retrieve every metric without a giant index payload.
+    if body.get('representation') == 'agent_extraction' and 'financial_metrics' in body:
+        text += '\n\n[Agent 提取的财务指标；非独立核验的原始事实]\n' + json.dumps(
+            body['financial_metrics'], ensure_ascii=False, sort_keys=True, default=str)
+    return text
 
 
 def _hash(value):
@@ -125,6 +179,10 @@ def index_of(body):
             result[k] = str(v)[:2000]
     result["summary"] = str(body.get("summary") or material_text(body))[:400]
     result["char_count"] = len(material_text(body))
+    if body.get('representation') == 'agent_extraction' and isinstance(body.get('financial_metrics'), list):
+        result['financial_metrics_count'] = len(body['financial_metrics'])
+        result['financial_metrics_origin'] = 'agent_extraction'
+        result['financial_metrics_access'] = 'read_material_range; structured values are part of readable content'
     if body.get("pages"):
         result["pages"] = [{k: v for k, v in p.items() if k in ("page", "text_start", "text_end", "text_length", "truncated", "source_url")} for p in body["pages"][:100] if isinstance(p, dict)]
     return result
@@ -296,6 +354,8 @@ class MaterialStore:
     def save_material(self, material, job_id=None, account_id=None, notify=False, *, observation_id=None, db=None):
         from .store import dumps, loads, uid
         body = normalize_parent_references({k: v for k, v in material.items() if not k.startswith("_")})
+        if body.get('representation') == 'agent_extraction' and 'financial_metrics' in body:
+            body['financial_metrics'] = normalize_financial_metrics(body['financial_metrics'])
         if representation_kind(body) == "native_search_source":
             # A provider citation is not a local download, even if the model
             # copies a field named document_id into a source description.
@@ -309,7 +369,7 @@ class MaterialStore:
         if "fetched_at" not in body and "retrieved_at" in body:
             body["fetched_at"] = body["retrieved_at"]
         body.setdefault("classification", body.get("category", "unclassified"))
-        body.setdefault("content", material_text(body))
+        body.setdefault("content", _material_prose(body))
         body.setdefault("source_title", body.get("title"))
         body.setdefault("fetched_at", now())
         body.setdefault("published_at", None)

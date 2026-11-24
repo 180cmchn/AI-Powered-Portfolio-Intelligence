@@ -70,7 +70,9 @@ async def test_explicit_retry_continues_partial_work_and_delivers_saved_report(s
         with store.connect() as db:
             saved = json.loads(db.execute('SELECT body FROM synthesis_checkpoints WHERE job_id=?', (retry['id'],)).fetchone()[0])
         assert saved['reports'][0]['checkpoint_source_job_id'] == first['id']
-        assert saved['material_deliveries'] and saved['partial_research']
+        assert saved['material_deliveries'] == [], 'header failure is not a model content delivery'
+        assert saved['pending_tool_outputs'] and saved['partial_research']
+        assert saved['pending_tool_outputs'][0]['previously_delivered'] is False
         assert not saved.get('pending_calls')
         store.submit_task(account['id'], research_scope='cash_only', parent_job_id=retry['id'])
         retry = store.claim_jobs(account_id=account['id'])[0]
@@ -86,6 +88,10 @@ async def test_explicit_retry_continues_partial_work_and_delivers_saved_report(s
     assert receipts[0]['body']['access'] == 'full_report'
     assert receipts[0]['body']['channel'] == 'restored_research'
     assert receipts[0]['body']['source_material_deliveries'] == []  # No fabricated original read.
+    material_receipts = store.checkpoint_deliveries(retry['id'])
+    assert any(item['material_id'] == material['id'] and item['agent_id'] == 'manager' for item in material_receipts)
+    if intermediate:
+        assert store.checkpoint_deliveries(intermediate['id']) == []
     events = store.job(retry['id'], events=True)['events']
     if intermediate:
         events += store.job(intermediate['id'], events=True)['events']

@@ -35,13 +35,13 @@ def observe_progress(monkeypatch):
     """Observe the production watchdog callback, without replacing its clock."""
     progress_kinds, done_seen = [], asyncio.Event()
     receive = ModelClient._receive_stream
-    async def observed(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None):
+    async def observed(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None, headers=None, on_request_accepted=None):
         def callback(kind, semantic=True):
             progress(kind, semantic)
             progress_kinds.append(kind)
             if kind == 'response.function_call_arguments.done':
                 done_seen.set()
-        return await receive(self, endpoint, payload, timeout, trace, observation, started, callback, deadline=deadline)
+        return await receive(self, endpoint, payload, timeout, trace, observation, started, callback, deadline=deadline, headers=headers, on_request_accepted=on_request_accepted)
     monkeypatch.setattr(ModelClient, '_receive_stream', observed)
     return progress_kinds, done_seen
 
@@ -131,12 +131,12 @@ async def test_cr_terminal_tail_still_respects_parent_deadline(monkeypatch):
     monkeypatch.setattr(ModelClient, 'STREAM_TAIL_DRAIN_SECONDS', 10)
     terminal_seen = asyncio.Event()
     receive = ModelClient._receive_stream
-    async def observed(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None):
+    async def observed(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None, headers=None, on_request_accepted=None):
         def callback(kind, semantic=True):
             progress(kind, semantic)
             if kind == 'response.completed':
                 terminal_seen.set()
-        return await receive(self, endpoint, payload, timeout, trace, observation, started, callback, deadline=deadline)
+        return await receive(self, endpoint, payload, timeout, trace, observation, started, callback, deadline=deadline, headers=headers, on_request_accepted=on_request_accepted)
     monkeypatch.setattr(ModelClient, '_receive_stream', observed)
     async def handler(reader, writer):
         await chunk(writer, frame(ending='\r'))

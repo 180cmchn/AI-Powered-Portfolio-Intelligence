@@ -29,7 +29,10 @@ def runner_result(result, context):
     """Service test-double return that explicitly models a completed tool call."""
     target = (context.get('target_security') or {}).get('symbol')
     scope = ('public',) if context.get('scope') == 'global' else (target,) if target else ('account',)
-    return final_result(result, scope=scope)
+    # This positive runner double declares no completed demands by default.
+    # It does not infer IDs from context. Low-level helpers keep omission intact
+    # so explicit missing-field and historical-compatibility tests stay valid.
+    return final_result({'covered_demand_ids': [], **result}, scope=scope)
 
 
 def publish_fixture(store, job_id, result, data_as_of):

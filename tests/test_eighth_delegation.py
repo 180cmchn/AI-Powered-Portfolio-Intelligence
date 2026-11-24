@@ -83,11 +83,11 @@ async def test_service_delegation_fault_resumes_without_reread_or_new_child(conf
             assert resumed['reports'][0]['model_config']['model_name'] == 'delegation-fixture'
             assert resumed['manager_summary']['material_ids'] == mids
             assert not {'read', 'spawn_research'} & {tool.get('name') for tool in payload['tools']}
-            # Receiving an old report in this new synthesis session is a new
-            # delivery fact, never a fabricated original-material read.
+            # The request is observable here, before this transport returns
+            # 2xx; preparation alone cannot create a delivery receipt.
             new_deliveries = store.checkpoint_report_deliveries(seed['job_id'])
-            assert any(item['body']['access'] == 'full_report' for item in new_deliveries)
-            assert all(item['source_job_id'] == job['id'] for item in new_deliveries)
+            assert new_deliveries == []
+            assert resumed['reports'][0]['summary'] in json.dumps(payload, ensure_ascii=False)
             assert store.checkpoint_deliveries(seed['job_id']) == []
             return output(('finish_analysis', delivery_arguments(**{'report': '依据披露研究员已交付的专题结果进行有条件汇总。', 'material_ids': mids})))
         if seed.get('parent_task_id'):
@@ -130,6 +130,10 @@ async def test_service_delegation_fault_resumes_without_reread_or_new_child(conf
     retry = store.claim_jobs(account_id=account['id'])[0]
     await service.execute(retry)
     assert store.job(retry['id'])['state'] == 'completed'
+    new_deliveries = store.checkpoint_report_deliveries(retry['id'])
+    assert any(item['body']['access'] == 'full_report' for item in new_deliveries)
+    assert all(item['source_job_id'] == job['id'] for item in new_deliveries)
+    assert store.checkpoint_deliveries(retry['id']) == []
     assert requests == {'child': 2, 'manager': 4, 'resumed': 1}
     assert store.analyses(account['id'])[0]['result']['synthesis_recovered']
     assert store.checkpoint_deliveries(job['id']) == originals
@@ -176,7 +180,28 @@ async def deliver_report(runtime):
     results = [(ToolCall('actual-status', 'agent_status', {}), result)]
     runtime.client.add_results(runtime.manager_session, results)
     runtime._remember_report_results(results, runtime.manager_session.history[-1:])
-    await runtime._use_budget()
+    await accept_manager_context(runtime)
+
+
+async def accept_manager_context(runtime):
+    """Exercise actual ModelClient HTTP acceptance, without another agent turn.
+
+    Existing narrow fixtures prepare a bounded result by dispatching the real
+    tool. A neutral completed protocol response then accepts that exact history;
+    it contains no invented tool call, research finding, or final report.
+    """
+    original_http = runtime.client.http
+    accepted_response = httpx.Response(200, json={'status': 'completed', 'output': [
+        {'type': 'message', 'role': 'assistant', 'content': [
+            {'type': 'output_text', 'text': '受控测试：继续核对。'}]}]})
+    async with httpx.AsyncClient(base_url=runtime.client.base_url + '/',
+            transport=httpx.MockTransport(lambda request: accepted_response)) as fixture_http:
+        runtime.client.http = fixture_http
+        try:
+            await runtime.client.complete(runtime.manager_session, agents.MANAGER_TOOLS)
+            assert runtime.manager_session.requests[-1]['request_accepted'] is True
+        finally:
+            runtime.client.http = original_http
 
 
 @pytest.mark.asyncio
@@ -194,6 +219,8 @@ async def test_undelivered_summary_and_round_scope_are_not_direct_reads(configur
         assert store.checkpoint_report_deliveries(job['id']) == []
         runtime._pin_runtime_status(runtime.manager_session, 'manager', 5, False)
         await runtime._use_budget()
+        assert store.checkpoint_report_deliveries(job['id']) == [], 'budget reservation is not endpoint acceptance'
+        await accept_manager_context(runtime)
         await runtime._save_checkpoint(declaration)
         assert checkpoint(store, job['id'])['recovery_state'] == 'needs_research'
         assert {row['body']['access'] for row in store.checkpoint_report_deliveries(job['id'])} == {'report_summary'}
@@ -271,11 +298,8 @@ async def test_late_completed_report_is_explicitly_delivered_to_new_synthesis_se
         payload = json.loads(request.content)
         calls.append(payload)
         receipts = store.checkpoint_report_deliveries(retry['id'])
-        assert len(receipts) == 1 and receipts[0]['body']['access'] == 'full_report'
-        assert receipts[0]['body']['channel'] == 'restored_synthesis'
-        assert receipts[0]['body']['report_id'] == original_report['report_id']
-        assert receipts[0]['body']['source_agent_id'] == original_report['agent_id']
-        assert receipts[0]['body']['model_config'] == original_report['model_config']
+        assert receipts == [], 'response headers have not been returned yet'
+        assert original_report['summary'] in json.dumps(payload, ensure_ascii=False)
         return output(('finish_analysis', delivery_arguments(**{'report': '新汇总会话已收到此前晚到的子报告；保留来源范围。', 'material_ids': mids})))
     monkeypatch.setattr(agents, 'ModelClient', lambda cfg, before_request=None:
         ModelClient(cfg, before_request, httpx.MockTransport(handler)))
@@ -285,6 +309,12 @@ async def test_late_completed_report_is_explicitly_delivered_to_new_synthesis_se
     result = await agents.run_research(resumed_context, retry['config_snapshot'],
         ResearchTools(store, retry, retry['config_snapshot'], resumed_context), emit)
     assert result['synthesis_recovered'] and len(calls) == 1
+    receipts = store.checkpoint_report_deliveries(retry['id'])
+    assert len(receipts) == 1 and receipts[0]['body']['access'] == 'full_report'
+    assert receipts[0]['body']['channel'] == 'restored_synthesis'
+    assert receipts[0]['body']['report_id'] == original_report['report_id']
+    assert receipts[0]['body']['source_agent_id'] == original_report['agent_id']
+    assert receipts[0]['body']['model_config'] == original_report['model_config']
     assert store.checkpoint_deliveries(retry['id']) == []
     assert store.checkpoint_report_deliveries(job['id']) == []
     assert checkpoint(store, job['id']) == saved
@@ -508,6 +538,7 @@ async def test_model_authored_material_echo_is_not_a_report_delivery(configured,
         runtime.client.add_results(runtime.manager_session, results)
         runtime._remember_report_results(results, runtime.manager_session.history[-1:])
         await runtime._use_budget()
+        await accept_manager_context(runtime)
         await runtime._save_checkpoint({'summary': 'Still requires actual report delivery.', 'material_ids': mids})
         assert store.checkpoint_report_deliveries(job['id']) == []
         assert checkpoint(store, job['id'])['recovery_state'] == 'needs_research'

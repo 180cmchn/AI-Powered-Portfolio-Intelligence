@@ -1,3 +1,4 @@
+from tests.context_helpers import effective_context
 """Offline business harness evidence; no paid/provider/quote/search network."""
 import asyncio
 import json
@@ -314,7 +315,7 @@ async def test_actual_api_ledger_service_agent_model_publication_and_restart(pre
         assert seed['account']['cash']=='86484.90' and len(seed['account']['holdings'])==3
         if outcome=='unknown_transport':return httpx.Response(200,stream=Broken())
         if outcome=='retry_503' and len(sent)==1:return httpx.Response(503,json={'error':'controlled temporary overload'})
-        return response(call('finish_analysis',{'report':'Controlled fixture report; no investment claim.',
+        return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'Controlled fixture report; no investment claim.',
             'completion':'limited','scope':['SH:518880','SZ:002354','SZ:159599'],
             'decision_summary':'Controlled fixture only.','limitations':['No real network evidence']}))
     def model_client(cfg,before_request=None):
@@ -429,7 +430,7 @@ async def test_failed_child_preserves_completed_evidence_for_limited_manager_pub
                 'findings':[{'claim':'Controlled completed finding; adverse scenario retained.'}],
                 'open_questions':['Controlled report does not resolve the filing topic.']}))
         assert role=='manager'
-        seed=json.loads(next(item['content'] for item in payload['input'] if item.get('role')=='user'))
+        seed=effective_context(payload)
         children=seed['runtime_status']['children']
         if not children:
             return response(call('calculate',{'operation':'sum','values':[17,20]},'manager-calculation'),
@@ -445,7 +446,7 @@ async def test_failed_child_preserves_completed_evidence_for_limited_manager_pub
         reports=seed['synthesis_checkpoint']['reports']
         assert len(reports)==1 and reports[0]['summary']==completed
         assert any(item['result']=='37' for item in seed['calculation_summaries'])
-        return response(call('finish_analysis',{'report':'Controlled limited summary of completed evidence and calculation 37.',
+        return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'Controlled limited summary of completed evidence and calculation 37.',
             'completion':'limited','scope':['SH:518880','SZ:002354','SZ:159599'],
             'decision_summary':'Controlled existing evidence supports only this limited fixture judgment.',
             'limitations':['Filing child failed; its unfinished text is unavailable as a completed report.']},'manager-final'))
@@ -500,6 +501,7 @@ def accept_business_fixture(output):
 
 @pytest_asyncio.fixture
 async def failed_sale(prepared,monkeypatch):
+    from tests.context_helpers import effective_context
     from app import agents
     from app.model import ModelClient
     from tests.test_fourteenth_chain import response,call
@@ -514,9 +516,9 @@ async def failed_sale(prepared,monkeypatch):
             raise httpx.RemoteProtocolError('Controlled failed sale research, committed trade remains intact')
     def handler(request,role):
         payload=json.loads(request.content)
-        seed=json.loads(next(item['content'] for item in payload['input'] if item.get('role')=='user'))
+        seed=effective_context(payload)
         if stage['value']=='a_initial':
-            return response(call('finish_analysis',{'report':'controlled-original-A-body','completion':'limited',
+            return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'controlled-original-A-body','completion':'limited',
                 'scope':['SH:518880','SZ:002354','SZ:159599'],'decision_summary':'Controlled original A judgment.',
                 'limitations':['Controlled fixture only.']}))
         if role!='manager':
@@ -550,6 +552,7 @@ async def failed_sale(prepared,monkeypatch):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('expired',[False,True])
 async def test_sale_retry_uses_normal_service_without_another_trade_and_allows_B(failed_sale,monkeypatch,expired):
+    from tests.context_helpers import effective_context
     from app import agents
     from app.model import ModelClient
     from tests.test_fourteenth_chain import response,call
@@ -566,7 +569,7 @@ async def test_sale_retry_uses_normal_service_without_another_trade_and_allows_B
     sent=[]
     def handler(request):
         payload=json.loads(request.content);sent.append(payload)
-        seed=json.loads(next(item['content'] for item in payload['input'] if item.get('role')=='user'))
+        seed=effective_context(payload)
         assert seed['account']['version']==5 and seed['account']['cash']=='87479.90'
         if expired:
             assert 'synthesis_checkpoint' not in seed
@@ -577,7 +580,7 @@ async def test_sale_retry_uses_normal_service_without_another_trade_and_allows_B
             assert checkpoint['reports'][0]['summary']=='Completed sale child with explicit missing source.'
             assert any(item['result']=='37' for item in seed['calculation_summaries'])
             assert 'spawn_research' in {tool.get('name') for tool in payload['tools']}
-        return response(call('finish_analysis',{'report':'Controlled retry sale report.','completion':'limited',
+        return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'Controlled retry sale report.','completion':'limited',
             'scope':['SZ:002354','SZ:159599'],'decision_summary':'Controlled post-sale judgment.',
             'limitations':['Missing source remains unresolved; no prior half-response is a report.']}))
     monkeypatch.setattr(agents,'ModelClient',lambda cfg,before_request=None:ModelClient(cfg,before_request,httpx.MockTransport(handler)))
@@ -637,7 +640,7 @@ async def test_direct_retry_of_failed_retry_keeps_one_sale_and_original_report(f
     sent=[]
     def handler(request):
         sent.append(json.loads(request.content))
-        return response(call('finish_analysis',{'report':'Controlled chained retry report.','completion':'limited',
+        return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'Controlled chained retry report.','completion':'limited',
             'scope':['SZ:002354','SZ:159599'],'decision_summary':'Controlled post-sale judgment.',
             'limitations':['Retained missing source remains unknown.']}))
     monkeypatch.setattr(agents,'ModelClient',lambda cfg,before_request=None:ModelClient(cfg,before_request,httpx.MockTransport(handler)))
@@ -794,7 +797,7 @@ async def test_followup_matrix_uses_actual_ledger_scope_separate_accounts_and_ne
             wire=json.dumps(payload)
             assert 'Controlled shared original fact for 159278.' in wire
             assert 'A private unshared fact must stay inaccessible.' not in wire
-        return response(call('finish_analysis',{'report':'controlled-'+stage+'-body', 'completion':'limited',
+        return response(call('finish_analysis',{'covered_demand_ids': [], 'report':'controlled-'+stage+'-body', 'completion':'limited',
             'scope':scope,'decision_summary':'Controlled independent stage conclusion.', 'limitations':['Offline fixture only']}))
     monkeypatch.setattr(agents,'ModelClient',lambda cfg,before_request=None:ModelClient(cfg,before_request,httpx.MockTransport(handler)))
     daily_before=verifier.db_digest(source.path)

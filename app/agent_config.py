@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS account_agent_overrides(
 '''
 
 PROMPTS = Path(__file__).with_name('prompts')
+SEVENTEENTH_DEMAND_PREVIOUS_MANAGER_PROMPT = 'decd0ee964610dccf1f3b0a04723315e228c236890c67164512efa7ab9ba33a8'
+SEVENTEENTH_CARD_BASIS_PREVIOUS_MANAGER_PROMPT = 'cf5fc4821e431f391dbccbebf402c1e48148c9ecc567f7d6d07a276af2a3283d'
 RESEARCH_TOOL_NAMES = ['read', 'pdf_metadata', 'search_pdf', 'save_material', 'list_materials',
     'search_materials', 'get_material', 'read_material_range', 'list_recommendations',
     'get_recommendation', 'recall_context', 'history', 'sectors', 'sector_members',
@@ -62,6 +64,26 @@ NINTH_PREVIOUS_PROMPTS = {
 }
 
 FOURTEENTH_PREVIOUS_PROMPTS = {'industry_researcher': 'd498d846a5b2cfd0fbd19c7fcd34c359400fc0928a66ade0e7e8935f9d858f9c', 'market_researcher': '09a401bd93012d68d21deb3f5f9dd95d0706a6c02278f16f1e82dd348c343eb2', 'portfolio_researcher': '2a6dfeb5eee5de9601d7e9adccdcf808cba3049d233a3aee79ca74d8a426a738', 'filing_researcher': 'e608bb7d16dacbf7b5807ed55ffdcfe1c9952a6ceaff6a45a77fbe2102483ff5', 'etf_researcher': '5e8ad6a5758b40dbf331076f5b5d1f0afc16324d973ebc264bcc734699efabba', 'manager': '3c6da47391c5b691bd1b6bddcc4c30d9d3db41918dc9134bdf63fa644cc501ff'}
+
+SEVENTEENTH_PREVIOUS_PROMPTS = {
+    'manager': '9d0de70023e5569b40e5b1fdf63321f4014bc5ffe59f797dfa575ff4014124d6',
+    'filing_researcher': '60848d1e98a718580cd950da127d13ec658f0b27d90bffaff7b33a755a9ffced',
+    'market_researcher': 'bf21ccccbfd015f172a2588c1dd9c383555851208a5b878d3b4a14c8bbf9f605',
+    'industry_researcher': '2aa0df8eb93ea0b48d7b6d1f4fa0424ff7dd95ce91cd8abab52feeb4faee01a3',
+    'etf_researcher': '943a122eb0077e60df1c27ad37e2b6d50399b16fbdefc6f8a0d66431153bcf51',
+    'portfolio_researcher': '441110792ab2f432b3680cdfb55682989170078414bdb52f8f97d9b8c43880f6',
+}
+
+# Exact defaults from the stopped 135172 run, before the market-semantics fix.
+# A changed prompt, even on a built-in role, is a user customization.
+SEVENTEENTH_MARKET_PREVIOUS_PROMPTS = {
+    'manager': '6aa5ecd9431443b3dac5804569a1463a1aa3e7e76d2dd1ee41eafc48b122edb5',
+    'filing_researcher': '8805f133fb7403eee2455b028e46d7daf254285f7381174b30ad1bea51406314',
+    'market_researcher': '6e7ef27e264e0ce8475e2cdcdd9960dceeccc7e94d6b1ab67dbd812b755b3b0c',
+    'industry_researcher': '9e202c4516dc19373f5295cf706a0cf09bb4d80b77fffb29b95ef904a6a01f08',
+    'etf_researcher': 'c5d707256bfb80df4f85daa296809a8fd7514cd87b0f86e0b28adbc2f2a8333f',
+    'portfolio_researcher': '7aac85836109294a697c86946bbe0edf295d0dfd55d32b977794e455037b3da2',
+}
 
 DISCOVERY_TTL_SECONDS = 3600
 DISCOVERY_PAGE_LIMIT = 5
@@ -326,6 +348,7 @@ class AgentConfigStore:
 
     def migrate_fifteenth_synthesis_prompt(self, db):
         if db.execute("SELECT 1 FROM meta WHERE key='fifteenth_synthesis_prompt_migration'").fetchone():
+            self.migrate_seventeenth_content_prompts(db)
             return
         changed, preserved = [], []
         row = db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()
@@ -346,6 +369,135 @@ class AgentConfigStore:
         db.execute("INSERT INTO meta VALUES('fifteenth_synthesis_prompt_migration',?)", (_dumps({
             'at': now(), 'updated_roles': changed, 'preserved_custom_roles': preserved,
             'note': 'Exact prior built-in manager prompt only; independent research may run in parallel. Custom prompts, model bindings and frozen teams unchanged.'}),))
+        self.migrate_seventeenth_content_prompts(db)
+
+    def migrate_seventeenth_content_prompts(self, db):
+        if db.execute("SELECT 1 FROM meta WHERE key='seventeenth_content_prompt_migration'").fetchone():
+            self.migrate_seventeenth_market_semantics(db)
+            return
+        changed, preserved = [], []
+        for role_id, expected_hash in SEVENTEENTH_PREVIOUS_PROMPTS.items():
+            row = db.execute('SELECT body FROM agent_definitions WHERE role_id=?', (role_id,)).fetchone()
+            if not row:
+                continue
+            role = _loads(row[0])
+            prompt = (PROMPTS / (role_id + '.txt')).read_text()
+            if role_id != 'manager':
+                prompt += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+            if role.get('system_prompt') == prompt:
+                continue
+            if role.get('custom') or hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest() != expected_hash:
+                preserved.append(role_id)
+                continue
+            role.update(system_prompt=prompt, version=role['version'] + 1,
+                        prompt_version=role['prompt_version'] + 1, updated_at=now())
+            db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?', (role['version'], _dumps(role), role_id))
+            changed.append(role_id)
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+        db.execute("INSERT INTO meta VALUES('seventeenth_content_prompt_migration',?)", (_dumps({
+            'at': now(), 'updated_roles': changed, 'preserved_custom_roles': preserved,
+            'note': 'Exact sixteenth built-ins only. Financial signs and cost terms clarified; custom prompts, bindings, effort and frozen teams retained.'}),))
+        self.migrate_seventeenth_market_semantics(db)
+
+    def migrate_seventeenth_market_semantics(self, db):
+        marker = 'seventeenth_market_semantics_prompt_migration'
+        if db.execute('SELECT 1 FROM meta WHERE key=?', (marker,)).fetchone():
+            self.migrate_seventeenth_demand_declaration(db)
+            return
+        changed, prompts_changed, tools_changed, preserved = [], [], [], []
+        for row in db.execute('SELECT role_id,body FROM agent_definitions ORDER BY role_id').fetchall():
+            role_id, role = row['role_id'], _loads(row['body'])
+            prompt_changed = False
+            if role_id in SEVENTEENTH_MARKET_PREVIOUS_PROMPTS:
+                prompt = (PROMPTS / (role_id + '.txt')).read_text()
+                if role_id != 'manager':
+                    prompt += '\n\n' + (PROMPTS / 'researcher.txt').read_text()
+                if role.get('system_prompt') != prompt:
+                    previous = {SEVENTEENTH_PREVIOUS_PROMPTS[role_id],
+                                SEVENTEENTH_MARKET_PREVIOUS_PROMPTS[role_id]}
+                    digest = hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest()
+                    if not role.get('custom') and digest in previous:
+                        role['system_prompt'] = prompt
+                        role['prompt_version'] = role.get('prompt_version', 1) + 1
+                        prompt_changed = True
+                        prompts_changed.append(role_id)
+                    else:
+                        preserved.append(role_id)
+            # The two existing tools gain explicit numerical fields. Record the
+            # contract revision even when the role has a custom prompt; names,
+            # access, bindings and frozen task snapshots are not rewritten.
+            tool_changed = bool({'query_market_rows', 'market_indicators'} & set(role.get('tools', [])))
+            if tool_changed:
+                role['tool_version'] = role.get('tool_version', 1) + 1
+                tools_changed.append(role_id)
+            if prompt_changed or tool_changed:
+                role.update(version=role['version'] + 1, updated_at=now())
+                db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?',
+                           (role['version'], _dumps(role), role_id))
+                changed.append(role_id)
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+        db.execute('INSERT INTO meta VALUES(?,?)', (marker, _dumps({
+            'at': now(), 'updated_roles': changed, 'updated_prompt_roles': prompts_changed,
+            'updated_tool_roles': tools_changed, 'preserved_custom_roles': preserved,
+            'note': 'Exact sixteenth and initial seventeenth defaults only. Market tool contract versions advance once for roles using those tools; custom prompts, tool access, bindings, effort and frozen teams retained.'})))
+        self.migrate_seventeenth_demand_declaration(db)
+
+    def migrate_seventeenth_demand_declaration(self, db):
+        marker = 'seventeenth_demand_declaration_contract_migration'
+        if db.execute('SELECT 1 FROM meta WHERE key=?', (marker,)).fetchone():
+            self.migrate_seventeenth_card_basis(db)
+            return
+        changed, prompts_changed, preserved = [], [], []
+        for row in db.execute('SELECT role_id,body FROM agent_definitions').fetchall():
+            role = _loads(row['body'])
+            if 'finish_analysis' not in role.get('tools', []):
+                continue
+            if row['role_id'] == 'manager':
+                prompt = (PROMPTS / 'manager.txt').read_text()
+                if role.get('system_prompt') != prompt:
+                    old_hash = hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest()
+                    if not role.get('custom') and old_hash == SEVENTEENTH_DEMAND_PREVIOUS_MANAGER_PROMPT:
+                        role.update(system_prompt=prompt, prompt_version=role.get('prompt_version', 1) + 1)
+                        prompts_changed.append(row['role_id'])
+                    else:
+                        preserved.append(row['role_id'])
+            role.update(version=role['version'] + 1,
+                        tool_version=role.get('tool_version', 1) + 1, updated_at=now())
+            db.execute('UPDATE agent_definitions SET version=?,body=? WHERE role_id=?',
+                       (role['version'], _dumps(role), row['role_id']))
+            changed.append(row['role_id'])
+        if changed:
+            version = db.execute("SELECT value FROM meta WHERE key='agent_catalog_version'").fetchone()
+            db.execute("INSERT OR REPLACE INTO meta VALUES('agent_catalog_version',?)", (str(int(version[0]) + 1),))
+        db.execute('INSERT INTO meta VALUES(?,?)', (marker, _dumps({
+            'at': now(), 'updated_tool_roles': changed, 'updated_prompt_roles': prompts_changed,
+            'preserved_custom_roles': preserved,
+            'note': 'finish_analysis explicitly declares coverage when its server task has frozen demands; [] remains valid. Exact previous default manager scope and portfolio-denominator guidance advances; custom prompts, bindings, allowed tools and existing task snapshots are unchanged.'})))
+        self.migrate_seventeenth_card_basis(db)
+
+    def migrate_seventeenth_card_basis(self, db):
+        """Upgrade the b8 manager's exact built-in guidance for standalone cards."""
+        marker = 'seventeenth_card_basis_prompt_migration'
+        if db.execute('SELECT 1 FROM meta WHERE key=?', (marker,)).fetchone():
+            return
+        updated = []
+        row = db.execute("SELECT body FROM agent_definitions WHERE role_id='manager'").fetchone()
+        if row:
+            role = _loads(row['body'])
+            digest = hashlib.sha256(role.get('system_prompt', '').encode()).hexdigest()
+            if role.get('custom') is False and digest == SEVENTEENTH_CARD_BASIS_PREVIOUS_MANAGER_PROMPT:
+                role.update(system_prompt=(PROMPTS / 'manager.txt').read_text(),
+                            version=role['version'] + 1, prompt_version=role.get('prompt_version', 1) + 1,
+                            updated_at=now())
+                db.execute("UPDATE agent_definitions SET version=?,body=? WHERE role_id='manager'",
+                           (role['version'], _dumps(role)))
+                db.execute("UPDATE meta SET value=CAST(value AS INTEGER)+1 WHERE key='agent_catalog_version'")
+                updated.append('manager')
+        db.execute('INSERT INTO meta VALUES(?,?)', (marker, _dumps({'at': now(), 'updated_prompt_roles': updated})))
 
     def migrate_fourteenth_roles(self, db):
         """Only byte-identical prior built-ins can be updated without a user edit."""

@@ -273,10 +273,13 @@ class LedgerStore:
             entry = json.loads(r[0])
             fields = ('id', 'kind', 'symbol', 'security_name', 'side', 'quantity', 'price', 'gross', 'cash_effect',
                       'cash_before', 'cash_after', 'realized_pnl', 'recorded_at', 'traded_at', 'reason', 'mode',
-                      'reference_entry_id', 'account_version', 'external_flow')
+                      'reference_entry_id', 'account_version', 'external_flow', 'quantity_before', 'quantity_after',
+                      'cost_relieved', 'total_cost_after', 'realized_pnl_effect')
             rows.append({**{k: entry[k] for k in fields if k in entry},
                          'fee_total': (entry.get('fees') or {}).get('total'),
                          'fee_estimated': (entry.get('fees') or {}).get('estimated_only')})
+            if entry.get('kind') == 'trade' and entry.get('side') == 'sell':
+                rows[-1]['net_sale_proceeds'] = entry.get('cash_effect')
         total_fees, realized, unknown = Decimal(0), Decimal(0), 0
         for row in db.execute('SELECT body FROM ledger_entries WHERE account_id=?', (account_id,)):
             e = json.loads(row[0])
@@ -289,6 +292,10 @@ class LedgerStore:
         positions = self._positions(account_id, db)
         active = [pos for pos in positions.values() if Decimal(pos['quantity'])]
         return {'accounting_method': 'moving_weighted_average',
+                'cost_terms': {'cost_relieved': '卖出份额结转成本；与卖后剩余总成本口径不同，数值可能恰好相同',
+                    'total_cost_after': '该笔成交后剩余持仓总成本',
+                    'net_sale_proceeds': '净卖出所得＝成交额－本笔卖出费用',
+                    'realized_pnl': '已实现盈亏＝净卖出所得－卖出份额结转成本；精确值为 realized_pnl_effect'},
                 'fees_included_in_cost': bool(active) and all(pos.get('cost_basis') == 'trade_cost' and pos.get('fees_included_in_cost') for pos in active),
                 'cost_fee_policy': 'recorded_buy_fees_in_remaining_cost; opening_and_corrected_fee_scope_unknown; future_sell_fees_not_estimated',
                 'cash_scope': '模拟可用现金；卖出可用不代表可取', 'total_fees': money(total_fees),

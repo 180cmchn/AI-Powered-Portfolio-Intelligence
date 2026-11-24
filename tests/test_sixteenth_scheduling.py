@@ -48,15 +48,15 @@ async def test_scheduler_worker_keeps_inflight_report_then_starts_formal_before_
             except asyncio.CancelledError:
                 cancelled.append(old_id)
                 raise
-            return response(call('finish_analysis', final(scope=['account'])))
+            return response(call('finish_analysis', final(scope=['account'], covered_demand_ids=[])))
         if account['id'] in body:
             batch = formal_batch(store, account)
             assert batch['id'] in body and 'formal' in body
-            return response(call('finish_analysis', final(scope=['account'], forecasts=[
+            return response(call('finish_analysis', final(scope=['account'], covered_demand_ids=[], forecasts=[
                 {'security_id': SYMBOL, 'horizon': horizon, 'direction': 'up' if horizon == 1 else 'abstain',
                  'reason': 'controlled fixture direction/abstention; no real investment assertion'}
                 for horizon in (1, 5, 20)])))
-        return response(call('finish_analysis', final(scope=['public'])))
+        return response(call('finish_analysis', final(scope=['public'], covered_demand_ids=[])))
 
     app, store, account = setup_app(tmp_path, monkeypatch, handler,
         model_request_hard_timeout_seconds=30, synthesis_request_hard_timeout_seconds=30,
@@ -223,7 +223,7 @@ async def test_worker_cancellation_reason_is_persisted_not_inferred(tmp_path, mo
     observed = []
     async def handler(request):
         if account['latest_job_id'] not in request.content.decode():
-            return response(call('finish_analysis', final(scope=['public'])))
+            return response(call('finish_analysis', final(scope=['public'], covered_demand_ids=[])))
         entered.set()
         try:
             await release.wait()

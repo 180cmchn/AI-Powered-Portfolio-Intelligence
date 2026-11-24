@@ -26,7 +26,9 @@ import httpx
 
 from .context import bounded_result, compact
 from .config import reasoning_effort, model_config_summary, timeout_policy
-from .model_network import model_http_options, network_observation
+from .model_network import model_http_options, network_observation, NetworkDiagnostics, safe_exception_details
+from .model_cache import canonical, frozen_tools, observe_payload
+from .model_usage import normalized_usage, usage_summary
 
 
 class ModelError(RuntimeError):
@@ -131,6 +133,21 @@ class ModelSession:
     # Monotonic process-local deadlines; never serialized into model context.
     deadlines: dict[str, float] = field(default_factory=dict)
     queue_wait_ms: float = 0.0
+    # Per actual instance, never derived from account names, roles or credentials.
+    session_id: str = field(default_factory=lambda: 'session-' + secrets.token_hex(16))
+    cache_key: str = field(default_factory=lambda: secrets.token_hex(16))
+    cache_epoch: int = 0
+    cache_epoch_reason: str = 'new_session'
+    _observed_compactions: int = 0
+    _previous_payload: dict | None = field(default=None, repr=False)
+    _tool_schema_hash: str | None = field(default=None, repr=False)
+    _tool_schema: list = field(default_factory=list, repr=False)
+    on_request_accepted: Callable[[dict], Awaitable[None]] | None = field(default=None, repr=False)
+
+    def begin_cache_epoch(self, reason: str) -> None:
+        self.cache_epoch += 1
+        self.cache_epoch_reason = reason if reason in {'compression', 'synthesis', 'recovery_rebuild',
+            'account_version_changed', 'permissions_changed', 'evidence_correction'} else 'context_rebuild'
 
 
 _NATIVE_CAPABILITIES: dict[str, dict] = {}
@@ -222,6 +239,8 @@ class ModelClient:
         )
         self.before_request = before_request
         self.requests: list[dict[str, Any]] = []
+        self._cache_hint_rejected = False
+        self.network_diagnostics = NetworkDiagnostics(secret=self.key)
 
     def session(self, system: str, context: Any) -> ModelSession:
         session = ModelSession(system=system)
@@ -229,12 +248,18 @@ class ModelClient:
         budget = int(self.config.get("max_context_chars", 240_000))
         initial = bounded_result(session, context, max(1000, budget // 3))
         if initial is not context and isinstance(context, dict):
+            # The truncation applies to this original context excerpt, not to
+            # complete Runtime projections added later. Keep the exact wrapper
+            # nested instead of letting its marker hide those sibling fields.
+            # Only bounded_result's newly-created wrapper enters this envelope;
+            # model/tool JSON is never promoted by a matching field name.
+            initial = {"initial_context_excerpt": initial}
             # Keep account identity/version and the assigned problem immediately
             # available even if a caller supplies a large legacy material list.
             for key in ("task_id", "task", "account", "input_version", "scope", "reason"):
                 if key in context:
                     initial[key] = copy.deepcopy(context[key])
-        session.history.append({"role": "user", "content": encode(initial)})
+        session.history.append({"role": "user", "content": encode(canonical(initial))})
         return session
 
     def add_user(self, session: ModelSession, message: Any) -> None:
@@ -255,8 +280,10 @@ class ModelClient:
         """Make a cancelled/failed conversation resumable at a valid tool boundary."""
         self.add_results(session, [(call, {"failed": True, "error": reason}) for call in list(session.pending_calls)])
 
-    async def aclose(self) -> None:
+    async def aclose(self, source='unspecified') -> None:
+        self.network_diagnostics.close_requested(source)
         await self.http.aclose()
+        self.network_diagnostics.close_finished()
 
     def native_status(self) -> dict:
         return native_search_status(self.config)
@@ -279,9 +306,13 @@ class ModelClient:
                     raise ModelConfigurationError('指定的提交函数不在当前可用工具中')
                 forced_function = tool_choice
         compact(session, int(self.config.get("max_context_chars", 240_000)))
+        if session.compactions > session._observed_compactions:
+            session.begin_cache_epoch('compression')
+            session._observed_compactions = session.compactions
         if len(encode(session.history)) > int(self.config.get("max_context_chars", 240_000)):
             raise ModelProtocolError("初始账户或任务输入超过上下文上限；历史材料已有按需归档，请减少单次账户输入或检查 max_context_chars")
         history = [{key: copy.deepcopy(value) for key, value in item.items() if not key.startswith("_context_")} for item in session.history]
+        tools = frozen_tools(session, tools)
         output_limit = _output_limit(self.config)
         if self.protocol == "responses":
             payload = {
@@ -334,6 +365,15 @@ class ModelClient:
                     "unsupported" if observation.get("native_tool_rejected") else "request_failed")
                 self._native_observation(state, error=observation.get("error"), status_code=code)
             raise
+        try:
+            return self._consume_turn(session, data, forced_function)
+        except ModelProtocolError as exc:
+            if session.requests:
+                session.requests[-1].update(error='model_protocol_rejected', error_code=exc.code,
+                    protocol_validation='rejected')
+            raise
+
+    def _consume_turn(self, session, data, forced_function):
         if self.protocol == "responses":
             known_complete = data.get('status') == 'completed'
             if session.requests:
@@ -518,14 +558,20 @@ class ModelClient:
 
     @staticmethod
     def usage_summary(requests: list[dict]) -> dict:
-        usage = {}
-        for request in requests:
-            for key, value in (request.get("usage") or {}).items():
-                if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value):
-                    usage[key] = usage.get(key, 0) + value
-        return {"requests": len(requests), "duration_ms": round(sum(r.get("duration_ms", 0) for r in requests), 2),
-                "failed_requests": sum(bool(r.get("error")) for r in requests),
-                "usage": usage or None, "usage_reported_requests": sum(r.get("usage") is not None for r in requests)}
+        return usage_summary(requests)
+
+    def _cache_hint(self, session):
+        if session is None:
+            return None
+        if self.protocol == 'responses':
+            return ('body', 'prompt_cache_key')
+        # xAI documents this Chat header. Do not guess vendor-specific hints for
+        # an unrelated model; compatible Grok gateways still remain unverified.
+        if urlsplit(self.base_url).hostname == 'api.x.ai' or self.model.lower().startswith('grok'):
+            return ('header', 'x-grok-conv-id')
+        if urlsplit(self.base_url).hostname == 'api.openai.com':
+            return ('body', 'prompt_cache_key')
+        return None
 
     def _safe_provider_identifier(self, value):
         if not isinstance(value, str):
@@ -550,7 +596,7 @@ class ModelClient:
     STREAM_MAX_EVENTS = 20000
     STREAM_TAIL_DRAIN_SECONDS = 1.0
 
-    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None):
+    async def _receive_stream(self, endpoint, payload, timeout, trace, observation, started, progress, *, deadline=None, headers=None, on_request_accepted=None):
         """Read a complete Responses terminal object; never assemble deltas.
 
         Compatibility gateways may return ordinary JSON despite stream:true.
@@ -558,13 +604,27 @@ class ModelClient:
         SSE bodies and reasoning deltas are never placed in diagnostics.
         """
         async with self.http.stream('POST', endpoint, json=payload, timeout=timeout,
-                                    extensions={'trace': trace}) as response:
+                                    headers=headers, extensions={'trace': trace}) as response:
+            self.network_diagnostics.bind_response(observation, response.extensions)
             observation.update(status_code=response.status_code,
                 http_version=response.http_version,
                 request_accepted=200 <= response.status_code < 300,
                 response_headers_received=True,
                 response_headers_ms=round((time.perf_counter() - started) * 1000, 2),
                 request_id=self._safe_provider_identifier(response.headers.get('x-request-id') or response.headers.get('request-id')))
+            if (observation['request_accepted'] and on_request_accepted is not None
+                    and not observation.get('accepted_context_notified')):
+                # Receipt means the endpoint accepted this actual input, never
+                # that the generation used it or will complete successfully.
+                observation['acceptance_callback_status'] = 'started'
+                observation['accepted_context_notified'] = True
+                try:
+                    await on_request_accepted(copy.deepcopy(observation))
+                except Exception as exc:
+                    observation.update(acceptance_callback_status='failed', error='local_acceptance_callback_failed',
+                        retry_suppressed='accepted_or_sent_request_outcome_unknown')
+                    raise ModelProtocolError('模型已接受请求，但本地交付回执保存失败；未重放未知生成') from exc
+                observation['acceptance_callback_status'] = 'completed'
             content_type = response.headers.get('content-type', '').split(';', 1)[0].strip().lower()
             is_sse = content_type == 'text/event-stream' and response.status_code < 400
             observation['response_format'] = 'sse' if is_sse else 'json'
@@ -711,8 +771,9 @@ class ModelClient:
                 except TimeoutError:
                     pass  # The already received terminal remains authoritative.
                 except httpx.RequestError as exc:
+                    safe_type = safe_exception_details(exc, secret=self.key)[0]['type']
                     observation.update(stream_close_reason='terminal_tail_transport_error',
-                                       stream_tail_error=type(exc).__name__)
+                                       stream_tail_error=safe_type)
                 finally:
                     observation['stream_tail_drain_ms'] = round((time.monotonic() - drain_started) * 1000, 2)
 
@@ -784,7 +845,15 @@ class ModelClient:
         streaming = self.protocol == 'responses' and self.config.get('model_responses_stream', True)
         if streaming:
             payload = {**payload, 'stream': True}
-        for attempt in range(retries + 1):
+        else:
+            payload = copy.deepcopy(payload)
+        hint = self._cache_hint(session)
+        request_headers = {}
+        if hint and not self._cache_hint_rejected:
+            target = payload if hint[0] == 'body' else request_headers
+            target[hint[1]] = session.cache_key
+        attempt, retry_attempt = 0, 0
+        while True:
             queue_started = time.monotonic()
             if session and session.deadlines:
                 expired_code, expired_deadline = min(session.deadlines.items(), key=lambda item: item[1])
@@ -800,7 +869,14 @@ class ModelClient:
             limit_code, deadline = min(deadlines.items(), key=lambda item: item[1])
             if deadline <= started_mono:
                 raise ModelTimeoutError(limit_code)
-            observation = {"attempt": attempt + 1, "endpoint": endpoint, "model": self.model,
+            attempt += 1
+            local_request_id = 'request-' + secrets.token_hex(16)
+            observation = {"attempt": attempt, "endpoint": endpoint, "model": self.model,
+                           "local_request_id": local_request_id,
+                           "session_id": session.session_id if session else None,
+                           "session_origin": getattr(session, 'session_origin', 'new_session') if session else None,
+                           "cache_epoch": session.cache_epoch if session else None,
+                           "cache_epoch_reason": session.cache_epoch_reason if session else None,
                            "model_network": copy.deepcopy(self.network),
                            "base_url": self.base_url, "protocol": self.protocol,
                            "task_id": session.task_id if session else None,
@@ -836,11 +912,25 @@ class ModelClient:
                            "environment_proxy_present": any(os.environ.get(key) for key in
                                ('HTTPS_PROXY', 'HTTP_PROXY', 'ALL_PROXY', 'https_proxy', 'http_proxy', 'all_proxy'))}
             observation.update({key: self.config[key] for key in ("provider_id", "provider_revision", "credential_revision", "role_id", "role_version", "prompt_version", "tool_version", "team_id", "account_id") if key in self.config})
+            observation['normalized_usage'] = normalized_usage(observation)
+            hint_sent = bool(hint and (hint[1] in (payload if hint[0] == 'body' else request_headers)))
+            observation['cache_hint'] = {'field': hint[1] if hint else None, 'location': hint[0] if hint else None,
+                'sent': hint_sent, 'forwarding_status': 'unconfirmed' if hint_sent else 'not_sent',
+                'key_hash': hashlib.sha256(session.cache_key.encode()).hexdigest() if hint_sent else None,
+                'compatibility_status': 'disabled_after_explicit_rejection' if self._cache_hint_rejected else
+                    'unverified' if hint else 'no_documented_mapping'}
+            if session:
+                observation['prefix_diagnostic'] = observe_payload(session, payload, local_request_id)
+                observation['input_chars'] = observation['prefix_diagnostic']['payload_chars']
+                observation['input_bytes'] = observation['prefix_diagnostic']['payload_bytes']
+                observation['input_size_scope'] = 'serialized_request_payload'
             self.requests.append(observation)
+            self.network_diagnostics.begin_request(observation)
             if session is not None:
                 session.requests.append(observation)
             trace_state = {'response_scope': 'origin'}
             async def trace(event, info):
+                self.network_diagnostics.trace(event, info, observation, started)
                 # httpcore tracing supplies protocol boundaries. Never retain raw
                 # info: it can contain headers, stream objects or private bodies.
                 stage = event.rsplit('.', 1)[0].rsplit('.', 1)[-1]
@@ -904,6 +994,7 @@ class ModelClient:
                     'response.failed', 'response.cancelled'} else stamp + policy['stream_idle_seconds'])
 
             def finish_observation():
+                self.network_diagnostics.finish_request(observation)
                 observation.update(duration_ms=round((time.perf_counter() - started) * 1000, 2),
                                    finished_at=now_datetime(timezone.utc).isoformat())
                 observation['stream_max_idle_ms'] = max(observation['stream_max_idle_ms'],
@@ -930,7 +1021,8 @@ class ModelClient:
                 async with asyncio.timeout_at(deadline) as hard_timer:
                     async with asyncio.timeout_at(started_mono + policy['first_event_seconds']) as progress_timer:
                         response, stream_data = await self._receive_stream(endpoint, payload, network_timeout,
-                            trace, observation, started, progress, deadline=deadline)
+                            trace, observation, started, progress, deadline=deadline, headers=request_headers,
+                            on_request_accepted=session.on_request_accepted if session else None)
             except TimeoutError as exc:
                 finish_observation()
                 code = limit_code if hard_timer and hard_timer.expired() else ('stream_idle_timeout' if progressed else 'first_event_timeout')
@@ -942,26 +1034,25 @@ class ModelClient:
                 raise ModelTimeoutError(code) from exc
             except httpx.RequestError as exc:
                 finish_observation()
+                exception_chain = safe_exception_details(exc, secret=self.key)
+                safe_type = exception_chain[0]['type']
                 error_code = {httpx.ConnectTimeout: 'connect_timeout', httpx.PoolTimeout: 'pool_timeout',
                     httpx.WriteTimeout: 'write_timeout', httpx.ReadTimeout: 'network_read_timeout'}.get(type(exc), 'upstream_transport_error')
-                observation.update(error=type(exc).__name__, error_code=error_code,
+                observation.update(error=safe_type, error_code=error_code,
                                    stream_close_reason='transport_error_before_terminal')
                 # The past generic error cannot be reconstructed. New failures
                 # retain observed boundaries and a bounded type-only cause chain.
-                causes, cause = [], exc
-                while cause is not None and len(causes) < 4:
-                    causes.append(type(cause).__name__)
-                    cause = cause.__cause__
-                observation['exception_types'] = causes
+                observation['exception_types'] = [item['type'] for item in exception_chain]
                 message = str(exc).lower()
                 observation['transport_failure_kind'] = ('disconnected_before_response' if 'without sending a response' in message
                     else 'incomplete_response_body' if 'incomplete' in message or 'peer closed connection' in message
                     else 'transport_error')
                 safe_retry = isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)) and not observation['response_headers_received']
-                if safe_retry and attempt < retries and await retry_later(min(2 ** attempt, 4)):
+                if safe_retry and retry_attempt < retries and await retry_later(min(2 ** retry_attempt, 4)):
+                    retry_attempt += 1
                     continue
                 observation['retry_suppressed'] = observation.get('retry_suppressed') or ('accepted_or_sent_request_outcome_unknown' if not safe_retry else 'attempt_budget')
-                raise ModelError(f"模型网络请求失败（{type(exc).__name__}）；账户保存不受影响", code=error_code) from exc
+                raise ModelError(f"模型网络请求失败（{safe_type}）；账户保存不受影响", code=error_code) from exc
             except asyncio.CancelledError as exc:
                 finish_observation()
                 expired = [(key, value) for key, value in (session.deadlines if session else {}).items() if value <= time.monotonic()]
@@ -1024,15 +1115,28 @@ class ModelClient:
                         raise ReasoningEffortUnsupported(
                             f"模型端点 {self.base_url}（{self.protocol}）拒绝 {observation['reasoning_effort_path']}={self.reasoning_effort} "
                             f"（HTTP {response.status_code}）；请在设置中选择此端点支持的档位或更换端点。没有降档、删参或重试。")
+                    # Only an explicit pre-generation optional-field rejection
+                    # permits this one compatibility retry. A 200 disconnect,
+                    # generic 400 or 5xx never authorizes deleting the hint.
+                    cache_rejected = (hint_sent and response.status_code in {400, 422}
+                        and hint[1] in message and any(term in message for term in
+                            ('unsupported', 'not supported', 'unknown', 'unrecognized', 'not allowed', 'extra inputs')))
+                    if cache_rejected:
+                        observation['cache_hint'].update(compatibility_status='explicitly_rejected', forwarding_status='rejected')
+                        observation['compatibility_action'] = 'disable_optional_cache_hint_after_rejection'
+                        self._cache_hint_rejected = True
+                        (payload if hint[0] == 'body' else request_headers).pop(hint[1], None)
+                        continue
                 if response.status_code in {400, 404, 422} and observation["native_search_requested"]:
                     # Only use the body for classification; never emit it.
                     message = response.text.lower()
                     observation["native_tool_rejected"] = "web_search" in message and any(
                         word in message for word in ("unsupported", "not support", "not allowed", "invalid", "unknown"))
-            if response.status_code in {429, 500, 502, 503, 504} and attempt < retries:
+            if response.status_code in {429, 500, 502, 503, 504} and retry_attempt < retries:
                 # An explicit HTTP rejection differs from an interrupted 200
                 # generation. Bounded backoff still uses the parent deadline.
-                if await retry_later(min(2 ** attempt, 4)):
+                if await retry_later(min(2 ** retry_attempt, 4)):
+                    retry_attempt += 1
                     continue
             if response.status_code >= 400:
                 raise ModelError(f"模型服务 HTTP {response.status_code}；请检查端点、权限、配额与协议配置", code=f'upstream_http_{response.status_code}')
@@ -1080,6 +1184,9 @@ class ModelClient:
                     # This compares provider-reported counters with the request;
                     # it does not independently measure tokens, cost or capability.
                     observation["reported_output_exceeds_requested"] = reported > requested
+            observation['normalized_usage'] = normalized_usage(observation)
+            if hint_sent:
+                observation['cache_hint']['compatibility_status'] = 'accepted_forwarding_unconfirmed'
             if isinstance(data.get("server_side_tool_usage"), dict):
                 observation["server_side_tool_usage"] = _numeric_counters(data["server_side_tool_usage"])
             if isinstance(data.get("id"), str):

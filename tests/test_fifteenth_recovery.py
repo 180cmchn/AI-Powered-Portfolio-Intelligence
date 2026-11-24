@@ -129,7 +129,7 @@ async def test_explicit_single_call_uses_parent_balance_and_never_corrects_or_re
                     yield b'{"id":"single-unknown",'
                     raise httpx.RemoteProtocolError('accepted unknown fixture')
             return httpx.Response(200,stream=Broken())
-        args={'report':'Controlled single-call limited recovery.','completion':'limited',
+        args={'covered_demand_ids': [], 'report':'Controlled single-call limited recovery.','completion':'limited',
             'scope':['SH:518880','SZ:002354','SZ:159599'],'decision_summary':'Controlled fixture.',
             'limitations':['Incomplete prior research remains a gap.']}
         if outcome=='invalid':args['suggestions']=[{'action':'watch','basis':'invalid missing security'}]
@@ -196,7 +196,9 @@ async def test_actual_retry_service_synthesis_publication_and_stop(parent,monkey
         assert payload['tool_choice']=={'type':'function','name':'finish_analysis'}
         assert [t['name'] for t in payload['tools']]==['finish_analysis']
         schema={k:v for k,v in payload['tools'][0].items() if k not in ('type','strict')}
-        assert schema==manifest['production_final_schema']
+        expected_schema=json.loads(json.dumps(manifest['production_final_schema']))
+        expected_schema['parameters']['required'].append('covered_demand_ids')
+        assert schema==expected_schema
         assert payload['reasoning']['effort']=='xhigh' and payload['max_output_tokens']==6000
         if outcome=='unknown':
             class Broken(httpx.AsyncByteStream):
@@ -204,7 +206,7 @@ async def test_actual_retry_service_synthesis_publication_and_stop(parent,monkey
                     yield b'{"id":"accepted-recovery",'
                     raise httpx.RemoteProtocolError('controlled unknown result')
             return httpx.Response(200,stream=Broken())
-        args={'report':'Controlled limited normal-business checkpoint report.','completion':'limited',
+        args={'covered_demand_ids': [], 'report':'Controlled limited normal-business checkpoint report.','completion':'limited',
             'scope':['SH:518880','SZ:002354','SZ:159599'],'decision_summary':'Controlled fixture only.',
             'limitations':['No completed child reports; remaining research unknown.']}
         if outcome=='invalid_twice' or (outcome=='corrected' and len(sent)==1):

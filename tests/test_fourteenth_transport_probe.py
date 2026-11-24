@@ -88,7 +88,11 @@ async def test_two_routes_keep_exact_payload_config_and_independent_budget(tmp_p
     summary = json.loads((args.output/'summary.json').read_text())
     assert routes == ['environment', 'direct']
     assert len(requests) == 2  # Failure is not retried, regardless of original retries=3.
-    assert requests[0][1] == requests[1][1]
+    # Independent actual sessions get independent opaque routing identities;
+    # route comparison still fixes every model/input/tool/effort field.
+    assert requests[0][1]['prompt_cache_key'] != requests[1][1]['prompt_cache_key']
+    assert ({key: value for key, value in requests[0][1].items() if key != 'prompt_cache_key'} ==
+            {key: value for key, value in requests[1][1].items() if key != 'prompt_cache_key'})
     for config in configs:
         assert config['model_retries'] == 0
         assert config['model_name'] == cfg['model_name']

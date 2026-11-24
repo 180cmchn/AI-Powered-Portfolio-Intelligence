@@ -180,7 +180,9 @@ async def test_large_forecast_page_does_not_repeat_targets_or_displace_final_cal
     try:
         await runtime._dispatch('manager', 'market_indicators', {'material_id':material['id'], 'window':20})
         original_seed = json.loads(runtime.manager_session.history[0]['content'])
-        archived = next(item for item in runtime.manager_session.archive if item['record_id'] == original_seed['record_id'])
+        original_excerpt = original_seed['initial_context_excerpt']
+        assert original_excerpt['truncated_for_context'] is True
+        archived = next(item for item in runtime.manager_session.archive if item['record_id'] == original_excerpt['record_id'])
         assert len(json.loads(archived['payload'])['forecast_batch']['items']) == 100
         await runtime.run()
         assert runtime.context['forecast_batch'] == context['forecast_batch']

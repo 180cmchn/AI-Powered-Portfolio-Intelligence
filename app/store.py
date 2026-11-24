@@ -607,6 +607,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
         context = {'account_id': job.get('account_id'), 'recommendations': {},
                    'forecast_batch_id': None, 'forecast_targets': set(),
                    'restricted_targets': None, 'revisable_forecasts': {}}
+        # Existence only: this does not read demand pages or expand the frozen
+        # task scope. Empty/legacy scopes retain their earlier contract.
+        context['require_demand_coverage'] = bool(db.execute('''SELECT 1
+            FROM research_demand_scope_items s JOIN research_demands d ON d.id=s.demand_id
+            WHERE s.job_id=? AND d.account_id=? LIMIT 1''',
+            (job['id'], job.get('account_id') or '')).fetchone())
         if not job.get('account_id'):
             return context
         context['recommendations'] = {row['id']: dict(row) for row in db.execute(
@@ -700,8 +706,12 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 result['forecast_coverage'] = {'expected': sum(coverage.values()),
                     'direction_published': coverage.get('predicted', 0), 'abstained': coverage.get('abstain', 0),
                     **{key: coverage.get(key, 0) for key in ('uncovered', 'waiting_data', 'missed', 'failed')}}
-                db.execute('UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id=? AND input_version=?',
-                           (result.get('synthesis_checkpoint_job_id'), job['account_id'], job['input_version']))
+                if loads(job['config_snapshot'], {}).get('synthesis_max_calls', 4) is not None:
+                    # Preserve the legacy finite-mode marker. Unlimited mode
+                    # retains its actual count; committed publication consumes
+                    # the checkpoint independently in recovery.py.
+                    db.execute('UPDATE synthesis_checkpoints SET resume_count=2 WHERE job_id=? AND account_id=? AND input_version=?',
+                               (result.get('synthesis_checkpoint_job_id'), job['account_id'], job['input_version']))
                 db.execute("UPDATE analyses SET status='stale' WHERE account_id=? AND job_id<>? AND status='current'", (job["account_id"], job_id))
                 db.execute("UPDATE accounts SET analysis_state='current' WHERE id=?", (job["account_id"],))
                 self._save_suggestions(db, job, result)

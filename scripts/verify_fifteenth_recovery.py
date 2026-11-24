@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import asyncio
+import copy
 import hashlib
 from contextlib import contextmanager, closing
 from datetime import datetime
@@ -188,6 +189,27 @@ def prepare(args):
     return manifest
 
 
+def expected_final_schema(database, task_id, base_schema_sha256):
+    """Bind the exact production schema to the real task's frozen demand scope.
+
+    The immutable base hash remains required. Only the production conditional
+    declaration is added, from read-only server state rather than model input.
+    """
+    from app.agents import MANAGER_TOOLS
+    schema = copy.deepcopy(next(tool for tool in MANAGER_TOOLS if tool['name'] == 'finish_analysis'))
+    if business.digest(schema) != base_schema_sha256:
+        raise ValueError('Frozen production final schema changed')
+    store = ReadOnlyStore(database)
+    job = store.job(task_id) if task_id else None
+    if not job:
+        raise ValueError('Actual recovery task is required for the final schema')
+    with store.connect() as db:
+        required = store.delivery_contract_context(job, db)['require_demand_coverage']
+    if required:
+        schema['parameters']['required'].append('covered_demand_ids')
+    return schema, required
+
+
 def install_recovery_budget(path):
     from app.model import ModelClient,ModelBudgetExceeded
     original_init=ModelClient.__init__
@@ -218,7 +240,9 @@ def install_recovery_budget(path):
             schema=payload.get('tools',[{}])[0]
             if self.protocol!='responses':schema=schema.get('function',{})
             schema={key:value for key,value in schema.items() if key not in ('type','strict')}
-            if len(payload.get('tools',[]))!=1 or business.digest(schema)!=recovery['production_final_schema_sha256']:
+            expected_schema, _ = expected_final_schema(recovery['database'],
+                session.task_id if session else None, recovery['production_final_schema_sha256'])
+            if len(payload.get('tools',[]))!=1 or business.digest(schema)!=business.digest(expected_schema):
                 raise ValueError('Complete production final schema must remain intact')
             if 'historical_evidence' in seed:
                 raise ValueError('Normal business recovery cannot inject historical evidence packages')
@@ -272,6 +296,9 @@ def install_recovery_budget(path):
             'material_delivery_receipts_visible':bool(checkpoint.get('material_deliveries')),
             'production_final_schema_sha256':recovery['production_final_schema_sha256'],
             'production_final_schema_matches':True,
+            'actual_final_schema_sha256':business.digest(expected_final_schema(
+                recovery['database'], session.task_id, recovery['production_final_schema_sha256'])[0]),
+            'final_schema_contract':'exact frozen base plus server-frozen demand declaration when required',
             'historical_package_injected':'historical_evidence' in seed}])
         self._recovery_pending=(payload,session)
         try:return await original(self,endpoint,payload,session)

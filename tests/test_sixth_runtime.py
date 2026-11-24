@@ -50,8 +50,8 @@ def call(name, arguments=None):
 
 
 def seed_of(payload):
-    items = payload.get('input', payload.get('messages', []))
-    return next(json.loads(item['content']) for item in items if item.get('role') == 'user' and isinstance(item.get('content'), str) and item['content'].startswith('{'))
+    from tests.context_helpers import effective_context
+    return effective_context(payload)
 
 
 def response(request, payload, calls):
