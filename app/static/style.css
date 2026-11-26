@@ -117,9 +117,15 @@ small,
   z-index: 100;
   background: #fff;
   padding: 12px;
+  opacity: 0;
+  pointer-events: none;
+  clip-path: inset(50%);
 }
-.skip-link:focus {
+.skip-link:focus-visible {
   top: 12px;
+  opacity: 1;
+  pointer-events: auto;
+  clip-path: none;
 }
 .boot-state {
   display: grid;
@@ -2471,4 +2477,457 @@ td details > summary {
 }
 .prompt-error[hidden] {
   display: none;
+}
+
+/* ==========================================================================
+   Twentieth UI upgrade: Wide detail dialogs, task detail & workbench card
+   hierarchy, unified disclosures, and timeline readability.
+   ========================================================================== */
+
+dialog[data-size="wide"] {
+  width: min(820px, calc(100vw - 32px));
+}
+dialog[data-size="wide"] .dialog-header {
+  padding: 20px 28px;
+}
+dialog[data-size="wide"] .dialog-content {
+  padding: 22px 28px 26px;
+}
+dialog[data-size="wide"] .dialog-footer {
+  padding: 16px 28px;
+}
+
+.dialog-content .job-card,
+.dialog-content .report-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.job-header {
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #eef2ec;
+}
+.dialog-content .job-header {
+  padding: 0 0 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e7ede8;
+}
+.job-heading h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #172b33;
+  line-height: 1.45;
+}
+.job-meta {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #5b6e68;
+  margin-top: 6px;
+}
+.job-meta > p,
+.dialog-content .job-meta > p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #5b6e68;
+}
+.job-meta > strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2a4943;
+}
+.job-meta > details {
+  margin-top: 6px;
+}
+.job-meta > .job-id-chip {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: #f1f6f3;
+  color: #46605c;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.job-model-settings {
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: #5b6e68;
+  margin-top: 6px;
+}
+
+.job-delivery {
+  padding: 18px 22px;
+}
+.dialog-content .job-delivery {
+  padding: 0;
+}
+.job-delivery > strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #172b33;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.job-delivery > .source-meta {
+  margin-top: 8px;
+  row-gap: 6px;
+  column-gap: 14px;
+}
+.job-delivery > .actions.section-gap:empty {
+  display: none;
+}
+.job-delivery > p.small.muted,
+.dialog-content .job-delivery > p.small.muted {
+  margin-top: 8px;
+  margin-bottom: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.task-demands,
+.job-checkpoint-details,
+.job-event-details {
+  margin: 14px 22px 0;
+  border: 1px solid #dfe8e2;
+  border-radius: 10px;
+  background: #fcfefd;
+  overflow: hidden;
+}
+.task-demands {
+  background: #f8fbf9;
+}
+.dialog-content .task-demands,
+.dialog-content .job-checkpoint-details,
+.dialog-content .job-event-details {
+  margin: 18px 0 0;
+}
+.task-demands > summary,
+.job-checkpoint-details > summary,
+.job-event-details > summary {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d3538;
+  background: #f2f7f4;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.task-demands > summary::-webkit-details-marker,
+.job-checkpoint-details > summary::-webkit-details-marker,
+.job-event-details > summary::-webkit-details-marker {
+  display: none;
+}
+.task-demands > summary:hover,
+.job-checkpoint-details > summary:hover,
+.job-event-details > summary:hover {
+  color: var(--teal);
+  background: #ebf3ee;
+}
+.task-demands > summary:focus-visible,
+.job-checkpoint-details > summary:focus-visible,
+.job-event-details > summary:focus-visible {
+  outline: 2px solid #71ac9d;
+  outline-offset: -2px;
+}
+.task-demands > summary::after,
+.job-checkpoint-details > summary::after,
+.job-event-details > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 2px;
+  border-right: 1.6px solid #6c7d78;
+  border-bottom: 1.6px solid #6c7d78;
+  transform: rotate(-45deg);
+  transition: transform 0.16s ease, border-color 0.15s ease;
+}
+.task-demands[open] > summary,
+.job-checkpoint-details[open] > summary,
+.job-event-details[open] > summary {
+  border-bottom: 1px solid #e3ece6;
+}
+.task-demands[open] > summary::after,
+.job-checkpoint-details[open] > summary::after,
+.job-event-details[open] > summary::after {
+  transform: rotate(45deg);
+  border-color: var(--teal);
+}
+
+.task-demand-list {
+  padding: 12px 16px;
+  display: grid;
+  gap: 10px;
+}
+.task-demand-list .task-demand-item,
+.task-demand-list .task-demand-item:first-child,
+.task-demand-list .task-demand-item:last-child {
+  background: #ffffff;
+  border: 1px solid #e4ece7;
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.task-demand-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.task-demand-head strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #172b33;
+}
+.task-demand-list .task-demand-item .task-demand-meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.task-demand-list .task-demand-item > details {
+  margin-top: 8px;
+  border: 1px solid #e1eae4;
+  border-radius: 7px;
+  background: #f8fbf9;
+  padding: 6px 10px;
+}
+.demand-key-chip {
+  margin-top: 8px;
+  background: #f1f6f3;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #46605c;
+  overflow-wrap: anywhere;
+}
+
+.synthesis-checkpoint {
+  padding: 14px 16px;
+}
+.synthesis-checkpoint p,
+.dialog-content .synthesis-checkpoint p {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #2f4543;
+}
+.synthesis-checkpoint p.small.muted,
+.dialog-content .synthesis-checkpoint p.small.muted {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.synthesis-checkpoint p:last-child {
+  margin-bottom: 0;
+}
+
+.job-events {
+  border-top: 0;
+  padding: 18px 20px 18px 24px;
+  background: #fcfefd;
+}
+.job-events .event {
+  position: relative;
+  border-left: 1.5px solid #d6e3da;
+  padding: 0 0 18px 20px;
+  font-size: 12px;
+  color: #475d58;
+  min-width: 0;
+  max-width: 100%;
+}
+.job-events .event:last-child {
+  padding-bottom: 0;
+  border-left-color: transparent;
+}
+.job-events .event:before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  background: #8bb39d;
+  border: 2px solid #fcfefd;
+  border-radius: 50%;
+}
+.job-events .event.is-error:before {
+  background: #d66a5e;
+}
+.job-events .event-head {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: #5b6e68;
+  margin-bottom: 4px;
+}
+.event-actor {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #eef3ef;
+  color: #24403a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.event-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1b3438;
+}
+.event-type.is-error {
+  color: #9e3d32;
+}
+.event-head time {
+  margin-left: auto;
+  font-size: 11px;
+  color: #7e8f88;
+  font-variant-numeric: tabular-nums;
+}
+.job-events .event > p,
+.dialog-content .job-events .event > p {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #2f4543;
+  margin: 6px 0 0;
+}
+.job-events .event > details.event-raw-details {
+  margin-top: 8px;
+  border: 1px solid #e1eae4;
+  border-radius: 7px;
+  background: #f6faf7;
+  padding: 7px 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+.job-events .event > details.event-raw-details > summary {
+  font-size: 12px;
+  font-weight: 500;
+  color: #2a4943;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.job-events .event > details.event-raw-details > summary::-webkit-details-marker {
+  display: none;
+}
+.job-events .event > details.event-raw-details[open] > summary {
+  padding-bottom: 7px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e2ebe5;
+}
+.job-events .event > details.event-raw-details pre {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #314944;
+  background: #ffffff;
+  border: 1px solid #e4ece7;
+  border-radius: 6px;
+  padding: 10px 12px;
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre;
+  max-width: 100%;
+}
+.job-events > p.small.muted,
+.dialog-content .job-events > p.small.muted {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.job-actions {
+  padding: 14px 22px 18px;
+}
+.dialog-content .job-actions {
+  padding: 18px 0 2px;
+  margin-top: 18px;
+  border-top: 1px solid #e8eee9;
+}
+
+@media (max-width: 700px) {
+  dialog[data-size="wide"] {
+    width: calc(100vw - 24px);
+  }
+  dialog[data-size="wide"] .dialog-header,
+  dialog[data-size="wide"] .dialog-content {
+    padding: 16px;
+  }
+  dialog[data-size="wide"] .dialog-footer {
+    padding: 12px 16px;
+  }
+  .job-header {
+    padding: 15px 16px;
+    gap: 11px;
+  }
+  .job-delivery {
+    padding: 15px 16px;
+  }
+  .dialog-content .job-header {
+    padding: 0 0 14px;
+    margin-bottom: 14px;
+  }
+  .dialog-content .job-delivery {
+    padding: 0;
+  }
+  .job-meta,
+  .job-meta > p,
+  .dialog-content .job-meta > p {
+    font-size: 11.5px;
+  }
+  .task-demands,
+  .job-checkpoint-details,
+  .job-event-details {
+    margin: 12px 16px 0;
+  }
+  .dialog-content .task-demands,
+  .dialog-content .job-checkpoint-details,
+  .dialog-content .job-event-details {
+    margin: 14px 0 0;
+  }
+  .task-demand-list {
+    padding: 10px 12px;
+  }
+  .job-events {
+    padding: 14px 14px 14px 18px;
+  }
+  .job-events .event {
+    padding: 0 0 16px 16px;
+  }
+  .job-actions {
+    justify-content: flex-start;
+    padding: 12px 16px 16px;
+  }
+  .dialog-content .job-actions {
+    padding: 14px 0 2px;
+    margin-top: 14px;
+  }
 }

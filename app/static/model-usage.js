@@ -6,7 +6,7 @@ const finite = value => typeof value === "number" && Number.isFinite(value);
 const number = value => finite(value)
   ? value.toLocaleString("zh-CN", {maximumFractionDigits: 6}) : "未知";
 const percent = value => finite(value)
-  ? `${number(value * 100)}%` : "未知";
+  ? `${(value * 100).toLocaleString("zh-CN", {maximumFractionDigits: 1})}%` : "未知";
 const kpiPercent = value => finite(value)
   ? `${(value * 100).toLocaleString("zh-CN", {maximumFractionDigits: 1})}%` : "未知";
 const stage = value => ({

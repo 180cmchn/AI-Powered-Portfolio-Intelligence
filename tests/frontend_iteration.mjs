@@ -98,7 +98,28 @@ try {
   await page.locator('[data-action="global-result"]').click();
   await page.getByText('公共研究协议样例', {exact:true}).waitFor();
   assert.ok((await page.locator('#dialog').textContent()).includes('候选范围 v1'));
+  // F2: rich detail dialogs are wide on desktop and must drop data-size on close.
+  const globalResultDialog = await page.locator('#dialog').evaluate(node => ({
+    open: node.open,
+    size: node.dataset.size,
+    width: node.getBoundingClientRect().width,
+  }));
+  assert.equal(globalResultDialog.open, true, '公共研究报告弹窗必须保持打开');
+  assert.equal(globalResultDialog.size, 'wide', `公共研究报告弹窗必须是宽幅，实际 ${globalResultDialog.size}`);
+  assert.ok(globalResultDialog.width >= 700, `公共研究报告弹窗宽度不足 700px：${globalResultDialog.width}`);
   await page.locator('#dialog .dialog-header button').click();
+  await page.waitForFunction(() => {
+    const dialog = document.querySelector('#dialog');
+    return Boolean(dialog) && !dialog.open && !dialog.hasAttribute('data-size');
+  });
+  const globalResultClosed = await page.locator('#dialog').evaluate(node => ({
+    open: node.open,
+    size: node.dataset.size,
+    hasSizeAttribute: node.hasAttribute('data-size'),
+  }));
+  assert.equal(globalResultClosed.open, false, '公共研究报告弹窗必须已关闭');
+  assert.equal(globalResultClosed.size, undefined, `关闭后 data-size 必须清除，实际 ${globalResultClosed.size}`);
+  assert.equal(globalResultClosed.hasSizeAttribute, false, '关闭后 data-size 属性必须移除');
   const holdingsRead=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/accounts/${id}` && response.request().method()==='GET');
   await page.locator('nav a[href="#holdings"]').click();
   await holdingsRead;await page.locator('.loading-line').waitFor({state:'hidden'});
