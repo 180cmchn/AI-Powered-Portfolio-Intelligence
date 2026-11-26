@@ -14,7 +14,7 @@ from app.research_progress import tool_round_signature
 from app.service import ResearchTools
 from app.store import Store
 from tests.delivery_helpers import delivery_arguments
-from tests.test_ninth_calculation_context import config, output
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, forced_function, output
 
 
 def call(name, arguments=None):
@@ -144,9 +144,9 @@ async def test_three_semantically_identical_lookup_rounds_force_final_after_real
         requests.append(payload)
         number = len(requests)
         if number == 4:
-            assert tool_names(payload) == {'finish_analysis'}
+            assert_hot_closeout(payload, requests[-2], 'finish_analysis')
             return output(protocol, [('finish_analysis', delivery_arguments('三轮查阅无新增业务事实，提交有限结果与未知。', covered_demand_ids=[]))])
-        assert number < 4 and tool_names(payload) != {'finish_analysis'}
+        assert number < 4 and forced_function(payload) != 'finish_analysis'
         frozen_clock.advance(seconds=1)
         store.review_recommendations({}, frozen_clock.instant.astimezone(SHANGHAI))
         orders = ([0, 1, 2, 3], [3, 1, 0, 2], [2, 0, 3, 1])
@@ -180,7 +180,7 @@ async def test_new_business_content_continues_beyond_three_lookup_rounds(
         payload = json.loads(request.content)
         requests.append(payload)
         number = len(requests)
-        assert tool_names(payload) != {'finish_analysis'}
+        assert forced_function(payload) != 'finish_analysis'
         if number == 6:
             return output(protocol, [('finish_analysis', delivery_arguments('业务内容持续变化，取得五次新事实后自然提交。', covered_demand_ids=[]))])
         frozen_clock.advance(seconds=1)
@@ -216,7 +216,7 @@ async def test_actual_live_child_wait_remains_useful_in_both_protocols(monkeypat
             await release.wait()
             return output(protocol, [('submit_report', {'summary': 'Actual live child completed the local fixture.'})])
         requests.append(payload)
-        assert tool_names(payload) != {'finish_analysis'}
+        assert forced_function(payload) != 'finish_analysis'
         if len(requests) <= 4:
             assert not child.task_handle.done()
             if len(requests) == 4:

@@ -15,7 +15,7 @@ from app.context import compact, recall
 from app.model import ModelClient
 from tests.delivery_helpers import delivery_arguments
 from tests.test_fourteenth_deadlines import ControlledDeadlineClock
-from tests.test_ninth_calculation_context import config, output, seed, setup
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, output, seed, setup
 
 
 @pytest.mark.parametrize('operation,inputs,result,unit', [
@@ -95,7 +95,7 @@ async def test_short_expense_series_is_recheckable_in_final_http(tmp_path, monke
         assert summary['result'] == str(sum(range(1, count + 1)))
         assert summary['inputs_visibility'] == {'status': 'complete', 'source': 'output.inputs'}
         assert summary['unit'] == 'input-dependent; not inferred'
-        assert {item.get('name') or item.get('function', {}).get('name') for item in payload['tools']} == {'finish_analysis'}
+        assert_hot_closeout(payload, requests[0], 'finish_analysis')
         assert visible['calculation_indexes']['omitted_summary_count'] == 0
         return output(protocol, [('finish_analysis', delivery_arguments(report='按任务给定的元口径汇总费用；逐项输入与合计可复核。'))])
 
@@ -260,7 +260,7 @@ async def test_child_deadline_submission_retains_real_short_inputs(tmp_path, mon
         assert [item['result'] for item in summaries] == ['6.67', '0.63']
         assert all(item['agent_id'] == visible['runtime_status']['agent_id'] for item in summaries)
         assert all(item['research_round'] == 1 for item in summaries)
-        assert {item.get('name') or item.get('function', {}).get('name') for item in payload['tools']} == {'submit_report'}
+        assert_hot_closeout(payload, requests[0], 'submit_report')
         assert '不能调用 recall_context' in visible['calculation_access']
         return output(protocol, [('submit_report', {'summary': '短算式输入与结果实际可见，未补造来源和期间。'})])
 

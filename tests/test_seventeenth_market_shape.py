@@ -23,7 +23,8 @@ from app.model import ModelClient
 from app.service import ResearchTools
 from app.store import Store
 from tests.delivery_helpers import delivery_arguments
-from tests.test_ninth_calculation_context import config, output, seed, setup
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, forced_function, output, seed, setup
+from tests.test_seventeenth_child_final_evidence import wire_tool_exchanges
 
 
 GOLD_CLOSES = [('2026-11-02', '7.941'), ('2026-11-03', '7.989'),
@@ -214,7 +215,7 @@ async def test_geometry_projection_keeps_each_returned_value_and_pagination_with
 
 @pytest.mark.asyncio
 async def test_exact_facts_survive_production_runtime_in_final_model_payload(tmp_path, monkeypatch):
-    cfg = config(monkeypatch, max_model_calls=3)
+    cfg = config(monkeypatch, max_model_calls=4)
     store, research_tools, context = setup(tmp_path, cfg)
     gold = saved(store, GOLD_CLOSES)
     equity = saved(store, rows=[ZERO_UPPER], symbol='SZ:002354')
@@ -228,6 +229,7 @@ async def test_exact_facts_survive_production_runtime_in_final_model_payload(tmp
                 ('query_market_rows', {'material_id': equity['id'], 'start': '2026-10-26',
                     'end': '2026-10-26', 'fields': CANDLE_FIELDS})])
         if len(payloads) == 2:
+            assert forced_function(payload) != 'finish_analysis'
             return output('responses', [('calculate', {'operation': 'subtract', 'values': ['8.83', '8.83']})])
         visible = seed(payload)
         summary = next(item for item in visible['calculation_summaries'] if item['tool'] == 'market_indicators')
@@ -239,7 +241,14 @@ async def test_exact_facts_survive_production_runtime_in_final_model_payload(tmp
         assert geometry['candle_geometry'][0]['time'] == '2026-10-26'
         assert geometry['candle_geometry'][0]['candle_status'] == 'ok'
         assert 'open' not in geometry['candle_geometry'][0]
-        assert {tool.get('name') for tool in payload['tools']} == {'finish_analysis'}
+        calculations = wire_tool_exchanges(payload, 'calculate')
+        assert len(calculations) == 1
+        arguments, calculation = calculations[0]
+        assert arguments == {'operation': 'subtract', 'values': ['8.83', '8.83']}
+        assert 'inputs' in calculation, calculation
+        assert calculation['inputs'] == ['8.83', '8.83']
+        assert Decimal(calculation['result']) == 0
+        assert_hot_closeout(payload, payloads[-2], 'finish_analysis')
         return output('responses', [('finish_analysis', delivery_arguments(report='三个已存收盘上涨间隔；开盘等于最高价，上影为零。'))])
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
         ModelClient(config, before_request, httpx.MockTransport(handler)))

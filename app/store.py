@@ -604,7 +604,7 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
 
     def delivery_contract_context(self, job, db):
         """Read only authorized indexes; no model/network, mutation or deadline lease."""
-        context = {'account_id': job.get('account_id'), 'recommendations': {},
+        context = {'account_id': job.get('account_id'), 'recommendations': {}, 'expired_recommendations': {},
                    'forecast_batch_id': None, 'forecast_targets': set(),
                    'restricted_targets': None, 'revisable_forecasts': {}}
         # Existence only: this does not read demand pages or expand the frozen
@@ -617,6 +617,9 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
             return context
         context['recommendations'] = {row['id']: dict(row) for row in db.execute(
             "SELECT id,security_id,state,updated_at FROM recommendations WHERE account_id=? AND state IN ('watching','triggered','needs_review')",
+            (job['account_id'],))}
+        context['expired_recommendations'] = {row['id']: dict(row) for row in db.execute(
+            "SELECT id,security_id,state,updated_at FROM recommendations WHERE account_id=? AND state='expired'",
             (job['account_id'],))}
         batch = db.execute('SELECT id FROM forecast_batches WHERE job_id=? AND account_id=?',
                            (job['id'], job['account_id'])).fetchone()
@@ -640,8 +643,10 @@ class Store(MaterialStore, RecommendationStore, SchedulingStore, ReferenceStore,
                 checked['_delivery_preflight_job_id'] = job['id']
                 return checked
         scope = self.delivery_scope(job, db)
+        context = self.delivery_contract_context(job, db)
+        context['rechecking_preflight'] = isinstance(result, dict) and result.get('_delivery_preflight_job_id') == job['id']
         return validate_final_result(result, allowed_scope=scope['allowed'], required_scope=scope['required'],
-                                     contract_context=self.delivery_contract_context(job, db))
+                                     contract_context=context)
 
     def retain_delivery_candidate(self, job_id, result, reason):
         """A failed commit preserves visible authored work, never a published report."""

@@ -107,11 +107,55 @@ def usage_summary(requests):
         identity.update(route=(request.get('model_network') or {}).get('route'), request_category=category)
         key = json.dumps(identity, sort_keys=True, default=str)
         grouped.setdefault(key, {'identity': identity, 'requests': []})['requests'].append(request)
+        search = request.get('native_search_requested')
         sequence.append({**identity, **normalized_usage(request),
             'normalized_usage': normalized_usage(request),
+            'native_search_requested': search if isinstance(search, bool) else None,
+            'cache_epoch_reason': request.get('cache_epoch_reason'),
             **{key: copy.deepcopy(request.get(key)) for key in ('local_request_id', 'request_id', 'response_id',
                 'started_at', 'duration_ms', 'error', 'cache_hint', 'prefix_diagnostic')},
             'cost_known': bool(request.get('cost_known')), 'cost': copy.deepcopy(request.get('cost'))})
     result['groups'] = [{**group['identity'], **_summary(group['requests'])} for group in grouped.values()]
     result['sequence'] = sequence
     return result
+
+
+def compact_usage_summary(summary):
+    """Expose cache counts for task lists without returning request or group rows."""
+    if not isinstance(summary, dict) or summary.get('cache_summary') is None:
+        return None
+    reasons = {}
+    breakdown = {key: dict(count=0, paired=0, reported_input_tokens=0, cache_read_tokens=0)
+                 for key in ('non_search_all', 'non_search_cross_turn', 'search_all')}
+    for row in summary.get('sequence') or ():
+        change = (row.get('prefix_diagnostic') or {}).get('change_reason')
+        epoch = row.get('cache_epoch_reason')
+        reason = change or epoch or 'unknown'
+        reasons[reason] = reasons.get(reason, 0) + 1
+        search = row.get('native_search_requested')
+        if search is True:
+            cohorts = ['search_all']
+        elif search is False:
+            cohorts = ['non_search_all']
+            if change != 'first' and epoch != 'first' and row.get('request_category') != 'first_session_request':
+                cohorts.append('non_search_cross_turn')
+        else:
+            continue
+        usage = row.get('normalized_usage') or row
+        inp, read = usage.get('input_tokens'), usage.get('cache_read_tokens')
+        for key in cohorts:
+            counts = breakdown[key]
+            counts['count'] += 1
+            if numeric(inp) and numeric(read):
+                counts['paired'] += 1
+                counts['reported_input_tokens'] += inp
+                counts['cache_read_tokens'] += read
+    for counts in breakdown.values():
+        inp = counts['reported_input_tokens']
+        counts['weighted_read_ratio'] = counts['cache_read_tokens'] / inp if inp else None
+        if not counts['paired']:
+            counts.update(reported_input_tokens=None, cache_read_tokens=None)
+    return {**{key: summary.get(key) for key in ('requests', 'duration_ms', 'failed_requests')},
+        'cache_summary': copy.deepcopy(summary.get('cache_summary')),
+        'normalized_totals': copy.deepcopy(summary.get('normalized_totals')),
+        'prefix_reason_counts': reasons, 'native_search_breakdown': breakdown}

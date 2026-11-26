@@ -20,7 +20,7 @@ from app.store import Store, dumps, loads
 from tests.context_helpers import effective_context
 from tests.delivery_helpers import delivery_arguments
 from tests.test_eleventh_ledger import store, account, trade
-from tests.test_ninth_calculation_context import config, output, setup
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, output, setup
 
 
 FIXTURE = Path(__file__).with_name('fixtures') / 'seventeenth-financial-signs.json'
@@ -138,7 +138,7 @@ async def test_original_signs_and_correction_reach_actual_manager_synthesis_payl
         assert saved_id in wire and source['id'] in wire
         if len(requests) == 5:
             return output(protocol, [('finish_analysis', {'report': '缺少发布契约字段的受控候选；营收同比下降2.04%。'})])
-        assert tool_names == ['finish_analysis']
+        assert_hot_closeout(payload, requests[-2], 'finish_analysis')
         return output(protocol, [('finish_analysis', delivery_arguments(
             '营收同比下降2.04%，归母和扣非分别增长19.11%、17.57%；利润改善不能概括为营收增长。当前保留现金，待营收恢复并结合价格与估值复核。',
             scope=('account',), material_ids=[source['id'], saved_id]))])

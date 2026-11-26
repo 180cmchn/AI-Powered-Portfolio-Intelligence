@@ -1,5 +1,5 @@
 import { createSixthUI } from "./sixth.js";
-import { modelUsageView, requestUsageText } from "./model-usage.js";
+import { modelUsageView, requestUsageText, compactUsageStrip, aggregateJobUsage, formatSearchBreakdown, prefixDistHTML, kpiPercent } from "./model-usage.js";
 import { createLedgerUI } from "./ledger.js";
 import { reconcile, patchHTML, readingTransaction } from "./view-state.js";
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -441,6 +441,7 @@ async function operation(callback, { key = Symbol(), label = "正在加载" } = 
   }
 }
 const eventReads = new Map();
+const legacyReportUsageHydrated = new Set();
 const EVENT_SEGMENT_LIMIT = 2000;
 const eventCacheKey = (jobId, surface = "main") => surface === "main" ? jobId : `${surface}:${jobId}`;
 function eventList(jobId, surface = "main") {
@@ -479,6 +480,92 @@ async function loadJobEvents(jobId, surface = "main") {
   })();
   eventReads.set(cacheKey,request);
   try { await request; } finally { if(eventReads.get(cacheKey)===request)eventReads.delete(cacheKey); }
+}
+async function ensureLegacyUsageEvents(jobId, sequence, surface = "main", { maxPages = 8, isCurrent } = {}) {
+  if (!jobId || !Array.isArray(sequence) || !sequence.length) return { updated: false, completed: true };
+  const missingIds = new Set(
+    sequence
+      .filter(r => r && typeof r.native_search_requested !== "boolean" && r.local_request_id)
+      .map(r => r.local_request_id),
+  );
+  if (!missingIds.size) return { updated: false, completed: true };
+  const coveredAll = () => {
+    const raws = rawRequestsForJob(jobId) || [];
+    const known = new Set(raws.map(r => r?.local_request_id).filter(Boolean));
+    for (const id of missingIds) {
+      if (!known.has(id)) return false;
+    }
+    return true;
+  };
+  if (coveredAll()) return { updated: false, completed: true };
+  const cacheKey = eventCacheKey(jobId, surface);
+  if (surface === "dialog" && !state.events[cacheKey] && state.events[jobId]) {
+    state.events[cacheKey] = {
+      items: [...state.events[jobId].items],
+      cursor: state.events[jobId].cursor,
+      more: state.events[jobId].more,
+    };
+  }
+  const countRaw = () => (rawRequestsForJob(jobId) || []).length;
+  const countBool = () => (rawRequestsForJob(jobId) || []).filter(r => typeof r?.native_search_requested === "boolean").length;
+  const beforeCount = countRaw();
+  const beforeBoolCount = countBool();
+  let pagesFetched = 0;
+  let failed = false;
+  while (pagesFetched < maxPages) {
+    if (isCurrent && !isCurrent()) return { updated: false, completed: false };
+    if (coveredAll()) break;
+    const cache = state.events[cacheKey];
+    if (cache && !cache.more) break;
+    const prevCursor = cache?.cursor ?? 0;
+    const prevLen = cache?.items?.length ?? 0;
+    pagesFetched += 1;
+    try {
+      await loadJobEvents(jobId, surface);
+    } catch {
+      failed = true;
+      break;
+    }
+    if (isCurrent && !isCurrent()) return { updated: false, completed: false };
+    const nextCache = state.events[cacheKey];
+    if (!nextCache) {
+      failed = true;
+      break;
+    }
+    if (coveredAll() || !nextCache.more) break;
+    if (nextCache.cursor <= prevCursor && (nextCache.items?.length ?? 0) <= prevLen) {
+      failed = true;
+      break;
+    }
+  }
+  const updated = countRaw() > beforeCount || countBool() > beforeBoolCount;
+  return { updated, completed: !failed };
+}
+function hydrateLegacyResearchReports() {
+  if (state.route !== "research" || !state.accountId) return;
+  const accountId = state.accountId;
+  const generation = navigationGeneration;
+  for (const report of state.analyses || []) {
+    const seq = report?.result?.model_usage?.sequence;
+    if (!report?.job_id || !Array.isArray(seq)) continue;
+    const hasMissing = seq.some(r => r && typeof r.native_search_requested !== "boolean" && r.local_request_id);
+    if (!hasMissing) continue;
+    const dedupeKey = `${accountId}:${report.job_id}`;
+    if (legacyReportUsageHydrated.has(dedupeKey)) continue;
+    legacyReportUsageHydrated.add(dedupeKey);
+    const isCurrent = () => state.accountId === accountId && navigationGeneration === generation;
+    ensureLegacyUsageEvents(report.job_id, seq, "main", { isCurrent })
+      .then(({ updated, completed }) => {
+        if (!isCurrent() || !completed) {
+          legacyReportUsageHydrated.delete(dedupeKey);
+          return;
+        }
+        if (updated && state.route === "research") render();
+      })
+      .catch(() => {
+        legacyReportUsageHydrated.delete(dedupeKey);
+      });
+  }
 }
 async function loadAccount({retryCatalogs=false}={}) {
   const read = ++state.accountRead, route = state.route, accountId = state.accountId;
@@ -631,7 +718,7 @@ function notice() {
 }
 const taskKindNames = {account_analysis:"账户综合分析", account_comprehensive:"账户综合分析", security_research:"单证券研究", holding_update:"持仓更新研究", holdings_update:"持仓更新研究",ledger_update:"账本更新研究", close_summary:"收盘总结", closing_summary:"收盘总结", forecast_batch:"正式预测批次", material_review:"资料复核", manual_retry:"手动重试", retry:"手动重试"};
 const triggerNames = {manual_ledger:"手动买卖 / 校正记账", funds_adjustment:"资金调整",user_click:"用户点击", user:"用户点击", holdings_save:"保存持仓", save_holdings:"保存持仓", timer:"定时触发", scheduler:"定时触发", price_event:"价格事件", material_event:"资料事件", recovery:"服务恢复", save_universe:"保存自选与候选", unknown:"历史来源未知"};
-const phaseNames = {queued:"等待执行", pending:"等待执行", waiting:"等待执行", waiting_config:"等待配置", waiting_scope:"等待确认研究范围", preparing:"准备冻结输入", fetching:"取数", data_fetch:"取数", research:"专题研究", researching:"专题研究", synthesis:"汇总", synthesizing:"汇总", publishing:"发布", published:"已发布", completed:"执行结束", failed:"执行失败"};
+const phaseNames = {queued:"等待执行", pending:"等待执行", waiting:"等待执行", waiting_config:"等待配置", waiting_scope:"等待确认研究范围", preparing:"准备冻结输入", fetching:"取数", data_fetch:"取数", research:"专题研究", researching:"专题研究", synthesis:"汇总", synthesizing:"汇总", budget_closeout:"收尾汇总", publishing:"发布", published:"已发布", completed:"执行结束", failed:"执行失败", child_deadline:"子任务超时", model_request:"模型请求", delivery:"交付校验", terminal_submission:"终态报告提交", tool_execution:"工具调用", environment:"运行环境", config:"模型配置"};
 function originActionName(action) {
   return ({analyze:"立即分析", "analyze-symbol":"研究此证券", "retry-job":"重试当前版本", "save-account":"保存账户", account_saved:"保存账户", universe_changed:"保存自选与候选", manual:"立即分析", "历史来源未知":"历史来源未知"})[action] || (String(action).startsWith("manual_security:") ? "研究此证券" : null);
 }
@@ -1021,11 +1108,15 @@ function recommendationState(rec) {
 }
 function recommendationCard(rec) {
   const actions = { watch: "观察", observe: "观察", buy_candidate: "买入候选", add_candidate: "增持候选", hold: "持有", reduce_candidate: "减仓候选", exit_candidate: "退出候选" };
+  const actionTone = { buy_candidate: "live", add_candidate: "live", reduce_candidate: "warning", exit_candidate: "error" }[rec.action] || "neutral";
   const review = recommendationState(rec);
   const priceLabels = { met: "价格条件已满足", not_met: "价格条件未满足", stale: "报价过期 · 条件待更新", uncomputable: "价格条件暂不可计算", no_conditions: "未设价格条件", unknown: "价格条件尚未检查" };
   const reviewLabels = { valid: "判断已复核", watching: "判断仍在跟踪", triggered: "判断仍在跟踪", needs_review: "判断待复核", expired: "已过期", revoked: "已撤销" };
   const followup = rec.review_followup;
-  return `<article class="source-item recommendation" data-recommendation-id="${e(rec.id)}"><div class="split-heading"><h3>${e(rec.symbol || rec.security_id || "账户")} · ${e(actions[rec.action] || rec.action || "观察")}</h3>${badge(reviewLabels[review] || review, review === "needs_review" ? "warning" : "neutral")}</div><div class="source-meta">${badge(priceLabels[rec.price_state] || priceLabels.unknown, ["met", "stale", "uncomputable"].includes(rec.price_state) ? "warning" : "neutral")}${rec.observed_price !== undefined ? `<span>观察价格 ${number(rec.observed_price)}</span>` : ""}${rec.price_observed_at ? `<span>${date(rec.price_observed_at)}</span>` : ""}</div>${rec.price_state === "met" && review === "needs_review" ? '<p class="small muted">数值条件满足；投资判断尚未重新确认。</p>' : ""}<div class="source-meta"><span>持仓 v${e(rec.input_version)}</span><span>生成 ${date(rec.generated_at || rec.created_at)}</span><span>${rec.valid_until ? `有效期至 ${date(rec.valid_until)}` : "未设固定有效期"}</span></div>${rec.basis ? markdown(rec.basis) : ""}${array(rec.price_conditions).length ? `<div class="section-gap"><h4>可计算条件</h4>${objectView(rec.price_conditions)}</div>` : ""}${rec.agent_conditions ? `<div class="section-gap"><h4>仍需 Agent 判断</h4>${objectView(rec.agent_conditions)}</div>` : ""}${rec.review_reason ? `<p class="error-detail">${e(rec.review_reason)}</p>` : ""}${followup ? `<div class="source-meta recommendation-followup">复核处理：${e({ pending: "等待安排", assigned: "已安排研究", completed: "本轮研究已完成", waiting_review: "本轮未解决 · 可重新安排复核", cancelled: "已取消 · 可重新安排复核", superseded: "已由新版任务接替", failed: "处理失败，可重试" }[followup.state] || followup.state || "已登记")}${followup.job_id ? `<span>任务 ${e(followup.job_id)}</span>` : ""}</div>` : ""}${review === "needs_review" && !["pending", "assigned"].includes(followup?.state) ? `<button class="button compact section-gap" data-action="retry-recommendation" data-id="${e(rec.id)}">重新安排复核</button>` : ""}${evidenceReferences(rec)}</article>`;
+  const replaces = array(rec.replaces_ids);
+  const priceConditions = array(rec.price_conditions);
+  const expired = review === "expired";
+  return `<article class="source-item recommendation ${expired ? "is-expired" : ""}" data-recommendation-id="${e(rec.id)}"><div class="split-heading rec-header"><div class="rec-title-group">${badge(actions[rec.action] || rec.action || "观察", actionTone)}<h3>${e(rec.symbol || rec.security_id || "账户")}</h3></div>${badge(reviewLabels[review] || review, review === "needs_review" ? "warning" : expired || review === "revoked" ? "error" : "neutral")}</div><div class="source-meta rec-price-bar">${badge(priceLabels[rec.price_state] || priceLabels.unknown, ["met", "stale", "uncomputable"].includes(rec.price_state) ? "warning" : "neutral")}${rec.observed_price !== undefined ? `<span>观察价格 <strong class="numeric">${number(rec.observed_price)}</strong></span>` : ""}${rec.price_observed_at ? `<span>${date(rec.price_observed_at)}</span>` : ""}</div>${rec.price_state === "met" && review === "needs_review" ? '<p class="small rec-warning-note">数值条件满足；投资判断尚未重新确认。</p>' : ""}<div class="source-meta rec-meta-row"><span>持仓 v${e(rec.input_version)}</span>${rec.revision ? `<span>修订 r${e(rec.revision)}</span>` : ""}<span>生成 ${date(rec.generated_at || rec.created_at)}</span><span class="${expired ? "negative" : ""}">${rec.valid_until ? `有效期至 ${date(rec.valid_until)}${expired ? "（已过期）" : ""}` : "未设固定有效期"}</span></div>${replaces.length || rec.replaced_by_id ? `<div class="rec-lineage">${replaces.length ? `<span>替代先前建议：${replaces.map(id => `<code class="inline-code">${e(id)}</code>`).join(" ")}</span>` : ""}${rec.replaced_by_id ? `<span>已被新建议替代：<code class="inline-code">${e(rec.replaced_by_id)}</code></span>` : ""}</div>` : ""}${rec.basis ? `<div class="rec-basis">${markdown(rec.basis)}</div>` : ""}${priceConditions.length || rec.agent_conditions ? `<div class="rec-conditions-grid">${priceConditions.length ? `<div class="rec-condition-card is-price"><h4>可计算价格条件</h4>${objectView(priceConditions)}</div>` : ""}${rec.agent_conditions ? `<div class="rec-condition-card is-agent"><h4>仍需 Agent 判断</h4>${objectView(rec.agent_conditions)}</div>` : ""}</div>` : ""}${rec.review_reason ? `<p class="error-detail">${e(rec.review_reason)}</p>` : ""}${followup ? `<div class="source-meta recommendation-followup">复核处理：${e({ pending: "等待安排", assigned: "已安排研究", completed: "本轮研究已完成", waiting_review: "本轮未解决 · 可重新安排复核", cancelled: "已取消 · 可重新安排复核", superseded: "已由新版任务接替", failed: "处理失败，可重试" }[followup.state] || followup.state || "已登记")}${followup.job_id ? `<span class="mono">任务 ${e(followup.job_id)}</span>` : ""}</div>` : ""}${review === "needs_review" && !["pending", "assigned"].includes(followup?.state) ? `<button class="button compact section-gap" data-action="retry-recommendation" data-id="${e(rec.id)}">重新安排复核</button>` : ""}${evidenceReferences(rec)}</article>`;
 }
 function recommendations() {
   const activeTotal = state.recommendationCoverage.recommendations?.total;
@@ -1061,7 +1152,7 @@ function reportIdentityView(report, compact = false) {
 }
 function reportCard(report, index) {
   const a = state.account, expired = report.result?.valid_until && new Date(report.result.valid_until).getTime() <= Date.now();
-  return `<article class="card" data-report-id="${e(report.id)}"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span>适用至 ${date(report.result.valid_until)}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${reportIdentityView(report)}${deliveryView(report.result?.delivery || {status:"legacy"})}${forecastCoverageView(report.result?.forecast_coverage)}${deliveryApplicationView(report.result?.delivery_application, `report:${report.id}`)}<details data-key="report:${e(report.id)}" ${index === 0 ? "open" : ""}><summary class="small">报告正文</summary><div class="section-gap">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>${jobModelSettings({result:report.result,state:"completed",account_id:report.account_id})}${modelUsageView(report.result?.model_usage, `report:${report.id}`)}${researchDelivery(report.result?.research_delivery, `report:${report.id}`)}${reportAccessView(report.result?.report_access)}${reportResearchScope(report)}${evidenceReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
+  return `<article class="card report-card ${expired ? "is-expired" : ""}" data-report-id="${e(report.id)}"><div class="report"><div class="report-header"><div><h3>${e(a.name)} · ${report.symbol ? e(report.symbol) : "账户综合研究"}</h3><div class="report-date">${date(report.created_at)} · 数据截至 ${date(report.data_as_of)}</div></div>${stateBadge(expired ? "expired" : report.status)}</div><div class="analysis-meta">${badge(`输入版本 v${report.input_version}`, "neutral")}${report.input_version !== a.version ? badge("账户已修改 · 历史版本", "warning") : badge("与当前输入版本一致", "neutral")}${report.result?.valid_until ? `<span class="${expired ? "pill error" : ""}">适用至 ${date(report.result.valid_until)}${expired ? " · 已过期" : ""}</span>` : ""}<span class="mono">${e(report.id)}</span></div>${reportIdentityView(report)}${deliveryView(report.result?.delivery || {status:"legacy"})}${forecastCoverageView(report.result?.forecast_coverage)}${deliveryApplicationView(report.result?.delivery_application, `report:${report.id}`)}<details class="report-body-details" data-key="report:${e(report.id)}" ${index === 0 ? "open" : ""}><summary class="small">报告正文</summary><div class="section-gap report-body-surface">${markdown(report.report || report.result?.report || report.result || "报告正文为空")}</div></details>${jobModelSettings({result:report.result,state:"completed",account_id:report.account_id})}${modelUsageView(report.result?.model_usage, `report:${report.id}`, report.job_id ? rawRequestsForJob(report.job_id) : null)}${researchDelivery(report.result?.research_delivery, `report:${report.id}`)}${reportAccessView(report.result?.report_access)}${reportResearchScope(report)}${evidenceReferences(report)}</div>${report.result?.findings ? `<details class="disclosure" data-key="findings:${e(report.id)}"><summary>本次研究发现与材料索引</summary><div class="card-body">${objectView(report.result.findings)}</div></details>` : ""}${report.result?.agents ? `<details class="disclosure" data-key="agents:${e(report.id)}"><summary>子 Agent 研究成果</summary><div class="card-body">${objectView(report.result.agents)}</div></details>` : ""}</article>`;
 }
 function research() {
   if (!state.account) return noAccount();
@@ -1123,7 +1214,7 @@ function eventMessage(event) {
 }
 function eventHTML(event, jobId, surface) {
   const p = event.payload, key = `event:${state.accountId}:${jobId}:${surface}:${event.seq ?? event.id}`;
-  return `<div class="event" data-read-key="${e(key)}" data-event-seq="${e(event.seq)}"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", research_resuming: "正在载入已保存研究", research_resumed: "已复用完成成果并继续研究", budget_closeout: "正在整理最终报告", budget_closeout_finished: "收尾成果范围已确认", final_submission_candidate: "候选草稿 · 尚未正式提交", terminal_submission_rejected: "提交协议未满足", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${event.type === "model_usage" ? modelUsageView(p?.session, `${key}:usage`) : ""}${p && typeof p === "object" && Object.keys(p).length ? `<details data-key="${e(key)}:payload"><summary>查看事件与来源详情</summary><pre tabindex="0">${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
+  return `<div class="event" data-read-key="${e(key)}" data-event-seq="${e(event.seq)}"><div class="event-head"><strong>${e({ manager: "主 Agent", system: "后台服务" }[event.agent || event.agent_id] || event.agent || event.agent_id || "主 Agent")}</strong><span>${e({ demo_summary: "演示数值摘要", published: "结果发布", tool_started: "工具开始", tool_result: "工具返回", agent_created: "创建子任务", agent_started: "任务开始", agent_completed: "任务完成", agent_progress: "阶段进展", agent_failed: "任务失败", agent_cancelled: "任务取消", message_sent: "发送补充消息", followup: "继续研究", native_search: "模型原生联网", synthesis_checkpoint: "汇总检查点已保存", synthesis_resuming: "正在恢复汇总", research_resuming: "正在载入已保存研究", research_resumed: "已复用完成成果并继续研究", budget_closeout: "正在整理最终报告", budget_closeout_finished: "收尾成果范围已确认", final_submission_candidate: "候选草稿 · 尚未正式提交", terminal_submission_rejected: "提交协议未满足", model_usage: "模型请求诊断" }[event.type] || event.type || "进展")}</span><time>${date(event.at || event.timestamp, true)}</time></div><p>${e(eventMessage(event))}</p>${event.type === "model_usage" ? modelUsageView(p?.session, `${key}:usage`, p?.requests || null) : ""}${p && typeof p === "object" && Object.keys(p).length ? `<details data-key="${e(key)}:payload"><summary>查看事件与来源详情</summary><pre tabindex="0">${e(JSON.stringify(p, null, 2))}</pre></details>` : ""}</div>`;
 }
 function jobModelSettings(job) {
   const config = job.model_config || job.config_snapshot || job.result?.model_config;
@@ -1170,6 +1261,39 @@ function taskDemands(job) {
   const demands = array(job.demands);
   return demands.length ? `<details class="task-demands" data-key="demands:${e(job.account_id)}:${e(job.id)}"><summary>本任务合入的研究需求（${demands.length} 条）</summary>${demands.map(demand=>`<div class="source-item" data-read-key="demand:${e(demand.id)}"><strong>${e(({close_summary:"收盘总结", formal_forecast:"正式预测批次", forecast_batch:"正式预测批次", material_review:"资料复核"})[demand.kind] || reasonLabel(demand.kind))}</strong><p class="small muted">${e(demand.reason || "")} · ${e(({assigned:"已纳入任务", pending:"等待安排", completed:"已完成覆盖", uncovered:"本轮未覆盖", superseded:"已被新版替代", failed:"失败", cancelled:"已取消"})[demand.state] || "状态未命名")} · 创建 ${date(demand.created_at)}${demand.trading_day ? ` · 计划交易日 ${e(demand.trading_day)}` : ""}</p>${!["assigned","pending","completed","uncovered","superseded","failed","cancelled"].includes(demand.state) ? `<details data-key="raw-state"><summary>查看原始需求状态</summary><code>${e(demand.state)}</code></details>` : ""}<span class="mono small">需求 ${e(demand.id)} · ${e(demand.event_key || "事件标识未记录")}</span></div>`).join("")}</details>` : "";
 }
+function rawRequestsForJob(jobId) {
+  const seen = new Map();
+  for (const key of [jobId, eventCacheKey(jobId, "dialog")]) {
+    const items = state.events[key]?.items || [];
+    for (const event of items) {
+      if (event?.type === "model_usage" && Array.isArray(event.payload?.requests)) {
+        for (const req of event.payload.requests) {
+          if (req && req.local_request_id) seen.set(req.local_request_id, req);
+        }
+      }
+    }
+  }
+  return seen.size ? [...seen.values()] : null;
+}
+function failureDiagnosisView(job) {
+  if (!job || (job.state !== "failed" && !job.failure_stage)) return "";
+  const stageText = phaseNames[job.failure_stage] || job.failure_stage || phaseNames[job.stage] || job.stage || "未记录阶段";
+  const deliveryText = deliveryLabel(job.delivery) || (job.report_id ? "已关联部分报告" : "未完成正式报告交付");
+  const cp = job.synthesis_checkpoint;
+  const recoveryText = cp?.available
+    ? (cp.recovery_state === "synthesis_ready" ? "已有可恢复汇总检查点 · 重试优先续接汇总" : cp.completed_research_available ? "已保存部分研究成果 · 重试优先复用后补查" : "已保存检查点 · 重试需继续研究")
+    : "无可用恢复检查点 · 重试将重新启动研究";
+  const code = String(job.error_code || "");
+  let guidance = "账户快照与已保存研究材料均已保留。请核对错误原因后，点击下方“重试最新版本”继续。";
+  if (code.includes("final_submission") || code.includes("terminal_submission") || job.failure_stage === "terminal_submission" || job.failure_stage === "delivery") {
+    guidance = "模型已执行部分步骤但未完成终态交付协议；保留的草稿与检查点可供复用，点击下方“重试最新版本”即可继续。";
+  } else if (code.includes("timeout") || code.includes("deadline") || job.failure_stage === "child_deadline") {
+    guidance = "子专题或模型请求触及运行预算上限；已完成专题与材料索引已保留，可放宽设置预算或点击“重试最新版本”。";
+  } else if (code.includes("auth") || code.includes("config") || job.failure_stage === "config" || job.failure_stage === "model_request") {
+    guidance = "模型请求或角色配置异常；请先在“模型供应商 / Agent 角色”核对连接与能力，再重试当前版本。";
+  }
+  return `<section class="failure-diagnosis-panel" aria-label="失败诊断"><div class="failure-diagnosis-head"><div class="failure-diagnosis-title"><strong>失败诊断</strong>${badge(`失败阶段：${stageText}`, "error")}</div>${code ? `<code class="inline-code failure-code">${e(code)}</code>` : ""}</div><p class="failure-summary">${e(job.error || "本次研究未完成；账户快照与已有材料未丢失。")}</p><div class="failure-meta-grid"><div><span class="failure-meta-label">交付状态</span><span>${e(deliveryText)}</span></div><div><span class="failure-meta-label">检查点恢复</span><span>${e(recoveryText)}</span></div></div><p class="failure-guidance">${e(guidance)}</p></section>`;
+}
 function jobCard(job, surface = "main") {
   if (typeof surface !== "string") surface = "main";
   const cacheKey=eventCacheKey(job.id,surface);
@@ -1181,11 +1305,25 @@ function jobCard(job, surface = "main") {
   const source = job.trigger_source ? triggerNames[job.trigger_source] || job.trigger_source : "历史来源未知";
   const originPage = origin.page && routes[origin.page] ? routes[origin.page][0] : origin.page;
   const explanation = {waiting_config:"等待模型配置；保存有效连接并修复角色绑定后继续。", waiting_scope:"没有已保存证券范围；请确认仅分析现金与偏好，或先添加证券。", running:"正在研究，以下阶段来自后台实际执行记录。", failed:"本次研究失败，账户快照保留。请结合失败阶段与原因重试当前版本。"}[job.state];
-  return `<article class="job-card" data-task-id="${e(job.id)}" data-read-key="task:${e(job.account_id)}:${e(job.id)}:${e(surface)}"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(taskTitle(job))}</h3><div class="job-meta">${taskScope(job)}<p>${e(source)}${originPage ? ` · 入口 ${e(originPage)}` : ""}${origin.action ? ` · 动作 ${e(originActionName(origin.action) || "未命名入口动作")}` : ""}</p>${origin.action && !originActionName(origin.action) ? `<details data-key="origin-action"><summary>查看原始入口动作</summary><code>${e(origin.action)}</code></details>` : ""}<span class="mono">${e(job.id)}</span>${jobModelSettings(job)}</div></div>${stateBadge(job.state)}</div><div class="card-body job-delivery"><strong>${e(reportStatus)}</strong>${deliveryView(job.delivery)}${forecastCoverageView(job.forecast_coverage)}${deliveryApplicationView(job.delivery_application, `task:${job.id}`)}${researchDelivery(job.research_delivery, `task:${job.id}`)}${job.report_summary ? markdown(job.report_summary) : ""}<div class="actions section-gap">${taskReportAction(job)}${job.state === "waiting_scope" ? button("确认研究范围", "analyze", "compact") : ""}</div><div class="source-meta"><span>实际阶段：${e(phaseNames[job.stage] || job.stage || statusNames[job.state] || job.state)}</span>${job.failure_stage ? `<span>失败阶段：${e(phaseNames[job.failure_stage] || job.failure_stage)}</span>` : ""}</div><div class="source-meta"><span>创建 ${date(job.created_at)}</span>${job.scheduled_at ? `<span>计划 ${date(job.scheduled_at)}</span>` : ""}<span>执行开始 ${job.started_at ? date(job.started_at) : "未记录 / 尚未执行"}</span><span>执行结束 ${job.completed_at ? date(job.completed_at) : "未记录 / 尚未结束"}</span>${job.trading_day ? `<span>计划交易日 ${e(job.trading_day)}</span>` : ""}</div>${job.parent_job_id ? `<p class="small muted">原任务 ${e(job.parent_job_id)}</p>` : ""}${array(job.forecast_batch_ids).length ? `<p class="small muted">预测批次：${job.forecast_batch_ids.map(e).join("、")}</p>` : ""}${array(job.sources).length > 1 ? `<details data-key="sources:${e(job.account_id)}:${e(job.id)}"><summary>合并来源（${job.sources.length} 条）</summary>${job.sources.map(source=>`<div class="small muted" data-read-key="source:${e(source.id || source.operation_id || `${source.parent_job_id || job.id}:${source.at}:${source.trigger_source}:${source.origin?.action}`)}">${e(triggerNames[source.trigger_source] || source.trigger_source || "来源未知")} · ${e(routes[source.origin?.page]?.[0] || source.origin?.page || "入口未记录")} · ${e(originActionName(source.origin?.action) || "未命名入口动作")}${source.origin?.action && !originActionName(source.origin.action) ? `<details data-key="source-action"><summary>原始入口动作</summary><code>${e(source.origin.action)}</code></details>` : ""} · ${date(source.at)}${source.parent_job_id ? ` · 原任务 <button class="button compact" data-action="view-task" data-id="${e(source.parent_job_id)}">${e(source.parent_job_id)}</button>` : ""}</div>`).join("")}</details>` : ""}${explanation || job.error ? `<div class="notice ${job.state === "failed" ? "error" : ""}"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}${job.error_code ? `<p class="small mono">${e(job.error_code)}</p>` : ""}</div></div>` : ""}</div>${taskDemands(job)}${job.synthesis_checkpoint?.available ? `<details class="job-checkpoint-details" data-key="checkpoint:${e(job.account_id)}:${e(job.id)}"><summary>恢复检查点与资料范围（诊断）</summary>${checkpointView(job.synthesis_checkpoint)}</details>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.account_id)}:${e(job.id)}:${e(surface)}" ${expanded ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${eventList(job.id,surface)}</div></details><div class="job-actions">${["running","pending","queued","waiting_config","waiting_scope"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed","cancelled","blocked","waiting_config","superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="view-task" data-id="${e(job.id)}">查看任务详情</button><button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
+  const rawRequests = rawRequestsForJob(job.id);
+  const usageSummary = job.result?.model_usage || job.model_usage_summary;
+  return `<article class="job-card ${job.state === "failed" ? "is-failed" : ""}" data-task-id="${e(job.id)}" data-read-key="task:${e(job.account_id)}:${e(job.id)}:${e(surface)}"><div class="job-header"><div class="agent-avatar">${icon("agents")}</div><div class="job-heading"><h3>${e(taskTitle(job))}</h3><div class="job-meta">${taskScope(job)}<p>${e(source)}${originPage ? ` · 入口 ${e(originPage)}` : ""}${origin.action ? ` · 动作 ${e(originActionName(origin.action) || "未命名入口动作")}` : ""}</p>${origin.action && !originActionName(origin.action) ? `<details data-key="origin-action"><summary>查看原始入口动作</summary><code>${e(origin.action)}</code></details>` : ""}<span class="mono">${e(job.id)}</span>${jobModelSettings(job)}</div></div>${stateBadge(job.state)}</div><div class="card-body job-delivery"><strong>${e(reportStatus)}</strong>${deliveryView(job.delivery)}${forecastCoverageView(job.forecast_coverage)}${deliveryApplicationView(job.delivery_application, `task:${job.id}`)}${researchDelivery(job.research_delivery, `task:${job.id}`)}${job.report_summary ? markdown(job.report_summary) : ""}<div class="actions section-gap">${taskReportAction(job)}${job.state === "waiting_scope" ? button("确认研究范围", "analyze", "compact") : ""}</div><div class="source-meta"><span>实际阶段：${e(phaseNames[job.stage] || job.stage || statusNames[job.state] || job.state)}</span>${job.failure_stage ? `<span>失败阶段：${e(phaseNames[job.failure_stage] || job.failure_stage)}</span>` : ""}</div><div class="source-meta"><span>创建 ${date(job.created_at)}</span>${job.scheduled_at ? `<span>计划 ${date(job.scheduled_at)}</span>` : ""}<span>执行开始 ${job.started_at ? date(job.started_at) : "未记录 / 尚未执行"}</span><span>执行结束 ${job.completed_at ? date(job.completed_at) : "未记录 / 尚未结束"}</span>${job.trading_day ? `<span>计划交易日 ${e(job.trading_day)}</span>` : ""}</div>${job.parent_job_id ? `<p class="small muted">原任务 ${e(job.parent_job_id)}</p>` : ""}${array(job.forecast_batch_ids).length ? `<p class="small muted">预测批次：${job.forecast_batch_ids.map(e).join("、")}</p>` : ""}${array(job.sources).length > 1 ? `<details data-key="sources:${e(job.account_id)}:${e(job.id)}"><summary>合并来源（${job.sources.length} 条）</summary>${job.sources.map(source=>`<div class="small muted" data-read-key="source:${e(source.id || source.operation_id || `${source.parent_job_id || job.id}:${source.at}:${source.trigger_source}:${source.origin?.action}`)}">${e(triggerNames[source.trigger_source] || source.trigger_source || "来源未知")} · ${e(routes[source.origin?.page]?.[0] || source.origin?.page || "入口未记录")} · ${e(originActionName(source.origin?.action) || "未命名入口动作")}${source.origin?.action && !originActionName(source.origin.action) ? `<details data-key="source-action"><summary>原始入口动作</summary><code>${e(source.origin.action)}</code></details>` : ""} · ${date(source.at)}${source.parent_job_id ? ` · 原任务 <button class="button compact" data-action="view-task" data-id="${e(source.parent_job_id)}">${e(source.parent_job_id)}</button>` : ""}</div>`).join("")}</details>` : ""}${job.state === "failed" || job.failure_stage ? failureDiagnosisView(job) : (explanation || job.error ? `<div class="notice"><div>${e(explanation || "任务状态说明")}${job.error ? `<p>${e(job.error)}</p>` : ""}${job.error_code ? `<p class="small mono">${e(job.error_code)}</p>` : ""}</div></div>` : "")}${usageSummary ? `${compactUsageStrip(usageSummary)}${modelUsageView(usageSummary, `task-card:${job.id}:${surface}`, rawRequests)}` : ""}</div>${taskDemands(job)}${job.synthesis_checkpoint?.available ? `<details class="job-checkpoint-details" data-key="checkpoint:${e(job.account_id)}:${e(job.id)}"><summary>恢复检查点与资料范围（诊断）</summary>${checkpointView(job.synthesis_checkpoint)}</details>` : ""}<details class="job-event-details" data-job-id="${e(job.id)}" data-key="job:${e(job.account_id)}:${e(job.id)}:${e(surface)}" ${expanded ? "open" : ""}><summary>研究事件 · ${job.event_count ?? events?.items.length ?? 0} 条</summary><div class="job-events">${eventList(job.id,surface)}</div></details><div class="job-actions">${["running","pending","queued","waiting_config","waiting_scope"].includes(job.state) ? `<button class="button compact danger" data-action="cancel-job" data-id="${e(job.id)}">取消任务</button>` : ""}${["failed","cancelled","blocked","waiting_config","superseded"].includes(job.state) ? `<button class="button compact" data-action="retry-job" data-id="${e(job.id)}">重试最新版本 ${icon("refresh")}</button>` : ""}<button class="button compact" data-action="view-task" data-id="${e(job.id)}">查看任务详情</button><button class="button compact" data-action="job-result" data-id="${e(job.id)}">任务结果与调用统计</button></div></article>`;
+}
+function workbenchCacheCard(jobs) {
+  const agg = aggregateJobUsage(jobs, (jobId) => rawRequestsForJob(jobId));
+  if (!agg) return "";
+  const c = agg.cache_summary;
+  const searchDisplay = formatSearchBreakdown(agg);
+  const crossRatio = agg.native_search_breakdown?.non_search_cross_turn?.weighted_read_ratio;
+  const searchRatio = agg.native_search_breakdown?.search_all?.weighted_read_ratio;
+  const covPct = typeof c.coverage === "number" && Number.isFinite(c.coverage) ? `${Math.round(c.coverage * 100)}%` : "未知";
+  const isKnown = (ratio) => typeof ratio === "number" && Number.isFinite(ratio);
+  const barPct = (ratio) => isKnown(ratio) ? Math.max(0, Math.min(100, ratio * 100)) : 0;
+  return `<section class="card workbench-cache-card" aria-label="工作台 Prompt Cache 汇总"><div class="card-header"><h2>当前页 Prompt Cache 与前缀稳定性</h2><span class="small muted">覆盖 ${e(agg.jobCount)} 个任务 · ${e(c.requests)} 次请求</span></div><div class="card-body"><div class="workbench-cache-grid"><div class="workbench-kpi"><span class="workbench-kpi-label">总体加权缓存读取率</span><strong class="workbench-kpi-value">${e(kpiPercent(c.weighted_read_ratio))}</strong><div class="usage-bar-track ${isKnown(c.weighted_read_ratio) ? "" : "is-unknown"}" aria-hidden="true"><span class="usage-bar-fill tone-teal" style="width:${barPct(c.weighted_read_ratio).toFixed(2)}%"></span></div><span class="workbench-kpi-meta">缓存读取 ${e(number(c.cache_read_tokens))} / 成对输入 ${e(number(c.reported_input_tokens))}</span></div><div class="workbench-kpi"><span class="workbench-kpi-label">非联网跨轮续接缓存率</span><strong class="workbench-kpi-value">${e(searchDisplay.nonSearchCrossValue)}</strong><div class="usage-bar-track ${isKnown(crossRatio) ? "" : "is-unknown"}" aria-hidden="true"><span class="usage-bar-fill tone-teal" style="width:${barPct(crossRatio).toFixed(2)}%"></span></div><span class="workbench-kpi-meta">${e(searchDisplay.nonSearchCrossMeta)} · 非联网全部 ${e(searchDisplay.nonSearchAllText)}${searchDisplay.nonSearchAllMeta ? `（${e(searchDisplay.nonSearchAllMeta)}）` : ""}</span></div><div class="workbench-kpi"><span class="workbench-kpi-label">联网请求缓存率</span><strong class="workbench-kpi-value">${e(searchDisplay.searchValue)}</strong><div class="usage-bar-track ${isKnown(searchRatio) ? "" : "is-unknown"}" aria-hidden="true"><span class="usage-bar-fill tone-amber" style="width:${barPct(searchRatio).toFixed(2)}%"></span></div><span class="workbench-kpi-meta">${e(searchDisplay.searchMeta)}</span></div><div class="workbench-kpi"><span class="workbench-kpi-label">请求计量覆盖率</span><strong class="workbench-kpi-value">${e(covPct)}</strong><div class="usage-bar-track ${isKnown(c.coverage) ? "" : "is-unknown"}" aria-hidden="true"><span class="usage-bar-fill tone-slate" style="width:${barPct(c.coverage).toFixed(2)}%"></span></div><span class="workbench-kpi-meta">完整计量 ${e(c.complete_requests)} / ${e(c.requests)}${c.unknown_requests ? ` · 未知 ${e(c.unknown_requests)}` : ""}</span></div></div>${prefixDistHTML(agg.prefix_reason_counts, "未知（当前页任务未记录前缀变化原因）")}</div></section>`;
 }
 function agents() {
   if (!state.account) return noAccount();
-  return `<div class="notice">${icon("agents")}<div>主 Agent 自主决定任务拆分与补充调查。可见事件按需增量读取，不展示隐藏思维链。前端关闭后，本机后台服务仍会继续工作。</div></div><div class="split-heading"><h2>${e(state.account.name)} 的任务</h2><span class="small muted">当前页 ${state.jobs.length} 个任务</span></div><div class="jobs-list">${state.jobs.length ? state.jobs.map(jobCard).join("") : `<section class="card">${empty("当前页暂无任务", "保存账户或手动分析会创建任务。", "analyze", "立即分析", "agents")}</section>`}</div>${pager("jobs", state.jobs)}${demandTrace()}`;
+  return `<div class="notice">${icon("agents")}<div>主 Agent 自主决定任务拆分与补充调查。可见事件按需增量读取，不展示隐藏思维链。前端关闭后，本机后台服务仍会继续工作。</div></div>${workbenchCacheCard(state.jobs)}<div class="split-heading"><h2>${e(state.account.name)} 的任务</h2><span class="small muted">当前页 ${state.jobs.length} 个任务</span></div><div class="jobs-list">${state.jobs.length ? state.jobs.map(jobCard).join("") : `<section class="card">${empty("当前页暂无任务", "保存账户或手动分析会创建任务。", "analyze", "立即分析", "agents")}</section>`}</div>${pager("jobs", state.jobs)}${demandTrace()}`;
 }
 function demandTrace() {
   if (!state.demands.length) return "";
@@ -1349,6 +1487,7 @@ function render() {
     }
   });
   for(const [key,form] of state.drafts)if(state.drafts.size>40&&!form.isConnected)state.drafts.delete(key);
+  hydrateLegacyResearchReports();
 }
 let dialogReturnFocus = null, dialogReturnSelector = null, dialogGeneration = 0;
 function beginDialogIntent() {
@@ -1432,7 +1571,7 @@ async function switchAccount(id) {
   state.recommendationHistory = [];
   state.recommendationCoverage = {};
   state.accountId = id;
-  state.events = {}; state.openedJobs.clear(); state.jobOpenChoices.clear(); state.eventSeen.clear();
+  state.events = {}; state.openedJobs.clear(); state.jobOpenChoices.clear(); state.eventSeen.clear(); legacyReportUsageHydrated.clear();
   invalidatePageReads();
   state.account = null;
   state.analyses = [];
@@ -1553,9 +1692,14 @@ document.addEventListener("click", (event) => {
       const intent = beginDialogIntent();
       const job = await api(`/api/jobs/${encodeURIComponent(target.dataset.id)}`);
       if (!dialogIsCurrent(intent)) return;
-      dialog("任务结果与可观察统计", modelUsageView(job.result?.model_usage, `task:${job.id}`) + objectView(job.result || { state: job.state, error: job.error, synthesis_checkpoint: job.synthesis_checkpoint, message: "尚无已提交结果；调用统计可查看工具事件。" }),"",intent);
+      await ensureLegacyUsageEvents(job.id, job?.result?.model_usage?.sequence, "dialog", {
+        isCurrent: () => dialogIsCurrent(intent),
+      });
+      if (!dialogIsCurrent(intent)) return;
+      dialog("任务结果与可观察统计", `${failureDiagnosisView(job)}${modelUsageView(job.result?.model_usage, `task:${job.id}`, rawRequestsForJob(job.id))}${objectView(job.result || { state: job.state, error: job.error, synthesis_checkpoint: job.synthesis_checkpoint, message: "尚无已提交结果；调用统计可查看工具事件。" })}`,"",intent);
     } else if (action === "refresh") {
       missingRoutes.clear();
+      legacyReportUsageHydrated.clear();
       await refresh(true);
       render();
       toast("状态已更新");
@@ -1581,7 +1725,13 @@ document.addEventListener("click", (event) => {
       const intent = beginDialogIntent();
       const report = await api(`/api/analyses/${encodeURIComponent(target.dataset.id)}`);
       if (!dialogIsCurrent(intent)) return;
-      if (report.account_id === state.accountId) dialog("研究报告", reportCard(report, 0),"",intent);
+      if (report.account_id === state.accountId) {
+        await ensureLegacyUsageEvents(report.job_id, report?.result?.model_usage?.sequence, "dialog", {
+          isCurrent: () => dialogIsCurrent(intent) && report.account_id === state.accountId,
+        });
+        if (!dialogIsCurrent(intent)) return;
+        dialog("研究报告", reportCard(report, 0),"",intent);
+      }
     }
     else if (action === "confirm-delete") {
       await api(`/api/accounts/${encodeURIComponent(accountId)}`, {
@@ -1841,7 +1991,7 @@ document.addEventListener("change", (event) => {
 window.addEventListener("hashchange", () => {
   state.route = location.hash.slice(1) || "overview";
   invalidatePageReads();
-  if (state.route !== "agents") { state.events = {}; state.openedJobs.clear(); state.jobOpenChoices.clear(); state.eventSeen.clear(); }
+  if (state.route !== "agents") { state.events = {}; state.openedJobs.clear(); state.jobOpenChoices.clear(); state.eventSeen.clear(); legacyReportUsageHydrated.clear(); }
   if (state.route !== "research") state.pages.analyses = 0;
   if (state.route !== "agents") state.pages.jobs = 0;
   render();

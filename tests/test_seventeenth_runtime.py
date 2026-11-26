@@ -85,7 +85,8 @@ async def test_unlimited_identical_tool_rounds_close_for_no_progress(tmp_path, m
     async def handler(request):
         p = json.loads(request.content); requests.append(p)
         if p.get('tool_choice'):
-            assert [t['name'] for t in p['tools']] == ['finish_analysis']
+            assert p['tools'] == requests[-2]['tools']
+            assert p['tool_choice'] == {'type': 'function', 'name': 'finish_analysis'}
             return output('responses', [('finish_analysis', delivery_arguments(report='重复计算无新进展，有限交付。'))])
         return output('responses', [('calculate', {'operation': 'sum', 'values': [1, 3]})])
     monkeypatch.setattr(agents, 'ModelClient', lambda cfg, before_request=None:

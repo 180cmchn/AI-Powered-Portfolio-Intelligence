@@ -21,7 +21,8 @@ from scripts.verify_seventeenth_live import configure_isolated
 from tests.context_helpers import effective_context
 from tests.delivery_helpers import delivery_arguments
 from tests.helpers_sixth import configure_test_team
-from tests.test_ninth_calculation_context import config, output
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, output
+from tests.test_seventeenth_child_final_evidence import wire_tool_exchanges
 
 
 MARKER = 'seventeenth_card_basis_prompt_migration'
@@ -167,7 +168,7 @@ async def test_non_half_sale_basis_survives_normal_service_and_final_card(tmp_pa
                 ('calculate', {'operation': 'subtract', 'values': [observed['gross'], observed['fee_total']]}),
                 ('calculate', {'operation': 'subtract', 'values': [observed['net_sale_proceeds'], relieved]})])
         assert len(calls) == 2
-        assert {tool.get('name') or tool.get('function', {}).get('name') for tool in payload['tools']} == {'finish_analysis'}
+        assert_hot_closeout(payload, calls[-2], 'finish_analysis')
         assert all(tool.get('type') != 'web_search' for tool in payload['tools'])
         calculations = {tuple(item['inputs']): Decimal(item['result']) for item in visible['calculation_summaries']}
         assert calculations[('100', '11')] == Decimal('1100')
@@ -231,9 +232,12 @@ async def test_card_holds_shareholder_table_and_separate_governance_evidence(
         if len(calls) == 1:
             return output(protocol, [('get_material', {'material_id': material['id']})])
         assert len(calls) == 2
-        assert {tool.get('name') or tool.get('function', {}).get('name') for tool in payload['tools']} == {'finish_analysis'}
-        evidence = effective_context(payload)['delivered_research_evidence']
-        source = next(item['result'] for item in evidence if item.get('result', {}).get('id') == material['id'])
+        assert_hot_closeout(payload, calls[-2], 'finish_analysis')
+        exchanges = wire_tool_exchanges(payload, 'get_material')
+        assert len(exchanges) == 1
+        arguments, source = exchanges[0]
+        assert arguments == {'material_id': material['id']}
+        assert source['id'] == material['id']
         assert table in source['text']
         assert (disclosure in source['text']) is explicit_disclosure
         return output(protocol, [('finish_analysis', delivery_arguments(

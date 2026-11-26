@@ -133,9 +133,9 @@ async def test_final_wire_diversity_keeps_whole_signed_period_comparisons_or_exp
     runtime = agents.ResearchRuntime(context, cfg, tools, emit)
     try:
         session = runtime.manager_session
-        # Represents retained context already competing for the same final
-        # budget; increasing the global budget is not part of the test.
-        runtime.context['other_visible_context'] = 'known unrelated context ' * (1600 if room == 'sufficient' else 110)
+        # Leave room under the 58% wire envelope for both whole representatives
+        # in the sufficient case, without raising the context budget.
+        runtime.context['other_visible_context'] = 'known unrelated context ' * (1500 if room == 'sufficient' else 110)
         add_tool(runtime.client, session, 'fundamentals', original, 'financial-source')
         for n in range(10):
             add_tool(runtime.client, session, 'query_market_rows', {'latest_marker': n,

@@ -104,17 +104,18 @@ def validate_final_result(result, *, allowed_scope=None, required_scope=None, co
     for item in result.get('information_impacts', []):
         if item.get('status') not in ('relevant', 'irrelevant', 'uncertain'):
             raise DeliveryContractError('材料关联 status 不在允许枚举中')
-    validate_structured_delivery(result, allowed_scope=allowed_scope, contract_context=contract_context)
-    return copy.deepcopy(result)
+    checked = copy.deepcopy(result)
+    validate_structured_delivery(checked, allowed_scope=allowed_scope, contract_context=contract_context)
+    return checked
 
 
 
 def validate_structured_delivery(result, *, allowed_scope=None, contract_context=None):
-    """One read-only rule source for acceptance and transactional publication.
+    """Validate against read-only indexes and normalize expired IDs on success.
 
-    Context contains only authorized, server-owned indexes. It deliberately does
-    not promise that account versions, deadlines or baseline availability will
-    remain unchanged after the preflight.
+    Context contains only authorized, server-owned indexes. It does not promise
+    that account versions, deadlines or baseline availability remain unchanged
+    after the preflight.
     """
     context = contract_context
     scope = set(result.get('scope', []))
@@ -142,7 +143,9 @@ def validate_structured_delivery(result, *, allowed_scope=None, contract_context
         return sid
 
     recommendations = context.get('recommendations', {}) if context is not None else None
+    expired_recommendations = context.get('expired_recommendations', {}) if context is not None else {}
     handled, suggestion_keys = {}, set()
+    expired_replacements = []
     for field in lifecycle_fields:
         for index, identifier in enumerate(result.get(field, [])):
             path = f'{field}[{index}]'
@@ -178,24 +181,40 @@ def validate_structured_delivery(result, *, allowed_scope=None, contract_context
         identifier = item.get('id')
         if 'id' in item and (not isinstance(identifier, str) or not identifier.strip()):
             raise DeliveryContractError(f'{path}.id: 需要当前账户的非空建议 ID；新建请省略')
+        supersedes = item.get('supersedes_expired_id')
+        if 'supersedes_expired_id' in item and (
+                'id' in item or not isinstance(supersedes, str) or not supersedes.strip()):
+            raise DeliveryContractError(f'{path}.supersedes_expired_id: 需要非空过期建议 ID，且不能同时填写 id')
         key = sid
         if key in suggestion_keys:
             raise DeliveryContractError(f'{path}: 同一建议或证券重复提交；请合并为一个明确动作')
         suggestion_keys.add(key)
         if identifier and identifier in handled:
             raise DeliveryContractError(f'{path}.id: 与 {handled[identifier]} 冲突')
-        if not identifier and recommendations is not None:
-            for handled_id, field in handled.items():
-                # A new suggestion replaces older suggestions for this security.
-                # Explicit revoke + replacement is consistent; keeping/reviewing
-                # the same old suggestion while replacing it is not.
-                if (field != 'revoked_suggestion_ids' and
-                        recommendations[handled_id]['security_id'] == sid):
-                    raise DeliveryContractError(f'{path}.security_id: 新建议会替代同证券旧建议，与 {field} 冲突')
-        if identifier and recommendations is not None:
+        if recommendations is None:
+            continue
+        if identifier:
             prior = recommendations.get(identifier)
-            if not prior or prior['security_id'] != sid:
-                raise DeliveryContractError(f'{path}.id: 必须属于当前账户的同一证券有效建议')
+            if prior and prior['security_id'] == sid:
+                continue
+            supersedes = identifier
+        if supersedes:
+            expired_prior = expired_recommendations.get(supersedes)
+            # A checked result still carrying id requested an active revision.
+            # If it expired since preflight, do not change the accepted intent.
+            if (not expired_prior or expired_prior['security_id'] != sid or
+                    (identifier and context.get('rechecking_preflight'))):
+                if identifier:
+                    raise DeliveryContractError(f'{path}.id: 必须属于当前账户的同一证券有效建议')
+                raise DeliveryContractError(f'{path}.supersedes_expired_id: 必须属于当前账户的同一证券过期建议')
+        for handled_id, field in handled.items():
+            # For either kind of new suggestion, explicit revoke + replacement
+            # is consistent; keeping/reviewing the replaced suggestion is not.
+            if (field != 'revoked_suggestion_ids' and
+                    recommendations[handled_id]['security_id'] == sid):
+                raise DeliveryContractError(f'{path}.security_id: 新建议会替代同证券旧建议，与 {field} 冲突')
+        if identifier:
+            expired_replacements.append((item, identifier))
     forecasts = result.get('forecasts', [])
     if len(forecasts) > 10000:
         raise DeliveryContractError('forecasts: 单次最多 10000 条')
@@ -231,6 +250,9 @@ def validate_structured_delivery(result, *, allowed_scope=None, contract_context
                 raise DeliveryContractError(f'{path}.revises_id: 需要非空预测 ID；没有修订请省略')
             if revises and context.get('revisable_forecasts', {}).get(revises) != key:
                 raise DeliveryContractError(f'{path}.revises_id: 必须为本账户同证券同期限的已有预测')
+    for item, identifier in expired_replacements:
+        item.pop('id')
+        item['supersedes_expired_id'] = identifier
 
 def bind_delivery(result, *, job_id, account_id, input_version, universe_version, team_id):
     """Called only after validation, using values from the frozen server task."""

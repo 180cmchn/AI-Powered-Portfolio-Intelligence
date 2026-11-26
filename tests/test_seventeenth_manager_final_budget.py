@@ -234,37 +234,40 @@ async def test_manager_required_correction_compaction_preserves_selected_evidenc
 
 @pytest.mark.parametrize('protocol', ['responses', 'chat_completions'])
 @pytest.mark.parametrize('save_fails', [False, True])
-async def test_manager_own_save_arguments_survive_index_result_without_promoting_failure(tmp_path, monkeypatch, protocol, save_fails):
-    cfg = config(monkeypatch, model_protocol=protocol, max_model_calls=None,
+@pytest.mark.parametrize('reproject', [False, True])
+async def test_manager_own_save_arguments_survive_index_result_without_promoting_failure(tmp_path, monkeypatch, protocol, save_fails, reproject):
+    from tests.test_seventeenth_child_final_evidence import assert_saved_extraction_on_wire, capture_save_result
+    cfg = config(monkeypatch, model_protocol=protocol, max_context_chars=80000, max_model_calls=None,
                  max_agent_turns=None, synthesis_max_calls=None)
     _, tools, context = setup(tmp_path, cfg)
     material = {'claim': 'own extraction; not independent evidence. ' * 100 + 'MANAGER-EXTRACTION-TAIL',
                 'material_ids': [], 'uncertainties': ['No original source established by this authored text.']}
     if save_fails:
         material['id'] = 'not-accessible'
-    payloads = []
+    payloads, events = [], []
     async def handler(request):
         payload = json.loads(request.content)
         payloads.append(payload)
         if len(payloads) == 1:
             runtime.budget_closing = True
+            if reproject:
+                for _ in range(15):
+                    runtime.client.add_user(runtime.manager_session, {'context_padding': 'visible ' * 600})
             return output(protocol, [('save_material', {'material': material})])
-        saved = next(item for item in seed(payload)['delivered_research_evidence'] if item['tool'] == 'save_material')
-        assert saved['authored_material'] == material
-        assert saved['authored_material_classification'] == 'agent_extraction'
-        assert saved['save_result_status'] == ('failed' if save_fails else 'saved')
-        assert 'MANAGER-EXTRACTION-TAIL' not in json.dumps(saved['result'])
-        if not save_fails:
-            assert len(saved['result']['summary']) == 400
+        result = assert_saved_extraction_on_wire(payload, material, captured, save_fails, reproject)
+        assert 'MANAGER-EXTRACTION-TAIL' not in json.dumps(result)
         return output(protocol, [('finish_analysis', delivery_arguments(report='Authored extraction and save status remain separate.'))])
     monkeypatch.setattr(agents, 'ModelClient', lambda cfg, before_request=None:
         ModelClient(cfg, before_request, httpx.MockTransport(handler)))
     async def emit(event):
-        pass
+        events.append(event)
     runtime = agents.ResearchRuntime(context, cfg, tools, emit)
+    captured = capture_save_result(monkeypatch, runtime.client)
     try:
         await runtime._loop('manager', runtime.manager_session, manager=True)
         assert len(payloads) == 2
+        transition, = [e['payload'] for e in events if e['type'] == 'synthesis_context_projected']
+        assert transition['mode'] == ('reproject' if reproject else 'tail_append')
     finally:
         await runtime.close()
 

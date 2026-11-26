@@ -24,7 +24,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from .context import bounded_result, compact
+from .context import bounded_result, compact, context_char_limit
 from .config import reasoning_effort, model_config_summary, timeout_policy
 from .model_network import model_http_options, network_observation, NetworkDiagnostics, safe_exception_details
 from .model_cache import canonical, frozen_tools, observe_payload
@@ -142,6 +142,7 @@ class ModelSession:
     _previous_payload: dict | None = field(default=None, repr=False)
     _tool_schema_hash: str | None = field(default=None, repr=False)
     _tool_schema: list = field(default_factory=list, repr=False)
+    _sent_tool_schema: list = field(default_factory=list, repr=False)
     on_request_accepted: Callable[[dict], Awaitable[None]] | None = field(default=None, repr=False)
 
     def begin_cache_epoch(self, reason: str) -> None:
@@ -245,7 +246,7 @@ class ModelClient:
     def session(self, system: str, context: Any) -> ModelSession:
         session = ModelSession(system=system)
         session.task_id = (context.get("task_id") or context.get("job_id")) if isinstance(context, dict) else None
-        budget = int(self.config.get("max_context_chars", 240_000))
+        budget = context_char_limit(self.config)
         initial = bounded_result(session, context, max(1000, budget // 3))
         if initial is not context and isinstance(context, dict):
             # The truncation applies to this original context excerpt, not to
@@ -263,12 +264,12 @@ class ModelClient:
         return session
 
     def add_user(self, session: ModelSession, message: Any) -> None:
-        limit = min(int(self.config.get("max_tool_result_chars", 16000)), int(self.config.get("max_context_chars", 240_000)) // 4)
+        limit = min(int(self.config.get("max_tool_result_chars", 16000)), context_char_limit(self.config) // 4)
         session.history.append({"role": "user", "content": encode(bounded_result(session, message, max(500, limit)))})
 
     def add_results(self, session: ModelSession, results: list[tuple[ToolCall, Any]]) -> None:
         for call, result in results:
-            limit = min(int(self.config.get("max_tool_result_chars", 16000)), int(self.config.get("max_context_chars", 240_000)) // 4)
+            limit = min(int(self.config.get("max_tool_result_chars", 16000)), context_char_limit(self.config) // 4)
             result = bounded_result(session, result, max(500, limit))
             if self.protocol == "responses":
                 session.history.append({"type": "function_call_output", "call_id": call.id, "output": encode(result)})
@@ -305,11 +306,11 @@ class ModelClient:
                 if tool_choice not in {tool.get('name') for tool in tools}:
                     raise ModelConfigurationError('指定的提交函数不在当前可用工具中')
                 forced_function = tool_choice
-        compact(session, int(self.config.get("max_context_chars", 240_000)))
+        compact(session, context_char_limit(self.config))
         if session.compactions > session._observed_compactions:
             session.begin_cache_epoch('compression')
             session._observed_compactions = session.compactions
-        if len(encode(session.history)) > int(self.config.get("max_context_chars", 240_000)):
+        if len(encode(session.history)) > context_char_limit(self.config):
             raise ModelProtocolError("初始账户或任务输入超过上下文上限；历史材料已有按需归档，请减少单次账户输入或检查 max_context_chars")
         history = [{key: copy.deepcopy(value) for key, value in item.items() if not key.startswith("_context_")} for item in session.history]
         tools = frozen_tools(session, tools)
@@ -375,12 +376,24 @@ class ModelClient:
 
     def _consume_turn(self, session, data, forced_function):
         if self.protocol == "responses":
-            known_complete = data.get('status') == 'completed'
+            status = data.get('status')
+            known_complete = status == 'completed'
             if session.requests:
-                session.requests[-1]['response_status'] = data.get('status')
-                if data.get('status') in {'completed', 'incomplete', 'failed', 'cancelled'}:
-                    session.requests[-1]['protocol_terminal'] = 'responses.' + data['status']
-            if data.get("status") in {"failed", "incomplete", "cancelled", "in_progress", "queued"}:
+                session.requests[-1]['response_status'] = status
+                if status in {'completed', 'incomplete', 'failed', 'cancelled'}:
+                    session.requests[-1]['protocol_terminal'] = 'responses.' + status
+            output = data.get('output')
+            reported_usage = data.get('usage') if isinstance(data.get('usage'), dict) else {}
+            usage = data.get('server_side_tool_usage') or reported_usage.get('server_side_tool_usage') or reported_usage.get('server_side_tool_usage_details') or {}
+            search_used = isinstance(usage, dict) and any(
+                'WEB_SEARCH' in key.upper() and isinstance(value, (int, float)) and value > 0 for key, value in usage.items())
+            if forced_function and (search_used or (isinstance(output, list) and any(
+                    isinstance(item, dict) and item.get('type') == 'web_search_call' for item in output))):
+                if session.requests:
+                    session.requests[-1].update(tool_choice_status='unexpected_native_tool', tool_choice_satisfied=False)
+                factory = _incomplete_submission if known_complete or status == 'incomplete' else ModelProtocolError
+                raise factory(f'收尾阶段不接受原生搜索；请只调用 {forced_function}。')
+            if status in {'failed', 'incomplete', 'cancelled', 'in_progress', 'queued'}:
                 if forced_function and session.requests:
                     session.requests[-1].update(tool_choice_status='incomplete', tool_choice_satisfied=False)
                 factory = _incomplete_submission if data.get('status') == 'incomplete' else ModelProtocolError
@@ -449,10 +462,7 @@ class ModelClient:
             sources_by_url = {source["url"]: source for source in sources}
             for annotation in annotations:
                 sources_by_url.setdefault(annotation["url"], {k: annotation[k] for k in ("url", "title") if k in annotation})
-            reported_usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
-            usage = data.get("server_side_tool_usage") or reported_usage.get("server_side_tool_usage") or reported_usage.get("server_side_tool_usage_details") or {}
-            observed = any(event.get("status") == "completed" for event in events) or (
-                isinstance(usage, dict) and any("WEB_SEARCH" in k.upper() and isinstance(v, (int, float)) and v > 0 for k, v in usage.items()))
+            observed = any(event.get("status") == "completed" for event in events) or search_used
             state = self._native_observation("observed", event_count=len(events), source_count=len(sources_by_url),
                 note="服务返回了原生搜索完成事件或非零工具用量；来源范围以实际返回内容为准。") if observed else self.native_status()
             turn = ModelTurn("\n".join(parts), calls, events, list(sources_by_url.values()), annotations,
@@ -927,6 +937,7 @@ class ModelClient:
             self.requests.append(observation)
             self.network_diagnostics.begin_request(observation)
             if session is not None:
+                session._sent_tool_schema = session._tool_schema
                 session.requests.append(observation)
             trace_state = {'response_scope': 'origin'}
             async def trace(event, info):

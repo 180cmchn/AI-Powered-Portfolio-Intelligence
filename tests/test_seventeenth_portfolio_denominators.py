@@ -17,7 +17,7 @@ from app.service import ResearchTools, Service
 from app.store import Store
 from tests.delivery_helpers import delivery_arguments
 from tests.helpers_sixth import configure_test_team
-from tests.test_ninth_calculation_context import config, output, seed
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, output, seed
 
 
 STOCK='SZ:002354'
@@ -165,7 +165,7 @@ async def test_single_security_production_payload_keeps_account_denominator_and_
             return output(protocol,[('calculate',{'operation':'percent','values':['8410.00','22248.00']}),
                 ('calculate',{'operation':'percent','values':['8410.00','97822.90']})])
         assert len(payloads)==2
-        assert {t.get('name') or t.get('function',{}).get('name') for t in payload['tools']}=={'finish_analysis'}
+        assert_hot_closeout(payload,payloads[-2],'finish_analysis')
         assert all(t.get('type')!='web_search' for t in payload['tools'])
         calculations={tuple(item['inputs']):item['result'] for item in visible['calculation_summaries']}
         assert Decimal(calculations[('8410.00','22248.00')])==Decimal('8410')/Decimal('22248')*100

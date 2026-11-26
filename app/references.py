@@ -33,6 +33,15 @@ def explicit_material_ids(text):
 
 
 def reference_counts(value):
+    return _count_references(value, include_origins=True)
+
+
+def direct_reference_counts(value) -> dict:
+    """Count authored citations independently of their stored origin chains."""
+    return _count_references(value, include_origins=False)
+
+
+def _count_references(value, *, include_origins):
     counts = {'resolved': 0, 'source_link': 0, 'unresolved': 0}
 
     def count_ref(ref):
@@ -40,8 +49,9 @@ def reference_counts(value):
             return
         if ref.get('status') in counts:
             counts[ref['status']] += 1
-        for parent in ref.get('origin_references', []):
-            count_ref(parent)
+        if include_origins:
+            for parent in ref.get('origin_references', []):
+                count_ref(parent)
 
     def visit(item):
         if isinstance(item, dict):
@@ -177,7 +187,8 @@ class ReferenceStore:
                 return [walk(item) for item in value]
             if not isinstance(value, dict):
                 return value
-            item = {key: walk(val) for key, val in value.items() if key not in ('references', 'reference_summary')}
+            item = {key: walk(val) for key, val in value.items()
+                    if key not in ('references', 'reference_summary', 'direct_reference_summary')}
             ids = parent_material_ids(item)
             if isinstance(item.get('material_id'), str):
                 ids = [item['material_id'], *ids]
@@ -214,4 +225,5 @@ class ReferenceStore:
 
         resolved = walk(result)
         resolved['reference_summary'] = reference_counts(resolved)
+        resolved['direct_reference_summary'] = direct_reference_counts(resolved)
         return resolved

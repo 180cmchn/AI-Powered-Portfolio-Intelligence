@@ -244,6 +244,7 @@ class RecommendationStore:
                 (now(), job["id"], f"recommendation:{row['id']}:%", body.get("review_event_key", "")))
             self._write_recommendation(db, row, body, event=not was_pending)
         for index, (item, security_id, old) in enumerate(prepared):
+            supersedes_expired_id = item.get('supersedes_expired_id')
             stamp = now()
             previous = self._recommendation_body(old) if old else {}
             raw_expiry = item.get("valid_until", previous.get("valid_until", result.get("valid_until")))
@@ -274,7 +275,10 @@ class RecommendationStore:
                     self._retain_uncovered_review(body, uncovered)
             else:
                 body["revision"] = 1
-                body["replaces_ids"] = replaced.get(security_id, [])
+                replaces_ids = replaced.get(security_id, [])
+                if supersedes_expired_id:
+                    replaces_ids = list(dict.fromkeys([*replaces_ids, supersedes_expired_id]))
+                body["replaces_ids"] = replaces_ids
                 uncovered = replacement_pending.get(security_id, [])
                 if uncovered and body["state"] != "expired":
                     body.update(state="needs_review", review_status="needs_review",
@@ -297,10 +301,21 @@ class RecommendationStore:
                     prior = db.execute("SELECT * FROM recommendations WHERE id=?", (replaced_id,)).fetchone()
                     old_body = self._recommendation_body(prior)
                     old_body["replaced_by_id"] = body["id"]
+                    if replaced_id == supersedes_expired_id:
+                        old_body['state'] = prior['state']
+                        if body['state'] not in ('expired', 'revoked'):
+                            # A usable replacement resolves expiry even if the scan ran after job start.
+                            db.execute("""UPDATE research_demands
+                                SET state='completed',detail='expiry resolved by replacement recommendation',updated_at=?
+                                WHERE account_id=? AND state='pending' AND event_key LIKE ?""",
+                                (stamp, prior['account_id'], f"recommendation:{replaced_id}:expired%"))
+                        self._close_review_demands(db, prior, old_body, job['id'])
                     self._write_recommendation(db, prior, old_body, event=False)
 
-            receipt['suggestions'][index].update(status='applied', reason=body['review_reason'],
-                                                  recommendation_id=body['id'])
+            entry = receipt['suggestions'][index]
+            entry.update(status='applied', reason=body['review_reason'], recommendation_id=body['id'])
+            if supersedes_expired_id:
+                entry['superseded_expired_id'] = supersedes_expired_id
         for item in receipt['suggestion_actions']:
             row = db.execute('SELECT * FROM recommendations WHERE id=? AND account_id=?',
                              (item['id'], job['account_id'])).fetchone()

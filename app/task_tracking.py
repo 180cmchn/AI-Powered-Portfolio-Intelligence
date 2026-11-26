@@ -6,6 +6,7 @@ import json
 import re
 
 from .domain import now
+from .model_usage import compact_usage_summary
 
 
 def task_identity(reason):
@@ -111,6 +112,7 @@ class TaskTrackingStore:
         item['forecast_coverage'] = result.get('forecast_coverage')
         item['submission_outcome'] = result.get('submission_outcome')
         item['submission_corrections'] = result.get('submission_corrections')
+        item['model_usage_summary'] = compact_usage_summary(result.get('model_usage'))
         demands = [dict(r) for r in db.execute('SELECT id,kind,reason,event_key,created_at,state FROM research_demands WHERE job_id=? ORDER BY id', (item['id'],))]
         item['demands'] = demands
         for demand in demands:

@@ -15,7 +15,7 @@ from app.model import ModelClient
 from app.research_progress import KnownLookupTracker, native_material_identity
 from app.store import Store
 from tests.delivery_helpers import delivery_arguments
-from tests.test_ninth_calculation_context import config, output
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, forced_function, output
 from tests.test_seventeenth_lookup_progress import LOOKUPS, call, lookup_round, store_fixture, tool_names
 
 
@@ -82,7 +82,7 @@ async def test_alternating_known_pages_warn_then_close_out(tmp_path, monkeypatch
         requests.append(payload)
         index = len(requests) - 1
         if index == 4:
-            assert tool_names(payload) == {'finish_analysis'}
+            assert_hot_closeout(payload, requests[-2], 'finish_analysis')
             return output(protocol, FINAL)
         assert index < 4
         assert {'get_material', 'read_material_range', 'calculate', 'finish_analysis'} <= tool_names(payload)
@@ -459,7 +459,7 @@ async def test_child_inbox_delivery_resets_warning_streak(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_child_follow_up_resets_cache_and_separate_sessions_do_not_share_it(monkeypatch):
-    events, request_counts = [], {}
+    events, request_counts, requests_by_round = [], {}, {}
     report = [('submit_report', {'summary': 'Bounded child lookup results.'})]
     script = [[MATERIALS], [SEARCH], [MATERIALS], [SEARCH], report]
 
@@ -469,9 +469,10 @@ async def test_child_follow_up_resets_cache_and_separate_sessions_do_not_share_i
         key = (child_id, runtime.children[child_id].round)
         index = request_counts.get(key, 0)
         request_counts[key] = index + 1
+        requests_by_round.setdefault(key, []).append(payload)
         assert index < len(script)
         if index == 4:
-            assert tool_names(payload) == {'submit_report'}
+            assert_hot_closeout(payload, requests_by_round[key][-2], 'submit_report')
         else:
             assert {'list_materials', 'submit_report'} <= tool_names(payload)
         return output('responses', script[index])
@@ -529,7 +530,7 @@ async def test_failed_lookups_close_out_with_unrelated_live_child(monkeypatch, f
         requests.append(payload)
         assert child.status == child_status
         if index == len(rounds):
-            assert tool_names(payload) == {'finish_analysis'}
+            assert_hot_closeout(payload, requests[-2], 'finish_analysis')
             assert event_payloads(events, 'research_no_progress') == [closeout]
             return output('responses', FINAL)
         assert {'get_recommendation', 'finish_analysis'} <= tool_names(payload)
@@ -670,7 +671,7 @@ async def test_native_source_novelty_during_failed_lookup_cycles(
     if closeout is not None:
         assert identities == [identities[0]] * len(pages)
         assert no_progress == [{**closeout, 'action': 'submit_existing_evidence'}]
-        assert final_tools == {'finish_analysis'}
+        assert_hot_closeout(requests[-1], requests[-2], 'finish_analysis')
         assert event_payloads(events, WARNING) == [{'known_lookup_rounds': 1, 'lookup_count': 1,
                                                    'action': 'warn_before_closeout'}]
         assert len(user_messages(requests[-2], WARNING)) == 1
@@ -705,7 +706,7 @@ async def test_native_source_return_cycles_during_failed_lookups(
         index = len(requests)
         requests.append(payload)
         # Without the guard the model can continue through all six scripted lookups.
-        if tool_names(payload) == {'finish_analysis'} or index == len(pages):
+        if forced_function(payload) == 'finish_analysis' or index == len(pages):
             return output('responses', FINAL)
         assert {'get_recommendation', 'calculate', 'finish_analysis'} <= tool_names(payload)
         frozen_clock.advance(seconds=1)
@@ -762,7 +763,7 @@ async def test_native_source_return_cycles_during_failed_lookups(
         assert closeouts == [{**expected, 'action': 'submit_existing_evidence'}]
         assert [event['type'] for event in events if event['type'] in {WARNING, 'research_no_progress'}] == [
             WARNING, 'research_no_progress']
-        assert tool_names(requests[4]) == {'finish_analysis'}
+        assert_hot_closeout(requests[4], requests[3], 'finish_analysis')
 
 
 def test_stored_native_material_identity_ignores_return_version(tmp_path, frozen_clock):

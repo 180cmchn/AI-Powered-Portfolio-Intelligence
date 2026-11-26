@@ -12,6 +12,7 @@ import pytest
 from app import agents
 from app.model import ModelClient
 from tests.test_fourteenth_deadlines import ControlledDeadlineClock, wait_for_stage
+from tests.test_ninth_calculation_context import assert_hot_closeout
 
 
 def response(name, number):
@@ -28,10 +29,14 @@ def only_submission(payload):
     return [(item['type'], item.get('name')) for item in payload['tools']] == [('function', 'submit_report')]
 
 
-def assert_submission(payload):
-    assert only_submission(payload)
-    assert payload['tool_choice'] == {'type': 'function', 'name': 'submit_report'}
-    assert 'web_search_call.action.sources' not in payload['include']
+def assert_submission(payload, previous=None):
+    if previous is not None:
+        assert_hot_closeout(payload, previous, 'submit_report')
+        assert {'type': 'web_search'} in payload['tools']
+    else:
+        assert only_submission(payload)
+        assert payload['tool_choice'] == {'type': 'function', 'name': 'submit_report'}
+        assert 'web_search_call.action.sources' not in payload['include']
 
 
 def runtime_fixture(monkeypatch, handler, emit, **overrides):
@@ -65,7 +70,7 @@ async def test_child_uses_actual_client_reserve_and_submits_before_shared_closeo
             assert not only_submission(payload) and {'type': 'web_search'} in payload['tools']
             return response('research', 1)
         assert len(requests) == 2
-        assert_submission(payload)
+        assert_submission(payload, requests[0])
         return response('submit', 2)
 
     async def emit(event):
@@ -83,7 +88,7 @@ async def test_child_uses_actual_client_reserve_and_submits_before_shared_closeo
         child = runtime.children[created['agent_id']]
         await child.task_handle
         assert child.status == 'completed' and len(child.reports) == 1
-        assert child.deadline_closing and not child.session.native_search
+        assert child.deadline_closing and child.session.native_search
         assert child.round_time_budget == 100 and child.submission_reserve_seconds == reserve
         assert child.session.deadlines['child_budget_exhausted'] == timeline.start + 100
         assert runtime.calls == len(requests) == 2
@@ -105,7 +110,7 @@ async def test_parent_clipping_reduces_actual_child_round_before_reserve_is_comp
         if len(requests) == 1:
             return response('research', 1)
         assert len(requests) == 2
-        assert_submission(payload)
+        assert_submission(payload, requests[0])
         return response('submit', 2)
 
     async def emit(event):
@@ -217,7 +222,7 @@ async def test_stalled_final_submission_is_cancelled_at_unchanged_child_deadline
         if len(requests) == 1:
             return response('research', 1)
         assert len(requests) == 2
-        assert_submission(payload)
+        assert_submission(payload, requests[0])
         entered.set()
         try:
             await never_release.wait()
@@ -263,7 +268,7 @@ async def test_follow_up_resets_only_child_round_closeout_and_restores_research_
         if len(requests) == 1:
             return response('research', 1)
         if len(requests) == 2:
-            assert_submission(payload)
+            assert_submission(payload, requests[0])
         else:
             assert len(requests) == 3 and not only_submission(payload)
             assert {'type': 'web_search'} in payload['tools'] and 'tool_choice' not in payload
@@ -281,7 +286,7 @@ async def test_follow_up_resets_only_child_round_closeout_and_restores_research_
         child = runtime.children[created['agent_id']]
         await child.task_handle
         original_session = child.session
-        assert child.deadline_closing and not child.session.native_search
+        assert child.deadline_closing and child.session.native_search
         await runtime._dispatch('manager', 'follow_up', {'agent_id': child.id, 'task': 'new follow-up evidence'})
         await child.task_handle
         assert child.session is original_session and child.round == 2

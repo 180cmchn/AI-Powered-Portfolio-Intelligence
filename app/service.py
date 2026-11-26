@@ -15,7 +15,7 @@ from .calendar import market_state
 from .config import model_config_summary
 from .domain import TZ, metrics, now, quote_display_identity
 from .store import Store, dumps
-from .materials import index_of, material_text
+from .materials import index_of, material_text, separate_native_source_labels
 
 log = logging.getLogger("guanlan")
 
@@ -111,6 +111,7 @@ class ResearchTools:
         scope = "account" if self.job.get("account_id") else "public"
         if material.get("id") and not self.store.material_accessible(material["id"], self.job.get("account_id")):
             raise KeyError("材料不属于当前账户或公开研究范围")
+        material = separate_native_source_labels(material)
         saved = self.store.save_material({**material, "scope": scope, "representation": "agent_extraction",
             'source_type': 'model_extraction', 'classification_origin': 'agent_selected' if material.get('classification') or material.get('category') else 'unclassified_default'}, self.job["id"], self.job.get("account_id"))
         return index_of(saved)

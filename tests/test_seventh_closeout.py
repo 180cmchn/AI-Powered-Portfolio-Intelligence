@@ -77,8 +77,13 @@ async def test_manager_only_forced_final_keeps_delivered_results_and_updated_pos
             assert f'VISIBLE_IMPORTANT_{index}' in encoded
         for index in range(1, 5):
             assert f'UNKNOWN_{index}' in encoded
+        from tests.test_seventeenth_child_final_evidence import assert_private_protocol_only, payload_history, wire_tool_exchanges
         assert 'UNEXPOSED_TAIL' not in encoded and 'UNREAD_OLD_BODY' not in encoded
-        assert 'OPAQUE_PRIVATE_REASONING' not in encoded and 'DUPLICATE_PROMPT' not in encoded
+        assert 'DUPLICATE_PROMPT' not in encoded
+        assert_private_protocol_only(payload, 'OPAQUE_PRIVATE_REASONING')
+        previous_history = payload_history(payloads[-2])
+        assert history[:len(previous_history)] == previous_history
+        assert [arguments['material_id'] for arguments, _ in wire_tool_exchanges(payload, 'get_material')] == [f'm-{i}' for i in range(1, 6)]
         assert len(encoded) < cfg['max_context_chars'] * .78
         return response(protocol, 'finish_analysis', delivery_arguments(**{'report': '原文仍有缺口，未作方向判断。'}), 'final')
 
@@ -93,7 +98,8 @@ async def test_manager_only_forced_final_keeps_delivered_results_and_updated_pos
     assert result['model_calls'] == 6 <= cfg['max_model_calls']
     assert not result['agents']
     projection = [event['payload'] for event in events if event['type'] == 'synthesis_context_projected']
-    assert len(projection) == 1 and projection[0]['visible_tool_outputs'] == 5
+    assert len(projection) == 1 and projection[0]['mode'] == 'tail_append' and projection[0]['history_preserved']
+    assert 'OPAQUE_PRIVATE_REASONING' not in json.dumps([events, result])
 
 
 @pytest.mark.asyncio

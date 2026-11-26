@@ -12,12 +12,9 @@ import pytest
 
 from app import agents
 from app.model import ModelClient
+from tests.context_helpers import effective_context
 from tests.delivery_helpers import delivery_arguments
-from tests.test_ninth_calculation_context import config, output
-
-
-def tool_names(payload):
-    return [item['name'] for item in payload['tools']]
+from tests.test_ninth_calculation_context import assert_hot_closeout, config, forced_function, output
 
 
 def context():
@@ -44,7 +41,8 @@ async def test_unrelated_live_child_does_not_exempt_repeated_invalid_or_terminal
                 await release.wait()
             return output('responses', [('submit_report', {'summary': '受控子任务已完成，保留现金并在取得价格资料后复核。'})])
         requests.append(payload)
-        if tool_names(payload) == ['finish_analysis']:
+        if forced_function(payload) == 'finish_analysis':
+            assert_hot_closeout(payload, requests[-2], 'finish_analysis')
             return output('responses', [('finish_analysis', delivery_arguments(
                 '重复查询未带来进展，有限交付并保留未决目标；不据此作交易。'))])
         assert len(requests) <= 5, 'Unrelated live child incorrectly exempts repeated unproductive calls'
@@ -74,8 +72,12 @@ async def test_unrelated_live_child_does_not_exempt_repeated_invalid_or_terminal
         no_progress = [event for event in events if event['type'] == 'research_no_progress']
         assert len(no_progress) == 1
         assert no_progress[0]['payload']['identical_tool_rounds'] == 3
-        assert tool_names(requests[-1]) == ['finish_analysis']
         assert len(requests) == 4
+        assert_hot_closeout(requests[-1], requests[-2], 'finish_analysis')
+        child = next(item for item in effective_context(requests[-1])['runtime_status']['children']
+                     if item['agent_id'] == live.id)
+        assert child['status'] == 'completed'
+        assert child['latest_report']['summary'] == '受控子任务已完成，保留现金并在取得价格资料后复核。'
         assert result['submission']['action'] == 'finish_analysis'
     finally:
         release.set()
@@ -99,7 +101,7 @@ async def test_confirmed_selected_live_handle_can_be_waited_past_old_turn_cap(mo
             await release.wait()
             return output('responses', [('submit_report', {'summary': '受控真实活跃句柄现已完成；数据缺口局部保留。'})])
         requests.append(payload)
-        assert tool_names(payload) != ['finish_analysis'], 'Useful live-handle wait was prematurely forced to stop'
+        assert forced_function(payload) != 'finish_analysis', 'Useful live-handle wait was prematurely forced to stop'
         if len(requests) <= 14:
             assert live.task_handle is not None and not live.task_handle.done()
             if len(requests) == 14:
@@ -110,6 +112,10 @@ async def test_confirmed_selected_live_handle_can_be_waited_past_old_turn_cap(mo
             return output('responses', [('wait_agents', {'agent_ids': [] if selection == 'wait_all' else [live.id],
                                                           'timeout_seconds': 0})])
         assert len(requests) == 15 and live.status == 'completed'
+        child = next(item for item in effective_context(payload)['runtime_status']['children']
+                     if item['agent_id'] == live.id)
+        assert child['status'] == 'completed'
+        assert child['latest_report']['summary'] == '受控真实活跃句柄现已完成；数据缺口局部保留。'
         return output('responses', [('finish_analysis', delivery_arguments(
             '已等到本轮子研究实际完成后交付；保留现金，资料缺口只限制相应判断。'))])
 

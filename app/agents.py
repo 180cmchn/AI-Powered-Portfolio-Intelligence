@@ -22,7 +22,10 @@ from zoneinfo import ZoneInfo
 
 from .model import ModelBudgetExceeded, ModelClient, ModelConfigurationError, ModelError, ModelTimeoutError, ModelSession, ToolCall, cancellation_source
 from .config import timeout_policy, timeout_policy_warnings
-from .context import archive, recall, references, visible_message, compact_calculation_metadata, bounded_result
+from .context import (
+    COMPACTION_TRIGGER_FRACTION, FINAL_PROJECTION_FRACTION, RETAINED_CONTEXT_FRACTION,
+    archive, bounded_result, compact_calculation_metadata, context_char_limit, recall, references, serialized, visible_message,
+)
 from .calculation_context import projection as calculation_projection, signature as calculation_signature
 from .delivery import validate_final_result, DeliveryContractError, FinalSubmissionMissing, MAX_RESEARCH_RECORDS
 from .recovery import manager_material_deliveries, restored_manager_material_evidence
@@ -249,7 +252,7 @@ STRINGS = {"type": "array", "items": STRING}
 INTEGER = {"type": "integer", "minimum": 0}
 PAGE = {"type": "integer", "minimum": 1}
 SUGGESTION = {"type": "object", "properties": {
-    "id": {"type": "string", "description": "更新当前账户已有建议时填写其 ID；省略则新建并替代同证券旧建议"},
+    "id": {"type": "string", "description": "已有有效建议ID，仅在原位修订活跃建议时填写；新建或替代已过期（expired）建议请省略，已撤销建议同样不要回填ID"},
     "security_id": STRING, "action": {"type": "string", "enum": ["watch", "buy_candidate", "add_candidate", "hold", "reduce_candidate", "exit_candidate"]},
     "basis": STRING, "material_ids": STRINGS, "valid_until": {"type": ["string", "null"]},
     "price_conditions": {"type": "array", "items": {"type": "object", "properties": {
@@ -377,7 +380,7 @@ class ResearchRuntime:
     def __init__(self, context: dict, config: dict, research_tools: Any,
                  emit: Callable[[dict], Awaitable[None]]) -> None:
         self.context = _research_context(context,
-            index_budget=max(500, int(config.get('max_context_chars', 240_000)) // 12))
+            index_budget=max(500, context_char_limit(config) // 12))
         # Freeze the declaration contract from server-owned input, before any
         # context projection can shorten its visible demand index. No model
         # prose or claimed ID can turn this requirement on or off.
@@ -539,7 +542,7 @@ class ResearchRuntime:
                               'start': 0, 'total_chars': record['total_chars']}})
         if indexes:
             limit = max(500, min(int(self.config.get('max_tool_result_chars', 16000)),
-                                int(self.config.get('max_context_chars', 240_000)) // 12))
+                                context_char_limit(self.config) // 12))
             visible_index = bounded_result(self.manager_session, indexes, limit)
             self.context['restored_material_index'] = visible_index
             seed = json.loads(self.manager_session.history[0]['content'])
@@ -578,7 +581,7 @@ class ResearchRuntime:
                 indexes[item.get('calculation_id')] = item
         return summaries, indexes
 
-    def _pin_calculations(self, seed, session, agent_id, final_request, *, incremental=False):
+    def _pin_calculations(self, seed, session, agent_id, final_request, *, incremental=False, restore_omitted=False):
         """Reserve bounded value-first evidence before generic prose/row excerpts.
 
         A whole summary either fits or becomes an explicit index; individual
@@ -590,13 +593,13 @@ class ResearchRuntime:
         if incremental:
             visible, indexed = self._visible_calculations(session)
             records = [record for record in records if record['calculation_id'] not in visible
-                       and record['calculation_id'] not in indexed]
+                       and (restore_omitted or record['calculation_id'] not in indexed)]
         if not records:
             return
         if isinstance(seed.get('synthesis_checkpoint'), dict):
             seed['synthesis_checkpoint'].pop('calculations', None)
         size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
-        max_chars = int(self.config.get('max_context_chars', 240_000))
+        max_chars = context_char_limit(self.config)
         access = ('当前仅可提交最终报告，不能调用 recall_context；仅索引或未列出的数值不在本次可见上下文。'
             '已成功计算与最终报告采用是不同事实，不得把未采用描述为工具未取得。' if final_request else
             '摘要来自实际工具输出。完整输入和逐日数据可用 full_inputs 指向的 recall_context 分段取回；原始行未因摘要而视为亲读。')
@@ -637,7 +640,8 @@ class ResearchRuntime:
                 # same-request reference; stored originals stay whole.
                 summary = {key:value for key,value in summary.items() if key != 'model_config'}
                 summary['model_config_ref'] = 'seed.model_config'
-            if size([*summaries, summary]) + size(proposed_contexts) <= budget:
+            # Hot closeout tests all missing summaries against the actual history limit.
+            if restore_omitted or size([*summaries, summary]) + size(proposed_contexts) <= budget:
                 summaries.append(summary)
                 included_contexts = proposed_contexts
             else:
@@ -752,6 +756,7 @@ class ResearchRuntime:
                     projected_outputs.extend(item for item in value.get('delivered_research_evidence', [])
                         if isinstance(item, dict) and 'result' in item and not item.get('truncated_for_synthesis'))
             retained_pending = []
+            archived_messages = None
             for pending in getattr(session, '_pending_material_deliveries', []):
                 call, message = pending['call'], pending['message']
                 raw_value = json.loads(message.get('output', message.get('content', '{}')))
@@ -763,6 +768,14 @@ class ResearchRuntime:
                 if not direct and not projected:
                     if pending.get('proof'):
                         retained_pending.append(pending)
+                    elif isinstance(value, dict) and (value.get('material_id') or value.get('id')) and not (
+                            value.get('failed') or value.get('truncated_for_context')):
+                        # A child has no durable proof, but its archived bounded output can still be delivered.
+                        if archived_messages is None:
+                            archived_messages = {record['payload'] for record in session.archive
+                                if record.get('kind') == 'conversation'}
+                        if serialized(visible_message(message)) in archived_messages:
+                            retained_pending.append(pending)
                     continue  # An archive pointer is not a delivered original.
                 receipts = self.tools.store.record_material_delivery(self.task_id, self.account_id,
                     agent_id, call.name, value,
@@ -865,13 +878,14 @@ class ResearchRuntime:
             'unfinished_child_ids': [c.id for c in self.children.values() if c.status in {'queued', 'running'}],
             'note': '下次请求在此之后构造；是否实际纳入以报告交付回执为准，晚到成果不自动视为已使用。'})
 
-    def _runtime_context(self, session, agent_id, remaining_turns, final_request, *, seed=None, incremental=False, retained_budget=None):
+    def _runtime_context(self, session, agent_id, remaining_turns, final_request, *, seed=None, incremental=False,
+                         retained_budget=None, restore_omitted_calculations=False):
         """Build a visible state update without changing any existing message."""
         states = list(self.children.values()) if agent_id == "manager" else [self.children[agent_id]]
         visible = []
         # Summaries are bounded; complete reports remain available via agent_status
         # during research. Explicit truncation is not represented as complete text.
-        summary_limit = max(160, min(1200, int(self.config.get("max_context_chars", 240_000)) // max(16, len(states) * 8)))
+        summary_limit = max(160, min(1200, context_char_limit(self.config) // max(16, len(states) * 8)))
         for child in states:
             item = {"agent_id": child.id, "title": child.title[:200], "status": child.status, "round": child.round,
                     "error": child.error, "report_count": len(child.reports),
@@ -906,7 +920,7 @@ class ResearchRuntime:
                     "正文关键来源就近使用已有 URL、材料ID或子报告身份，计算保留输入口径；不复制整份来源索引。")
                 if self.require_demand_coverage:
                     status['instruction'] += ' 本任务 covered_demand_ids 是必填数组；只声明已读、实际回答且scope足以覆盖的需求，未覆盖可填[]。公共整轮用public，账户整轮用account/cash_only，即使仅一只证券；仅明确target_security任务只填该证券。不必新增查阅或完成全部需求。'
-        limit = max(1000, int(self.config.get("max_context_chars", 240_000)) // 3)
+        limit = max(1000, context_char_limit(self.config) // 3)
         def status_over_budget():
             if len(json.dumps(status, ensure_ascii=False)) > limit:
                 return True
@@ -949,7 +963,8 @@ class ResearchRuntime:
         # status would evict existing collaboration rows at small budgets.
         seed["prediction_context"] = prediction_context(self.context)
         seed["runtime_status"] = status
-        self._pin_calculations(seed, session, agent_id, final_request, incremental=incremental)
+        self._pin_calculations(seed, session, agent_id, final_request, incremental=incremental,
+                               restore_omitted=restore_omitted_calculations)
         return seed
 
     def _bound_previous_analysis(self, seed, session):
@@ -962,7 +977,7 @@ class ResearchRuntime:
         if not isinstance(previous, dict) or previous.get('bounded_history_projection'):
             return
         size = lambda item: len(json.dumps(item, ensure_ascii=False, default=str))
-        limit = max(1000, int(self.config.get('max_context_chars', 240_000)) // 10)
+        limit = max(1000, context_char_limit(self.config) // 10)
         if size(previous) <= limit:
             return
         record = archive(session, previous, 'previous_analysis_context')
@@ -1004,7 +1019,7 @@ class ResearchRuntime:
         if not isinstance(reports, list):
             return
         size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
-        budget = max(500, int(self.config.get('max_context_chars', 240_000)) // 5)
+        budget = max(500, context_char_limit(self.config) // 5)
         if size(reports) <= budget:
             return
         record = archive(session, reports, 'checkpoint_report_context')
@@ -1060,7 +1075,7 @@ class ResearchRuntime:
             frozen = {key: copy.deepcopy(seed[key]) for key in calculation_keys if key in seed}
             seed = self._runtime_context(session, agent_id, remaining_turns, True,
                 seed=seed, incremental=True,
-                retained_budget=int(self.config.get('max_context_chars', 240_000) * .67))
+                retained_budget=int(context_char_limit(self.config) * RETAINED_CONTEXT_FRACTION))
             for key in calculation_keys:
                 seed.pop(key, None)
             seed.update(frozen)
@@ -1078,14 +1093,14 @@ class ResearchRuntime:
             reports = [_report_context(report) for child in self.children.values() for report in child.reports
                        if not self._checkpoint_has_full_report(seed, report)]
             if reports:
-                budget = max(500, int(self.config.get('max_context_chars', 240_000)) // 5)
+                budget = max(500, context_char_limit(self.config) // 5)
                 seed['retained_child_reports'] = bounded_result(session, reports, budget)
         candidates = self._retain_research_sources(seed, session, agent_id) if for_compaction else None
         # Allocate calculations after reports and visible sources, from the same bounded envelope.
         # Otherwise two independently full allocations can immediately trigger
         # another compaction of an unchanged package on the next request.
         seed = self._runtime_context(session, agent_id, remaining_turns, final_request, seed=seed,
-            retained_budget=int(self.config.get('max_context_chars', 240_000) * .67))
+            retained_budget=int(context_char_limit(self.config) * RETAINED_CONTEXT_FRACTION))
         if candidates:
             # Calculations/status/reports are now fixed. Spend only actual
             # serialized space still free inside the SAME retained envelope.
@@ -1094,7 +1109,9 @@ class ResearchRuntime:
         session._last_runtime_children = copy.deepcopy(seed['runtime_status']['children'])
         return seed
 
-    def _pin_runtime_status(self, session: ModelSession, agent_id: str, remaining_turns: int | None, final_request: bool) -> None:
+    def _pin_runtime_status(self, session: ModelSession, agent_id: str, remaining_turns: int | None,
+                            final_request: bool, *, transition=None, max_history_chars=None,
+                            restore_omitted_calculations=False) -> bool:
         """Freeze initial context; deliver subsequent state and evidence at tail."""
         initial = not session.requests or getattr(session, '_building_context_epoch', False)
         seed = json.loads(session.history[0]['content']) if initial else None
@@ -1103,7 +1120,7 @@ class ResearchRuntime:
             update = self._retained_runtime_context(session, agent_id, remaining_turns, final_request)
         else:
             update = self._runtime_context(session, agent_id, remaining_turns, final_request,
-                                           seed=seed, incremental=not initial)
+                seed=seed, incremental=not initial, restore_omitted_calculations=restore_omitted_calculations)
         children = copy.deepcopy(update['runtime_status']['children'])
         if not initial:
             previous = {item['agent_id']: item for item in getattr(session, '_last_runtime_children', [])}
@@ -1125,14 +1142,20 @@ class ResearchRuntime:
             update['context_update'] = {'task_id': self.task_id, 'agent_id': agent_id,
                 'sequence': getattr(session, '_runtime_update_sequence', 0) + 1,
                 'instruction': '本消息按出现顺序更新当前状态；新事实和明确更正优先于此前观点，未改变的事实仍保留。null预算表示按次数不限，时间、取消和完成条件仍有效。'}
+            if transition:
+                update.update(transition)
+            message = {'role': 'user', 'content': serialized(update)}
+            if max_history_chars is not None and len(serialized([*session.history, message])) > max_history_chars:
+                return False
             session._runtime_update_sequence = update['context_update']['sequence']
-            session.history.append({'role': 'user', 'content': json.dumps(update, ensure_ascii=False, default=str, allow_nan=False)})
+            session.history.append(message)
         else:
             session.history[0]['content'] = json.dumps(update, ensure_ascii=False, default=str, allow_nan=False)
         session._last_runtime_children = children
         session._last_prediction_context = prediction_context(self.context)
         session.retained_context_factory = lambda: self._retained_runtime_context(
             session, agent_id, remaining_turns, final_request, for_compaction=True)
+        return True
 
     async def _publish(self, kind: str, agent_id: str, payload: dict) -> dict:
         # No raw model request/response or opaque reasoning state is logged.
@@ -1271,22 +1294,34 @@ class ResearchRuntime:
                 text = text.replace(client.key, "[REDACTED]")
         return text[:1200]
 
+    @staticmethod
+    def _closeout_tools(session, definitions, final_tool):
+        if not session.requests:
+            session.native_search = False
+            return [tool for tool in definitions if tool['name'] == final_tool]
+        # Use the last sent schema, not a schema prepared for a request that was
+        # stopped before HTTP. A cold submit-only request stays so on correction.
+        previous = session._sent_tool_schema
+        if (any(tool['name'] == final_tool for tool in previous)
+                and any(tool['name'] == final_tool for tool in definitions)):
+            return previous
+        return definitions
+
     async def _loop(self, agent_id: str, session: ModelSession, *, manager: bool) -> dict:
         client = self._client_for(agent_id)
         session.task_id = self.task_id
         max_turns = self.config.get("max_agent_turns", 12)
         max_turns = int(max_turns) if max_turns is not None else None
-        if not manager:
-            # A follow-up is a new bounded research round; the previous round
-            # may have disabled native search solely for its final submission.
-            session.native_search = True
-            if getattr(session, '_child_final_projected', False):
-                client.add_user(session, {'child_research_resumed': {
-                    'round': self.children[agent_id].round,
-                    'instruction': '这是后续研究；上一提交阶段的仅提交限制已经结束。使用当前实际提供的工具处理新增问题，旧提取仍保留原身份和范围。'}})
-            # One projection per submission sequence; a later follow-up may
-            # start a new sequence, while correction turns keep their prefix.
+        resuming_child = not manager and (getattr(session, '_child_final_projected', False)
+                                          or getattr(session, '_child_final_tail_appended', False))
+        if resuming_child:
+            client.add_user(session, {'child_research_resumed': {
+                'round': self.children[agent_id].round,
+                'instruction': '这是后续研究；上一提交阶段的仅提交限制已经结束。使用当前实际提供的工具处理新增问题，旧提取仍保留原身份和范围。'}})
+            # A separate research round can start its own submission sequence.
             session._child_final_projected = False
+            session._child_final_tail_appended = False
+        final_tool = 'finish_analysis' if manager else 'submit_report'
         reference_candidate = None
         reference_report_counts = {}
         submission_required = False
@@ -1319,20 +1354,17 @@ class ResearchRuntime:
                 client.add_user(session, {"resource_budget": {"remaining_agent_turns": remaining_turns,
                     "remaining_shared_model_calls": self._remaining_calls()},
                     "instruction": "本轮预算即将用完。整理已经取得的可见证据并及时提交完整结论，未知保持未知，不继续扩展研究。最后一轮仅提交报告；未完成的子任务和资料缺口须明确说明。"})
-                if remaining_turns == 1:
-                    final_tool = "finish_analysis" if manager else "submit_report"
-                    definitions = [tool for tool in definitions if tool["name"] == final_tool]
-                    session.native_search = False
-                    if manager:
-                        session.phase = "synthesis"
+            native_before_request = session.native_search
             if final_request:
                 if manager:
                     await self._wait_for_closeout()
-                definitions = [tool for tool in definitions if tool["name"] == ("finish_analysis" if manager else "submit_report")]
+                    session.phase = 'synthesis'
+                definitions = self._closeout_tools(session, definitions, final_tool)
+            elif resuming_child:
+                session.native_search = True
+            elif manager and self.synthesis_only:
                 session.native_search = False
-                if manager:
-                    session.phase = "synthesis"
-            allowed = {item["name"] for item in definitions}
+            allowed = {final_tool} if final_request else {item['name'] for item in definitions}
             if manager:
                 events = self._new_child_events()
                 received_child_updates = bool(events)
@@ -1344,39 +1376,44 @@ class ResearchRuntime:
                         session.phase = "synthesis"
             else:
                 received_child_updates = self._deliver_inbox(self.children[agent_id])
+            status_pinned = False
             if final_request:
                 if manager:
-                    await self._enter_synthesis_context(session, reason='bounded_final_request')
+                    status_pinned = await self._enter_synthesis_context(session, reason='bounded_final_request',
+                                                                        remaining_turns=remaining_turns)
                 else:
-                    await self._enter_child_final_context(session, agent_id, reason='bounded_final_request')
+                    status_pinned = await self._enter_child_final_context(session, agent_id, reason='bounded_final_request',
+                                                                          remaining_turns=remaining_turns)
             request_start, compactions = len(session.requests), session.compactions
             try:
                 while True:
-                    self._pin_runtime_status(session, agent_id, remaining_turns, final_request)
+                    if not status_pinned:
+                        self._pin_runtime_status(session, agent_id, remaining_turns, final_request)
                     request_report_counts = {child.id: len(child.reports) for child in self.children.values()}
                     token = self.request_owner.set((agent_id, final_request))
                     try:
-                        turn = await client.complete(session, definitions,
-                            tool_choice=("finish_analysis" if manager else "submit_report") if final_request else None)
+                        turn = await client.complete(session, definitions, tool_choice=final_tool if final_request else None)
                         break
                     except _CloseoutRequired:
-                        # A child deadline, concurrent request or retry reached
-                        # its reserve after preparation. Rebuild before HTTP.
+                        # Preparation may have stopped before any HTTP request.
+                        # Keep the last sent tool prefix rather than that draft.
+                        if len(session.requests) == request_start:
+                            session.native_search = native_before_request
                         final_request = True
-                        definitions = [tool for tool in definitions if tool["name"] == ("finish_analysis" if manager else "submit_report")]
-                        allowed = {item["name"] for item in definitions}
-                        session.native_search = False
+                        definitions = self._closeout_tools(session, definitions, final_tool)
+                        allowed = {final_tool}
                         if manager:
-                            session.phase = "synthesis"
+                            session.phase = 'synthesis'
                             await self._wait_for_closeout()
                             events = self._new_child_events()
                             if events:
                                 received_child_updates = True
                                 client.add_user(session, {"research_events": events})
-                            await self._save_checkpoint()
-                            await self._enter_synthesis_context(session, reason='concurrent_budget_closeout')
+                            status_pinned = await self._enter_synthesis_context(session, reason='concurrent_budget_closeout',
+                                                                                remaining_turns=remaining_turns)
                         else:
-                            await self._enter_child_final_context(session, agent_id, reason='concurrent_budget_closeout')
+                            status_pinned = await self._enter_child_final_context(session, agent_id, reason='concurrent_budget_closeout',
+                                                                                  remaining_turns=remaining_turns)
                     finally:
                         self.request_owner.reset(token)
             except asyncio.CancelledError:
@@ -1428,7 +1465,7 @@ class ResearchRuntime:
                 # commit. Preserve the full visible candidate for explicit recovery.
                 reference_candidate = None
                 if turn.text.strip():
-                    limit = max(500, int(self.config.get('max_context_chars', 240_000)) // 8)
+                    limit = max(500, context_char_limit(self.config) // 8)
                     draft = archive(session, turn.text, 'candidate_draft')
                     session.submission_candidate = {'text': turn.text[:limit],
                         'truncated': len(turn.text) > limit, 'record_id': draft['record_id'],
@@ -1451,10 +1488,10 @@ class ResearchRuntime:
                     + "不得重新搜索；不补造未知事实或预测。"})
                 continue
             terminal_calls = [call for call in turn.calls if call.name in {'finish_analysis', 'submit_report'}]
-            if final_request and not terminal_calls:
+            if final_request and not any(call.name == final_tool for call in terminal_calls):
                 submission_failures += 1
                 submission_required = True
-                submission_error = FinalSubmissionMissing('最终阶段未调用指定终止工具；研究工具未执行')
+                submission_error = FinalSubmissionMissing(f'最终阶段的其他工具未执行；请只调用 {final_tool}。')
                 session.submission_feedback = str(submission_error)
                 error = {'accepted': False, 'failed': True, 'error_code': submission_error.code,
                          'error': str(submission_error)}
@@ -1620,12 +1657,12 @@ class ResearchRuntime:
             if message.get('call_id', message.get('tool_call_id')) in ids
             or any(call.get('id') in ids for call in message.get('tool_calls', []))]
 
-    def _visible_source_candidates(self, session, agent_id, *, archive_current=True):
+    def _visible_source_candidates(self, session, agent_id, *, archive_current=True, exclude_current=False):
         """Collect only this session's visible conversation results and arguments.
 
-        Shared by ordinary compaction and child closeout. A tool_result archive
-        may hold an unread tail and is never opened. During ordinary compaction
-        the protocol groups have already been archived by context.compact.
+        A tool_result archive may hold an unread tail and is never opened.
+        Ordinary compaction has already archived the resolved protocol groups.
+        Hot closeout reads live groups only to remove duplicates, without archiving them.
         """
         messages = []
         for record in session.archive:
@@ -1637,16 +1674,22 @@ class ResearchRuntime:
                 continue
             if isinstance(value, dict) and (visible := visible_message(value)):
                 messages.append((record['record_id'], visible))
-        for message in session.history[1:] if archive_current else []:
+        for message in session.history[1:] if archive_current or exclude_current else []:
             if message.get('_context_checkpoint'):
                 continue
             if visible := visible_message(message):
-                record = archive(session, visible, 'conversation')
-                messages.append((record['record_id'], visible))
-        calls, arguments, candidates, seen = {}, {}, [], set()
+                record_id = None if exclude_current else archive(session, visible, 'conversation')['record_id']
+                messages.append((record_id, visible))
+        calls, arguments, candidates = {}, {}, {}
         control_tools = {'report_progress', 'submit_report', 'agent_status', 'wait_agents',
                          'prepare_synthesis', 'finish_analysis'}
         index_tools = {'recall_context', 'list_materials', 'search_materials'}
+
+        def collect(signature, item):
+            if item['record_id'] is None:
+                candidates.pop(signature, None)
+            elif signature not in candidates:
+                candidates[signature] = (item['tool'] in index_tools, len(candidates), item)
         for record_id, message in messages:
             if message.get('type') == 'function_call':
                 calls[message.get('call_id')] = message.get('name')
@@ -1679,9 +1722,7 @@ class ResearchRuntime:
                     item['recipient_agent_id'] = agent_id
                     signature = json.dumps(item | {'record_id': None},
                         ensure_ascii=False, sort_keys=True, default=str)
-                    if signature not in seen:
-                        seen.add(signature)
-                        candidates.append((item['tool'] in index_tools, len(candidates), item))
+                    collect(signature, item)
                 continue
             if is_output:
                 call_id = message.get('call_id', message.get('tool_call_id'))
@@ -1706,26 +1747,23 @@ class ResearchRuntime:
                     # evidence; no stored material or unread tail is expanded.
                     item['authored_material'] = copy.deepcopy(authored)
                     item['authored_material_classification'] = 'agent_extraction'
-                    item['authored_material_note'] = '本子会话可见工具参数中的模型提取，不是独立核验的原始事实；保存结果以result为准。'
+                    item['authored_material_note'] = '本会话可见工具参数中的模型提取，不是独立核验的原始事实；保存结果以result为准。'
                     item['save_result_status'] = ('failed' if isinstance(value, dict) and
                         (value.get('failed') or value.get('error')) else
                         'saved' if isinstance(value, dict) and value.get('id') else 'unconfirmed')
             signature = json.dumps({key: item[key] for key in
                 ('tool', 'result', 'authored_material') if key in item},
                 ensure_ascii=False, sort_keys=True, default=str)
-            if signature in seen:
-                continue
-            seen.add(signature)
             if any(self._report_message_key(pending.get('message', {})) == self._report_message_key(message)
                    for pending in getattr(session, '_pending_material_deliveries', [])):
                 item['visibility'] = 'completed_tool_output_not_previously_delivered'
-            candidates.append((tool in index_tools, len(candidates), item))
-        return candidates
+            collect(signature, item)
+        return list(candidates.values())
 
     def _retain_research_sources(self, seed, session, agent_id, *, candidates=None, fill_remaining=False):
         """Keep whole visible outputs inside the existing research envelope.
 
-        First reserve at most one fifth for whole sources, then calculations
+        First reserve at most one sixth for whole sources, then calculations
         and status are allocated. A second pass may use only space actually left
         in that same retained limit, keeping those allocated values unchanged.
         """
@@ -1738,11 +1776,12 @@ class ResearchRuntime:
             return
         size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
         wire_size = lambda: size({'role': 'user', 'content': json.dumps(seed, ensure_ascii=False, default=str)})
-        max_chars = int(self.config.get('max_context_chars', 240_000))
+        max_chars = context_char_limit(self.config)
         before = wire_size()
         # Scale with the actual configured context. Sources never raise the
         # retained envelope or displace the reserved room for subsequent tools.
-        limit = int(max_chars * .67) if fill_remaining else min(before + max_chars // 5, int(max_chars * .50))
+        limit = (int(max_chars * RETAINED_CONTEXT_FRACTION) if fill_remaining
+                 else min(before + max_chars // 6, int(max_chars * .34)))
         kept, native_sources, omitted = [], [], []
         seed.update(delivered_research_evidence=kept, retained_visible_source_contexts=native_sources, omitted_evidence_indexes=[],
             omitted_output_count=len(candidates), unlisted_omission_count=len(candidates),
@@ -1770,19 +1809,98 @@ class ResearchRuntime:
         seed['unlisted_omission_count'] = len(omitted) - len(seed['omitted_evidence_indexes'])
         return candidates
 
-    async def _enter_child_final_context(self, session, agent_id, *, reason):
+    def _final_source_delta(self, session, agent_id, seed):
+        """Restore whole, session-local results omitted by ordinary compaction."""
+        retained = {item['record_id'] for item in seed.get('delivered_research_evidence', [])}
+        retained_native = seed.get('retained_visible_source_contexts', [])
+        sources, native = [], []
+        for _, _, item in self._visible_source_candidates(session, agent_id, exclude_current=True):
+            if item['tool'] == 'native_source_materials':
+                if item['result'] not in retained_native:
+                    native.append(item['result'])
+            elif item['record_id'] not in retained:
+                sources.append(project_source_item(item))
+        # Reuse the same top-level keys as compaction so a delivery receipt can
+        # still match the exact result when the endpoint accepts the input.
+        delta = {}
+        if sources:
+            delta['delivered_research_evidence'] = sources
+        if native:
+            delta['retained_visible_source_contexts'] = native
+        return delta
+
+    async def _append_final_transition(self, session, agent_id, *, reason, before, remaining_turns):
+        if not session.requests or self.synthesis_only or reason == 'prepare_synthesis':
+            return False
+        limit = int(context_char_limit(self.config) * COMPACTION_TRIGGER_FRACTION)
+        if before >= limit:
+            return False
+        seed = json.loads(session.history[0]['content'])
+        restore_calculations = bool(session.compactions and
+            (seed.get('calculation_indexes') or {}).get('omitted_summary_count'))
+        transition = (self._final_source_delta(session, agent_id, seed)
+                      if session.compactions and seed.get('omitted_output_count') else {})
+        pending = getattr(session, '_pending_material_deliveries', ())
+        if pending:
+            direct = {self._report_message_key(message) for message in session.history}
+            projected = [*seed.get('delivered_research_evidence', []),
+                         *transition.get('delivered_research_evidence', [])]
+            for item in pending:
+                message = item['message']
+                if self._report_message_key(message) in direct:
+                    continue
+                value = item['result'] if 'result' in item else json.loads(message.get('output', message.get('content', '{}')))
+                if not any(evidence.get('tool') == item['call'].name and projected_result_matches(evidence, value)
+                           for evidence in projected):
+                    return False
+
+        manager = agent_id == 'manager'
+        key = 'synthesis_transition' if manager else 'child_final_transition'
+        final_tool = 'finish_analysis' if manager else 'submit_report'
+        instruction = (f'仅基于本会话可见证据，调用一次 {final_tool}，不要继续研究。保留未决问题、资料范围和未知值。'
+                       'save_material 的材料参数是模型提取，不是独立原文；保存状态以工具结果为准。')
+        if transition or restore_calculations:
+            instruction += '以本次输入的实际原文与计算摘要为准；仍只有索引或此前未读取的内容不能视为已读。'
+        transition[key] = {'reason': reason, 'instruction': instruction}
+        if manager:
+            self._record_visible_report_deliveries(record=False)
+            visible = {item['report_id'] for item in self.request_report_visibility if item['access'] == 'full_report'}
+            late = []
+            for child in self.children.values():
+                reports = [_report_context(report) for report in child.reports if report.get('report_id') not in visible]
+                if reports:
+                    late.append({'agent_id': child.id, 'title': child.title, 'reports': reports})
+            if late:
+                transition['late_completed_child_reports'] = late
+        if not self._pin_runtime_status(session, agent_id, remaining_turns, True,
+                transition=transition, max_history_chars=limit, restore_omitted_calculations=restore_calculations):
+            return False
+        if manager:
+            session.phase = 'synthesis'
+            session._manager_final_tail_appended = True
+        else:
+            session._child_final_tail_appended = True
+        event = 'synthesis_context_projected' if manager else 'child_final_context_projected'
+        await self._publish(event, agent_id, {'reason': reason, 'mode': 'tail_append', 'history_preserved': True,
+            'before_chars': before, 'after_chars': len(serialized(session.history)), 'archive_count': len(session.archive)})
+        return True
+
+    async def _enter_child_final_context(self, session, agent_id, *, reason, remaining_turns=None):
         """Reproject this child's visible evidence without extending its budget.
 
         Conversation archives contain the bounded messages actually offered to
         the model. Hidden tool-result archives and other agents' evidence are
         deliberately not candidates. No checkpoint or parent context is read.
         """
-        if getattr(session, '_child_final_projected', False):
-            return
+        if getattr(session, '_child_final_projected', False) or getattr(session, '_child_final_tail_appended', False):
+            return False
         if session.pending_calls:
             raise ValueError('子报告上下文必须在所有工具调用已返回后建立')
-        size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
+        size = lambda value: len(serialized(value))
         before = size(session.history)
+        if await self._append_final_transition(session, agent_id, reason=reason, before=before,
+                                               remaining_turns=remaining_turns):
+            return True
         candidates = self._visible_source_candidates(session, agent_id)
         # Start from the child's already-visible seed, never the manager seed.
         seed = json.loads(session.history[0]['content'])
@@ -1807,7 +1925,7 @@ class ResearchRuntime:
         fixed = copy.deepcopy(session.history)
         fixed.extend(visible for message in getattr(session, 'submission_feedback_messages', [])
                      if (visible := visible_message(message)))
-        max_chars = int(self.config.get('max_context_chars', 240_000))
+        max_chars = context_char_limit(self.config)
         # Keep whole returned values. Prefer actual source/extraction outputs to
         # discovery indexes, and recent results within each class. This chooses
         # neither a financial sign nor a preferred factual conclusion.
@@ -1822,7 +1940,7 @@ class ResearchRuntime:
             first.update(envelope)
             messages[0]['content'] = json.dumps(first, ensure_ascii=False, default=str)
             return messages
-        limit = int(max_chars * .70) - 1200  # Leave room for the next status delta.
+        limit = int(max_chars * FINAL_PROJECTION_FRACTION) - 1200  # Leave room for the next status delta.
         for _, _, item in sorted(candidates, key=lambda entry: (entry[0], -entry[1])):
             target = native_sources if item['tool'] == 'native_source_materials' else kept
             target.append(item['result'] if target is native_sources else item)
@@ -1838,26 +1956,34 @@ class ResearchRuntime:
                 break
         envelope['unlisted_omission_count'] = len(omitted) - len(envelope['omitted_evidence_indexes'])
         session.history = projected()
-        session.native_search = False
+        if not session.requests:
+            session.native_search = False
         session._child_final_projected = True
         await self._publish('child_final_context_projected', agent_id, {'reason': reason,
+            'mode': 'reproject', 'history_preserved': False,
             'before_chars': before, 'after_chars': size(session.history),
             'visible_tool_outputs': len(candidates), 'included_outputs': len(kept) + len(native_sources),
             'omitted_outputs': len(omitted), 'archive_count': len(session.archive)})
+        return False
 
-    async def _enter_synthesis_context(self, session, *, reason):
+    async def _enter_synthesis_context(self, session, *, reason, remaining_turns=None):
         """Project delivered evidence at a resolved boundary; never replay audit data.
 
         Every old visible record remains in this session's archive with its
         original ID. Only delivered conversation/tool output is projected; raw
         oversized tool archives and opaque provider reasoning are not expanded.
         """
-        if getattr(session, '_synthesis_projected', False):
-            return
+        if getattr(session, '_synthesis_projected', False) or getattr(session, '_manager_final_tail_appended', False):
+            return False
         if session.pending_calls:
             raise ValueError('汇总上下文必须在所有工具调用已返回后建立')
-        size = lambda value: len(json.dumps(value, ensure_ascii=False, default=str))
+        if not self.synthesis_only:
+            await self._save_checkpoint()
+        size = lambda value: len(serialized(value))
         before = size(session.history)
+        if await self._append_final_transition(session, 'manager', reason=reason, before=before,
+                                               remaining_turns=remaining_turns):
+            return True
         messages = []
         for record in session.archive:
             if record.get('kind') == 'conversation':
@@ -1953,10 +2079,8 @@ class ResearchRuntime:
                     signature = json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
                     evidence.pop(signature, None)
                     evidence[signature] = item; seen.add(signature)
-        if not self.synthesis_only:
-            await self._save_checkpoint()
         seed = copy.deepcopy(self.context)
-        max_chars = int(self.config.get('max_context_chars', 240_000))
+        max_chars = context_char_limit(self.config)
         batch = seed.get('forecast_batch')
         if isinstance(batch, dict) and size(batch) > max_chars // 3:
             # Initial ModelClient.session already bounds oversized target pages.
@@ -2007,97 +2131,103 @@ class ResearchRuntime:
         fixed.extend(copy.deepcopy(getattr(session, 'submission_feedback_messages', [])))
         if latest_budget:
             fixed.append({'role': 'user', 'content': json.dumps(latest_budget, ensure_ascii=False, default=str)})
-        # Source messages are actual delivered excerpts too. Fit them using the
-        # same budget instead of letting many native sources bypass the bound.
-        candidates = [('tool', item) for item in evidence.values()
+        candidates = [('tool', project_source_item(item)) for item in evidence.values()
             if item.get('tool') not in {'market_indicators', 'calculate'}
             and not (item.get('tool') == 'query_market_rows'
                 and calculation_projection('query_market_rows', item.get('result')) is not None)]
         candidates += [('source', value) for value in source_messages]
         candidates += [('extra', value) for value in extra_messages]
-        available = max(0, int(max_chars * .70) - size(fixed) - 400)
-        compact_evidence, kept_sources, truncated = [], [], 0
-        deferred = []
         discovery_tools = {'list_materials', 'search_materials', 'recall_context', 'visible_user_context',
                            'list_agent_roles', 'list_business_demands', 'list_forecast_targets', 'list_recommendations'}
-        # Keep whole actual source/extraction results before discovery indexes;
-        # prefer recent visible results within each group, not a chosen fact or
-        # financial conclusion. Equal slicing of hundreds of indexes otherwise
-        # discards every numerical table even when several whole results fit.
-        candidates = [(kind, project_source_item(item) if kind == 'tool' else item)
-            for kind, item in candidates]
-        # One recent whole result per tool gets a chance before repeated results
-        # from that tool. Exact shared row metadata saves space without choosing
-        # a financial fact or opening any previously unread archive.
         ordered = diverse_source_order(candidates, discovery_tools, balance_repeated=True)
+        # Preserve the newest value from each research tool's first pass. Then
+        # consider complete returned source text before repeated lookups, even
+        # when a lookup's raw JSON looked small enough before escaping.
+        primary, repeated, discovery = [], [], []
+        represented = set()
         for _, (kind, item) in ordered:
-            cost = size(item)
-            if cost <= available:
-                if kind == 'tool':
-                    compact_evidence.append(item)
-                else:
-                    kept_sources.append(item)
-                available -= cost
-                continue
-            deferred.append((kind, item))
-        each = available // max(1, len(deferred))
-        for kind, item in deferred:
-            payload = json.dumps(item.get('result') if kind == 'tool' else item, ensure_ascii=False, default=str)
-            refs = references(item)[:6]
-            while refs and size(refs) > each // 4:
-                refs.pop()
-            if each < 300:
-                # An extreme number of results cannot all fit; the original
-                # records and the explicit omission count remain available.
-                truncated += 1
-                continue
-            compact_evidence.append({'tool': item.get('tool', 'visible_source_context'),
-                'record_id': item.get('record_id'),
-                'visible_excerpt': payload[:max(0, each - size(refs) - 300)], 'references': refs,
-                'truncated_for_synthesis': True, 'total_visible_chars': len(payload),
-                'note': '此前交付全文仍在本会话档案；该片段之外的内容不据此补造结论。'})
-            truncated += 1
-        def projected_messages():
-            messages = copy.deepcopy(fixed)
-            first = json.loads(messages[0]['content'])
-            if compact_evidence or truncated:
-                first.update({
-                    'delivered_research_evidence': compact_evidence,
-                    'bounded_or_omitted_outputs': truncated,
-                    'evidence_note': '截断或省略内容保留在原档案；未列出的细节保持未知，不以索引充当原文。'})
-                if truncated:
-                    first['omitted_evidence'] = {'truncated_for_synthesis': True, 'count': truncated}
-            if kept_sources:
-                # Preserve the established native-source user-message shape.
-                # These exact selected values are moved into the seed only if
-                # a later rejected candidate requires generic compaction.
-                messages.extend({'role': 'user', 'content': json.dumps(value, ensure_ascii=False, default=str)}
-                    for value in kept_sources if 'native_source_materials' in value)
-                late = [item for value in kept_sources for item in value.get('late_completed_child_reports', [])]
-                if late:
-                    first['late_completed_child_reports'] = late
-            messages[0]['content'] = json.dumps(first, ensure_ascii=False, default=str)
-            return messages
-        session.history = projected_messages()
-        # JSON escaping adds overhead. Enforce the final serialized threshold,
-        # including native sources, before the generic compactor can retire it.
-        while size(session.history) > int(max_chars * .74) and (compact_evidence or kept_sources):
-            if compact_evidence:
-                compact_evidence.pop()
+            tool = item.get('tool')
+            identity = (kind, tool if kind == 'tool' else None)
+            result = item.get('result')
+            complete_source = (tool in {'read', 'get_material'} and isinstance(result, dict)
+                and result.get('access') == 'full_text' and not result.get('truncated_for_context'))
+            target = discovery if tool in discovery_tools else (
+                primary if identity not in represented or complete_source else repeated)
+            target.append((kind, item))
+            represented.add(identity)
+
+        first = json.loads(seed_message['content'])
+        compact_evidence, late, kept_sources, deferred = [], [], [], []
+        limit = int(max_chars * FINAL_PROJECTION_FRACTION)
+        # Charge items at their placement's wire cost: seed entries are inside
+        # a JSON string, native source messages are not. Reserve the field names
+        # and omission ledger before placing any entries; no post-hoc eviction.
+        available = max(0, limit - size(fixed) - size(serialized({
+            'delivered_research_evidence': [], 'late_completed_child_reports': [],
+            'bounded_or_omitted_outputs': len(candidates),
+            'omitted_evidence': {'truncated_for_synthesis': True, 'count': len(candidates)},
+            'evidence_note': '截断或省略内容保留在原档案；未列出的细节保持未知，不以索引充当原文。'})))
+        for kind, item in [*primary, *repeated, *discovery]:
+            if kind == 'source':
+                value = {'role': 'user', 'content': serialized(item)}
+                cost = size(value) + 2
+                target, values = kept_sources, [value]
+            elif kind == 'extra':
+                values = item['late_completed_child_reports']
+                cost = size(serialized(values)) - 2
+                target = late
             else:
-                kept_sources.pop()
-            truncated += 1
-            session.history = projected_messages()
-        session._final_native_source_contexts = copy.deepcopy([
-            value for value in kept_sources if 'native_source_materials' in value])
+                cost = size(serialized(item))
+                target, values = compact_evidence, [item]
+            if cost <= available:
+                target.extend(values)
+                available -= cost
+            else:
+                deferred.append((kind, item))
+
+        truncated = len(deferred)
+        for index, (kind, item) in enumerate(deferred):
+            each = available // (truncated - index)
+            if each < 300:
+                break
+            payload = serialized(item.get('result') if kind == 'tool' else item)
+            refs = references(item)[:6]
+            while refs and size(serialized(refs)) > each // 4:
+                refs.pop()
+            excerpt = {'tool': item.get('tool', 'visible_source_context'), 'record_id': item.get('record_id'),
+                'visible_excerpt': '', 'references': refs, 'truncated_for_synthesis': True,
+                'total_visible_chars': len(payload),
+                'note': '此前交付全文仍在本会话档案；该片段之外的内容不据此补造结论。'}
+            # Quote/backslash characters can occupy four characters after
+            # encoding the excerpt and then its enclosing user message.
+            excerpt['visible_excerpt'] = payload[:max(0, (each - size(serialized(excerpt))) // 4)]
+            cost = size(serialized(excerpt))
+            if excerpt['visible_excerpt'] and cost <= each:
+                compact_evidence.append(excerpt)
+                available -= cost
+        if compact_evidence or truncated:
+            first.update(delivered_research_evidence=compact_evidence, bounded_or_omitted_outputs=truncated,
+                evidence_note='截断或省略内容保留在原档案；未列出的细节保持未知，不以索引充当原文。')
+            if truncated:
+                first['omitted_evidence'] = {'truncated_for_synthesis': True, 'count': truncated}
+        if late:
+            first['late_completed_child_reports'] = late
+        fixed[0]['content'] = serialized(first)
+        session.history = [*fixed, *kept_sources]
+        # Preserve the native-source user-message shape and keep exactly these
+        # selected values if a later correction requires generic compaction.
+        session._final_native_source_contexts = [json.loads(item['content']) for item in kept_sources]
         session.phase = 'synthesis'
-        session.native_search = False
+        if not session.requests:
+            session.native_search = False
         session._synthesis_projected = True
         session._manager_final_projected = reason != 'prepare_synthesis'
         await self._publish('synthesis_context_projected', 'manager', {'reason': reason,
+            'mode': 'reproject', 'history_preserved': False,
             'before_chars': before, 'after_chars': size(session.history), 'visible_tool_outputs': len(evidence),
             'truncated_outputs': truncated,
             'archive_count': len(session.archive)})
+        return False
 
     async def _record_unincorporated_child_reports(self, result: dict, report_counts: dict) -> None:
         """Expose saved late evidence without buying another accepted report."""
@@ -2155,8 +2285,7 @@ class ResearchRuntime:
         full report. The hook runs after final request-context compaction.
         """
         self.request_report_visibility = []
-        if not hasattr(self.tools, 'store'):
-            return []
+        record = record and hasattr(self.tools, 'store')
         reports = {report['report_id']: (report, self.task_id)
             for child in self.children.values() for report in child.reports if report.get('report_id')}
         # Model context omits internal receipt inventories. Receipt lineage and
@@ -2453,7 +2582,8 @@ class ResearchRuntime:
             # This function's result is resolved by the ordinary tool loop first;
             # compacting the old session here would orphan its pending call.
             self.manager_session.phase = "synthesis"
-            self.manager_session.native_search = False
+            if not self.manager_session.requests:
+                self.manager_session.native_search = False
             self._fresh_synthesis_context = True
             return {"accepted": True, "phase": "synthesis", "material_ids": self.synthesis_checkpoint.get("material_ids", [])}
         if name == "spawn_research":
@@ -2509,7 +2639,9 @@ class ResearchRuntime:
                     raise ValueError("全局研究没有账户持仓版本；请提交公共 research_records，账户建议的处理由对应账户研究决定")
                 if hasattr(self.tools, 'resolve_references'):
                     resolved = await self.tools.resolve_references(args)
-                    if resolved['reference_summary']['unresolved'] and not self.reference_feedback_sent:
+                    summary = (resolved['direct_reference_summary'] if 'direct_reference_summary' in resolved
+                               else resolved['reference_summary'])
+                    if summary['unresolved'] > 0 and not self.reference_feedback_sent:
                         self.reference_feedback_sent = True
                         return {'accepted': False, 'reference_feedback': resolved,
                                 'message': '部分引用不存在或不在当前范围。可查已有材料修正；不要编造或静默换来源。仅反馈一次，再次提交仍有缺口将明确保留并交付有效部分。'}

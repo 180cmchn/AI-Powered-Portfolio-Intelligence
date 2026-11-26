@@ -65,6 +65,22 @@ def seed(payload):
     return effective_context(payload)
 
 
+def forced_function(payload):
+    choice = payload.get('tool_choice')
+    if isinstance(choice, dict) and choice.get('type') == 'function':
+        return choice.get('name') if 'input' in payload else choice.get('function', {}).get('name')
+    return None
+
+
+def assert_hot_closeout(payload, previous, terminal):
+    expected = ({'type': 'function', 'name': terminal} if 'input' in payload else
+                {'type': 'function', 'function': {'name': terminal}})
+    assert payload['tool_choice'] == expected
+    assert payload['tools'] == previous['tools']
+    if 'input' in payload:
+        assert payload['include'] == previous['include']
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize('protocol', ['responses', 'chat_completions'])
 @pytest.mark.parametrize('count', [1, 40])
@@ -102,10 +118,16 @@ async def test_default_budget_preserves_every_value_in_final_http_after_archive(
         assert next(item for item in summaries if item['tool'] == 'calculate')['result'] == '35.00'
         assert visible['calculation_indexes']['omitted_summary_count'] == 0
         assert '不能调用 recall_context' in visible['calculation_access']
-        function_names = {tool.get('name') or tool.get('function', {}).get('name') for tool in payload['tools']}
-        assert function_names == {'finish_analysis'}
-        assert len(json.dumps(payload.get('input', payload.get('messages')), ensure_ascii=False)) < cfg['max_context_chars'] * .78
-        assert 'NEVER_LOG_PRIVATE_REASONING' not in json.dumps(payload)
+        assert_hot_closeout(payload, payloads[-2], 'finish_analysis')
+        from tests.test_seventeenth_child_final_evidence import assert_private_protocol_only, payload_history
+        history = payload_history(payload)
+        assert len(json.dumps(history, ensure_ascii=False)) < cfg['max_context_chars'] * .78
+        assert_private_protocol_only(payload, 'NEVER_LOG_PRIVATE_REASONING')
+        if count == 1:
+            previous = payload_history(payloads[-2])
+            assert history[:len(previous)] == previous
+        else:
+            assert 'NEVER_LOG_PRIVATE_REASONING' not in json.dumps(payload)
         return output(protocol, [('finish_analysis', delivery_arguments(**{'report': '确定性结果已可见；本测试不评价模型采用或投资方向。'}))])
 
     monkeypatch.setattr(agents, 'ModelClient', lambda config, before_request=None:
@@ -248,18 +270,20 @@ async def test_prepare_keeps_distinct_windows_and_permits_actual_input_recall(tm
 async def test_parallel_children_publish_calculations_before_shared_budget_closeout(tmp_path, monkeypatch):
     cfg = config(monkeypatch, max_model_calls=18, max_agent_turns=18, max_concurrent_agents=2)
     store, tools, context = setup(tmp_path, cfg)
-    requests, events = [], []
+    requests, events = {}, []
     async def handler(request):
         payload = json.loads(request.content)
-        requests.append(payload)
         visible = seed(payload)
         identity = visible['runtime_status']['agent_id']
-        names = {tool['name'] for tool in payload['tools']}
+        agent_requests = requests.setdefault(identity, [])
+        agent_requests.append(payload)
+        forced = forced_function(payload)
         await asyncio.sleep(.002)
         if identity == 'manager':
-            if len(requests) == 1:
+            if len(agent_requests) == 1:
                 return output('responses', [('spawn_research', {'task': f'Controlled arithmetic {i}'}) for i in range(2)])
-            if names == {'finish_analysis'}:
+            if forced == 'finish_analysis':
+                assert_hot_closeout(payload, agent_requests[-2], 'finish_analysis')
                 summaries = visible['calculation_summaries']
                 assert len({item['agent_id'] for item in summaries}) == 2
                 assert all(item['result'] == '37' for item in summaries)
@@ -268,7 +292,8 @@ async def test_parallel_children_publish_calculations_before_shared_budget_close
                 assert all(child['status'] == 'completed' for child in visible['runtime_status']['children'])
                 return output('responses', [('finish_analysis', delivery_arguments(**{'report': '两位子研究者实际交付的计算可见。'}))])
             return output('responses', [('wait_agents', {'timeout_seconds': .01})])
-        if names == {'submit_report'}:
+        if forced == 'submit_report':
+            assert_hot_closeout(payload, agent_requests[-2], 'submit_report')
             assert visible['calculation_summaries']
             assert all(item['agent_id'] == identity for item in visible['calculation_summaries'])
             return output('responses', [('submit_report', {'summary': '已完成计算，来源口径未另行推断。'})])

@@ -1,5 +1,6 @@
 from tests.context_helpers import effective_context
 from tests.delivery_helpers import delivery_arguments
+from tests.test_ninth_calculation_context import assert_hot_closeout, forced_function
 """A protocol substitute exercises the real runtime and durable evidence resolver."""
 import asyncio
 import json
@@ -58,8 +59,8 @@ async def test_searching_model_finishes_inside_original_budget_with_evidence_gap
                                                "title": "Source excerpt", "snippet": "A visible source excerpt."}]}}]
         else:
             assert turn in (5, 6)  # First submission and one citation repair stay inside six turns.
-            assert [(tool["type"], tool.get("name")) for tool in payload["tools"]] == [("function", "finish_analysis")]
-            assert "web_search_call.action.sources" not in payload["include"]
+            assert_hot_closeout(payload, requests[-2], "finish_analysis")
+            assert "web_search_call.action.sources" in payload["include"]
             saved_sources = [item for item in user_messages if "native_source_materials" in item]
             assert len(saved_sources) == 4
             valid_id = saved_sources[0]["native_source_materials"][0]["id"]
@@ -111,9 +112,10 @@ async def test_followup_restores_native_search_after_child_final_turn(monkeypatc
                        "action": {"type": "search", "query": "initial disclosure"}}]
         else:
             if turn == 6:
-                assert [(tool["type"], tool.get("name")) for tool in payload["tools"]] == [("function", "submit_report")]
+                assert_hot_closeout(payload, requests[-2], "submit_report")
             else:
                 assert turn == 7
+                assert forced_function(payload) is None
                 assert {"type": "web_search"} in payload["tools"]
                 assert "web_search_call.action.sources" in payload["include"]
                 assert "Check the later correction" in json.dumps(payload["input"])
@@ -134,7 +136,7 @@ async def test_followup_restores_native_search_after_child_final_turn(monkeypatc
         child = runtime.children[created["agent_id"]]
         original_session = child.session
         await child.task_handle
-        assert child.status == "completed" and child.session.native_search is False
+        assert child.status == "completed" and child.session.native_search is True
         assert len(child.reports) == 1
 
         await runtime._dispatch("manager", "follow_up", {"agent_id": child.id, "task": "Check the later correction"})
@@ -188,24 +190,29 @@ async def test_shared_30_calls_close_before_any_agent_reaches_18_turns(monkeypat
         seed = effective_context(payload)
         state = seed["runtime_status"]
         ident = state["agent_id"]
+        previous = next((item for agent_id, item in reversed(requests) if agent_id == ident), None)
         requests.append((ident, payload))
-        names = {tool.get("name") for tool in payload["tools"]}
+        forced = forced_function(payload)
         await asyncio.sleep(.002)
         if ident == "manager":
             if len(requests) == 1:
                 return httpx.Response(200, json={"status": "completed", "output": [
                     {"type": "function_call", "call_id": f"spawn-{i}", "name": "spawn_research",
                      "arguments": json.dumps({"task": f"Research issuer {i}", "title": f"Issuer {i}"})} for i in range(2)]})
-            if names == {"finish_analysis"}:
+            if forced == "finish_analysis":
+                assert previous is not None
+                assert_hot_closeout(payload, previous, "finish_analysis")
                 assert state["closing"] is True
                 assert len(state["children"]) == 2
                 assert all(child["status"] == "completed" for child in state["children"])
                 assert all(child["latest_report"]["open_questions"] for child in state["children"])
-                assert {"type": "web_search"} not in payload["tools"]
+                assert {"type": "web_search"} in payload["tools"]
                 return model_response("finish_analysis", delivery_arguments(**{"report": "Summary of available evidence. Issuer valuation remains unknown; missing statements prevent a conclusion."}), "manager-final")
             return model_response("wait_agents", {"timeout_seconds": .01}, f"wait-{len(requests)}")
         child_counts[ident] = child_counts.get(ident, 0) + 1
-        if names == {"submit_report"}:
+        if forced == "submit_report":
+            assert previous is not None
+            assert_hot_closeout(payload, previous, "submit_report")
             assert state["closing"] is True
             return model_response("submit_report", {"summary": "Only a public source excerpt was obtained; no verified valuation.",
                 "material_ids": [f"visible-{ident}"], "open_questions": ["Statement figures and valuation remain unknown."]}, f"submit-{ident}")
@@ -336,7 +343,7 @@ async def test_synthesis_budget_also_forces_submission_before_exhaustion(monkeyp
         requests.append(payload)
         if len(requests) < 3:
             return model_response("get_material", {"material_id": "existing"}, f"read-{len(requests)}")
-        assert {tool.get("name") for tool in payload["tools"]} == {"finish_analysis"}
+        assert_hot_closeout(payload, requests[-2], "finish_analysis")
         assert state["remaining_shared_model_calls"] == 2
         return model_response("finish_analysis", delivery_arguments(**{"report": "Visible checkpoint summarized; missing figures remain unknown."}))
     use_transport(monkeypatch, handler)
@@ -358,7 +365,8 @@ async def test_retry_crossing_shared_tail_rebuilds_child_payload_before_http(mon
             assert {"type": "web_search"} in payload["tools"]
             return httpx.Response(503, json={"error": "fixture unavailable"})
         assert len(requests) == 2
-        assert {tool.get("name") for tool in payload["tools"]} == {"submit_report"}
+        assert_hot_closeout(payload, requests[0], "submit_report")
+        assert {"type": "web_search"} in payload["tools"]
         state = effective_context(payload)["runtime_status"]
         assert state["closing"] is True
         return model_response("submit_report", {"summary": "Earlier research retained; supplemental request failed.",

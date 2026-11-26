@@ -290,6 +290,8 @@ async def test_research_to_forced_final_and_large_correction_share_one_source_an
 @pytest.mark.parametrize('protocol', ['responses', 'chat_completions'])
 async def test_unused_joint_budget_keeps_whole_older_source_without_displacing_calculations(monkeypatch, protocol):
     runtime,child,_=await make_runtime(monkeypatch,lambda request:httpx.Response(200,json=response(protocol)),protocol)
+    # Six escaped originals plus exact calculations fit within the 44% retained envelope.
+    runtime.config['max_context_chars'] = runtime.client.config['max_context_chars'] = 105_000
     session=child.session
     results=[{'id':f'visible-{i}','text':'quote \\" exact \n'*250,'access':'full_text',
         'returned_range':{'start_page':i+1,'end_page':i+1}} for i in range(6)]

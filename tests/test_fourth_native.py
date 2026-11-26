@@ -1,4 +1,5 @@
 from tests.delivery_helpers import delivery_arguments
+from tests.test_ninth_calculation_context import assert_hot_closeout
 """Protocol substitutes and production runtime tests; not real-network evidence."""
 import asyncio
 import json
@@ -324,7 +325,8 @@ async def test_explicit_synthesis_compacts_context_at_resolved_function_boundary
         if len(payloads) == 1:
             return response(call("prepare_synthesis", {"summary": "Completed visible research", "material_ids": ["m-visible"]}))
         assert all(item.get("type") != "function_call_output" for item in payload["input"])
-        assert all(tool.get("type") != "web_search" for tool in payload["tools"])
+        assert_hot_closeout(payload, payloads[0], "finish_analysis")
+        assert {"type": "web_search"} in payload["tools"]
         assert "Completed visible research" in json.dumps(payload)
         return response(call("finish_analysis", delivery_arguments(**{"report": "Final report"})))
 

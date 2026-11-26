@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import copy
+import re
 from contextlib import nullcontext
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlsplit, urlunsplit
@@ -105,6 +106,50 @@ def _hash(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
 
 
+def _representation_hash(body, access):
+    parts = [material_text(body), access]
+    labels = body.get('unlinked_source_labels')
+    if body.get('representation') == 'agent_extraction' and isinstance(labels, list) and labels:
+        # Reuse the same document, but don't discard labels when an immutable
+        # representation already exists with the same text and parents.
+        parts.append(labels)
+    return _hash(parts)
+
+
+_NATIVE_SOURCE_LABEL = re.compile(r'(?:web|search|source|ref|citation|doc):\d+', re.IGNORECASE)
+
+
+def _native_source_label(value):
+    if not isinstance(value, str):
+        return None
+    label = value.strip()
+    return label if _NATIVE_SOURCE_LABEL.fullmatch(label) else None
+
+
+def separate_native_source_labels(material):
+    """Keep native search labels as metadata, never as stored parent IDs."""
+    body = dict(material)
+    existing = body.get('unlinked_source_labels')
+    labels = list(existing) if isinstance(existing, list) else []
+    seen = {label.lower() for value in labels if (label := _native_source_label(value)) is not None}
+    for field in ('material_ids', 'source_material_ids'):
+        values = body.get(field)
+        if not isinstance(values, list):
+            continue
+        linked = []
+        for value in values:
+            label = _native_source_label(value)
+            if label is None:
+                linked.append(value)
+            elif label.lower() not in seen:
+                seen.add(label.lower())
+                labels.append(label)
+        if len(linked) != len(values):
+            body[field] = linked
+            body['unlinked_source_labels'] = labels
+    return body
+
+
 def parent_material_ids(body):
     """Both historical spellings mean the union of exact, nonempty parent IDs.
 
@@ -167,7 +212,7 @@ def index_of(body):
             "page_range", "pages_read", "start_page", "end_page", "access_range", "range", "requested_range", "returned_range", "extracted_range", "version", "previous_id", "source_id", "changed_at", "content_hash", "change_summary",
             "offset", "returned_chars", "requested_chars", "text_length", "extraction_method", "extraction_note", "document_version_id",
             "document_version", "document_identity_kind", "representation_kind", "read_completeness", "change_kind", "legacy_version", "material_ids", "source_material_ids",
-            "observation_status", "observation_sequence", "observation_started_at", "is_latest_document_observation",
+            "unlinked_source_labels", "observation_status", "observation_sequence", "observation_started_at", "is_latest_document_observation",
             "error_kind", "failure_stage", "next_action", "alternative_source_status", "requested_access_range",
             "document_format", "pdf_available", "source_identifier")
     result = {k: v for k, v in body.items() if k in keys}
@@ -330,7 +375,7 @@ class MaterialStore:
     def _bind_representation(self, db, body, document):
         from .store import dumps
         metadata = access_metadata(body)
-        digest = _hash([material_text(body), metadata])
+        digest = _representation_hash(body, metadata)
         previous = db.execute("SELECT anchor_material_id FROM material_document_versions WHERE id=?", (document["previous_id"],)).fetchone()
         prefixes = {"original_document": "original_content", "summary": "summary", "text_representation": "representation",
                     "agent_extraction": "agent_extraction", "generated_analysis": "generated_analysis", "native_search_source": "visible_source"}
@@ -393,7 +438,7 @@ class MaterialStore:
                 document, document_created, previous = self._document_version(db, body, account_id, observation_id)
                 notification_allowed = body.pop("_notification_allowed", True)
                 observation_status = body.get("observation_status")
-                digest = _hash([material_text(body), access_metadata(body)])
+                digest = _representation_hash(body, access_metadata(body))
                 read = db.execute("""SELECT m.body FROM material_representations r JOIN materials m ON m.id=r.material_id
                     WHERE r.document_version_id=? AND r.representation_hash=? LIMIT 1""", (document["id"], digest)).fetchone()
                 if read:

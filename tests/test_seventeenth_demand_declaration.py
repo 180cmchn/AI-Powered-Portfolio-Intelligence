@@ -13,7 +13,7 @@ from app.domain import AccountInput
 from app.store import Store, dumps, loads
 from tests.delivery_helpers import delivery_arguments, final_result
 from tests.test_fourteenth_chain import setup_app, execute
-from tests.test_ninth_calculation_context import output
+from tests.test_ninth_calculation_context import assert_hot_closeout, output
 
 
 def terminal(report='本轮已核现金，不强迫完成其他需求。', **extra):
@@ -37,8 +37,9 @@ async def test_missing_declaration_is_one_terminal_correction_even_when_forced(t
             assert (set(defs)=={'finish_analysis'}) is forced
             return output(protocol,[('finish_analysis',terminal())])
         assert len(payloads)==2
-        assert set(defs)=={'finish_analysis'}
-        assert all(t.get('type')!='web_search' for t in payload['tools'])
+        assert_hot_closeout(payload, payloads[0], 'finish_analysis')
+        assert (set(defs)=={'finish_analysis'}) is forced
+        assert ({'type': 'web_search'} in payload['tools']) is (protocol == 'responses' and not forced)
         wire=json.dumps(payload,ensure_ascii=False)
         assert 'covered_demand_ids' in wire and '未覆盖可填 []' in wire
         return output(protocol,[('finish_analysis',terminal(covered_demand_ids=[]))])
@@ -55,7 +56,9 @@ async def test_missing_declaration_is_one_terminal_correction_even_when_forced(t
     events=store.job(saved['id'],events=True)['events']
     assert sum(e['type']=='terminal_submission_rejected' for e in events)==1
     observed=[q for e in events if e['type']=='model_usage' for q in e['payload']['requests']]
-    assert len(observed)==2 and observed[-1]['native_search_requested'] is False
+    assert len(observed)==2
+    assert observed[-1]['native_search_requested'] is observed[0]['native_search_requested']
+    assert observed[-1]['native_search_requested'] is (protocol == 'responses' and not forced)
     assert all(q['usage'] is None for q in observed)
     # A task-local required field never mutates the global schema or other roles.
     original=next(t for t in agents.MANAGER_TOOLS if t['name']=='finish_analysis')
@@ -264,7 +267,7 @@ async def test_small_final_context_retains_exact_calculation_through_missing_dec
         assert 'covered_demand_ids' in tool_defs(payload)['finish_analysis']['parameters']['required']
         if len(payloads) == 1:
             return output(protocol, [('calculate', {'operation': 'subtract', 'values': values})])
-        assert set(tool_defs(payload)) == {'finish_analysis'}
+        assert_hot_closeout(payload, payloads[-2], 'finish_analysis')
         assert all(t.get('type') != 'web_search' for t in payload['tools'])
         calc = seed(payload)['calculation_summaries'][0]
         assert calc['inputs'] == values and calc['result'] == '383804809.20'
