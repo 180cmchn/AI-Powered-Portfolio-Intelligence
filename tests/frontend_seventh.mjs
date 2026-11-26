@@ -5,6 +5,7 @@ import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
+import { selectChoice } from './choice_helper.mjs';
 const { chromium }=createRequire(import.meta.url)('playwright');
 const directory=await mkdtemp(join(tmpdir(),'guanlan-seventh-'));
 const child=spawn(process.env.PYTHON || 'python',['tests/seventh_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
@@ -48,11 +49,11 @@ try {
   let gateTimer;
   try {
     await Promise.race([windowStarted,new Promise((_,reject)=>{gateTimer=setTimeout(()=>reject(Error('window request did not start')),10000);})]);
-    await form.locator('[name="kind"]').selectOption('exploratory');
+    await selectChoice(form, '[name="kind"]', 'exploratory');
   } finally {clearTimeout(gateTimer);releaseWindow();}
   await page.waitForFunction(first=>document.querySelector('#forecast-window-records tbody tr')?.textContent!==first,firstWindow);
   assert.equal(await form.locator('[name="kind"]').inputValue(),'exploratory','in-flight window read must preserve the newer filter draft');
-  await form.locator('[name="kind"]').selectOption('exploratory');
+  await selectChoice(form, '[name="kind"]', 'exploratory');
   await form.getByRole('button',{name:'筛选',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('main')?.textContent.includes('36 个预期样本'));
   assert.equal(await page.locator('.forecast-accuracy').count(),3,'same scoring rule groups all 12 exploration batches');

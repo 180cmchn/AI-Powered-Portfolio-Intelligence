@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile, stat } from "node:fs/promises";
 import assert from "node:assert/strict";
+import { selectChoice } from "./choice_helper.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -954,11 +955,11 @@ try {
   }
 
   // Empty state check via empty account
-  await page.locator("#account-switch").selectOption(ACC_EMPTY);
+  await selectChoice(page, "#account-switch", ACC_EMPTY);
   await page.locator(".loading-line").waitFor({ state: "hidden" });
   await page.locator('nav a[href="#research"]').click();
   await page.getByText("当前页暂无研究报告").waitFor();
-  await page.locator("#account-switch").selectOption(ACC_MAIN);
+  await selectChoice(page, "#account-switch", ACC_MAIN);
   await page.locator(".loading-line").waitFor({ state: "hidden" });
 
   // 4. Mobile 390x844 verification & screenshots across key routes
@@ -1073,9 +1074,9 @@ try {
       assert.ok(failedText.includes("非联网跨轮缓存率 未知"), failedText);
 
       // Switch account away and back (clears state.events & legacyReportUsageHydrated) and verify retry succeeds cleanly
-      await p3.locator("#account-switch").selectOption(ACC_EMPTY);
+      await selectChoice(p3, "#account-switch", ACC_EMPTY);
       await p3.getByText("当前页暂无研究报告").waitFor();
-      await p3.locator("#account-switch").selectOption(ACC_MAIN);
+      await selectChoice(p3, "#account-switch", ACC_MAIN);
       await p3.locator(`[data-report-id="${REP_LEGACY_HYDRATED}"]`).waitFor();
       await p3.locator(`[data-report-id="${REP_LEGACY_HYDRATED}"] .model-usage > summary`).click();
       await p3.waitForFunction(

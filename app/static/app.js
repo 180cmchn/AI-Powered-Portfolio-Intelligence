@@ -1,6 +1,7 @@
 import { createSixthUI } from "./sixth.js";
 import { modelUsageView, requestUsageText, compactUsageStrip, aggregateJobUsage, formatSearchBreakdown, prefixDistHTML, kpiPercent } from "./model-usage.js";
 import { createLedgerUI } from "./ledger.js";
+import { choiceField, syncChoiceControls } from "./select-control.js";
 import { reconcile, patchHTML, readingTransaction } from "./view-state.js";
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -77,6 +78,11 @@ function invalidatePageReads() {
   navigationGeneration++;
   pageReads.abort("superseded_read");
   pageReads = new AbortController();
+  if (pendingDialogContext) {
+    settlePendingDialog(false, null);
+    dialogGeneration++;
+    if ($("#dialog")?.open) $("#dialog").close();
+  }
   lifecycle("navigation", {route: state.route, account: diagnosticAccount(state.accountId)});
 }
 const routes = {
@@ -403,6 +409,9 @@ function toast(message, error = false, accountId = state.accountId, action = nul
   if (action?.id) { const control=document.createElement('button');control.type='button';control.className='button compact';control.dataset.action=action.action || 'view-task';control.dataset.id=action.id;control.textContent=action.label || '查看任务';node.append(' ',control); }
   $("#toast-region").append(node);
   setTimeout(() => node.remove(), error ? 11000 : 5500);
+}
+function isOperationActive(key) {
+  return Boolean(key && state.operations.has(key));
 }
 async function operation(callback, { key = Symbol(), label = "正在加载" } = {}) {
   // Reads never lock writes. Only the same in-flight user intent is coalesced.
@@ -820,7 +829,7 @@ function shell() {
     )
     .join(
       "",
-    )}</nav><div class="sidebar-bottom"><div class="local-status"><span class="dot ${state.error ? "warn" : ""}"></span>${state.error ? "服务连接中断" : "本地研究服务"}</div><p class="sidebar-note">数据保存在本机<br>虚拟账户 · 不连接真实交易<br>Asia/Shanghai</p></div></aside><div class="main-wrap"><header class="topbar"><div class="breadcrumb">工作台 <span>/</span><span>${current[0]}</span></div><div class="top-tools"><span class="clock" id="clock">${date(new Date().toISOString())} · 上海</span>${badge(state.status.mode === "demo" ? "演示模式" : "本地模式", state.status.mode === "demo" ? "warning" : "neutral")}<label class="sr-only hidden" for="account-switch">当前账户</label><select id="account-switch" class="account-switch" aria-label="切换虚拟账户">${state.accounts.length ? state.accounts.map((a) => `<option value="${e(a.id)}" ${a.id === state.accountId ? "selected" : ""}>${e(a.name)}</option>`).join("") : '<option value="">尚无虚拟账户</option>'}</select></div></header><main id="main" class="main" tabindex="-1">${pageHeading()}${route === "overview" ? taskStatusBar() : taskSubmissionNotice()}${notice()}<div data-read-key="page:${e(route)}:${e(state.accountId)}">${sixth.has(route) ? sixth.page() : { overview: overview, holdings: holdings, market: market, research: research, agents: agents, settings: settings }[route]()}</div><footer class="footer-note">观澜提供研究分析与决策参考。账户使用手动虚拟成交与资金账本；持有量与模拟可卖量分别展示。不连接券商、不向交易所下单。所有界面时间均为北京时间。</footer></main></div></div>`;
+    )}</nav><div class="sidebar-bottom"><div class="local-status"><span class="dot ${state.error ? "warn" : ""}"></span>${state.error ? "服务连接中断" : "本地研究服务"}</div><p class="sidebar-note">数据保存在本机<br>虚拟账户 · 不连接真实交易<br>Asia/Shanghai</p></div></aside><div class="main-wrap"><header class="topbar"><div class="breadcrumb">工作台 <span>/</span><span>${current[0]}</span></div><div class="top-tools"><span class="clock" id="clock">${date(new Date().toISOString())} · 上海</span>${badge(state.status.mode === "demo" ? "演示模式" : "本地模式", state.status.mode === "demo" ? "warning" : "neutral")}${choiceField({ e, label: "当前账户", name: "account_switch", id: "account-switch", scope: "topbar", variant: "inline", ariaLabel: "切换虚拟账户", wrapperClass: "account-switch-field", triggerClass: "account-switch", value: state.accountId || "", options: state.accounts.length ? state.accounts.map((a) => [a.id, a.name]) : [["", "尚无虚拟账户"]] })}</div></header><main id="main" class="main" tabindex="-1">${pageHeading()}${route === "overview" ? taskStatusBar() : taskSubmissionNotice()}${notice()}<div data-read-key="page:${e(route)}:${e(state.accountId)}">${sixth.has(route) ? sixth.page() : { overview: overview, holdings: holdings, market: market, research: research, agents: agents, settings: settings }[route]()}</div><footer class="footer-note">观澜提供研究分析与决策参考。账户使用手动虚拟成交与资金账本；持有量与模拟可卖量分别展示。不连接券商、不向交易所下单。所有界面时间均为北京时间。</footer></main></div></div>`;
 }
 function pageHeading() {
   const [title, , eyebrow] = routes[state.route];
@@ -942,8 +951,18 @@ function field(label, name, value = "", options = {}) {
   } = options;
   return `<div class="field ${options.full ? "span-two" : ""}"><label for="${e(options.id || name)}">${e(label)}${required ? " *" : ""}</label><input id="${e(options.id || name)}" name="${e(name)}" type="${e(type)}" value="${e(value ?? "")}" placeholder="${e(placeholder)}" ${required ? "required" : ""} ${min !== undefined ? `min="${min}"` : ""} ${max !== undefined ? `max="${max}"` : ""} ${step ? `step="${step}"` : ""} ${options.autocomplete ? 'autocomplete="off"' : ""}>${help ? `<small>${e(help)}</small>` : ""}</div>`;
 }
-function selectField(label, name, value, choices, help = "", id = name) {
-  return `<div class="field"><label for="${e(id)}">${e(label)}</label><select id="${e(id)}" name="${e(name)}">${choices.map(([v, l]) => `<option value="${e(v)}" ${v === String(value) ? "selected" : ""}>${e(l)}</option>`).join("")}</select>${help ? `<small>${e(help)}</small>` : ""}</div>`;
+function selectField(label, name, value, choices = [], help = "", id = name, extra = {}) {
+  return choiceField({
+    e,
+    label,
+    name,
+    value: value == null ? "" : String(value),
+    options: choices.map(([v, l]) => [String(v), l]),
+    id,
+    scope: extra.scope ?? (state.accountId || "global"),
+    help,
+    ...extra,
+  });
 }
 function holdingRow(holding = {}) {
   const id = holding.symbol ? `saved-${encodeURIComponent(holding.symbol)}` : `draft-${crypto.randomUUID()}`;
@@ -1161,7 +1180,7 @@ function research() {
   // native selection and the result predicate on the same effective filter.
   if (state.materialFilter !== 'all' && !categories.includes(state.materialFilter)) state.materialFilter = 'all';
   const filtered = state.materials.filter((m) => state.materialFilter === "all" || (m.classification || m.category || "unknown") === state.materialFilter);
-  return `<div class="grid-two"><div>${state.analyses.length ? state.analyses.map(reportCard).join("") : `<section class="card">${empty("当前页暂无研究报告", "配置真实模型后开始研究；历史报告可通过分页查看。", "analyze", "开始研究")}</section>`}${pager("analyses", state.analyses)}</div><section class="card"><div class="card-header"><h2>研究材料索引</h2><span class="small muted">当前页 ${state.materials.length} 条</span></div><div class="card-body"><form id="material-search-form" data-draft-key="material-search:${e(state.accountId)}" class="search-field"><input id="material-query" name="query" class="input" value="${e(state.materialQuery)}" placeholder="检索已保存正文、标题或证券" aria-label="检索材料"><button type="submit" class="button compact">检索</button></form><div class="split-heading section-gap"><span class="small muted">分类筛选当前页；保留未知与冲突</span><select id="material-filter" class="input source-filter" aria-label="筛选材料分类"><option value="all">全部材料</option>${[...new Set(state.materials.map((m) => m.classification || m.category || "unknown"))].map((c) => `<option value="${e(c)}" ${state.materialFilter === c ? "selected" : ""}>${e(classificationNames[c] || c)}</option>`).join("")}</select></div>${filtered.length ? filtered.map(sourceCard).join("") : empty("当前页暂无此类材料", "原文按需分段读取；摘要或访问失败会明确标注。")}${pager("materials", state.materials)}</div></section></div>${recommendations()}`;
+  return `<div class="grid-two"><div>${state.analyses.length ? state.analyses.map(reportCard).join("") : `<section class="card">${empty("当前页暂无研究报告", "配置真实模型后开始研究；历史报告可通过分页查看。", "analyze", "开始研究")}</section>`}${pager("analyses", state.analyses)}</div><section class="card"><div class="card-header"><h2>研究材料索引</h2><span class="small muted">当前页 ${state.materials.length} 条</span></div><div class="card-body"><form id="material-search-form" data-draft-key="material-search:${e(state.accountId)}" class="search-field"><input id="material-query" name="query" class="input" value="${e(state.materialQuery)}" placeholder="检索已保存正文、标题或证券" aria-label="检索材料"><button type="submit" class="button compact">检索</button></form><div class="split-heading section-gap"><span class="small muted">分类筛选当前页；保留未知与冲突</span>${choiceField({ e, label: "筛选材料分类", name: "material_filter", id: "material-filter", scope: state.accountId || "global", variant: "inline", ariaLabel: "筛选材料分类", wrapperClass: "source-filter-field", triggerClass: "source-filter", value: state.materialFilter, options: [["all", "全部材料"], ...categories.map((c) => [c, classificationNames[c] || c])] })}</div>${filtered.length ? filtered.map(sourceCard).join("") : empty("当前页暂无此类材料", "原文按需分段读取；摘要或访问失败会明确标注。")}${pager("materials", state.materials)}</div></section></div>${recommendations()}`;
 }
 function reasonLabel(reason) {
   if (String(reason).startsWith("manual_security:"))
@@ -1489,16 +1508,32 @@ function render() {
   for(const [key,form] of state.drafts)if(state.drafts.size>40&&!form.isConnected)state.drafts.delete(key);
   hydrateLegacyResearchReports();
 }
-let dialogReturnFocus = null, dialogReturnSelector = null, dialogGeneration = 0;
+let dialogReturnFocus = null, dialogReturnSelector = null, dialogGeneration = 0, pendingDialogContext = null;
+function settlePendingDialog(accepted = false, value = null) {
+  const context = pendingDialogContext;
+  pendingDialogContext = null;
+  if (!context) return;
+  const { resolve, intent, operationKey } = context;
+  if (accepted && (!dialogIsCurrent(intent) || isOperationActive(operationKey))) {
+    resolve?.({ accepted: false, value: null });
+    return;
+  }
+  resolve?.({ accepted, value });
+}
 function beginDialogIntent() {
-  return {generation:++dialogGeneration,navigation:navigationGeneration,account:state.accountId};
+  return {generation:++dialogGeneration,navigation:navigationGeneration,account:state.accountId,route:state.route};
 }
 function dialogIsCurrent(intent) {
-  return intent.generation===dialogGeneration && intent.navigation===navigationGeneration && intent.account===state.accountId;
+  return Boolean(intent) && intent.generation===dialogGeneration && intent.navigation===navigationGeneration && intent.account===state.accountId && intent.route===state.route;
 }
-function closeDialog() { dialogGeneration++; $("#dialog").close(); }
+function closeDialog() {
+  settlePendingDialog(false, null);
+  dialogGeneration++;
+  $("#dialog").close();
+}
 function dialog(title, content, footer = "", intent = null) {
   if(intent && !dialogIsCurrent(intent)) return;
+  settlePendingDialog(false, null);
   if(!intent)beginDialogIntent();
   if (!$("#dialog").open) {
     dialogReturnFocus = document.activeElement;
@@ -1515,6 +1550,55 @@ function dialog(title, content, footer = "", intent = null) {
   $("#dialog").setAttribute("aria-labelledby", "dialog-title");
   if (!$("#dialog").open) $("#dialog").showModal();
   document.body.classList.add("dialog-open");
+}
+function confirmDialog({ title = "确认操作", message = "", confirmLabel = "确认", cancelLabel = "取消", danger = false, tone, operationKey = null } = {}) {
+  if (isOperationActive(operationKey)) {
+    toast(`${state.operations.get(operationKey)}仍在处理中，请勿重复提交；当前输入会保留。`);
+    return Promise.resolve(false);
+  }
+  const isDanger = Boolean(danger || tone === "danger");
+  const intent = beginDialogIntent();
+  dialog(
+    title,
+    `<p class="confirm-dialog-message">${e(message)}</p>`,
+    `<button type="button" class="button" data-confirm-cancel>${e(cancelLabel)}</button><button type="button" class="button ${isDanger ? "danger" : "primary"}" data-confirm-accept>${e(confirmLabel)}</button>`,
+    intent,
+  );
+  if (!dialogIsCurrent(intent)) return Promise.resolve(false);
+  const initialFocus = isDanger ? $("#dialog [data-confirm-cancel]") : $("#dialog [data-confirm-accept]");
+  initialFocus?.focus({ preventScroll: true });
+  return new Promise((resolve) => {
+    pendingDialogContext = {
+      intent,
+      operationKey: operationKey || null,
+      resolve: ({ accepted }) => resolve(Boolean(accepted)),
+    };
+  });
+}
+function promptDialog({ title = "请输入", message = "", label = "输入内容", placeholder = "", confirmLabel = "确认", cancelLabel = "取消", required = true, initialValue, value, operationKey = null } = {}) {
+  if (isOperationActive(operationKey)) {
+    toast(`${state.operations.get(operationKey)}仍在处理中，请勿重复提交；当前输入会保留。`);
+    return Promise.resolve(null);
+  }
+  const initVal = initialValue !== undefined ? initialValue : (value ?? "");
+  const intent = beginDialogIntent();
+  dialog(
+    title,
+    `${message ? `<p class="confirm-dialog-message">${e(message)}</p>` : ""}<form id="prompt-dialog-form" class="prompt-dialog-form" novalidate><div class="field"><label for="prompt-dialog-input">${e(label)}${required ? " *" : ""}</label><input id="prompt-dialog-input" type="text" data-prompt-input value="${e(initVal)}" placeholder="${e(placeholder)}" autocomplete="off"><small class="error-text prompt-error" data-prompt-error hidden></small></div></form>`,
+    `<button type="button" class="button" data-confirm-cancel>${e(cancelLabel)}</button><button type="submit" form="prompt-dialog-form" class="button primary" data-confirm-accept>${e(confirmLabel)}</button>`,
+    intent,
+  );
+  if (!dialogIsCurrent(intent)) return Promise.resolve(null);
+  const form = $("#prompt-dialog-form");
+  if (form) form.dataset.required = required ? "true" : "false";
+  $("#dialog [data-prompt-input]")?.focus({ preventScroll: true });
+  return new Promise((resolve) => {
+    pendingDialogContext = {
+      intent,
+      operationKey: operationKey || null,
+      resolve: ({ accepted, value: result }) => resolve(accepted ? result : null),
+    };
+  });
 }
 // Paid checks and completed backups must remain inspectable if the reader
 // navigates away. Keep only ten sanitized API outcomes in this tab's memory.
@@ -1536,15 +1620,70 @@ $('#dialog').addEventListener('keydown', event => {
   if (event.shiftKey && (active === first || !modal.contains(active))) { event.preventDefault(); last.focus(); }
   else if (!event.shiftKey && (active === last || !modal.contains(active))) { event.preventDefault(); first.focus(); }
 });
-$('#dialog').addEventListener('cancel', () => { dialogGeneration++; });
+$('#dialog').addEventListener('cancel', () => {
+  settlePendingDialog(false, null);
+  dialogGeneration++;
+});
 $('#dialog').addEventListener('close', () => {
   if ($('#dialog').open) return;
+  settlePendingDialog(false, null);
   dialogGeneration++;
   document.body.classList.remove('dialog-open');
   const returnFocus = dialogReturnFocus?.isConnected ? dialogReturnFocus : dialogReturnSelector ? $(dialogReturnSelector) : null;
   returnFocus?.focus({preventScroll: true});
   const form = $('#dialog #provider-connection-form');
   if (form) { form.elements.api_key.value = ''; form.remove(); }
+});
+$('#dialog').addEventListener('click', (event) => {
+  const cancelBtn = event.target.closest('[data-confirm-cancel]');
+  if (cancelBtn) {
+    closeDialog();
+    return;
+  }
+  const acceptBtn = event.target.closest('[data-confirm-accept]');
+  if (acceptBtn && !$('#prompt-dialog-form')) {
+    const context = pendingDialogContext;
+    if (!context || !dialogIsCurrent(context.intent) || isOperationActive(context.operationKey)) {
+      closeDialog();
+      return;
+    }
+    settlePendingDialog(true, true);
+    dialogGeneration++;
+    $('#dialog').close();
+  }
+});
+$('#dialog').addEventListener('input', (event) => {
+  if (!event.target.matches?.('[data-prompt-input]')) return;
+  const errorNode = $('#dialog [data-prompt-error]');
+  if (errorNode) {
+    errorNode.hidden = true;
+    errorNode.textContent = '';
+  }
+});
+$('#dialog').addEventListener('submit', (event) => {
+  if (event.target.id !== 'prompt-dialog-form') return;
+  event.preventDefault();
+  event.stopPropagation();
+  const context = pendingDialogContext;
+  if (!context || !dialogIsCurrent(context.intent) || isOperationActive(context.operationKey)) {
+    closeDialog();
+    return;
+  }
+  const form = event.target;
+  const input = form.querySelector('[data-prompt-input]');
+  const errorNode = form.querySelector('[data-prompt-error]');
+  const val = input?.value ?? '';
+  if (form.dataset.required !== 'false' && !val.trim()) {
+    if (errorNode) {
+      errorNode.textContent = '请填写有效内容';
+      errorNode.hidden = false;
+    }
+    input?.focus();
+    return;
+  }
+  settlePendingDialog(true, val);
+  dialogGeneration++;
+  $('#dialog').close();
 });
 window.addEventListener('beforeunload', event => {
   if ($$('#provider-connection-form input[type=password]').some(input => input.value)) {
@@ -2027,8 +2166,8 @@ function changeSignature() {
     ledger: ledger.snapshot(),
   });
 }
-const ledger = createLedgerUI({state,api,e,field,selectField,render,toast,operation,refresh,number,date,objectView,clearDraft,finishSave});
-const sixth = createSixthUI({state, api, e, render, toast, operation, field, selectField, dialog, beginDialogIntent, dialogIsCurrent, closeDialog, objectView, resetFailures:()=>missingRoutes.clear()});
+const ledger = createLedgerUI({state,api,e,field,selectField,render,toast,operation,refresh,number,date,objectView,clearDraft,finishSave,promptDialog});
+const sixth = createSixthUI({state, api, e, render, toast, operation, field, selectField, choiceField, syncChoiceControls, dialog, beginDialogIntent, dialogIsCurrent, closeDialog, confirmDialog, objectView, resetFailures:()=>missingRoutes.clear()});
 let polling = false;
 setInterval(async () => {
   if (

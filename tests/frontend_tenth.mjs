@@ -5,6 +5,7 @@ import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import assert from 'node:assert/strict';
+import { selectChoice } from './choice_helper.mjs';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const directory=await mkdtemp(join(tmpdir(),'guanlan-tenth-browser-'));
 const child=spawn(process.env.PYTHON || 'python',['tests/tenth_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
@@ -82,7 +83,7 @@ try {
  const universe=await api('/api/universe');assert.deepEqual(universe.watchlist,['SH:518880','SH:688825','SH:562500']);assert.deepEqual(universe.candidates,['SZ:159278','SZ:000001']);assert.ok(universe.monitored.length>=5);
  assert.ok((await page.locator('#main').textContent()).includes('5 只证券'));
  await page.locator('#watchlist').fill('518880\nabc');await page.locator('#universe-form [type=submit]').click();await idle();assert.equal(await page.locator('#watchlist').inputValue(),'518880\nabc');assert.deepEqual((await api('/api/universe')).watchlist,universe.watchlist);
- await page.locator('#account-switch').selectOption(fixture.other_id);await idle();await page.locator('#account-switch').selectOption(fixture.account_id);await idle();assert.equal(await page.locator('#watchlist').inputValue(),'518880\nabc');
+ await selectChoice(page, '#account-switch', fixture.other_id);await idle();await selectChoice(page, '#account-switch', fixture.account_id);await idle();assert.equal(await page.locator('#watchlist').inputValue(),'518880\nabc');
  checks.push('bare-code atomic save, prefix/leading-zero/dedup, monitored refresh, invalid draft and account switch');
  await navigate('overview');
  let writes=0, lose=false, gate=null;
@@ -101,7 +102,7 @@ try {
  lose=true;await page.locator('.page-heading [data-action=analyze]').click();await idle();assert.equal(writes,4);
  await page.locator('[data-action=reconcile-task]').waitFor();
  await page.reload();await page.locator('.task-status-card').waitFor();await page.locator('[data-action=reconcile-task]').waitFor({state:'hidden'});assert.ok((await page.locator('.task-status-card').textContent()).includes(job.id));
- await page.locator('#account-switch').selectOption(fixture.other_id);await idle();assert.ok(!(await page.locator('.task-status-card').textContent()).includes(job.id));assert.ok(!(await page.locator('#toast-region').textContent()).includes(job.id),'previous account task toast must be removed');await page.locator('#account-switch').selectOption(fixture.account_id);await idle();
+ await selectChoice(page, '#account-switch', fixture.other_id);await idle();assert.ok(!(await page.locator('.task-status-card').textContent()).includes(job.id));assert.ok(!(await page.locator('#toast-region').textContent()).includes(job.id),'previous account task toast must be removed');await selectChoice(page, '#account-switch', fixture.account_id);await idle();
  await api('/__fixture/waiting-config/'+job.id,{});await navigate('agents');await navigate('overview');assert.ok((await page.locator('.task-status-card').textContent()).includes('等待配置'));
  await api('/__fixture/fail/'+job.id,{});await page.reload();await page.locator('.task-status-card [data-action=retry-job]').waitFor();await page.locator('.task-status-card [data-action=retry-job]').click();await idle();
  const retried=(await api(`/api/accounts/${fixture.account_id}/jobs`))[0];assert.equal(retried.parent_job_id,job.id);assert.notEqual(retried.id,job.id);

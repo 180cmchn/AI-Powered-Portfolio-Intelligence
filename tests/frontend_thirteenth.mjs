@@ -7,6 +7,7 @@ import {join} from 'node:path';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {loadBrowserBaseline} from './browser-baseline.mjs';
+import {selectChoice} from './choice_helper.mjs';
 const baseline=loadBrowserBaseline('e8cf4f6e937779b11ea4d7aad511fc070bb2d0ae',['view-state.js','app.js']);
 const directory=await mkdtemp(join(tmpdir(),'guanlan-thirteenth-forms-'));
 const child=spawn(process.env.PYTHON||'.venv/bin/python',['tests/thirteenth_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
@@ -89,9 +90,9 @@ try {
  await page.reload();await page.locator('#universe-form').waitFor();await page.locator('.loading-line').waitFor({state:'hidden'});
  // Dynamic native filter lives outside a form. Material index updates are real
  // SQLite records; selected category stays coherent through insertion/removal.
- await api('/__fixture/material',{classification:'official_disclosure'});await page.locator('nav a[href="#research"]').click();await page.locator('#material-filter option[value=official_disclosure]').waitFor({state:'attached'});await page.locator('.loading-line').waitFor({state:'hidden'});await page.locator('#material-filter').selectOption('official_disclosure');
+ await api('/__fixture/material',{classification:'official_disclosure'});await page.locator('nav a[href="#research"]').click();await page.locator('#material-filter option[value=official_disclosure]').waitFor({state:'attached'});await page.locator('.loading-line').waitFor({state:'hidden'});await selectChoice(page, '#material-filter', 'official_disclosure');
  await api('/__fixture/material',{classification:'news'});await page.waitForFunction(()=>!!document.querySelector('#material-filter option[value=news]'),null,{timeout:12000});assert.equal(await page.locator('#material-filter').inputValue(),'official_disclosure');
- await page.locator('#material-filter').selectOption('news');await api('/__fixture/material',{classification:'unclassified'});await page.waitForFunction(()=>!!document.querySelector('#material-filter option[value=unclassified]'),null,{timeout:12000});
+ await selectChoice(page, '#material-filter', 'news');await api('/__fixture/material',{classification:'unclassified'});await page.waitForFunction(()=>!!document.querySelector('#material-filter option[value=unclassified]'),null,{timeout:12000});
  evidence.pages.push({name:'dynamic-material-catalogue',actual:await page.locator('#material-filter').evaluate(el=>({value:el.value,selectedOptions:[...el.selectedOptions].map(o=>o.value),options:[...el.options].map(o=>o.value)}))});assert.equal(await page.locator('#material-filter').inputValue(),'news');
  // Changing the material search removes the selected category. Selection and
  // the displayed results must fall back together rather than disagreeing.

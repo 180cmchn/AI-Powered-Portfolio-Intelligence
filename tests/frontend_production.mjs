@@ -7,6 +7,7 @@ import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
+import { selectChoice, openChoice, waitChoiceReady } from './choice_helper.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const directory = await mkdtemp(join(tmpdir(), 'guanlan-browser-'));
@@ -115,9 +116,9 @@ try {
   await page.route('**/api/status*',async route=>{observeNavigation();await navigationGate;await route.continue();},{times:1});
   await navigate('research');
   await waitGate(navigationStarted,'navigationStarted');
-  await page.locator('#account-switch').selectOption(fixture.other_id);
-  await page.locator('#account-switch').selectOption(fixture.account_id);
-  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.account_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
   releaseNavigation();
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id,'account selection during navigation must not be silently discarded');
@@ -149,7 +150,7 @@ try {
   await navigate('holdings');
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.notEqual(await page.locator('#account-meta-form #account-name').inputValue(),draftName,'account A draft must not appear in account B');
-  await page.locator('#account-switch').selectOption(fixture.account_id);
+  await selectChoice(page, '#account-switch', fixture.account_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#account-meta-form #account-name').inputValue(),draftName,'account A draft survives the deferred switch');
   // Writes proceed while GET navigation is paused, keep the clicked account and
@@ -193,7 +194,7 @@ try {
   await page.locator('#account-meta-form button[type="submit"]').click();
   await page.getByText('保存账户仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).last().waitFor();
   await page.locator('#account-name').fill('账户 A 保存后继续输入');
-  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
   await page.waitForFunction(other=>document.querySelector('#account-meta-form')?.dataset.accountId===other,fixture.other_id);
   assert.equal(saveRequest.postDataJSON().name,'账户 A 提交时输入');
   assert.equal(saveRequest.postDataJSON().expected_version,versionAtClick);
@@ -207,7 +208,7 @@ try {
   assert.equal(savedA.name,'账户 A 提交时输入');
   assert.equal(savedA.version,versionAtClick+1);
   assert.deepEqual([afterB.name,afterB.version,afterB.holdings,afterB.preferences],[beforeB.name,beforeB.version,beforeB.holdings,beforeB.preferences]);
-  await page.locator('#account-switch').selectOption(fixture.account_id);
+  await selectChoice(page, '#account-switch', fixture.account_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
   assert.equal(await page.locator('#account-name').inputValue(),'账户 A 保存后继续输入','late success must retain newer draft');
   assert.equal(Number(await page.locator('#account-meta-form').getAttribute('data-version')),savedA.version);
@@ -241,7 +242,7 @@ try {
   await page.locator('#account-meta-form button[type="submit"]').click();
   await waitGate(committedStarted,'committed write before lost response');
   await page.locator('#account-name').fill('账户 A 响应丢失后新草稿');
-  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
   await page.waitForFunction(id=>document.querySelector('#account-meta-form')?.dataset.accountId===id,fixture.other_id);
   failCommitted();
   await assertIdle();
@@ -252,7 +253,7 @@ try {
   assert.equal(uncertainSaved.version,beforeUncertain.version+1);
   assert.equal(uncertainSaved.name,'账户 A 已提交但响应丢失');
   assert.equal(await page.locator('#account-switch').inputValue(),fixture.other_id);
-  await page.locator('#account-switch').selectOption(fixture.account_id);
+  await selectChoice(page, '#account-switch', fixture.account_id);
   await assertIdle();
   assert.equal(await page.locator('#account-name').inputValue(),'账户 A 响应丢失后新草稿');
   assert.equal(Number(await page.locator('#account-meta-form').getAttribute('data-version')),uncertainSaved.version);
@@ -276,7 +277,7 @@ try {
   const analyzeRequest=await waitGate(analyzeGate.started,'analyzeGate.started');
   await page.locator('.page-heading [data-action="analyze"]').click();
   await page.getByText('立即分析仍在处理中，请勿重复提交；当前输入会保留。',{exact:true}).waitFor();
-  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
   assert.equal(new URL(analyzeRequest.url()).pathname,`/api/accounts/${fixture.account_id}/analyze`);
   analyzeGate.release();analyzeNavigation.release();
   await page.locator('.loading-line').waitFor({state:'hidden'});
@@ -322,7 +323,7 @@ try {
   assert.equal(raceLifecycle.counts.request_started,raceLifecycle.counts.request_finished);
   // Current UI: connection-only providers, discovered model choices and global roles.
   await navigate('settings');
-  await page.locator('#model_native_search').waitFor();
+  await waitChoiceReady(page, '#model_native_search');
   assert.equal(await page.locator('#settings-form #model_name, #settings-form #model_protocol, #settings-form #reasoning_effort, #settings-form #model_key_env').count(),0);
   assert.equal(await page.locator('#model_native_search').inputValue(),'true');
   await page.locator('#runtime-version').waitFor();
@@ -345,8 +346,8 @@ try {
   };
   const saveManager=async({effort,model}={})=>{
     const form=page.locator('.role-model-form[data-role-id="manager"]');
-    if(effort)await form.locator('[name="reasoning_effort"]').selectOption(effort);
-    if(model)await form.locator('[name="model_id"]').selectOption(model);
+    if(effort)await selectChoice(form, '[name="reasoning_effort"]', effort);
+    if(model)await selectChoice(form, '[name="model_id"]', model);
     const saved=page.waitForResponse(response=>response.url().endsWith('/api/agent-roles/manager') && response.request().method()==='PUT');
     await form.locator('button[type="submit"]').click();
     const response=await saved;assert.equal(response.status(),200);
@@ -357,10 +358,21 @@ try {
   const manager=page.locator('.role-model-form[data-role-id="manager"]');
   assert.deepEqual(await manager.locator('[name="reasoning_effort"] option').evaluateAll(options=>options.map(option=>option.value)),['low','medium','high','xhigh','max']);
   assert.equal(await manager.locator('[name="model_id"]').inputValue(),'browser-native-observed');
-  await manager.locator('[data-model-filter]').fill('does-not-exist');
-  assert.deepEqual(await manager.locator('[name="model_id"] option').evaluateAll(options=>options.map(option=>option.value)),['']);
-  await manager.locator('[data-model-filter]').fill('');
-  await manager.locator('[name="model_id"]').selectOption('browser-native-observed');
+  const nativeModelOptions=await manager.locator('[name="model_id"] option').evaluateAll(options=>options.map(option=>option.value));
+  assert.deepEqual(nativeModelOptions,['','browser-native-observed','browser-native-auth','browser-native-failure']);
+  const modelSearch=await openChoice(manager,'[name="model_id"]');
+  assert.equal(await modelSearch.popup.evaluate(el=>el.classList.contains('is-searchable')),true);
+  const modelFilter=modelSearch.popup.locator('[data-model-filter]');
+  assert.equal(await modelFilter.evaluate(el=>document.activeElement===el),true,'model search input receives focus when the popup opens');
+  await modelFilter.fill('does-not-exist');
+  assert.equal(await modelSearch.popup.locator('.choice-option').count(),0,'no fabricated model may appear for an unknown query');
+  assert.equal(await modelSearch.popup.locator('.choice-empty').isVisible(),true);
+  assert.deepEqual(await manager.locator('[name="model_id"] option').evaluateAll(options=>options.map(option=>option.value)),nativeModelOptions,'searching must never delete real native options');
+  await modelFilter.fill('');
+  assert.equal(await modelSearch.popup.locator('.choice-option').count(),nativeModelOptions.length,'clearing the query restores every discovered model');
+  await page.keyboard.press('Escape');
+  assert.equal(await modelSearch.popup.count(),0);
+  await selectChoice(manager, '[name="model_id"]', 'browser-native-observed');
   for (const effort of ['low','medium','high','xhigh','max']) {
     const role=await saveManager({effort});
     assert.equal(role.resolved.reasoning_effort,effort);
@@ -369,7 +381,7 @@ try {
   await page.reload();
   await page.locator('.role-model-form[data-role-id="manager"]').waitFor();
   assert.equal(await manager.locator('[name="reasoning_effort"]').inputValue(),'max');
-  await page.locator('#account-switch').selectOption(fixture.other_id);
+  await selectChoice(page, '#account-switch', fixture.other_id);
   await page.locator('.loading-line').waitFor({state:'hidden'});
   await navigate('account-models');
   await page.locator(`.role-model-form[data-role-id="manager"][data-account-id="${fixture.other_id}"]`).waitFor();
@@ -378,7 +390,7 @@ try {
   assert.equal(await page.locator('.role-card').count(),6);
   assert.equal(await page.locator('.role-model-form [name="enabled"], .role-model-form [name="system_prompt"], .role-model-form [name="tools"]').count(),0);
   const accountManager=page.locator('.role-model-form[data-role-id="manager"]');
-  await accountManager.locator('[name="reasoning_effort"]').selectOption('low');
+  await selectChoice(accountManager, '[name="reasoning_effort"]', 'low');
   const overrideSaved=page.waitForResponse(response=>response.url().endsWith(`/api/accounts/${fixture.other_id}/agent-models/manager`) && response.request().method()==='PUT');
   await accountManager.locator('button[type="submit"]').click();
   assert.equal((await overrideSaved).status(),200);
@@ -410,7 +422,7 @@ try {
     await navigate('providers');
     await page.locator(`[data-sixth-action="provider-edit"][data-id="${fixture.provider_id}"]`).click();
     const form=page.locator('#dialog #provider-connection-form');
-    await form.locator('[name="protocol"]').selectOption(protocol);
+    await selectChoice(form, '[name="protocol"]', protocol);
     assert.equal(await form.locator('[name="api_key"]').inputValue(),'');
     const saved=page.waitForResponse(response=>response.url().endsWith('/api/providers/'+fixture.provider_id) && response.request().method()==='PUT');
     await form.locator('button[type="submit"]').click();
@@ -418,24 +430,24 @@ try {
     await page.locator('#dialog').waitFor({state:'hidden'});
     await page.locator('.loading-line').waitFor({state:'hidden'});
     await navigate('settings');
-    await page.locator('#model_native_search').waitFor();
+    await waitChoiceReady(page, '#model_native_search');
     await page.locator('.loading-line').waitFor({state:'hidden'});
   };
   await navigate('settings');
-  await page.locator('#model_native_search').waitFor();
+  await waitChoiceReady(page, '#model_native_search');
   assert.ok((await page.locator('#inflight-model-settings').textContent()).includes('reasoning_effort：medium'));
   await mkdir('test-results',{recursive:true});
   await page.screenshot({path:'test-results/frontend-production-settings.png',fullPage:true});
-  await page.locator('#model_native_search').selectOption('false');
+  await selectChoice(page, '#model_native_search', 'false');
   await saveSettings();
   await waitCapability('已关闭');
   await page.reload();
-  await page.locator('#model_native_search').waitFor();
+  await waitChoiceReady(page, '#model_native_search');
   assert.equal(await page.locator('#model_native_search').inputValue(),'false');
   const reopened=await (await fetch(base+'/__fixture/reopen')).json();
   assert.equal(reopened.model_native_search,false);
   assert.equal(reopened.legacy_search_provider,'disabled');
-  await page.locator('#model_native_search').selectOption('true');
+  await selectChoice(page, '#model_native_search', 'true');
   await saveSettings();
   await changeProtocol('chat_completions');
   await waitCapability('当前协议或端点不支持');
@@ -456,13 +468,13 @@ try {
   assert.equal((await (await fetch(base+'/__fixture/reopen')).json()).probe_calls,1);
   await openRoles();await saveManager({model:'browser-native-auth'});
   await navigate('settings');
-  await page.locator('#model_native_search').waitFor();
+  await waitChoiceReady(page, '#model_native_search');
   await waitCapability('尚未验证');
   assert.equal((await probe()).status,'authentication_failed');
   await waitCapability('认证失败');
   await openRoles();await saveManager({model:'browser-native-failure'});
   await navigate('settings');
-  await page.locator('#model_native_search').waitFor();
+  await waitChoiceReady(page, '#model_native_search');
   assert.equal((await probe()).status,'request_failed');
   await waitCapability('请求失败');
   let releaseProbe, observeProbe, localProbeWrites=0;

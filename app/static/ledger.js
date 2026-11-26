@@ -1,7 +1,7 @@
 // All accounting arithmetic is performed by the server. This module submits
 // decimal strings and displays the exact persisted receipt, never JS estimates.
 import {choiceField, syncChoiceControls} from './select-control.js';
-export function createLedgerUI({state,api,e,field,selectField,render,toast,operation,refresh,number,date,objectView,clearDraft,finishSave}) {
+export function createLedgerUI({state,api,e,field,selectField,render,toast,operation,refresh,number,date,objectView,clearDraft,finishSave,promptDialog=async()=>null}) {
   const enc=encodeURIComponent, snapshots=new Map(), errors=new Map(), previews=new WeakMap();
   const storageKey='guanlan.ledger-submissions';
   const pending=()=>{try{return JSON.parse(sessionStorage.getItem(storageKey)||'{}');}catch{return {};}};
@@ -140,9 +140,28 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
   document.addEventListener('input',event=>{const form=event.target.closest('#trade-form, #account-form');if(form)invalidatePreview(form);});
   document.addEventListener('change',event=>{const form=event.target.closest('#trade-form, #account-form');if(form)invalidatePreview(form);});
   document.addEventListener('reset',event=>{if(event.target.id==='account-form')invalidatePreview(event.target);});
-  document.addEventListener('click',event=>{
+  document.addEventListener('click',async event=>{
     const target=event.target.closest('[data-ledger-action]');if(!target)return;
     const id=state.accountId,action=target.dataset.ledgerAction,form=target.closest('form');
+    const sourceRoute=state.route;
+    const entryId=target.dataset.entryId,actionLabel=target.textContent;
+    const opKey=action==='reverse'?`ledger:${action}:${id}:${entryId || ''}`:`ledger:${action}:${id}`;
+    let reverseReason='';
+    if(action==='reverse'){
+      const input=await promptDialog({
+        title:'撤销末笔流水',
+        message:'末笔撤销将保留原单引用，不按反向交易再次收费。',
+        label:'末笔撤销原因',
+        placeholder:'例如：录入价格或数量有误',
+        confirmLabel:'确认撤销',
+        cancelLabel:'取消',
+        required:true,
+        initialValue:'',
+        operationKey:opKey,
+      });
+      if(!input?.trim() || state.route!==sourceRoute || state.accountId!==id || !target.isConnected)return;
+      reverseReason=input.trim();
+    }
     operation(async()=>{
       if(action==='correction-preview') {
         if(!form.reportValidity())return;
@@ -166,9 +185,9 @@ export function createLedgerUI({state,api,e,field,selectField,render,toast,opera
         form.querySelector('[type=submit]').disabled=false;return;
       }
       if(action==='reconcile'){const receipt=await reconcile(id);if(!receipt)throw Error('仍未查到提交结果；保留原操作标识，稍后只读核对。');toast(receiptText(receipt),false,id,{id:receipt.research?.job_id});}
-      if(action==='reverse'){const reason=prompt('末笔撤销原因（保留原单引用，不再次收费）：');if(!reason?.trim())return;const receipt=await write(id,`ledger/${enc(target.dataset.entryId)}/reverse`,{expected_version:latest().input_version,reason:reason.trim()});toast(receiptText(receipt),false,id,{id:receipt.research?.job_id});}
+      if(action==='reverse'){const receipt=await write(id,`ledger/${enc(entryId)}/reverse`,{expected_version:latest().input_version,reason:reverseReason});toast(receiptText(receipt),false,id,{id:receipt.research?.job_id});}
       await refresh(true);render();
-    },{key:`ledger:${action}:${id}`,label:target.textContent});
+    },{key:opKey,label:actionLabel});
   });
   document.addEventListener('submit',event=>{
     const form=event.target;if(!['trade-form','account-form','fund-form','fee-plan-form','fee-adjustment-form'].includes(form.id))return;event.preventDefault();

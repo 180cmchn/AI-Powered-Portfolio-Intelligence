@@ -373,6 +373,21 @@ small,
   border-color: #e6cfcc;
   background: #fff;
 }
+.button.danger:hover {
+  background: #fdf4f2;
+  border-color: #d9aba5;
+  color: #933a31;
+}
+.dialog-footer .button.danger {
+  background: #ad463c;
+  border-color: #ad463c;
+  color: #fff;
+}
+.dialog-footer .button.danger:hover {
+  background: #963930;
+  border-color: #963930;
+  color: #fff;
+}
 .button.compact {
   padding: 6px 9px;
   font-size: 11px;
@@ -756,6 +771,16 @@ tr:last-child td {
 
 /* Fixed-choice controls use the same field metrics. The popup is a top-layer
    popover (fixed portal fallback), so cards never clip its options. */
+.choice-field {
+  position: relative;
+  min-width: 0;
+}
+.choice-inline {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
 .choice-trigger {
   display: flex;
   align-items: center;
@@ -763,6 +788,7 @@ tr:last-child td {
   gap: 12px;
   width: 100%;
   min-width: 0;
+  min-height: 39px;
   border: 1px solid #dce5dc;
   border-radius: 6px;
   background: #fff;
@@ -770,39 +796,145 @@ tr:last-child td {
   padding: 9px 11px;
   text-align: left;
   font: inherit;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.choice-trigger[aria-expanded="true"] { border-color: var(--teal); }
-.choice-trigger:disabled { cursor: not-allowed; }
-.choice-chevron { width: 16px; text-align: center; color: #75838a; }
+.choice-trigger:not(:disabled):hover {
+  border-color: #b8c9bf;
+  background: #fcfdfc;
+}
+.choice-trigger:focus-visible {
+  outline: 2px solid #71ac9d;
+  outline-offset: 2px;
+  border-color: var(--teal);
+}
+.choice-trigger[aria-expanded="true"] {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(30, 110, 97, 0.1);
+}
+.choice-trigger:disabled {
+  cursor: not-allowed;
+  background: #f5f7f5;
+  color: #84938f;
+  border-color: #e2e9e4;
+  opacity: 0.72;
+}
+[data-choice-value] {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.choice-chevron {
+  flex: 0 0 auto;
+  width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c7d78;
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.16s ease, color 0.16s ease;
+}
+.choice-trigger[aria-expanded="true"] .choice-chevron {
+  transform: rotate(180deg);
+  color: var(--teal);
+}
+.choice-inline .choice-trigger {
+  min-height: 34px;
+  padding: 6px 10px 6px 11px;
+  border-radius: 7px;
+  border-color: #dce5df;
+  font-size: 12px;
+}
+.account-switch-field .choice-trigger.account-switch {
+  width: auto;
+  min-width: 145px;
+  max-width: 220px;
+}
+.source-filter-field .choice-trigger.source-filter {
+  width: 140px;
+}
 .choice-popup {
   position: fixed;
   inset: auto;
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
   border: 1px solid #dce5dc;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #fff;
   color: #31493b;
   font: 12px/1.55 Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  box-shadow: 0 5px 18px #172b3324;
+  box-shadow: 0 8px 24px rgba(23, 43, 51, 0.14);
   z-index: 10000;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 .choice-popup::backdrop { background: transparent; }
+.choice-popup.is-searchable {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.choice-search {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  background: #fafcf9;
+  border-bottom: 1px solid #e6ede7;
+}
+.choice-search-input {
+  width: 100%;
+  min-width: 0;
+  height: 33px;
+  padding: 6px 10px;
+  border: 1px solid #d4dfd7;
+  border-radius: 6px;
+  background: #fff;
+  color: #243b37;
+  font-size: 12px;
+}
+.choice-search-input:focus {
+  outline: 2px solid #71ac9d;
+  outline-offset: 0;
+  border-color: var(--teal);
+}
+.choice-options {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+}
 .choice-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 11px;
-  min-height: 36.6px;
+  padding: 8px 11px;
+  min-height: 36px;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
-.choice-option[aria-selected="true"] { color: #1b6659; font-weight: 600; }
+.choice-option > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.choice-popup.is-searchable .choice-option {
+  padding: 8px 10px;
+  border-radius: 5px;
+}
+.choice-empty {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.choice-option[aria-selected="true"] { color: #1b6659; font-weight: 600; background: #f2f8f5; }
 .choice-option:hover { background: #f0f4f1; }
 .choice-option.is-active { outline: 2px solid #71ac9d; outline-offset: -2px; background: #e7f3ee; }
-.choice-option[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.choice-option[aria-disabled="true"] { opacity: .52; cursor: not-allowed; }
 .choice-check { width: 16px; flex: 0 0 16px; text-align: center; visibility: hidden; }
 .choice-option[aria-selected="true"] .choice-check { visibility: visible; }
 .ledger-version-notice { margin-bottom: 16px; font-size: 12px; }
@@ -1580,7 +1712,8 @@ dialog::backdrop {
   .job-events {
     padding-left: 24px;
   }
-  .account-switch {
+  .account-switch,
+  .account-switch-field .choice-trigger.account-switch {
     min-width: 125px;
     max-width: 155px;
     font-size: 11px;
@@ -1609,7 +1742,8 @@ dialog::backdrop {
   .settings-section {
     padding: 17px;
   }
-  .source-filter {
+  .source-filter,
+  .source-filter-field .choice-trigger.source-filter {
     width: 120px;
   }
   .toast-region {
@@ -2194,4 +2328,147 @@ html { overflow-anchor: none; }
     justify-content: flex-start;
     padding: 0 15px 15px;
   }
+}
+
+/* Role cards, unified disclosure controls, and modal confirmation/prompt dialogs */
+.role-card .card-header {
+  gap: 14px;
+}
+.role-card .card-header > div {
+  min-width: 0;
+}
+.role-card .card-header p {
+  margin: 4px 0 0;
+  line-height: 1.65;
+}
+.role-summary {
+  background: #f7faf7;
+  border: 1px solid #e4ece6;
+  border-radius: 8px;
+  padding: 11px 14px;
+  margin-bottom: 16px;
+  display: grid;
+  gap: 4px;
+}
+.role-summary p {
+  margin: 0;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.role-binding-grid {
+  align-items: start;
+  gap: 14px;
+}
+.role-model-form > .form-actions {
+  margin: 18px -22px -22px;
+  padding: 14px 22px;
+}
+@media (max-width: 700px) {
+  .role-model-form > .form-actions {
+    margin: 16px -17px -17px;
+    padding: 14px 17px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .role-model-form > .form-actions .actions {
+    justify-content: flex-end;
+  }
+}
+
+details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"]) > summary {
+  list-style: none;
+}
+details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"]) > summary::-webkit-details-marker {
+  display: none;
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.ledger-detail):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary {
+  color: #24403a;
+  font-weight: 500;
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary:hover {
+  color: var(--teal);
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary:focus-visible {
+  outline: 2px solid #71ac9d;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 2px;
+  border-right: 1.6px solid #6c7d78;
+  border-bottom: 1.6px solid #6c7d78;
+  transform: rotate(-45deg);
+  transition: transform 0.16s ease, border-color 0.15s ease;
+}
+:where(details:not(.model-usage):not(.report-body-details):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])[open]) > summary::after {
+  transform: rotate(45deg);
+  border-color: var(--teal);
+}
+.ledger-detail > summary:hover {
+  background: #fafcfa;
+}
+details[data-key^="forecast-rules:"] > summary.card-header {
+  border-bottom: 0;
+}
+details[data-key^="forecast-rules:"][open] > summary.card-header {
+  border-bottom: 1px solid #edf0eb;
+}
+:where(.card-body, .report, form) :where(details:not(.model-usage):not(.report-body-details):not(.ledger-detail):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) {
+  border: 1px solid #e1e9e3;
+  border-radius: 8px;
+  background: #fafcfa;
+  padding: 10px 14px;
+}
+:where(.card-body, .report, form) :where(details:not(.model-usage):not(.report-body-details):not(.ledger-detail):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])) > summary {
+  font-size: 12px;
+}
+:where(.card-body, .report, form) :where(details:not(.model-usage):not(.report-body-details):not(.ledger-detail):not(.disclosure):not(.job-event-details):not(.job-checkpoint-details):not([data-key*=":session:"])[open]) > summary {
+  padding-bottom: 9px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e6ede7;
+}
+td details {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+td details > summary {
+  padding: 4px 0;
+  margin-bottom: 0;
+  border-bottom: 0;
+  font-size: 12px;
+}
+
+.dialog-content .confirm-dialog-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #3e5256;
+}
+.prompt-dialog-form {
+  margin-top: 14px;
+}
+.prompt-dialog-form .field {
+  margin: 0;
+}
+.prompt-error {
+  padding: 2px 0 0;
+  margin: 0;
+  font-size: 11px;
+  color: var(--red);
+}
+.prompt-error[hidden] {
+  display: none;
 }

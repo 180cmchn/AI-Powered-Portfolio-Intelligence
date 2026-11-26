@@ -27,12 +27,16 @@ export function reconcile(existing, incoming, {retain = () => false} = {}) {
       ? {value: incoming.value, checked: incoming.checked}
       : incoming instanceof HTMLTextAreaElement ? {value: incoming.value} : null;
   // Details open is user state; rendering an existing entity never sets it.
+  // Choice trigger expansion/activedescendant is also user state managed by select-control.
+  const preserveChoiceTrigger = existing.hasAttribute('data-choice-trigger') && existing.getAttribute('aria-expanded') === 'true';
   for (const attr of [...existing.attributes]) {
     if (attr.name === 'open' && existing.localName === 'details') continue;
+    if (preserveChoiceTrigger && (attr.name === 'aria-expanded' || attr.name === 'aria-activedescendant')) continue;
     if (!incoming.hasAttribute(attr.name)) existing.removeAttribute(attr.name);
   }
   for (const attr of incoming.attributes) {
     if (attr.name === 'open' && existing.localName === 'details') continue;
+    if (preserveChoiceTrigger && (attr.name === 'aria-expanded' || attr.name === 'aria-activedescendant')) continue;
     if (existing.getAttribute(attr.name) !== attr.value) existing.setAttribute(attr.name,attr.value);
   }
   const oldChildren = [...existing.childNodes], used = new Set();
@@ -65,6 +69,12 @@ export function reconcile(existing, incoming, {retain = () => false} = {}) {
       if (option.selected !== control.selected[index]) option.selected = control.selected[index];
     });
     else if (existing.selectedIndex !== control.index) existing.selectedIndex = control.index;
+    if (existing.hasAttribute('data-choice-native')) {
+      existing.dispatchEvent(new CustomEvent('choice:sync', {bubbles: true}));
+    }
+  }
+  if (existing.hasAttribute('data-choice-field')) {
+    existing.dispatchEvent(new CustomEvent('choice:sync', {bubbles: true}));
   }
   return existing;
 }

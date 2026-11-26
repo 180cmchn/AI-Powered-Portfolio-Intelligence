@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {selectChoice} from './choice_helper.mjs';
 const directory=await mkdtemp(join(tmpdir(),'guanlan-thirteenth-correction-'));
 const child=spawn(process.env.PYTHON||'.venv/bin/python',['tests/eleventh_browser_server.py',directory],{env:{...process.env,PYTHON_DOTENV_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
 let browser,page,log='';child.stderr.on('data',d=>log+=d);
@@ -79,7 +80,7 @@ try {
  assert.equal((await api(`/api/accounts/${aid}/ledger`)).cash,'99000.00');assert.equal(await form.locator('[name=reason]').inputValue(),'');assert.equal(await submit.isDisabled(),true);
  evidence.checks.push('same draft survives route navigation; intervening account version disables old preview; delayed receipt preserves a new draft and requires a new exact preview; clean save reloads baseline');
  const zero=await api('/api/accounts',{name:'明确零数量范围测试',cash:'100',holdings:[{symbol:'SZ:159599',quantity:'0',cost_price:'2.50'}]});
- await page.reload();await page.locator('#account-switch').selectOption(zero.id);await page.locator('.loading-line').waitFor({state:'hidden'});
+ await page.reload();await selectChoice(page, '#account-switch', zero.id);await page.locator('.loading-line').waitFor({state:'hidden'});
  if(!await page.locator('#snapshot-correction').evaluate(el=>el.open))await page.locator('#snapshot-correction > summary').click();
  await form.locator('[name=cash]').fill('101');await form.locator('[name=reason]').fill('仅现金校正，原零数量范围保持');
  await preview();assert.deepEqual(evidence.requests.at(-1).body.holdings,[]);await commit();
